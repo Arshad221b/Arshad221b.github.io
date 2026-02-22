@@ -2,9 +2,10 @@
 interface Props {
   title: string;
   date: string;
+  heroImage?: string;
 }
 
-const { title, date } = Astro.props;
+const { title, date, heroImage } = Astro.props;
 
 import Layout from './Layout.astro';
 
@@ -16,6 +17,11 @@ function formatDate(dateStr: string): string {
 
 <Layout title={`${title} — Arshad Kazi`} activeNav="/thoughts">
   <article class="blog-post">
+    {heroImage && (
+      <div class="hero-image">
+        <img src={heroImage} alt={title} />
+      </div>
+    )}
     <header class="blog-post-header">
       <div class="blog-post-meta">
         <time>{formatDate(date)}</time>
