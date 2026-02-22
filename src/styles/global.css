@@ -141,11 +141,6 @@ li {
 header {
   border-bottom: 1px solid var(--color-border);
   background: var(--color-bg);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(8px);
-  background: rgba(250, 249, 247, 0.9);
 }
 
 nav {
