@@ -12,51 +12,6 @@ const essays = [
   },
 ];
 
-const thoughts = [
-  {
-    date: "2026-02-18",
-    content: [
-      "The best way to learn a math-heavy topic is to implement it. Reading about the fundamental matrix is one thing; deriving it, coding the eight-point algorithm, and watching it fail on degenerate configurations — that's when it actually clicks.",
-    ],
-  },
-  {
-    date: "2026-02-05",
-    content: [
-      "I've been thinking about why some papers age well and others don't. The ones that last tend to frame problems cleanly rather than just propose solutions. A good problem formulation outlives any single method.",
-    ],
-  },
-  {
-    date: "2026-01-22",
-    content: [
-      "There's a strange satisfaction in getting bundle adjustment to converge. You set up the Jacobians, wire the sparse structure, and suddenly thousands of parameters snap into place. It feels like tuning a radio until the static clears.",
-    ],
-  },
-  {
-    date: "2026-01-10",
-    content: [
-      "Hot take: most ML engineers would benefit more from a solid linear algebra course than from learning yet another framework. The frameworks change every year. The math doesn't.",
-    ],
-  },
-  {
-    date: "2025-12-28",
-    content: [
-      "Started re-reading Hartley & Zisserman over the holidays. It's remarkable how a textbook from 2003 still feels so relevant. The geometric foundations haven't changed — only the tools we use to exploit them.",
-    ],
-  },
-  {
-    date: "2025-12-12",
-    content: [
-      "Notation matters more than people think. I've seen the same idea presented in two papers where one is immediately clear and the other is impenetrable, purely because of notation choices. Good notation is an act of empathy toward the reader.",
-    ],
-  },
-  {
-    date: "2025-11-30",
-    content: [
-      "The gap between \"works on a benchmark\" and \"works in the real world\" in 3D vision is enormous. Lighting, reflections, textureless surfaces, dynamic objects — benchmarks barely scratch the surface of what real deployment demands.",
-    ],
-  },
-];
-
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr + 'T00:00:00');
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -69,30 +24,15 @@ function formatDate(dateStr: string): string {
     <p class="page-subtitle">Loosely structured notes, observations, and half-formed ideas.</p>
   </div>
 
-  {essays.length > 0 && (
-    <div class="post-list" style="margin-bottom: var(--space-2xl);">
-      {essays.map(essay => (
-        <a href={`/thoughts/${essay.slug}`} class="post-card">
-          <div class="post-card-meta">
-            <time>{formatDate(essay.date)}</time>
-          </div>
-          <h3>{essay.title}</h3>
-          <p>{essay.preview}</p>
-        </a>
-      ))}
-    </div>
-  )}
-
-  {essays.length > 0 && thoughts.length > 0 && <hr />}
-
-  <div class="thoughts-list">
-    {thoughts.map(thought => (
-      <div class="thought-card">
-        <div class="thought-date">{formatDate(thought.date)}</div>
-        {thought.content.map(paragraph => (
-          <p>{paragraph}</p>
-        ))}
-      </div>
+  <div class="post-list">
+    {essays.map(essay => (
+      <a href={`/thoughts/${essay.slug}`} class="post-card">
+        <div class="post-card-meta">
+          <time>{formatDate(essay.date)}</time>
+        </div>
+        <h3>{essay.title}</h3>
+        <p>{essay.preview}</p>
+      </a>
     ))}
   </div>
 </Layout>

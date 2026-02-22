@@ -11,41 +11,6 @@ const posts = [
     tags: ["pose estimation", "attention", "3D vision", "transformers"],
     slug: "temporal-spatial-attention-3d-pose",
   },
-  {
-    title: "Understanding Epipolar Geometry from Scratch",
-    date: "2026-02-10",
-    description: "A first-principles walkthrough of epipolar constraints, the fundamental matrix, and why they matter for multi-view geometry.",
-    tags: ["geometry", "fundamentals"],
-    slug: null,
-  },
-  {
-    title: "Bundle Adjustment: The Backbone of 3D Reconstruction",
-    date: "2026-01-25",
-    description: "How nonlinear least squares, Lie groups, and sparse structure come together to jointly optimize camera poses and 3D points.",
-    tags: ["optimization", "SfM"],
-    slug: null,
-  },
-  {
-    title: "A Practical Guide to Camera Calibration",
-    date: "2026-01-08",
-    description: "Intrinsics, extrinsics, distortion models, and Zhang's method — everything you need to calibrate a camera properly.",
-    tags: ["calibration", "practical"],
-    slug: null,
-  },
-  {
-    title: "NeRFs vs. Gaussian Splatting: A Geometric Perspective",
-    date: "2025-12-15",
-    description: "Comparing neural radiance fields and 3D Gaussian splatting through the lens of geometric representations and rendering efficiency.",
-    tags: ["NeRF", "3DGS", "rendering"],
-    slug: null,
-  },
-  {
-    title: "Depth from a Single Image: How Far Have We Come?",
-    date: "2025-11-20",
-    description: "Surveying monocular depth estimation — from supervised CNNs to foundation models like Depth Anything and Marigold.",
-    tags: ["depth", "survey"],
-    slug: null,
-  },
 ];
 
 function formatDate(dateStr: string): string {
@@ -62,34 +27,18 @@ function formatDate(dateStr: string): string {
 
   <div class="post-list">
     {posts.map(post => (
-      post.slug ? (
-        <a href={`/blog/${post.slug}`} class="post-card">
-          <div class="post-card-meta">
-            <time>{formatDate(post.date)}</time>
-          </div>
-          <h3>{post.title}</h3>
-          <p>{post.description}</p>
-          <div class="post-tags">
-            {post.tags.map(tag => (
-              <span class="tag">{tag}</span>
-            ))}
-          </div>
-        </a>
-      ) : (
-        <article class="post-card post-card-upcoming">
-          <div class="post-card-meta">
-            <time>{formatDate(post.date)}</time>
-            <span class="coming-soon">Coming soon</span>
-          </div>
-          <h3>{post.title}</h3>
-          <p>{post.description}</p>
-          <div class="post-tags">
-            {post.tags.map(tag => (
-              <span class="tag">{tag}</span>
-            ))}
-          </div>
-        </article>
-      )
+      <a href={`/blog/${post.slug}`} class="post-card">
+        <div class="post-card-meta">
+          <time>{formatDate(post.date)}</time>
+        </div>
+        <h3>{post.title}</h3>
+        <p>{post.description}</p>
+        <div class="post-tags">
+          {post.tags.map(tag => (
+            <span class="tag">{tag}</span>
+          ))}
+        </div>
+      </a>
     ))}
   </div>
 </Layout>
