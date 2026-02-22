@@ -3,6 +3,15 @@ import Layout from '../layouts/Layout.astro';
 
 const title = "Random Thoughts — Arshad Kazi";
 
+const essays = [
+  {
+    title: "On Class, Home, and the Limits of Empathy",
+    date: "2026-02-22",
+    preview: "This project started as love, empathy, and a certain sense of responsibility toward my parents. I wanted them to have a retirement home that would make them comfortable, but also allow them to live a kind of life I felt they should be living...",
+    slug: "class-home-empathy",
+  },
+];
+
 const thoughts = [
   {
     date: "2026-02-18",
@@ -59,6 +68,22 @@ function formatDate(dateStr: string): string {
     <h1>Random Thoughts</h1>
     <p class="page-subtitle">Loosely structured notes, observations, and half-formed ideas.</p>
   </div>
+
+  {essays.length > 0 && (
+    <div class="post-list" style="margin-bottom: var(--space-2xl);">
+      {essays.map(essay => (
+        <a href={`/thoughts/${essay.slug}`} class="post-card">
+          <div class="post-card-meta">
+            <time>{formatDate(essay.date)}</time>
+          </div>
+          <h3>{essay.title}</h3>
+          <p>{essay.preview}</p>
+        </a>
+      ))}
+    </div>
+  )}
+
+  {essays.length > 0 && thoughts.length > 0 && <hr />}
 
   <div class="thoughts-list">
     {thoughts.map(thought => (
