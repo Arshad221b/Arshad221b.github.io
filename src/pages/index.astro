@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 
 const title = "Arshad Kazi";
 
-const projects = [
+const cvProjects = [
   {
     title: "DINO from Scratch",
     description: "Full reimplementation of DINO (Self-Distillation with No Labels) using PyTorch and Vision Transformers. Contrast-free self-supervised learning with momentum encoders, centering, sharpening, and multi-view alignment.",
@@ -34,6 +34,19 @@ const projects = [
     repo: "https://github.com/Arshad221b/3D-UNet-Image-Segmentation",
   },
 ];
+
+const nlpProjects = [
+  {
+    title: "RAG on PDF",
+    description: "Retrieval-Augmented Generation pipeline that reads PDFs and answers natural language questions. Built with LangChain, FAISS, and LLMs with a focus on local-first privacy.",
+    repo: "https://github.com/Arshad221b/RAG-on-PDF",
+  },
+  {
+    title: "Named Entity Recognition",
+    description: "NER system built using Huggingface's RoBERTa model. Token classification, training loop, data preprocessing, and clean inference pipeline.",
+    repo: "https://github.com/Arshad221b/Named-Entity-Recognition",
+  },
+];
 ---
 
 <Layout title={title} activeNav="/">
@@ -50,15 +63,66 @@ const projects = [
     </p>
     <p>
       I'm particularly interested in computer vision and multi-modal systems that understand
-      the world by looking at it. Instead of just using models, I rebuild them from scratch
-      to learn how they actually work.
+      the world by looking at it. I love understanding these systems from the inside out.
+      Instead of just using models, I rebuild them to learn how they actually work.
+    </p>
+    <p>
+      Most of my recent work explores self-supervision, pose estimation, image segmentation,
+      and retrieval-augmented generation. I enjoy turning research into fully working
+      systems &mdash; modular, testable, and often local-first.
     </p>
   </div>
 
+  <hr />
+
   <div class="about-section">
-    <h2>Recent CV Projects</h2>
+    <h2>About Me</h2>
+    <div class="about-details">
+      <div class="detail-row">
+        <span class="detail-label">Title</span>
+        <span>Data Scientist</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Philosophy</span>
+        <span>I'm all for ML models that can help us unravel the mysteries of the universe (not just generate adorable cat images)</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Interests</span>
+        <span>Self-supervised learning, multimodal systems, human-centric AI, or anything that helps us understand how machines see the world</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="about-section">
+    <h2>Stuff I'm Kind of Good At</h2>
+    <ul class="skills-list">
+      <li>Rebuilding ML models from scratch (ViTs, DINO, UNet, etc.)</li>
+      <li>Designing data pipelines that scale and debug well</li>
+      <li>Self-supervised learning and training loops</li>
+      <li>Fine-tuning large models with small data</li>
+      <li>Keeping code readable, minimal, and modular</li>
+      <li>Research work (finding papers for the solutions)</li>
+    </ul>
+  </div>
+
+  <div class="about-section">
+    <h2>Stuff I'm Trying to Get Better At</h2>
+    <ul class="skills-list">
+      <li>Multi-modal learning (vision + text + audio)</li>
+      <li>Efficient training on low-resource hardware</li>
+      <li>Generative modeling (audio, diffusion, NeRFs)</li>
+      <li>Inference optimization (TensorRT, quantization)</li>
+      <li>Better unit testing and CI/CD practices for ML pipelines</li>
+      <li>Currently obsessed with geometric computer vision and want to get better at it</li>
+    </ul>
+  </div>
+
+  <hr />
+
+  <div class="about-section">
+    <h2>Recent Computer Vision Projects</h2>
     <div class="projects-list">
-      {projects.map(project => (
+      {cvProjects.map(project => (
         <a href={project.repo} class="project-card" target="_blank">
           {project.image && (
             <div class="project-image">
@@ -75,8 +139,32 @@ const projects = [
   </div>
 
   <div class="about-section">
+    <h2>NLP Projects</h2>
+    <div class="projects-list">
+      {nlpProjects.map(project => (
+        <a href={project.repo} class="project-card" target="_blank">
+          <div class="project-info">
+            <h3>{project.title}</h3>
+            <p>{project.description}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <hr />
+
+  <div class="about-section">
+    <h2>Open To</h2>
+    <ul class="skills-list">
+      <li>Research collaborations in CV, SSL, pose estimation, segmentation</li>
+      <li>Contract or freelance roles building full-stack ML systems</li>
+      <li>Full-time roles in data science or ML engineering with depth and autonomy</li>
+    </ul>
+  </div>
+
+  <div class="about-section">
     <h2>Get in Touch</h2>
-    <p>Open for collaborations in CV, self-supervised learning, pose estimation, and segmentation.</p>
     <div class="contact-links">
       <a href="https://github.com/Arshad221b" class="contact-link" target="_blank">GitHub</a>
       <a href="https://www.linkedin.com/in/arshad221b/" class="contact-link" target="_blank">LinkedIn</a>

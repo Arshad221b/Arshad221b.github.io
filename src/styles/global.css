@@ -266,6 +266,48 @@ main {
   margin-bottom: var(--space-2xl);
 }
 
+.about-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.detail-row {
+  display: flex;
+  gap: var(--space-lg);
+  line-height: 1.6;
+}
+
+.detail-label {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  min-width: 90px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding-top: 0.1em;
+}
+
+.skills-list {
+  margin-top: var(--space-sm);
+  padding-left: var(--space-lg);
+}
+
+.skills-list li {
+  margin-bottom: var(--space-sm);
+  line-height: 1.65;
+}
+
+@media (max-width: 600px) {
+  .detail-row {
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+}
+
 .interests-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
