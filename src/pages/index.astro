@@ -2,47 +2,81 @@
 import Layout from '../layouts/Layout.astro';
 
 const title = "Arshad Kazi";
+
+const projects = [
+  {
+    title: "DINO from Scratch",
+    description: "Full reimplementation of DINO (Self-Distillation with No Labels) using PyTorch and Vision Transformers. Contrast-free self-supervised learning with momentum encoders, centering, sharpening, and multi-view alignment.",
+    image: "https://raw.githubusercontent.com/Arshad221b/DINO_from_scratch/main/screenshots/attention_maps.png",
+    repo: "https://github.com/Arshad221b/DINO_from_scratch",
+  },
+  {
+    title: "NeRF from Scratch",
+    description: "PyTorch-based Neural Radiance Fields built entirely from scratch. Positional encoding, ray sampling, volume rendering, and novel view synthesis for 3D scene reconstruction.",
+    image: "https://raw.githubusercontent.com/Arshad221b/NeRF-from-scratch/main/screenshot/nerf.png",
+    repo: "https://github.com/Arshad221b/NeRF-from-scratch",
+  },
+  {
+    title: "2D to 3D Human Pose Uplift",
+    description: "Transformer-based system that lifts 2D pose keypoints to 3D, inspired by MotionBERT. Full training pipeline, temporal modeling, and 3D visualization.",
+    image: "https://raw.githubusercontent.com/Arshad221b/2d_to_3d_pose_uplift/main/screenshot/Screenshot%202025-01-25%20at%203.18.19%E2%80%AFPM.png",
+    repo: "https://github.com/Arshad221b/2d_to_3d_human_pose_uplift",
+  },
+  {
+    title: "YOLO-NAS for Custom Dataset",
+    description: "Fine-tuned YOLO-NAS on an Indian street sign dataset. Custom annotations, training scripts, and inference setup via SuperGradients.",
+    image: "https://raw.githubusercontent.com/Arshad221b/YOLO-NAS-for-custom-data/main/demo/ezgif.com-video-to-gif.gif",
+    repo: "https://github.com/Arshad221b/YOLO-NAS-for-custom-data",
+  },
+  {
+    title: "3D U-Net for Image Segmentation",
+    description: "Custom 3D U-Net for volumetric CT/MRI segmentation. Patch-wise training, organ-level labeling, and volumetric visualization.",
+    repo: "https://github.com/Arshad221b/3D-UNet-Image-Segmentation",
+  },
+];
 ---
 
 <Layout title={title} activeNav="/">
   <div class="page-header">
-    <h1>Arshad Kazi</h1>
+    <h1>Hi, I'm Arshad Kazi</h1>
     <p class="page-subtitle">Computer vision engineer. Interested in geometry, 3D understanding, and building things that see.</p>
   </div>
 
   <div class="about-intro">
     <p>
-      I build computer vision systems &mdash; mostly around 3D understanding, pose estimation,
-      and geometric reasoning. This site is where I write about the things I work on and
-      occasionally think out loud.
+      I'm a Computer Vision Engineer with industry experience. These are projects and experiments
+      I do in my free time, purely out of interest. For professional info, see my
+      <a href="https://www.linkedin.com/in/arshad221b/" target="_blank">LinkedIn</a>.
+    </p>
+    <p>
+      I'm particularly interested in computer vision and multi-modal systems that understand
+      the world by looking at it. Instead of just using models, I rebuild them from scratch
+      to learn how they actually work.
     </p>
   </div>
 
   <div class="about-section">
-    <h2>Interests</h2>
-    <div class="interests-grid">
-      <div class="interest-item">
-        <h3>Geometric CV</h3>
-        <p>Epipolar geometry, multi-view stereo, structure from motion, SLAM</p>
-      </div>
-      <div class="interest-item">
-        <h3>3D Reconstruction</h3>
-        <p>Neural radiance fields, Gaussian splatting, implicit representations</p>
-      </div>
-      <div class="interest-item">
-        <h3>Depth Estimation</h3>
-        <p>Monocular and stereo depth, self-supervised methods, metric depth</p>
-      </div>
-      <div class="interest-item">
-        <h3>Optimization</h3>
-        <p>Differentiable rendering, bundle adjustment, least squares on manifolds</p>
-      </div>
+    <h2>Recent CV Projects</h2>
+    <div class="projects-list">
+      {projects.map(project => (
+        <a href={project.repo} class="project-card" target="_blank">
+          {project.image && (
+            <div class="project-image">
+              <img src={project.image} alt={project.title} loading="lazy" />
+            </div>
+          )}
+          <div class="project-info">
+            <h3>{project.title}</h3>
+            <p>{project.description}</p>
+          </div>
+        </a>
+      ))}
     </div>
   </div>
 
   <div class="about-section">
     <h2>Get in Touch</h2>
-    <p>I'm always happy to chat about computer vision, research ideas, or interesting problems.</p>
+    <p>Open for collaborations in CV, self-supervised learning, pose estimation, and segmentation.</p>
     <div class="contact-links">
       <a href="https://github.com/Arshad221b" class="contact-link" target="_blank">GitHub</a>
       <a href="https://www.linkedin.com/in/arshad221b/" class="contact-link" target="_blank">LinkedIn</a>
