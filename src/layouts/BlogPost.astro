@@ -1,0 +1,59 @@
+---
+interface Props {
+  title: string;
+  date: string;
+  description: string;
+  tags?: string[];
+}
+
+const { title, date, description, tags = [] } = Astro.props;
+
+import Layout from './Layout.astro';
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+---
+
+<Layout title={`${title} — Arshad Kazi`} activeNav="/blog">
+  <article class="blog-post">
+    <header class="blog-post-header">
+      <div class="blog-post-meta">
+        <time>{formatDate(date)}</time>
+      </div>
+      <h1>{title}</h1>
+      <p class="blog-post-description">{description}</p>
+      {tags.length > 0 && (
+        <div class="post-tags">
+          {tags.map(tag => (
+            <span class="tag">{tag}</span>
+          ))}
+        </div>
+      )}
+    </header>
+
+    <div class="blog-post-content">
+      <slot />
+    </div>
+
+    <footer class="blog-post-footer">
+      <a href="/blog" class="back-link">&larr; Back to all posts</a>
+    </footer>
+  </article>
+</Layout>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+<script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script is:inline>
+  document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.querySelector(".blog-post-content"), {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false }
+      ],
+      throwOnError: false
+    });
+  });
+</script>

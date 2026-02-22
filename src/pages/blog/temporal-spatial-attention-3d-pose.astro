@@ -1,0 +1,190 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+
+const content = `
+<p>
+  Imagine a dancer performing a routine. At every moment, her body is in a specific pose: arms raised, legs extended, and so on (space). As she starts to spin, each part of her body moves, adjusting in real time to maintain balance and fluidity (time). Her pose is constantly changing, but at each instant, it's a precise combination of spatial positions.
+</p>
+
+<p>
+  For AI to replicate this in 3D pose estimation, it must not only track the spatial configuration of each body part at any given moment, but also understand how these parts move and evolve over time. The AI needs to keep track of where the body parts are at each frame and how they transition smoothly between frames.
+</p>
+
+<p>
+  This is where temporal and spatial attention come into play. Spatial attention helps the model focus on the relative positions of the joints at each frame, while temporal attention enables the model to track the motion of the joints over time, understanding the continuity of movement. By combining these two, AI systems can more accurately estimate human pose, capturing both the structure of the body and the dynamics of motion. Let's take a closer look at the theory behind these concepts.
+</p>
+
+<p>
+  If you want to see the direct implementation of this model, you may look into <a href="https://github.com/Walter0807/MotionBERT" target="_blank">this code</a>.
+</p>
+
+<h2>The Ill-Posed Problem: Lifting 2D to 3D</h2>
+
+<p>
+  At its core, the task of 2D-to-3D pose estimation is to lift a 2D representation of a person's keypoints &mdash; essentially a list of coordinates for different joints &mdash; into the 3D space. The challenge comes from the fact that we only have 2D projections of the 3D world, making it difficult to infer the third dimension (depth) directly. This problem gets even harder when you deal with complex motions, where joints move in ways that are difficult to represent with just 2D information.
+</p>
+
+<p>
+  To bridge the gap, temporal and spatial attention come into play. These two mechanisms allow the model to not only focus on how the joints relate to each other in a given frame but also how they evolve over time, capturing both the motion dynamics and the anatomical structure of the human body.
+</p>
+
+<h2>Temporal Attention: Understanding Motion Over Time</h2>
+
+<p>
+  Human motions &mdash; whether it's walking, running, or waving &mdash; are continuous. That means that the pose at any given moment in time is influenced by the poses at previous moments. This is where temporal attention shines. It allows the model to capture the flow of motion across frames, ensuring that each 3D pose prediction is consistent with the preceding and following frames.
+</p>
+
+<p>
+  Let's imagine you have a sequence of 2D keypoints $\\{ \\mathbf{P}_1, \\mathbf{P}_2, \\ldots, \\mathbf{P}_T \\}$ representing the human poses over $T$ frames, where each $\\mathbf{P}_t \\in \\mathbb{R}^{J \\times 2}$ is a set of 2D keypoints for $J$ joints at frame $t$. The goal is to predict the corresponding 3D poses $\\mathbf{P}_t^{3D} \\in \\mathbb{R}^{J \\times 3}$.
+</p>
+
+<h3>How Temporal Attention Works</h3>
+
+<p>
+  The self-attention mechanism helps us here. It enables the model to figure out which past frames should inform the current frame's prediction. For each frame $t$, we calculate queries $\\mathbf{Q}_t$, keys $\\mathbf{K}_t$, and values $\\mathbf{V}_t$ from the 2D keypoints:
+</p>
+
+$$
+\\mathbf{Q}_t = \\mathbf{P}_t W_Q, \\quad \\mathbf{K}_t = \\mathbf{P}_t W_K, \\quad \\mathbf{V}_t = \\mathbf{P}_t W_V
+$$
+
+<p>
+  Where $W_Q$, $W_K$, and $W_V$ are learned weight matrices. The attention scores $A_{t,i}$ between frames $t$ and $i$ are computed as follows:
+</p>
+
+$$
+A_{t,i} = \\frac{\\mathbf{Q}_t \\cdot \\mathbf{K}_i^T}{\\sqrt{d_k}}, \\quad \\alpha_{t,i} = \\text{softmax}(A_{t,i})
+$$
+
+<p>
+  This equation tells us how much each previous frame $i$ should influence the current frame $t$. The final 3D pose prediction for frame $t$ is then a weighted sum of the values from all frames:
+</p>
+
+$$
+\\mathbf{P}_t^{3D} = \\sum_{i=1}^{T} \\alpha_{t,i} \\cdot \\mathbf{V}_i
+$$
+
+<p>
+  This mechanism ensures that the model smoothly transitions from one pose to the next, which is especially useful for dynamic motions.
+</p>
+
+<h3>Temporal Attention: Changing Dimensions</h3>
+
+<p>
+  In the attention mechanism, the input 2D pose matrix $\\mathbf{P}_t \\in \\mathbb{R}^{J \\times 2}$ is transformed into new feature spaces for queries, keys, and values:
+</p>
+
+$$
+\\mathbf{Q}_t \\in \\mathbb{R}^{J \\times d_k}, \\quad \\mathbf{K}_t \\in \\mathbb{R}^{J \\times d_k}, \\quad \\mathbf{V}_t \\in \\mathbb{R}^{J \\times d_v}
+$$
+
+<p>
+  The dimension of the queries and keys, $d_k$, is a hyperparameter, and $d_v$ is the size of the value vectors. This dimensional transformation allows the model to learn richer representations and capture temporal dependencies across frames.
+</p>
+
+<h2>Spatial Attention: Maintaining Anatomical Consistency</h2>
+
+<p>
+  While temporal attention deals with motion over time, spatial attention focuses on how the joints in a single frame relate to each other. For example, the position of the knee is influenced by the position of the hip and ankle, and these anatomical constraints must be preserved in the 3D reconstruction.
+</p>
+
+<h3>How Spatial Attention Works</h3>
+
+<p>
+  Spatial attention is built on the idea that joints are connected in a graph-like structure. Each joint is influenced by its neighbors, and the relationship between them must be modeled carefully. In the spatial attention mechanism, for each joint $j$, we calculate the queries $\\mathbf{Q}_j$, keys $\\mathbf{K}_k$, and values $\\mathbf{V}_k$ for all other joints $k$:
+</p>
+
+$$
+\\mathbf{Q}_j = \\mathbf{P}_j W_Q, \\quad \\mathbf{K}_k = \\mathbf{P}_k W_K, \\quad \\mathbf{V}_k = \\mathbf{P}_k W_V
+$$
+
+<p>
+  The attention score $A_{jk}$ between joints $j$ and $k$ is computed as:
+</p>
+
+$$
+A_{jk} = \\frac{\\mathbf{Q}_j \\cdot \\mathbf{K}_k^T}{\\sqrt{d_k}}
+$$
+
+<p>
+  The spatial attention weight $\\alpha_{jk}$ is given by:
+</p>
+
+$$
+\\alpha_{jk} = \\text{softmax}(A_{jk})
+$$
+
+<p>
+  The final 3D position for joint $j$ is a weighted sum of the 3D positions of its neighboring joints $k$:
+</p>
+
+$$
+\\mathbf{P}_j^{3D} = \\sum_{k \\in \\mathcal{N}(j)} \\alpha_{jk} \\cdot \\mathbf{P}_k
+$$
+
+<p>
+  This ensures that the 3D pose respects the relative positioning of joints, preserving anatomical consistency.
+</p>
+
+<h2>Fusion of Temporal and Spatial Streams</h2>
+
+<h3>DSTformer from MotionBERT</h3>
+
+<p>
+  The fusion mechanism in DSTformer (Dual-stream Spatio-temporal Transformer) is a key component that integrates the outputs of the spatial $\\mathbf{S}$ and temporal $\\mathbf{T}$ streams. Both streams independently capture spatial and temporal information, leveraging dedicated blocks within each stream for this purpose. The fusion combines these outputs to create a unified representation, mathematically expressed as:
+</p>
+
+$$
+\\mathbf{X} = \\mathbf{S} \\cdot \\boldsymbol{\\alpha}_S + \\mathbf{T} \\cdot \\boldsymbol{\\alpha}_T
+$$
+
+<p>Here:</p>
+
+<ul>
+  <li>$\\mathbf{S}$ is the output of the spatial stream, encompassing information about spatial relationships and features across the input sequence.</li>
+  <li>$\\mathbf{T}$ is the output of the temporal stream, which captures motion dynamics and temporal dependencies.</li>
+  <li>$\\boldsymbol{\\alpha} = \\text{softmax}(\\boldsymbol{\\beta})$, where $\\boldsymbol{\\beta}$ are learnable parameters controlling the relative contributions of $\\mathbf{S}$ and $\\mathbf{T}$ to the fused output. The softmax ensures that $\\boldsymbol{\\alpha}_S + \\boldsymbol{\\alpha}_T = 1$.</li>
+</ul>
+
+<p>
+  In practice, this mechanism dynamically adjusts the weighting of $\\mathbf{S}$ and $\\mathbf{T}$ for each input frame, making the fusion context-aware. For example, scenes with more significant spatial variations might rely more on $\\mathbf{S}$, while motion-heavy sequences may prioritize $\\mathbf{T}$.
+</p>
+
+<p>The architecture of the spatial and temporal streams ensures complementary feature extraction:</p>
+
+<ul>
+  <li><strong>Spatial stream:</strong> Employs spatial attention blocks to focus on intra-frame relationships, identifying important features across spatial dimensions.</li>
+  <li><strong>Temporal stream:</strong> Uses temporal attention blocks to model inter-frame dependencies, capturing the evolution of features over time.</li>
+</ul>
+
+<p>
+  By combining these streams through the fusion equation, DSTformer achieves a holistic understanding of both spatial and temporal dimensions, vital for tasks like pose estimation. The adaptability of the learned weights ensures that the model effectively balances spatial and temporal insights without requiring manual tuning, enabling robust performance across varied scenarios.
+</p>
+
+<h2>Conclusion</h2>
+
+<p>
+  By combining temporal and spatial attention, DSTformer offers a powerful solution to the 2D-to-3D pose estimation problem. Temporal attention helps the model track motion over time, ensuring smooth transitions between poses, while spatial attention enforces anatomical constraints, ensuring that the 3D poses are realistic. The fusion of these two streams allows DSTformer to leverage the strengths of both temporal and spatial reasoning, ultimately leading to more accurate and robust 3D pose estimations.
+</p>
+
+<p>
+  This model's ability to capture both the flow of motion and the anatomy of the human body makes it a promising tool for a wide range of applications, from motion capture in entertainment to human-computer interaction and beyond.
+</p>
+
+<h2>References</h2>
+
+<ul>
+  <li><a href="https://arxiv.org/abs/2210.06551" target="_blank">MotionBERT: A Unified Perspective on Learning Human Motion Representations</a></li>
+  <li><a href="https://arxiv.org/abs/1811.11742" target="_blank">3D Human Pose Estimation = 2D Pose Estimation + Matching (VideoPose3D)</a></li>
+</ul>
+`;
+---
+
+<BlogPost
+  title="Temporal and Spatial Attention for 3D Pose Estimation"
+  date="2026-02-22"
+  description="How temporal and spatial attention mechanisms enable accurate 2D-to-3D human pose estimation, with a deep dive into DSTformer."
+  tags={["pose estimation", "attention", "3D vision", "transformers"]}
+>
+  <Fragment set:html={content} />
+</BlogPost>

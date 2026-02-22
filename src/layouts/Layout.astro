@@ -1,0 +1,58 @@
+---
+interface Props {
+  title: string;
+  activeNav?: string;
+}
+
+const { title, activeNav = '' } = Astro.props;
+
+const navItems = [
+  { label: 'About', href: '/' },
+  { label: 'Technical Blogs', href: '/blog' },
+  { label: 'Random Thoughts', href: '/thoughts' },
+];
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="/" class="site-title">Arshad Kazi</a>
+        <div class="nav-links">
+          {navItems.map(item => (
+            <a
+              href={item.href}
+              class:list={['nav-link', { active: activeNav === item.href }]}
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <p>&copy; {new Date().getFullYear()} Arshad Kazi</p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  @import '../styles/global.css';
+</style>
