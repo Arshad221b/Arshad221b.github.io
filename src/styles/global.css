@@ -31,6 +31,21 @@
   --space-3xl: 4rem;
 }
 
+html.dark {
+  --color-bg: #000000;
+  --color-surface: #0a0a0a;
+  --color-text: #e8e8e8;
+  --color-text-secondary: #a0a0a0;
+  --color-text-muted: #707070;
+  --color-accent: #4ade80;
+  --color-accent-hover: #6ee7a0;
+  --color-border: #1e1e1e;
+  --color-border-light: #141414;
+  --color-tag-bg: #141414;
+  --color-tag-text: #a0a0a0;
+  --color-code-bg: #0e0e0e;
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
@@ -744,6 +759,62 @@ footer p {
   font-size: 0.82rem;
   color: var(--color-text-muted);
   margin: 0;
+}
+
+/* ── Dark Mode Toggle ────────────────────────────────── */
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0.3rem 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  line-height: 1;
+}
+
+.theme-toggle:hover {
+  color: var(--color-text);
+  border-color: var(--color-accent);
+  background: var(--color-tag-bg);
+}
+
+.theme-toggle .icon-sun,
+.theme-toggle .icon-moon {
+  width: 16px;
+  height: 16px;
+}
+
+.theme-toggle .icon-sun {
+  display: none;
+}
+
+html.dark .theme-toggle .icon-sun {
+  display: block;
+}
+
+html.dark .theme-toggle .icon-moon {
+  display: none;
+}
+
+/* ── Dark mode shadow overrides ──────────────────────── */
+html.dark .profile-image-wrapper {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.05);
+}
+
+html.dark .interest-item:hover {
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.03);
+}
+
+html.dark .project-card:hover {
+  box-shadow: 0 2px 12px rgba(255, 255, 255, 0.03);
+}
+
+html.dark .post-card:hover {
+  box-shadow: 0 2px 12px rgba(255, 255, 255, 0.03);
 }
 
 /* ── Responsive ──────────────────────────────────────── */

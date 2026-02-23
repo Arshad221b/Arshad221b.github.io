@@ -39,23 +39,28 @@ function formatDate(dateStr: string): string {
 
     <section class="giscus-wrapper">
       <h2 class="giscus-heading">Comments & Reactions</h2>
-      <script
-        is:inline
-        src="https://giscus.app/client.js"
-        data-repo="Arshad221b/Arshad221b.github.io"
-        data-repo-id="R_kgDORWD4-g"
-        data-category="General"
-        data-category-id="DIC_kwDORWD4-s4C3CtQ"
-        data-mapping="pathname"
-        data-strict="0"
-        data-reactions-enabled="1"
-        data-emit-metadata="0"
-        data-input-position="bottom"
-        data-theme="preferred_color_scheme"
-        data-lang="en"
-        data-loading="lazy"
-        crossorigin="anonymous"
-        async>
+      <div class="giscus"></div>
+      <script is:inline>
+        (function() {
+          var theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+          var s = document.createElement('script');
+          s.src = 'https://giscus.app/client.js';
+          s.setAttribute('data-repo', 'Arshad221b/Arshad221b.github.io');
+          s.setAttribute('data-repo-id', 'R_kgDORWD4-g');
+          s.setAttribute('data-category', 'General');
+          s.setAttribute('data-category-id', 'DIC_kwDORWD4-s4C3CtQ');
+          s.setAttribute('data-mapping', 'pathname');
+          s.setAttribute('data-strict', '0');
+          s.setAttribute('data-reactions-enabled', '1');
+          s.setAttribute('data-emit-metadata', '0');
+          s.setAttribute('data-input-position', 'bottom');
+          s.setAttribute('data-theme', theme);
+          s.setAttribute('data-lang', 'en');
+          s.setAttribute('data-loading', 'lazy');
+          s.setAttribute('crossorigin', 'anonymous');
+          s.async = true;
+          document.querySelector('.giscus-wrapper').appendChild(s);
+        })();
       </script>
     </section>
 
