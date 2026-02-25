@@ -4,7 +4,7 @@ import type { APIContext } from 'astro';
 export function GET(context: APIContext) {
   return rss({
     title: 'Arshad Kazi',
-    description: 'Technical blogs and random thoughts on computer vision, geometry, 3D understanding, and life.',
+    description: 'Technical blogs on computer vision, geometry, 3D understanding, and life.',
     site: context.site!.toString(),
     items: [
       {
@@ -13,12 +13,7 @@ export function GET(context: APIContext) {
         description: 'How temporal and spatial attention mechanisms enable accurate 2D-to-3D human pose estimation, with a deep dive into DSTformer.',
         link: '/blog/temporal-spatial-attention-3d-pose/',
       },
-      {
-        title: 'On Class, Home, and the Limits of Empathy',
-        pubDate: new Date('2026-02-22'),
-        description: 'A reflection on building a home, class structures, empathy, and the invisible constraints we inherit.',
-        link: '/thoughts/class-home-empathy/',
-      },
+
     ],
   });
 }
