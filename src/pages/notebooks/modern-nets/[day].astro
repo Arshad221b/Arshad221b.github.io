@@ -1,0 +1,384 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { experiment, days } from '../../../data/modern-nets-days';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = () => {
+  return days
+    .filter(d => d.bullets.length > 0)
+    .map(d => ({ params: { day: `day-${d.day}` }, props: { dayData: d } }));
+};
+
+const { dayData: day } = Astro.props;
+
+const title = `Day ${day.day}: ${day.curiosityTitle} — Overview of Modern Nets — Arshad Kazi`;
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+const activeDays = days.filter(d => d.bullets.length > 0);
+const currentIndex = activeDays.findIndex(d => d.day === day.day);
+const prevDay = currentIndex > 0 ? activeDays[currentIndex - 1] : null;
+const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex + 1] : null;
+---
+
+<Layout title={title} activeNav="/notebooks" description={`Day ${day.day}: ${day.curiosityTitle}`} ogImage="/images/og-tiny-experiments.jpg">
+  <div class="experiment-page">
+    <a href="/notebooks/modern-nets" class="back-link">&larr; All Days</a>
+
+    <div class="day-page-header">
+      <span class="day-page-number">Day {day.day} &mdash; {formatDate(day.date)}</span>
+      <h1 class="day-page-title">{day.curiosityTitle}</h1>
+    </div>
+
+    <div class="day-entry">
+      {day.bullets && day.bullets.length > 0 && (
+        <ul class="day-bullets">
+          {day.bullets.map(bullet => (
+            <li set:html={bullet} />
+          ))}
+        </ul>
+      )}
+
+      {day.diagram && (
+        <div class="diagram-wrap" set:html={day.diagram} />
+      )}
+
+      {day.sections && day.sections.map(section => (
+        <div class="day-section">
+          <h4 class="section-heading">{section.title}</h4>
+          {section.subtitle && <p class="section-subtitle">{section.subtitle}</p>}
+
+          {section.table && (
+            <table class="results-table">
+              <thead>
+                <tr>
+                  {section.table.headers.map(h => <th>{h}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {section.table.rows.map(row => (
+                  <tr>
+                    {row.map(cell => <td>{cell}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {section.bullets.length > 0 && (
+            <ul class="day-bullets">
+              {section.bullets.map(bullet => (
+                <li set:html={bullet} />
+              ))}
+            </ul>
+          )}
+
+          {section.diagram && (
+            <div class="diagram-wrap" set:html={section.diagram} />
+          )}
+        </div>
+      ))}
+    </div>
+
+    <nav class="day-nav">
+      {prevDay ? (
+        <a href={`/notebooks/modern-nets/day-${prevDay.day}`} class="day-nav-link prev">
+          <span class="day-nav-arrow">&larr;</span>
+          <span class="day-nav-label">Day {prevDay.day}</span>
+        </a>
+      ) : <span />}
+      {nextDay ? (
+        <a href={`/notebooks/modern-nets/day-${nextDay.day}`} class="day-nav-link next">
+          <span class="day-nav-label">Day {nextDay.day}</span>
+          <span class="day-nav-arrow">&rarr;</span>
+        </a>
+      ) : <span />}
+    </nav>
+  </div>
+</Layout>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+<script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script is:inline>
+  document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.querySelector(".day-entry"), {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false }
+      ],
+      throwOnError: false
+    });
+  });
+</script>
+
+<style>
+  .day-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .day-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .day-nav-link:hover {
+    color: var(--color-text);
+  }
+
+  .day-nav-arrow {
+    font-size: 1rem;
+  }
+
+  .day-nav-label {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+  }
+
+  /* diagrams */
+  .diagram-wrap {
+    margin: 1rem 0 0.5rem;
+    overflow-x: auto;
+  }
+
+  :global(.flow-h) {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    padding: 1rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+  }
+
+  :global(.d-node) {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--color-accent);
+    border-radius: 4px;
+    color: var(--color-text);
+    text-align: center;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  :global(.d-arrow) {
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    align-self: center;
+    padding: 0 0.1rem;
+  }
+
+  :global(.d-col) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  :global(.d-sub) {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    text-align: center;
+  }
+
+  /* transformer architecture diagram */
+  :global(.arch-diagram) {
+    display: flex;
+    gap: 0;
+    padding: 1.25rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow-x: auto;
+    justify-content: center;
+    position: relative;
+  }
+
+  :global(.arch-connector) {
+    display: flex;
+    align-items: center;
+    padding: 0 0.5rem;
+    padding-top: 7.9rem;
+  }
+
+  :global(.arch-connector svg) {
+    display: block;
+  }
+
+  :global(.arch-col) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 140px;
+  }
+
+  :global(.arch-label) {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+  }
+
+  :global(.arch-block) {
+    border: 1.5px solid var(--color-accent);
+    border-radius: 6px;
+    padding: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    width: 100%;
+  }
+
+  :global(.arch-row) {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    padding: 0.3rem 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+    text-align: center;
+    background: var(--color-bg);
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+
+  :global(.arch-row.hl) {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  :global(.arch-io) {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+  }
+
+  :global(.arch-io.top) {
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  :global(.arch-cross) {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  :global(.arch-arrow) {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    line-height: 1;
+  }
+
+  :global(.arch-row-arrow) {
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: 0.05rem 0;
+    line-height: 1;
+  }
+
+  /* norm comparison diagram */
+  :global(.norm-diagram) {
+    padding: 1.25rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+  }
+
+  :global(.norm-grid) {
+    display: grid;
+    grid-template-columns: auto repeat(4, 1fr);
+    gap: 2px;
+    margin-bottom: 1rem;
+  }
+
+  :global(.norm-label-corner) {
+    width: 2.5rem;
+  }
+
+  :global(.norm-col-header) {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: 0.25rem 0.3rem;
+  }
+
+  :global(.norm-row-label) {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    display: flex;
+    align-items: center;
+    padding-right: 0.5rem;
+  }
+
+  :global(.norm-cell) {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+    text-align: center;
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  :global(.norm-annotations) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  :global(.norm-ann-row),
+  :global(.norm-ann-col) {
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    color: var(--color-text-secondary);
+  }
+
+  :global(.norm-arrow-right),
+  :global(.norm-arrow-down) {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  :global(.norm-summary) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--color-text-secondary);
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border);
+  }
+</style>

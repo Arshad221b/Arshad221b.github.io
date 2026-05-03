@@ -1,0 +1,2445 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { experiment, days } from '../../../data/neuroscience-days';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = () => {
+  return days
+    .filter(d => d.bullets.length > 0)
+    .map(d => ({ params: { day: `day-${d.day}` }, props: { dayData: d } }));
+};
+
+const { dayData: day } = Astro.props;
+
+const title = `Day ${day.day}: ${day.curiosityTitle} — Understanding the Visual Cortex — Arshad Kazi`;
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+const activeDays = days.filter(d => d.bullets.length > 0);
+const currentIndex = activeDays.findIndex(d => d.day === day.day);
+const prevDay = currentIndex > 0 ? activeDays[currentIndex - 1] : null;
+const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex + 1] : null;
+---
+
+<Layout title={title} activeNav="/notebooks" description={`Day ${day.day}: ${day.curiosityTitle}`} ogImage="/images/og-tiny-experiments.jpg">
+  <div class="experiment-page">
+    <a href="/notebooks/neuroscience" class="back-link">&larr; All Days</a>
+
+    <div class="day-page-header">
+      <span class="day-page-number">Day {day.day} &mdash; {formatDate(day.date)}</span>
+      <h1 class="day-page-title">{day.curiosityTitle}</h1>
+    </div>
+
+    <div class="day-entry">
+      {day.bullets && day.bullets.length > 0 && (
+        <ul class="day-bullets">
+          {day.bullets.map(bullet => (
+            <li>{bullet}</li>
+          ))}
+        </ul>
+      )}
+
+      {day.showStreamDiagrams && day.sections && (
+        <div class="stream-diagrams">
+          <div class="stream-diagram">
+            <h4 class="diagram-title">Dorsal Stream — "Where / How"</h4>
+            <div class="flow">
+              <div class="flow-step"><span class="flow-node">Retina</span></div>
+              <div class="flow-step"><span class="flow-node">V1</span></div>
+              <div class="flow-step"><span class="flow-node">V2 / V3</span></div>
+              <div class="flow-step"><span class="flow-node">MT / V5</span><span class="flow-label">motion energy</span></div>
+              <div class="flow-step"><span class="flow-node">MST</span><span class="flow-label">optical flow</span></div>
+              <div class="flow-step"><span class="flow-node">PPC</span><span class="flow-label">predictive coding</span></div>
+              <div class="flow-step flow-fork">
+                <span class="flow-node">Motor cortex</span>
+                <span class="flow-node">Frontal eye field</span>
+                <span class="flow-label">efference copy</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stream-diagram">
+            <h4 class="diagram-title">Ventral Stream — "What"</h4>
+            <div class="flow">
+              <div class="flow-step"><span class="flow-node">Retina</span></div>
+              <div class="flow-step"><span class="flow-node">LGN</span></div>
+              <div class="flow-step"><span class="flow-node">V1</span><span class="flow-label">fine detail, colour, high freq</span></div>
+              <div class="flow-step"><span class="flow-node">V2</span><span class="flow-label">contours, figure-ground, illusionary edges</span></div>
+              <div class="flow-step"><span class="flow-node">V4</span><span class="flow-label">shapes, colour constancy, curves</span></div>
+              <div class="flow-step"><span class="flow-node">IT (posterior)</span><span class="flow-label">complex shapes</span></div>
+              <div class="flow-step"><span class="flow-node">Anterior IT</span><span class="flow-label">recognition</span></div>
+              <div class="flow-step flow-fork">
+                <span class="flow-node">Amygdala</span>
+                <span class="flow-node">Hippocampus</span>
+                <span class="flow-label">emotional relevance &amp; contextual memory</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {day.sections && day.sections.map(section => (
+        <div class="day-section">
+          <h4 class="section-heading">{section.title}</h4>
+          {section.subtitle && <p class="section-subtitle">{section.subtitle}</p>}
+
+          {section.showContextDiagram && (
+            <div class="mini-diagram context-diagram">
+              <div class="ctx-row">
+                <span class="ctx-neuron ctx-neighbour" title="Neighbour neuron (45°)">45°</span>
+                <span class="ctx-arrow">⟷</span>
+                <span class="ctx-neuron ctx-center" title="Central neuron (45°)">45°</span>
+                <span class="ctx-arrow">⟷</span>
+                <span class="ctx-neuron ctx-neighbour" title="Neighbour neuron (45°)">45°</span>
+              </div>
+              <div class="ctx-caption">horizontal connections between same-orientation neurons</div>
+              <div class="ctx-example">
+                <div class="ctx-example-item">
+                  <span class="ctx-signal ctx-signal-noise">~ ~ ~</span>
+                  <span class="ctx-result">neighbours quiet → fire stronger ✓ real edge</span>
+                </div>
+                <div class="ctx-example-item">
+                  <span class="ctx-signal ctx-signal-active">↗ ↗ ↗</span>
+                  <span class="ctx-result">neighbours active → noise, suppress</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {section.showInhibitoryDiagram && (
+            <div class="mini-diagram inhibitory-diagram">
+              <div class="inhib-bar">
+                <span class="inhib-zone inhib-end" title="Inhibitory zone">−</span>
+                <span class="inhib-zone inhib-excite" title="Excitatory zone">＋ receptive field ＋</span>
+                <span class="inhib-zone inhib-end" title="Inhibitory zone">−</span>
+              </div>
+              <div class="inhib-examples">
+                <div class="inhib-case">
+                  <span class="inhib-line inhib-short">———</span>
+                  <span class="ctx-result">short line → strong fire (object edge)</span>
+                </div>
+                <div class="inhib-case">
+                  <span class="inhib-line inhib-long">————————————</span>
+                  <span class="ctx-result">long line → weak fire (likely background)</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {section.showDepthNeuronsDiagram && (
+            <div class="mini-diagram depth-neurons-diagram">
+              <div class="dn-grid">
+                <div class="dn-card">
+                  <div class="dn-label">Tuned Excitatory</div>
+                  <div class="dn-bar-row">
+                    <span class="dn-depth-label">near</span>
+                    <div class="dn-bar-track"><div class="dn-bar dn-bar-excitatory" style="width:12%; margin-left:55%"></div></div>
+                    <span class="dn-depth-label">far</span>
+                  </div>
+                  <div class="dn-hint">fires at one specific depth only</div>
+                </div>
+                <div class="dn-card">
+                  <div class="dn-label">Tuned Inhibitory</div>
+                  <div class="dn-bar-row">
+                    <span class="dn-depth-label">near</span>
+                    <div class="dn-bar-track">
+                      <div class="dn-bar dn-bar-inhibitory-left" style="width:42%"></div>
+                      <div class="dn-bar-gap" style="width:14%"></div>
+                      <div class="dn-bar dn-bar-inhibitory-right" style="width:44%"></div>
+                    </div>
+                    <span class="dn-depth-label">far</span>
+                  </div>
+                  <div class="dn-hint">silent at fixation plane, fires everywhere else</div>
+                </div>
+                <div class="dn-card">
+                  <div class="dn-label">Near / Far Cells</div>
+                  <div class="dn-bar-row">
+                    <span class="dn-depth-label">near</span>
+                    <div class="dn-bar-track">
+                      <div class="dn-bar dn-bar-near" style="width:45%"></div>
+                      <div class="dn-bar-gap" style="width:10%"></div>
+                      <div class="dn-bar dn-bar-far" style="width:45%"></div>
+                    </div>
+                    <span class="dn-depth-label">far</span>
+                  </div>
+                  <div class="dn-hint-row">
+                    <span class="dn-hint">← near cells</span>
+                    <span class="dn-hint">far cells →</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {section.showAmodalDiagram && (
+            <div class="mini-diagram amodal-diagram">
+              <div class="amodal-panels">
+                <div class="amodal-panel">
+                  <div class="amodal-panel-label">Left eye sees</div>
+                  <div class="amodal-panel-scene">
+                    <div class="amodal-book-part amodal-book-hidden"></div>
+                    <div class="amodal-cup-block"></div>
+                    <div class="amodal-book-part amodal-book-visible"></div>
+                  </div>
+                  <div class="amodal-panel-desc">right side visible, left hidden by cup</div>
+                </div>
+                <div class="amodal-plus">+</div>
+                <div class="amodal-panel">
+                  <div class="amodal-panel-label">Right eye sees</div>
+                  <div class="amodal-panel-scene">
+                    <div class="amodal-book-part amodal-book-visible"></div>
+                    <div class="amodal-cup-block"></div>
+                    <div class="amodal-book-part amodal-book-hidden"></div>
+                  </div>
+                  <div class="amodal-panel-desc">left side visible, right hidden by cup</div>
+                </div>
+                <div class="amodal-equals">=</div>
+                <div class="amodal-panel amodal-panel-result">
+                  <div class="amodal-panel-label amodal-label-brain">Brain perceives</div>
+                  <div class="amodal-panel-scene">
+                    <div class="amodal-book-full"></div>
+                    <div class="amodal-cup-front"></div>
+                  </div>
+                  <div class="amodal-panel-desc amodal-desc-result">one complete book — gap filled in</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {section.showKaniszaDiagram && (
+            <div class="mini-diagram kanisza-diagram">
+              <div class="kanisza-container">
+                <div class="kanisza-pac kanisza-pos-top"></div>
+                <div class="kanisza-pac kanisza-pos-bl"></div>
+                <div class="kanisza-pac kanisza-pos-br"></div>
+              </div>
+              <div class="ctx-caption">no edges drawn — yet you see a triangle</div>
+            </div>
+          )}
+
+          {section.showDisparityCaptDiagram && (
+            <div class="mini-diagram disparity-diagram">
+              <div class="disp-surface">
+                <div class="disp-region disp-ambiguous">?</div>
+                <div class="disp-region disp-ambiguous">?</div>
+                <div class="disp-region disp-confident">
+                  <span class="disp-conf-label">high<br/>confidence</span>
+                </div>
+                <div class="disp-region disp-ambiguous">?</div>
+                <div class="disp-region disp-ambiguous">?</div>
+              </div>
+              <div class="disp-arrows">
+                <span class="disp-arrow-left">← ← propagate</span>
+                <span class="disp-arrow-center">●</span>
+                <span class="disp-arrow-right">propagate → →</span>
+              </div>
+              <div class="ctx-caption">depth estimates spread outward from high-confidence anchor points</div>
+            </div>
+          )}
+
+          {section.showDaVinciDiagram && (
+            <div class="mini-diagram davinci-diagram">
+              <div class="dv-scene">
+                <svg class="dv-svg" viewBox="0 0 340 220">
+                  {/* Background wall */}
+                  <rect x="40" y="10" width="260" height="40" rx="3" fill="var(--color-border)" stroke="var(--color-text-muted)" stroke-width="1"/>
+                  <text x="170" y="34" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--color-text-muted)">background wall</text>
+
+                  {/* Hidden regions */}
+                  <rect x="80" y="10" width="30" height="40" rx="0" fill="var(--color-accent)" opacity="0.25"/>
+                  <text x="95" y="34" text-anchor="middle" font-family="var(--font-mono)" font-size="8" font-weight="700" fill="var(--color-accent)">L</text>
+                  <rect x="230" y="10" width="30" height="40" rx="0" fill="var(--color-accent)" opacity="0.25"/>
+                  <text x="245" y="34" text-anchor="middle" font-family="var(--font-mono)" font-size="8" font-weight="700" fill="var(--color-accent)">R</text>
+
+                  {/* Occluder */}
+                  <rect x="120" y="70" width="100" height="50" rx="5" fill="var(--color-text)" opacity="0.85"/>
+                  <text x="170" y="100" text-anchor="middle" font-family="var(--font-mono)" font-size="11" font-weight="700" fill="var(--color-bg)">occluder</text>
+
+                  {/* Sight lines from left eye */}
+                  <line x1="120" y1="200" x2="120" y2="70" stroke="var(--color-accent)" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+                  <line x1="120" y1="200" x2="260" y2="10" stroke="var(--color-accent)" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+
+                  {/* Sight lines from right eye */}
+                  <line x1="220" y1="200" x2="220" y2="70" stroke="var(--color-text-muted)" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+                  <line x1="220" y1="200" x2="80" y2="10" stroke="var(--color-text-muted)" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+
+                  {/* Eyes */}
+                  <ellipse cx="120" cy="205" rx="14" ry="10" fill="var(--color-accent)" opacity="0.9"/>
+                  <text x="120" y="209" text-anchor="middle" font-family="var(--font-mono)" font-size="8" font-weight="700" fill="var(--color-bg)">L</text>
+                  <ellipse cx="220" cy="205" rx="14" ry="10" fill="var(--color-text-muted)" opacity="0.7"/>
+                  <text x="220" y="209" text-anchor="middle" font-family="var(--font-mono)" font-size="8" font-weight="700" fill="var(--color-bg)">R</text>
+
+                  {/* ~6cm label */}
+                  <line x1="134" y1="205" x2="206" y2="205" stroke="var(--color-text-muted)" stroke-width="1"/>
+                  <text x="170" y="218" text-anchor="middle" font-family="var(--font-mono)" font-size="7" fill="var(--color-text-muted)">~6 cm</text>
+
+                  {/* Annotations */}
+                  <text x="58" y="64" text-anchor="start" font-family="var(--font-sans)" font-size="8" fill="var(--color-accent)" font-style="italic">only right</text>
+                  <text x="58" y="72" text-anchor="start" font-family="var(--font-sans)" font-size="8" fill="var(--color-accent)" font-style="italic">eye sees this</text>
+                  <text x="282" y="64" text-anchor="end" font-family="var(--font-sans)" font-size="8" fill="var(--color-accent)" font-style="italic">only left</text>
+                  <text x="282" y="72" text-anchor="end" font-family="var(--font-sans)" font-size="8" fill="var(--color-accent)" font-style="italic">eye sees this</text>
+                </svg>
+              </div>
+              <div class="dv-insight">
+                <span class="dv-insight-label">Key insight:</span> Each eye sees a sliver of background the other can't — the occluded region itself becomes a depth signal. No feature matching needed — absence of information = depth.
+              </div>
+            </div>
+          )}
+
+          {section.showBorderOwnershipDiagram && (
+            <div class="mini-diagram border-ownership-diagram">
+              <div class="bo-scene">
+                <div class="bo-surface">
+                  <div class="bo-dot">
+                    <div class="bo-arrow bo-arrow-top">↑</div>
+                    <div class="bo-arrow bo-arrow-right">→</div>
+                    <div class="bo-arrow bo-arrow-bottom">↓</div>
+                    <div class="bo-arrow bo-arrow-left">←</div>
+                  </div>
+                </div>
+              </div>
+              <div class="bo-legend">
+                <span class="bo-legend-item"><span class="bo-swatch bo-swatch-dot"></span> figure (owns the border)</span>
+                <span class="bo-legend-item"><span class="bo-swatch bo-swatch-bg"></span> ground (continues behind)</span>
+              </div>
+            </div>
+          )}
+
+          {section.showBrightnessDiagram && (
+            <div class="mini-diagram brightness-diagram">
+              <div class="bright-compare">
+                <div class="bright-card bright-card-light">
+                  <div class="bright-box"></div>
+                  <span class="bright-label">looks darker</span>
+                </div>
+                <div class="bright-vs">=</div>
+                <div class="bright-card bright-card-dark">
+                  <div class="bright-box"></div>
+                  <span class="bright-label">looks lighter</span>
+                </div>
+              </div>
+              <div class="ctx-caption">same grey — different perception depending on background</div>
+            </div>
+          )}
+
+          {section.showReceptiveFieldDiagram && (
+            <div class="mini-diagram rf-diagram">
+              <div class="rf-compare">
+                <div class="rf-card">
+                  <div class="rf-visual">
+                    <div class="rf-field rf-classical">
+                      <span class="rf-dot">●</span>
+                    </div>
+                  </div>
+                  <div class="rf-card-label">Classical</div>
+                  <div class="rf-card-desc">responds only to own field</div>
+                </div>
+                <div class="rf-arrow">→</div>
+                <div class="rf-card">
+                  <div class="rf-visual">
+                    <div class="rf-field rf-nonclassical">
+                      <div class="rf-field rf-classical rf-inner">
+                        <span class="rf-dot">●</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="rf-card-label">Non-Classical</div>
+                  <div class="rf-card-desc">influenced by surround via horizontal connections</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {section.showPopOutDiagram && (
+            <div class="mini-diagram popout-diagram">
+              <div class="popout-compare">
+                <div class="popout-card">
+                  <div class="popout-grid">
+                    <span class="popout-dot popout-yellow">●</span>
+                    <span class="popout-dot popout-yellow">●</span>
+                    <span class="popout-dot popout-red">●</span>
+                    <span class="popout-dot popout-yellow">●</span>
+                    <span class="popout-dot popout-yellow">●</span>
+                    <span class="popout-dot popout-yellow">●</span>
+                    <span class="popout-dot popout-yellow">●</span>
+                    <span class="popout-dot popout-yellow">●</span>
+                    <span class="popout-dot popout-yellow">●</span>
+                  </div>
+                  <div class="popout-label popout-label-fast">instant pop-out ✓</div>
+                </div>
+                <div class="popout-card">
+                  <div class="popout-grid popout-grid-text">
+                    <span class="popout-char">6</span>
+                    <span class="popout-char">6</span>
+                    <span class="popout-char">6</span>
+                    <span class="popout-char">9</span>
+                    <span class="popout-char">6</span>
+                    <span class="popout-char">6</span>
+                    <span class="popout-char">6</span>
+                    <span class="popout-char">6</span>
+                    <span class="popout-char">6</span>
+                  </div>
+                  <div class="popout-label popout-label-slow">serial search needed ✗</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {section.showHighLevelPipelineDiagram && (
+            <div class="mini-diagram pipeline-diagram">
+              <div class="pipeline-flow">
+                <div class="pipeline-stage">
+                  <div class="pipeline-node pipeline-node-v4">V4</div>
+                  <div class="pipeline-desc">shape, colour constancy<br/>invariance begins</div>
+                </div>
+                <div class="pipeline-connector">→</div>
+                <div class="pipeline-stage">
+                  <div class="pipeline-node pipeline-node-pit">Posterior IT</div>
+                  <div class="pipeline-desc">complete object<br/>representation (perception)</div>
+                </div>
+                <div class="pipeline-connector">→</div>
+                <div class="pipeline-stage">
+                  <div class="pipeline-node pipeline-node-ait">Anterior IT</div>
+                  <div class="pipeline-desc">percepts connect<br/>to meaning</div>
+                </div>
+                <div class="pipeline-connector">→</div>
+                <div class="pipeline-stage">
+                  <div class="pipeline-node pipeline-node-final">Amygdala / Hippo</div>
+                  <div class="pipeline-desc">vision becomes<br/>cognition</div>
+                </div>
+              </div>
+              <div class="pipeline-spectrum">
+                <span class="pipeline-spectrum-left">features</span>
+                <div class="pipeline-spectrum-bar"></div>
+                <span class="pipeline-spectrum-right">meaning</span>
+              </div>
+            </div>
+          )}
+
+          {section.showV4FunctionsDiagram && (
+            <div class="mini-diagram v4-functions-diagram">
+              <div class="v4f-grid">
+                <div class="v4f-card">
+                  <div class="v4f-number">1</div>
+                  <div class="v4f-title">Colour Constancy</div>
+                  <div class="v4f-visual">
+                    <div class="v4f-color-demo">
+                      <div class="v4f-color-ctx v4f-ctx-warm">
+                        <div class="v4f-color-apple"></div>
+                        <span class="v4f-ctx-label">sunlight</span>
+                      </div>
+                      <span class="v4f-equals">=</span>
+                      <div class="v4f-color-ctx v4f-ctx-cool">
+                        <div class="v4f-color-apple"></div>
+                        <span class="v4f-ctx-label">fluorescent</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="v4f-desc">factors out illumination — computes colour relative to surroundings</div>
+                </div>
+                <div class="v4f-card">
+                  <div class="v4f-number">2</div>
+                  <div class="v4f-title">Shape & Curves</div>
+                  <div class="v4f-visual">
+                    <div class="v4f-shapes">
+                      <svg class="v4f-shape-svg" viewBox="0 0 60 40">
+                        <path d="M5,35 Q15,5 30,20 Q45,35 55,10" fill="none" stroke="currentColor" stroke-width="2"/>
+                      </svg>
+                      <svg class="v4f-shape-svg" viewBox="0 0 60 40">
+                        <path d="M10,30 L25,8 L40,30 L55,15" fill="none" stroke="currentColor" stroke-width="2"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="v4f-desc">extracts geometric properties — contours, curves, angles</div>
+                </div>
+                <div class="v4f-card">
+                  <div class="v4f-number">3</div>
+                  <div class="v4f-title">Invariance Begins</div>
+                  <div class="v4f-visual">
+                    <div class="v4f-invariance">
+                      <span class="v4f-inv-shape">&#9651;</span>
+                      <span class="v4f-inv-shape v4f-inv-small">&#9651;</span>
+                      <span class="v4f-inv-shape v4f-inv-rotated">&#9651;</span>
+                      <span class="v4f-inv-approx">≈</span>
+                    </div>
+                  </div>
+                  <div class="v4f-desc">small changes in position, rotation & size are tolerated</div>
+                </div>
+              </div>
+              <div class="v4f-damage">
+                <span class="v4f-damage-label">V4 damaged →</span> achromatopsia: total loss of colour, everything else survives
+              </div>
+            </div>
+          )}
+
+          {section.showITColumnDiagram && (
+            <div class="mini-diagram it-column-diagram">
+              <div class="itc-compare">
+                <div class="itc-panel">
+                  <div class="itc-panel-label">V1 Columns (Distinct)</div>
+                  <div class="itc-columns itc-v1">
+                    <div class="itc-col itc-col-a">
+                      <span class="itc-col-label">45°</span>
+                    </div>
+                    <div class="itc-col itc-col-b">
+                      <span class="itc-col-label">90°</span>
+                    </div>
+                    <div class="itc-col itc-col-c">
+                      <span class="itc-col-label">135°</span>
+                    </div>
+                  </div>
+                  <div class="itc-hint">hard borders between columns</div>
+                </div>
+                <div class="itc-vs">vs</div>
+                <div class="itc-panel">
+                  <div class="itc-panel-label">IT Columns (Overlapping)</div>
+                  <div class="itc-columns itc-it">
+                    <div class="itc-col-overlap itc-overlap-a">
+                      <span class="itc-col-label">face</span>
+                    </div>
+                    <div class="itc-col-overlap itc-overlap-b">
+                      <span class="itc-col-label">hand</span>
+                    </div>
+                    <div class="itc-col-overlap itc-overlap-c">
+                      <span class="itc-col-label">body</span>
+                    </div>
+                  </div>
+                  <div class="itc-hint">columns blend — shared knowledge</div>
+                </div>
+              </div>
+              <div class="itc-stat">
+                <span class="itc-stat-num">~400 μm</span> wide vertical stack &middot; full depth of cortex &middot; <span class="itc-stat-num">~30,000</span> objects recognised
+              </div>
+            </div>
+          )}
+
+          {section.showPopulationCodingDiagram && (
+            <div class="mini-diagram popcoding-diagram">
+              <div class="popc-grid">
+                <div class="popc-object">
+                  <div class="popc-obj-label">cat</div>
+                  <div class="popc-bars">
+                    <div class="popc-bar" style="height: 85%"></div>
+                    <div class="popc-bar" style="height: 40%"></div>
+                    <div class="popc-bar" style="height: 70%"></div>
+                    <div class="popc-bar" style="height: 20%"></div>
+                    <div class="popc-bar" style="height: 55%"></div>
+                    <div class="popc-bar" style="height: 90%"></div>
+                  </div>
+                </div>
+                <div class="popc-sim popc-sim-high">≈ high</div>
+                <div class="popc-object">
+                  <div class="popc-obj-label">dog</div>
+                  <div class="popc-bars">
+                    <div class="popc-bar" style="height: 75%"></div>
+                    <div class="popc-bar" style="height: 35%"></div>
+                    <div class="popc-bar" style="height: 60%"></div>
+                    <div class="popc-bar" style="height: 25%"></div>
+                    <div class="popc-bar" style="height: 65%"></div>
+                    <div class="popc-bar" style="height: 80%"></div>
+                  </div>
+                </div>
+                <div class="popc-sim popc-sim-low">≈ low</div>
+                <div class="popc-object">
+                  <div class="popc-obj-label">chair</div>
+                  <div class="popc-bars">
+                    <div class="popc-bar" style="height: 20%"></div>
+                    <div class="popc-bar" style="height: 80%"></div>
+                    <div class="popc-bar" style="height: 15%"></div>
+                    <div class="popc-bar" style="height: 90%"></div>
+                    <div class="popc-bar" style="height: 30%"></div>
+                    <div class="popc-bar" style="height: 10%"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="popc-neurons-label">← each bar = one neuron's firing rate →</div>
+              <div class="ctx-caption">similar objects have similar firing patterns — vector similarity in the brain</div>
+            </div>
+          )}
+
+          {section.showAgnosiaDiagram && (
+            <div class="mini-diagram agnosia-diagram">
+              <div class="agn-compare">
+                <div class="agn-card agn-card-apperceptive">
+                  <div class="agn-card-title">Apperceptive Agnosia</div>
+                  <div class="agn-card-damage">Posterior IT damaged</div>
+                  <div class="agn-preserved">
+                    <div class="agn-check">✓ edges, colours, motion</div>
+                    <div class="agn-check">✓ V1 & V2 intact</div>
+                  </div>
+                  <div class="agn-lost">
+                    <div class="agn-cross">✗ can't form objects</div>
+                    <div class="agn-cross">✗ can't draw from memory</div>
+                  </div>
+                </div>
+                <div class="agn-card agn-card-associative">
+                  <div class="agn-card-title">Associative Agnosia</div>
+                  <div class="agn-card-damage">Anterior IT damaged</div>
+                  <div class="agn-preserved">
+                    <div class="agn-check">✓ can see & draw objects</div>
+                    <div class="agn-check">✓ perception intact</div>
+                  </div>
+                  <div class="agn-lost">
+                    <div class="agn-cross">✗ can't name objects</div>
+                    <div class="agn-cross">✗ can't say what it's for</div>
+                  </div>
+                </div>
+                <div class="agn-card agn-card-prosopagnosia">
+                  <div class="agn-card-title">Prosopagnosia</div>
+                  <div class="agn-card-damage">Face regions damaged</div>
+                  <div class="agn-preserved">
+                    <div class="agn-check">✓ sees faces</div>
+                    <div class="agn-check">✓ reads expressions</div>
+                  </div>
+                  <div class="agn-lost">
+                    <div class="agn-cross">✗ can't assign identity</div>
+                    <div class="agn-cross">✗ "whose face is this?"</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {section.showCategoryAgnosiaDiagram && (
+            <div class="mini-diagram category-diagram">
+              <div class="catag-grid">
+                <div class="catag-group">
+                  <div class="catag-group-title">Living Things</div>
+                  <div class="catag-traits">eyes, limbs, organic texture, bilateral symmetry</div>
+                  <div class="catag-items">animals, faces, plants, veggies/fruits</div>
+                </div>
+                <div class="catag-divider"></div>
+                <div class="catag-group">
+                  <div class="catag-group-title">Non-Living Things</div>
+                  <div class="catag-traits">rigid geometry, manufactured surfaces, functional parts</div>
+                  <div class="catag-items">tools, vehicles, buildings, instruments</div>
+                </div>
+              </div>
+              <div class="ctx-caption">separate IT regions — damage to one category leaves others intact</div>
+            </div>
+          )}
+
+          {section.showFullDorsalDiagram && (
+            <div class="mini-diagram full-arch-diagram">
+              <svg class="arch-svg" viewBox="0 0 680 820" xmlns="http://www.w3.org/2000/svg">
+                {/* Title */}
+                <text x="340" y="28" text-anchor="middle" font-family="var(--font-serif)" font-size="18" font-weight="700" fill="var(--color-accent)">Dorsal Stream — "Where / How" Pathway</text>
+                <text x="340" y="50" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">M-cells (fast, transient, change-detecting) · real-time · no memory · action-oriented</text>
+
+                {/* ── Properties bar ── */}
+                <rect x="80" y="68" width="520" height="32" rx="6" fill="none" stroke="var(--color-border)" stroke-width="1" stroke-dasharray="3,3"/>
+                <text x="170" y="88" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--color-text-muted)">Latency: ~30–50 ms</text>
+                <text x="340" y="88" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--color-text-muted)">Memory: None</text>
+                <text x="510" y="88" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--color-text-muted)">Neurons need change to fire</text>
+
+                {/* ── Stage 1: Retina ── */}
+                <rect x="170" y="118" width="340" height="64" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <text x="340" y="142" text-anchor="middle" font-family="var(--font-mono)" font-size="15" font-weight="700" fill="var(--color-accent)">Retina (M-cells / Magnocellular)</text>
+                <text x="340" y="161" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Large receptive fields · fast transient response · low spatial freq</text>
+                <text x="340" y="176" text-anchor="middle" font-family="var(--font-sans)" font-size="10" fill="var(--color-text-muted)">Detects changes in the scene — does not sustain signal</text>
+
+                {/* Arrow */}
+                <line x1="340" y1="182" x2="340" y2="208" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <polygon points="335,205 340,214 345,205" fill="var(--color-accent)"/>
+
+                {/* ── Stage 2: V1 ── */}
+                <rect x="140" y="214" width="400" height="80" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <text x="340" y="238" text-anchor="middle" font-family="var(--font-mono)" font-size="15" font-weight="700" fill="var(--color-accent)">V1 — Primary Visual Cortex</text>
+                <text x="340" y="258" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Orientation-selective neurons: simple cells → complex cells</text>
+                <text x="340" y="275" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Motion direction selectivity · broad spatial tuning</text>
+                <text x="340" y="289" text-anchor="middle" font-family="var(--font-sans)" font-size="9" font-style="italic" fill="var(--color-text-muted)">Saccades: 3/sec involuntary micro-movements keep image shifting on retina</text>
+
+                {/* Arrow */}
+                <line x1="340" y1="294" x2="340" y2="318" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <polygon points="335,315 340,324 345,315" fill="var(--color-accent)"/>
+
+                {/* ── Stage 3: V2/V3 ── */}
+                <rect x="170" y="324" width="340" height="64" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <text x="340" y="348" text-anchor="middle" font-family="var(--font-mono)" font-size="15" font-weight="700" fill="var(--color-accent)">V2 / V3</text>
+                <text x="340" y="366" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Global disparity · coarse depth maps · motion boundary extraction</text>
+                <text x="340" y="382" text-anchor="middle" font-family="var(--font-sans)" font-size="10" fill="var(--color-text-muted)">Separates object motion from background motion</text>
+
+                {/* Arrow */}
+                <line x1="340" y1="388" x2="340" y2="412" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <polygon points="335,409 340,418 345,409" fill="var(--color-accent)"/>
+
+                {/* ── Stage 4: MT/V5 ── */}
+                <rect x="120" y="418" width="440" height="90" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent)" stroke-width="2"/>
+                <text x="340" y="442" text-anchor="middle" font-family="var(--font-mono)" font-size="15" font-weight="700" fill="var(--color-accent)">MT / V5 — Middle Temporal Area</text>
+                <text x="340" y="462" text-anchor="middle" font-family="var(--font-sans)" font-size="11" font-weight="600" fill="var(--color-text-muted)">Mechanism: Motion Energy</text>
+                <text x="340" y="479" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Bank of directional filters tracking movement vectors</text>
+                <text x="340" y="494" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Neurons perceive motion vectors, not objects themselves</text>
+                <text x="340" y="504" text-anchor="middle" font-family="var(--font-sans)" font-size="9" font-style="italic" fill="var(--color-text-muted)">Damage → akinetopsia: world appears as series of frozen stills</text>
+
+                {/* Arrow */}
+                <line x1="340" y1="508" x2="340" y2="532" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <polygon points="335,529 340,538 345,529" fill="var(--color-accent)"/>
+
+                {/* ── Stage 5: MST ── */}
+                <rect x="120" y="538" width="440" height="80" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <text x="340" y="560" text-anchor="middle" font-family="var(--font-mono)" font-size="15" font-weight="700" fill="var(--color-accent)">MST — Medial Superior Temporal</text>
+                <text x="340" y="580" text-anchor="middle" font-family="var(--font-sans)" font-size="11" font-weight="600" fill="var(--color-text-muted)">Mechanism: Optical Flow</text>
+                <text x="340" y="597" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Computes self-motion from visual field changes</text>
+                <text x="340" y="612" text-anchor="middle" font-family="var(--font-sans)" font-size="10" fill="var(--color-text-muted)">Expansion/contraction patterns → heading direction · speed estimation</text>
+
+                {/* Arrow */}
+                <line x1="340" y1="618" x2="340" y2="642" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <polygon points="335,639 340,648 345,639" fill="var(--color-accent)"/>
+
+                {/* ── Stage 6: PPC ── */}
+                <rect x="100" y="648" width="480" height="90" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent)" stroke-width="2"/>
+                <text x="340" y="672" text-anchor="middle" font-family="var(--font-mono)" font-size="15" font-weight="700" fill="var(--color-accent)">PPC — Posterior Parietal Cortex</text>
+                <text x="340" y="692" text-anchor="middle" font-family="var(--font-sans)" font-size="11" font-weight="600" fill="var(--color-text-muted)">Mechanism: Predictive Coding</text>
+                <text x="340" y="709" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Tracks prediction error: where object should be vs where it is</text>
+                <text x="340" y="726" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">3D spatial model: distance, speed, relative position of everything</text>
+                <text x="340" y="735" text-anchor="middle" font-family="var(--font-sans)" font-size="9" font-style="italic" fill="var(--color-text-muted)">The brain's GPS — builds and updates real-time world map</text>
+
+                {/* Fork arrows from PPC */}
+                <line x1="230" y1="738" x2="160" y2="768" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <polygon points="158,762 156,772 166,768" fill="var(--color-accent)"/>
+                <line x1="450" y1="738" x2="520" y2="768" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <polygon points="514,768 524,772 522,762" fill="var(--color-accent)"/>
+
+                {/* ── Output 1: Motor Cortex ── */}
+                <rect x="30" y="768" width="260" height="40" rx="8" fill="var(--color-accent)" opacity="0.9"/>
+                <text x="160" y="785" text-anchor="middle" font-family="var(--font-mono)" font-size="12" font-weight="700" fill="var(--color-bg)">Motor Cortex / Pre-Motor</text>
+                <text x="160" y="800" text-anchor="middle" font-family="var(--font-sans)" font-size="10" fill="var(--color-bg)" opacity="0.9">"How" → reach, grasp, dodge, catch</text>
+
+                {/* ── Output 2: FEF ── */}
+                <rect x="390" y="768" width="260" height="40" rx="8" fill="var(--color-accent)" opacity="0.9"/>
+                <text x="520" y="785" text-anchor="middle" font-family="var(--font-mono)" font-size="12" font-weight="700" fill="var(--color-bg)">Frontal Eye Fields (FEF)</text>
+                <text x="520" y="800" text-anchor="middle" font-family="var(--font-sans)" font-size="10" fill="var(--color-bg)" opacity="0.9">"Where" → gaze direction, saccades</text>
+
+                {/* Efference copy feedback loop */}
+                <path d="M 650 788 Q 670 788 670 700 Q 670 618 670 538 Q 670 460 640 442" fill="none" stroke="var(--color-accent)" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.5"/>
+                <polygon points="643,445 637,440 640,450" fill="var(--color-accent)" opacity="0.5"/>
+                <text x="675" y="630" text-anchor="start" font-family="var(--font-mono)" font-size="8" fill="var(--color-accent)" transform="rotate(90, 675, 630)">efference copy — cancels self-generated motion</text>
+
+                {/* Key insight box */}
+                <rect x="80" y="65" width="10" height="745" rx="0" fill="var(--color-accent)" opacity="0.08"/>
+              </svg>
+            </div>
+          )}
+
+          {section.showFullVentralDiagram && (
+            <div class="mini-diagram full-arch-diagram">
+              <svg class="arch-svg arch-svg-ventral" viewBox="0 0 680 1160" xmlns="http://www.w3.org/2000/svg">
+                {/* Title */}
+                <text x="340" y="28" text-anchor="middle" font-family="var(--font-serif)" font-size="18" font-weight="700" fill="var(--color-accent)">Ventral Stream — "What" Pathway</text>
+                <text x="340" y="50" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">P-cells (slow, sustained, high-resolution) · hierarchical assembly · builds meaning</text>
+
+                {/* ── Properties bar ── */}
+                <rect x="60" y="68" width="560" height="32" rx="6" fill="none" stroke="var(--color-border)" stroke-width="1" stroke-dasharray="3,3"/>
+                <text x="150" y="88" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--color-text-muted)">Latency: ~100–150 ms</text>
+                <text x="340" y="88" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--color-text-muted)">Strategy: Hierarchical</text>
+                <text x="530" y="88" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--color-text-muted)">Relative perception only</text>
+
+                {/* ── Stage 1: Retina + LGN ── */}
+                <rect x="150" y="118" width="380" height="64" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <text x="340" y="142" text-anchor="middle" font-family="var(--font-mono)" font-size="15" font-weight="700" fill="var(--color-accent)">Retina → LGN (Parvocellular)</text>
+                <text x="340" y="161" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">P-cells: small receptive fields · colour-sensitive · fine detail</text>
+                <text x="340" y="176" text-anchor="middle" font-family="var(--font-sans)" font-size="10" fill="var(--color-text-muted)">Slow but sustained signal — unlike M-cells which only fire at changes</text>
+
+                {/* Arrow */}
+                <line x1="340" y1="182" x2="340" y2="208" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <polygon points="335,205 340,214 345,205" fill="var(--color-accent)"/>
+
+                {/* ── Stage 2: V1 ── */}
+                <rect x="80" y="214" width="520" height="108" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent)" stroke-width="2"/>
+                <text x="340" y="238" text-anchor="middle" font-family="var(--font-mono)" font-size="15" font-weight="700" fill="var(--color-accent)">V1 — Edge Detection (Low-Level)</text>
+                <text x="340" y="258" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Simple cells: ON/OFF responses to oriented edges (like CNN kernels)</text>
+                <text x="340" y="275" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Complex cells: combine simple cells → position-invariant detection</text>
+                <text x="340" y="292" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Contextual modulation: horizontal connections between same-orientation neurons</text>
+                <text x="340" y="307" text-anchor="middle" font-family="var(--font-sans)" font-size="10" fill="var(--color-text-muted)">End-stopping: short lines = object edges, long lines = background</text>
+                <text x="340" y="318" text-anchor="middle" font-family="var(--font-sans)" font-size="9" font-style="italic" fill="var(--color-text-muted)">Evolution: mice pre-cortex → cats simple cells → primates skip to complex cells</text>
+
+                {/* Arrow */}
+                <line x1="340" y1="322" x2="340" y2="348" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <polygon points="335,345 340,354 345,345" fill="var(--color-accent)"/>
+
+                {/* ── Stage 3: V2 ── */}
+                <rect x="80" y="354" width="520" height="120" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent)" stroke-width="2"/>
+                <text x="340" y="378" text-anchor="middle" font-family="var(--font-mono)" font-size="15" font-weight="700" fill="var(--color-accent)">V2 — Contour Integration, Depth & Segmentation</text>
+                <text x="340" y="398" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Assembles V1 edges into continuous contour boundaries</text>
+                <text x="340" y="415" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Illusory contours: perceives edges that don't exist (Kanizsa triangles)</text>
+                <text x="340" y="432" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Border ownership: determines figure vs ground for each edge</text>
+                <text x="340" y="449" text-anchor="middle" font-family="var(--font-sans)" font-size="10" fill="var(--color-text-muted)">Global disparity (vs V1 local) · disparity capture propagation</text>
+                <text x="340" y="460" text-anchor="middle" font-family="var(--font-sans)" font-size="10" fill="var(--color-text-muted)">Da Vinci stereopsis: absence of information = depth signal</text>
+                <text x="340" y="472" text-anchor="middle" font-family="var(--font-sans)" font-size="9" font-style="italic" fill="var(--color-text-muted)">"Perception is a controlled hallucination" — V2 actively constructs reality</text>
+
+                {/* Arrow */}
+                <line x1="340" y1="474" x2="340" y2="500" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <polygon points="335,497 340,506 345,497" fill="var(--color-accent)"/>
+
+                {/* ── Stage 4: V4 ── */}
+                <rect x="80" y="506" width="520" height="120" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent)" stroke-width="2"/>
+                <text x="340" y="530" text-anchor="middle" font-family="var(--font-mono)" font-size="15" font-weight="700" fill="var(--color-accent)">V4 — Shape, Colour Constancy & Invariance</text>
+                <text x="340" y="550" text-anchor="middle" font-family="var(--font-sans)" font-size="11" font-weight="600" fill="var(--color-text-muted)">The bridge between features and objects</text>
+                <text x="340" y="568" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">1. Colour constancy — factors out illumination, computes relative colour</text>
+                <text x="340" y="585" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">2. Shape extraction — geometric properties of curves, contours, angles</text>
+                <text x="340" y="602" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">3. Invariance begins — tolerates small position, rotation, size changes</text>
+                <text x="340" y="616" text-anchor="middle" font-family="var(--font-sans)" font-size="9" font-style="italic" fill="var(--color-text-muted)">Heavy top-down from IT · Damage → achromatopsia: total colour loss, everything else intact</text>
+
+                {/* Arrow */}
+                <line x1="340" y1="626" x2="340" y2="652" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <polygon points="335,649 340,658 345,649" fill="var(--color-accent)"/>
+
+                {/* ── Stage 5: Posterior IT ── */}
+                <rect x="60" y="658" width="560" height="130" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent)" stroke-width="2"/>
+                <text x="340" y="682" text-anchor="middle" font-family="var(--font-mono)" font-size="15" font-weight="700" fill="var(--color-accent)">Posterior IT — Object Perception</text>
+                <text x="340" y="702" text-anchor="middle" font-family="var(--font-sans)" font-size="11" font-weight="600" fill="var(--color-text-muted)">Where visual features become objects</text>
+                <text x="340" y="720" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Complete object representation — not features, but things</text>
+                <text x="340" y="737" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Cortical columns (~400 μm wide) that overlap and share knowledge</text>
+                <text x="340" y="754" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Population coding: firing pattern across neurons = vector embedding</text>
+                <text x="340" y="768" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Full invariance: same neuron fires regardless of size, position, rotation</text>
+                <text x="340" y="782" text-anchor="middle" font-family="var(--font-sans)" font-size="9" font-style="italic" fill="var(--color-text-muted)">Face-selective regions · long-range horizontal connections · ~30,000 objects from shared columns</text>
+
+                {/* Arrow */}
+                <line x1="340" y1="788" x2="340" y2="814" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <polygon points="335,811 340,820 345,811" fill="var(--color-accent)"/>
+
+                {/* ── Stage 6: Anterior IT ── */}
+                <rect x="80" y="820" width="520" height="108" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent)" stroke-width="2"/>
+                <text x="340" y="844" text-anchor="middle" font-family="var(--font-mono)" font-size="15" font-weight="700" fill="var(--color-accent)">Anterior IT — Semantic Binding</text>
+                <text x="340" y="864" text-anchor="middle" font-family="var(--font-sans)" font-size="11" font-weight="600" fill="var(--color-text-muted)">Where seeing becomes knowing</text>
+                <text x="340" y="882" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">Connects percepts to stored semantic knowledge and memory</text>
+                <text x="340" y="899" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-text-muted)">"I see a face" → "this is my mother" — perception meets meaning</text>
+                <text x="340" y="913" text-anchor="middle" font-family="var(--font-sans)" font-size="10" fill="var(--color-text-muted)">Category-specific regions: living vs non-living, faces vs tools vs places</text>
+                <text x="340" y="925" text-anchor="middle" font-family="var(--font-sans)" font-size="9" font-style="italic" fill="var(--color-text-muted)">Damage → associative agnosia (can't name) · prosopagnosia (face identity)</text>
+
+                {/* Fork arrows */}
+                <line x1="220" y1="928" x2="160" y2="964" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <polygon points="158,958 156,968 166,964" fill="var(--color-accent)"/>
+                <line x1="460" y1="928" x2="520" y2="964" stroke="var(--color-accent)" stroke-width="1.5"/>
+                <polygon points="514,964 524,968 522,958" fill="var(--color-accent)"/>
+
+                {/* ── Output 1: Amygdala ── */}
+                <rect x="20" y="964" width="280" height="58" rx="8" fill="var(--color-accent)" opacity="0.9"/>
+                <text x="160" y="984" text-anchor="middle" font-family="var(--font-mono)" font-size="14" font-weight="700" fill="var(--color-bg)">Amygdala</text>
+                <text x="160" y="1002" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-bg)" opacity="0.95">Emotional significance: threat? reward?</text>
+                <text x="160" y="1017" text-anchor="middle" font-family="var(--font-sans)" font-size="10" fill="var(--color-bg)" opacity="0.8">"does what I'm seeing matter to me?"</text>
+
+                {/* ── Output 2: Hippocampus ── */}
+                <rect x="380" y="964" width="280" height="58" rx="8" fill="var(--color-accent)" opacity="0.9"/>
+                <text x="520" y="984" text-anchor="middle" font-family="var(--font-mono)" font-size="14" font-weight="700" fill="var(--color-bg)">Hippocampus</text>
+                <text x="520" y="1002" text-anchor="middle" font-family="var(--font-sans)" font-size="11" fill="var(--color-bg)" opacity="0.95">Contextual memory: when, where, with whom</text>
+                <text x="520" y="1017" text-anchor="middle" font-family="var(--font-sans)" font-size="10" fill="var(--color-bg)" opacity="0.8">stores the full episode — not just the percept</text>
+
+                {/* ── Feedback loop ── */}
+                <path d="M 38 820 Q 18 820 18 600 Q 18 400 18 300 Q 18 230 38 220" fill="none" stroke="var(--color-accent)" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.45"/>
+                <polygon points="35,224 38,215 42,225" fill="var(--color-accent)" opacity="0.45"/>
+                <text x="9" y="530" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--color-accent)" opacity="0.7" transform="rotate(-90, 9, 530)">Top-down feedback: more fibres downward than upward</text>
+
+                {/* ── Bottom summary ── */}
+                <rect x="80" y="1048" width="520" height="54" rx="8" fill="none" stroke="var(--color-border)" stroke-width="1.5"/>
+                <text x="340" y="1070" text-anchor="middle" font-family="var(--font-sans)" font-size="12" font-weight="600" fill="var(--color-text-muted)">Full pipeline: ~100–150 ms from photon to contextualised memory</text>
+                <text x="340" y="1090" text-anchor="middle" font-family="var(--font-sans)" font-size="10" fill="var(--color-text-muted)">Like a CNN: edges (V1) → contours (V2) → shapes (V4) → objects (IT) → meaning (Ant. IT)</text>
+
+                {/* ── Abstraction gradient bar ── */}
+                <defs>
+                  <linearGradient id="ventral-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:var(--color-border);stop-opacity:0.6"/>
+                    <stop offset="100%" style="stop-color:var(--color-accent);stop-opacity:0.8"/>
+                  </linearGradient>
+                </defs>
+                <rect x="120" y="1118" width="440" height="10" rx="5" fill="url(#ventral-gradient)"/>
+                <text x="120" y="1145" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--color-text-muted)">concrete</text>
+                <text x="230" y="1145" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--color-text-muted)">edges</text>
+                <text x="340" y="1145" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--color-text-muted)">shapes</text>
+                <text x="450" y="1145" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--color-text-muted)">objects</text>
+                <text x="560" y="1145" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--color-accent)">meaning</text>
+
+                {/* Side accent bar */}
+                <rect x="60" y="68" width="10" height="955" rx="0" fill="var(--color-accent)" opacity="0.08"/>
+              </svg>
+            </div>
+          )}
+
+          {section.bullets && section.bullets.length > 0 && (
+            <ul class="day-bullets">
+              {section.bullets.map(bullet => (
+                <li>{bullet}</li>
+              ))}
+            </ul>
+          )}
+
+          {section.mechanisms && section.mechanisms.length > 0 && (
+            <ul class="day-bullets mechanism-list">
+              {section.mechanisms.map((m, i) => (
+                <li>
+                  <strong>Mechanism {i + 1} — {m.name}</strong> <span class="region-tag">{m.region}</span><br />
+                  {m.description}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+    </div>
+
+    <nav class="day-nav">
+      {prevDay ? (
+        <a href={`/notebooks/neuroscience/day-${prevDay.day}`} class="day-nav-link day-nav-prev">
+          <span class="day-nav-direction">&larr; Day {prevDay.day}</span>
+          <span class="day-nav-title">{prevDay.curiosityTitle}</span>
+        </a>
+      ) : <div />}
+      {nextDay ? (
+        <a href={`/notebooks/neuroscience/day-${nextDay.day}`} class="day-nav-link day-nav-next">
+          <span class="day-nav-direction">Day {nextDay.day} &rarr;</span>
+          <span class="day-nav-title">{nextDay.curiosityTitle}</span>
+        </a>
+      ) : <div />}
+    </nav>
+  </div>
+</Layout>
+
+<style>
+  /* ── Day page header ── */
+  .day-page-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .day-page-number {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  .day-page-title {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-top: 0.25rem;
+    line-height: 1.3;
+  }
+
+  /* ── Day navigation ── */
+  .day-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .day-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    text-decoration: none;
+    color: inherit;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    transition: border-color 0.15s ease;
+    max-width: 45%;
+  }
+
+  .day-nav-link:hover {
+    border-color: var(--color-accent);
+  }
+
+  .day-nav-next {
+    text-align: right;
+    margin-left: auto;
+  }
+
+  .day-nav-direction {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .day-nav-title {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+  }
+
+  /* ── Side-by-side diagrams ── */
+  .stream-diagrams {
+    display: flex;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stream-diagram {
+    flex: 1;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+  }
+
+  .diagram-title {
+    font-family: var(--font-serif);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding-left: 1rem;
+    position: relative;
+  }
+
+  .flow-step::before {
+    content: '↓';
+    position: absolute;
+    left: 1.45rem;
+    top: -0.5rem;
+    font-size: 0.6rem;
+    color: var(--color-accent);
+  }
+
+  .flow-step:first-child::before {
+    display: none;
+  }
+
+  .flow-node {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    background: var(--color-accent-soft);
+    border-radius: 3px;
+    padding: 0.15rem 0.45rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .flow-label {
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+  }
+
+  .flow-step + .flow-step {
+    margin-top: 0.4rem;
+  }
+
+  .flow-fork {
+    flex-wrap: wrap;
+    gap: 0.35rem 0.4rem;
+  }
+
+  .flow-fork .flow-label {
+    flex-basis: 100%;
+  }
+
+  @media (max-width: 600px) {
+    .stream-diagrams {
+      flex-direction: column;
+    }
+  }
+
+  /* ── Sections under diagrams ── */
+  .day-section {
+    margin-bottom: 1.25rem;
+  }
+
+  .section-heading {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    margin-bottom: 0.15rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  .day-section > .day-bullets {
+    margin-bottom: 0.5rem;
+  }
+
+  .region-tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--color-accent);
+    background: var(--color-accent-soft);
+    border-radius: 3px;
+    padding: 0.1rem 0.35rem;
+    vertical-align: baseline;
+  }
+
+  .mechanism-list li {
+    margin-bottom: 0.5rem;
+  }
+
+  /* ── Mini diagrams (Day 4+) ── */
+  .mini-diagram {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.75rem;
+    background: #f5efe8;
+  }
+
+  :global(html.dark) .mini-diagram {
+    background: #2a2218;
+  }
+
+  /* Context modulation diagram */
+  .ctx-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .ctx-neuron {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 50%;
+    width: 2.2rem;
+    height: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ctx-center {
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+
+  .ctx-neighbour {
+    border: 1.5px solid var(--color-accent);
+    color: var(--color-accent);
+    background: transparent;
+  }
+
+  .ctx-arrow {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  .ctx-caption {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+    margin-bottom: 0.5rem;
+  }
+
+  .ctx-example {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .ctx-example-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+  }
+
+  .ctx-signal {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    min-width: 2.5rem;
+    text-align: center;
+  }
+
+  .ctx-signal-noise { color: var(--color-text-muted); }
+  .ctx-signal-active { color: var(--color-accent); }
+
+  .ctx-result {
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+  }
+
+  /* Inhibitory surround diagram */
+  .inhib-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .inhib-zone {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.3rem 0.6rem;
+    text-align: center;
+  }
+
+  .inhib-end {
+    background: var(--color-border);
+    color: var(--color-text-muted);
+    border-radius: 4px 0 0 4px;
+  }
+
+  .inhib-end:last-child {
+    border-radius: 0 4px 4px 0;
+  }
+
+  .inhib-excite {
+    background: var(--color-accent);
+    color: var(--color-bg);
+    padding: 0.3rem 1rem;
+  }
+
+  .inhib-examples {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .inhib-case {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+  }
+
+  .inhib-line {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .inhib-short { font-size: 0.7rem; }
+  .inhib-long { font-size: 0.7rem; color: var(--color-text-muted); }
+
+  /* ── Depth Neurons diagram (Day 5) ── */
+  .dn-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .dn-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .dn-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .dn-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .dn-depth-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--color-text-muted);
+    min-width: 1.8rem;
+    text-align: center;
+  }
+
+  .dn-bar-track {
+    flex: 1;
+    height: 0.7rem;
+    background: var(--color-border);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dn-bar {
+    height: 100%;
+    border-radius: 3px;
+  }
+
+  .dn-bar-excitatory {
+    background: var(--color-accent);
+  }
+
+  .dn-bar-inhibitory-left,
+  .dn-bar-inhibitory-right {
+    background: var(--color-accent);
+    opacity: 0.7;
+  }
+
+  .dn-bar-gap {
+    background: transparent;
+  }
+
+  .dn-bar-near {
+    background: var(--color-accent);
+    opacity: 0.85;
+    border-radius: 3px 0 0 3px;
+  }
+
+  .dn-bar-far {
+    background: var(--color-text-muted);
+    opacity: 0.5;
+    border-radius: 0 3px 3px 0;
+  }
+
+  .dn-hint {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .dn-hint-row {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* ── Amodal completion diagram (3-panel) ── */
+  .amodal-panels {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .amodal-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .amodal-panel-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+
+  .amodal-label-brain {
+    color: var(--color-accent);
+  }
+
+  .amodal-panel-scene {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 3rem;
+  }
+
+  .amodal-book-part {
+    width: 1.8rem;
+    height: 2.8rem;
+    border: 2px solid var(--color-text-muted);
+    border-radius: 2px;
+  }
+
+  .amodal-book-visible {
+    background: var(--color-border);
+    border-style: solid;
+  }
+
+  .amodal-book-hidden {
+    background: transparent;
+    border-style: dashed;
+    opacity: 0.35;
+  }
+
+  .amodal-cup-block {
+    width: 1.4rem;
+    height: 2.2rem;
+    background: var(--color-accent);
+    border-radius: 3px 3px 6px 6px;
+    margin: 0 -0.3rem;
+    z-index: 1;
+    position: relative;
+  }
+
+  .amodal-book-full {
+    width: 4rem;
+    height: 2.8rem;
+    background: var(--color-border);
+    border: 2px solid var(--color-text-muted);
+    border-radius: 2px;
+  }
+
+  .amodal-cup-front {
+    width: 1.4rem;
+    height: 2.2rem;
+    background: var(--color-accent);
+    border-radius: 3px 3px 6px 6px;
+    margin-left: -2.7rem;
+    z-index: 1;
+    position: relative;
+  }
+
+  .amodal-plus,
+  .amodal-equals {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    padding: 0 0.1rem;
+  }
+
+  .amodal-equals {
+    color: var(--color-accent);
+  }
+
+  .amodal-panel-desc {
+    font-family: var(--font-sans);
+    font-size: 0.58rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    max-width: 7rem;
+    line-height: 1.3;
+  }
+
+  .amodal-desc-result {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  /* ── Kanizsa triangle (conic-gradient pac-mans) ── */
+  .kanisza-container {
+    position: relative;
+    width: 10rem;
+    height: 9rem;
+    margin: 0 auto 0.35rem;
+  }
+
+  .kanisza-pac {
+    position: absolute;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+  }
+
+  .kanisza-pos-top {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: conic-gradient(from 210deg, var(--color-accent) 0deg 300deg, transparent 300deg 360deg);
+  }
+
+  .kanisza-pos-bl {
+    bottom: 0;
+    left: 5%;
+    background: conic-gradient(from 75deg, var(--color-accent) 0deg 300deg, transparent 300deg 360deg);
+  }
+
+  .kanisza-pos-br {
+    bottom: 0;
+    right: 5%;
+    background: conic-gradient(from 345deg, var(--color-accent) 0deg 300deg, transparent 300deg 360deg);
+  }
+
+  /* ── Disparity capture diagram ── */
+  .disp-surface {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .disp-region {
+    width: 2.8rem;
+    height: 2rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .disp-ambiguous {
+    background: var(--color-border);
+    color: var(--color-text-muted);
+    border: 1px dashed var(--color-text-muted);
+  }
+
+  .disp-confident {
+    background: var(--color-accent);
+    color: var(--color-bg);
+    font-size: 0.6rem;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .disp-conf-label {
+    font-family: var(--font-mono);
+  }
+
+  .disp-arrows {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--color-accent);
+    margin-bottom: 0.25rem;
+  }
+
+  .disp-arrow-center {
+    font-size: 0.5rem;
+  }
+
+  /* ── Da Vinci stereopsis diagram (top-down SVG) ── */
+  .dv-scene {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.4rem;
+  }
+
+  .dv-svg {
+    width: 100%;
+    max-width: 22rem;
+    height: auto;
+  }
+
+  .dv-insight {
+    font-family: var(--font-sans);
+    font-size: 0.6rem;
+    color: var(--color-accent);
+    text-align: center;
+    line-height: 1.4;
+    padding: 0.4rem;
+    background: var(--color-accent-soft);
+    border-radius: 4px;
+    max-width: 90%;
+  }
+
+  .dv-insight-label {
+    font-weight: 700;
+  }
+
+  /* ── Border ownership diagram ── */
+  .bo-scene {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.4rem;
+  }
+
+  .bo-surface {
+    width: 8rem;
+    height: 5rem;
+    background: var(--color-border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .bo-dot {
+    width: 2.8rem;
+    height: 2.8rem;
+    background: var(--color-text);
+    border-radius: 50%;
+    position: relative;
+  }
+
+  .bo-arrow {
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .bo-arrow-top { top: -0.9rem; left: 50%; transform: translateX(-50%); }
+  .bo-arrow-right { right: -0.9rem; top: 50%; transform: translateY(-50%); }
+  .bo-arrow-bottom { bottom: -0.9rem; left: 50%; transform: translateX(-50%); }
+  .bo-arrow-left { left: -0.9rem; top: 50%; transform: translateY(-50%); }
+
+  .bo-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+  }
+
+  .bo-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .bo-swatch {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  .bo-swatch-dot {
+    background: var(--color-text);
+  }
+
+  .bo-swatch-bg {
+    background: var(--color-border);
+    border: 1px solid var(--color-text-muted);
+  }
+
+  /* ── Brightness comparison diagram ── */
+  .bright-compare {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .bright-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 1rem 1.5rem;
+    border-radius: 6px;
+  }
+
+  .bright-card-light {
+    background: #f0ede8;
+  }
+
+  :global(html.dark) .bright-card-light {
+    background: #d4cfc8;
+  }
+
+  .bright-card-dark {
+    background: #2a2018;
+  }
+
+  :global(html.dark) .bright-card-dark {
+    background: #1a1410;
+  }
+
+  .bright-box {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: #888;
+    border-radius: 4px;
+  }
+
+  .bright-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--color-text-muted);
+  }
+
+  .bright-card-dark .bright-label {
+    color: #aaa;
+  }
+
+  .bright-vs {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    font-weight: 700;
+  }
+
+  /* ── Receptive field diagram ── */
+  .rf-compare {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+  }
+
+  .rf-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .rf-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .rf-field {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .rf-classical {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 2px solid var(--color-accent);
+    background: var(--color-accent-soft);
+  }
+
+  .rf-nonclassical {
+    width: 4.2rem;
+    height: 4.2rem;
+    border: 2px dashed var(--color-text-muted);
+    background: transparent;
+  }
+
+  .rf-inner {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .rf-dot {
+    font-size: 0.5rem;
+    color: var(--color-accent);
+  }
+
+  .rf-arrow {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    color: var(--color-text-muted);
+  }
+
+  .rf-card-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .rf-card-desc {
+    font-family: var(--font-sans);
+    font-size: 0.6rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    max-width: 8rem;
+  }
+
+  /* ── Pop-out & visual search diagram ── */
+  .popout-compare {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+
+  .popout-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .popout-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.3rem;
+    padding: 0.5rem;
+  }
+
+  .popout-dot {
+    font-size: 1.1rem;
+    text-align: center;
+    line-height: 1;
+  }
+
+  .popout-yellow {
+    color: #c9a227;
+  }
+
+  :global(html.dark) .popout-yellow {
+    color: #d4b33a;
+  }
+
+  .popout-red {
+    color: #c4433f;
+  }
+
+  :global(html.dark) .popout-red {
+    color: #e05550;
+  }
+
+  .popout-grid-text {
+    gap: 0.2rem;
+  }
+
+  .popout-char {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-align: center;
+    width: 1.2rem;
+  }
+
+  .popout-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-align: center;
+  }
+
+  .popout-label-fast {
+    color: var(--color-accent);
+  }
+
+  .popout-label-slow {
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 600px) {
+    .dv-hidden-row {
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .disp-region {
+      width: 2rem;
+      font-size: 0.6rem;
+    }
+    .bright-compare {
+      gap: 0.3rem;
+    }
+    .bright-card {
+      padding: 0.7rem 1rem;
+    }
+  }
+
+  /* ── High-Level Pipeline diagram (Day 6) ── */
+  .pipeline-flow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.2rem;
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .pipeline-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 5.5rem;
+  }
+
+  .pipeline-node {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.35rem 0.65rem;
+    border-radius: 5px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .pipeline-node-v4 {
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+
+  .pipeline-node-pit {
+    background: var(--color-accent);
+    color: var(--color-bg);
+    opacity: 0.85;
+  }
+
+  .pipeline-node-ait {
+    background: var(--color-accent);
+    color: var(--color-bg);
+    opacity: 0.7;
+  }
+
+  .pipeline-node-final {
+    background: var(--color-text);
+    color: var(--color-bg);
+  }
+
+  .pipeline-desc {
+    font-family: var(--font-sans);
+    font-size: 0.6rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    line-height: 1.3;
+    max-width: 7rem;
+  }
+
+  .pipeline-connector {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--color-accent);
+    padding-top: 0.3rem;
+    font-weight: 700;
+  }
+
+  .pipeline-spectrum {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    justify-content: center;
+  }
+
+  .pipeline-spectrum-left,
+  .pipeline-spectrum-right {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .pipeline-spectrum-bar {
+    flex: 1;
+    max-width: 12rem;
+    height: 3px;
+    background: linear-gradient(to right, var(--color-accent), var(--color-text));
+    border-radius: 2px;
+  }
+
+  /* ── V4 Functions diagram ── */
+  .v4f-grid {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .v4f-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.4rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-bg);
+  }
+
+  .v4f-number {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--color-bg);
+    background: var(--color-accent);
+    width: 1.3rem;
+    height: 1.3rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .v4f-title {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-align: center;
+  }
+
+  .v4f-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.5rem;
+  }
+
+  .v4f-color-demo {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .v4f-color-ctx {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.3rem;
+    border-radius: 4px;
+  }
+
+  .v4f-ctx-warm {
+    background: #f5e6d0;
+  }
+
+  :global(html.dark) .v4f-ctx-warm {
+    background: #4a3a28;
+  }
+
+  .v4f-ctx-cool {
+    background: #dce8f0;
+  }
+
+  :global(html.dark) .v4f-ctx-cool {
+    background: #28384a;
+  }
+
+  .v4f-color-apple {
+    width: 1rem;
+    height: 1rem;
+    background: #c4433f;
+    border-radius: 50%;
+  }
+
+  .v4f-ctx-label {
+    font-family: var(--font-mono);
+    font-size: 0.5rem;
+    color: var(--color-text-muted);
+  }
+
+  .v4f-equals {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .v4f-shapes {
+    display: flex;
+    gap: 0.3rem;
+  }
+
+  .v4f-shape-svg {
+    width: 2.5rem;
+    height: 1.8rem;
+    color: var(--color-accent);
+  }
+
+  .v4f-invariance {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .v4f-inv-shape {
+    font-size: 1.2rem;
+    color: var(--color-accent);
+    line-height: 1;
+  }
+
+  .v4f-inv-small {
+    font-size: 0.7rem;
+  }
+
+  .v4f-inv-rotated {
+    transform: rotate(30deg);
+    font-size: 1rem;
+  }
+
+  .v4f-inv-approx {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .v4f-desc {
+    font-family: var(--font-sans);
+    font-size: 0.58rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .v4f-damage {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: 0.35rem;
+    border-top: 1px solid var(--color-border);
+    margin-top: 0.2rem;
+  }
+
+  .v4f-damage-label {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 600px) {
+    .v4f-grid {
+      flex-direction: column;
+    }
+    .pipeline-flow {
+      gap: 0.15rem;
+    }
+    .pipeline-stage {
+      min-width: 4rem;
+    }
+    .pipeline-node {
+      font-size: 0.6rem;
+      padding: 0.25rem 0.4rem;
+    }
+  }
+
+  /* ── IT Column diagram ── */
+  .itc-compare {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .itc-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .itc-panel-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .itc-columns {
+    display: flex;
+    gap: 0;
+    height: 3.5rem;
+  }
+
+  .itc-v1 {
+    gap: 2px;
+  }
+
+  .itc-col {
+    width: 2.2rem;
+    height: 100%;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .itc-col-a { background: var(--color-accent); opacity: 0.9; }
+  .itc-col-b { background: var(--color-text-muted); opacity: 0.5; }
+  .itc-col-c { background: var(--color-accent); opacity: 0.6; }
+
+  .itc-col-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--color-bg);
+  }
+
+  .itc-it {
+    position: relative;
+    width: 7.5rem;
+    gap: 0;
+  }
+
+  .itc-col-overlap {
+    position: absolute;
+    height: 100%;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--color-accent);
+  }
+
+  .itc-overlap-a {
+    left: 0;
+    width: 3.5rem;
+    background: var(--color-accent);
+    opacity: 0.3;
+  }
+
+  .itc-overlap-b {
+    left: 2rem;
+    width: 3.5rem;
+    background: var(--color-accent);
+    opacity: 0.2;
+  }
+
+  .itc-overlap-c {
+    left: 4rem;
+    width: 3.5rem;
+    background: var(--color-accent);
+    opacity: 0.15;
+  }
+
+  .itc-col-overlap .itc-col-label {
+    color: var(--color-accent);
+    font-size: 0.55rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .itc-vs {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    padding-top: 1.2rem;
+  }
+
+  .itc-hint {
+    font-family: var(--font-sans);
+    font-size: 0.58rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+    text-align: center;
+  }
+
+  .itc-stat {
+    font-family: var(--font-sans);
+    font-size: 0.62rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    padding-top: 0.2rem;
+  }
+
+  .itc-stat-num {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  /* ── Population coding diagram ── */
+  .popc-grid {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .popc-object {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .popc-obj-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .popc-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 2.5rem;
+  }
+
+  .popc-bar {
+    width: 0.4rem;
+    background: var(--color-accent);
+    border-radius: 2px 2px 0 0;
+    min-height: 2px;
+  }
+
+  .popc-sim {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    font-weight: 600;
+    padding: 0 0.15rem;
+    padding-bottom: 0.8rem;
+  }
+
+  .popc-sim-high {
+    color: var(--color-accent);
+  }
+
+  .popc-sim-low {
+    color: var(--color-text-muted);
+  }
+
+  .popc-neurons-label {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    margin-bottom: 0.2rem;
+  }
+
+  /* ── Agnosia comparison diagram ── */
+  .agn-compare {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .agn-card {
+    flex: 1;
+    max-width: 10rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 0.5rem;
+    background: var(--color-bg);
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .agn-card-title {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-align: center;
+  }
+
+  .agn-card-damage {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    color: var(--color-bg);
+    background: var(--color-text-muted);
+    text-align: center;
+    padding: 0.15rem 0.3rem;
+    border-radius: 3px;
+  }
+
+  .agn-preserved,
+  .agn-lost {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .agn-check,
+  .agn-cross {
+    font-family: var(--font-sans);
+    font-size: 0.58rem;
+    line-height: 1.3;
+  }
+
+  .agn-check {
+    color: var(--color-accent);
+  }
+
+  .agn-cross {
+    color: var(--color-text-muted);
+  }
+
+  /* ── Category agnosia diagram ── */
+  .catag-grid {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .catag-group {
+    flex: 1;
+    max-width: 12rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-bg);
+  }
+
+  .catag-group-title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .catag-traits {
+    font-family: var(--font-sans);
+    font-size: 0.58rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    font-style: italic;
+    line-height: 1.3;
+  }
+
+  .catag-items {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    color: var(--color-text);
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .catag-divider {
+    width: 1px;
+    background: var(--color-border);
+    align-self: stretch;
+  }
+
+  @media (max-width: 600px) {
+    .agn-compare {
+      flex-direction: column;
+      align-items: center;
+    }
+    .agn-card {
+      max-width: 100%;
+    }
+    .itc-compare {
+      flex-direction: column;
+      align-items: center;
+    }
+    .catag-grid {
+      flex-direction: column;
+    }
+    .catag-divider {
+      width: 100%;
+      height: 1px;
+    }
+  }
+
+  /* ── Full Architecture Diagrams (Day 7) ── */
+  .full-arch-diagram {
+    overflow-x: auto;
+    padding: 0.75rem 0.5rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .arch-svg {
+    display: block;
+    width: 100%;
+    max-width: 680px;
+    height: auto;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 700px) {
+    .arch-svg {
+      min-width: 560px;
+    }
+  }
+</style>

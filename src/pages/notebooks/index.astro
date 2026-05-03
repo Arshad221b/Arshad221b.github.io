@@ -1,0 +1,453 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { days as neuroscienceDays } from '../../data/neuroscience-days';
+import { days as emotionDays } from '../../data/emotion-days';
+import { days as modernNetsDays } from '../../data/modern-nets-days';
+
+const title = "Notebooks — Arshad Kazi";
+
+const experiments = [
+  {
+    title: "Overview of Modern Nets",
+    slug: "modern-nets",
+    totalDays: 10,
+    completedDays: modernNetsDays.filter(d => d.bullets.length > 0).length,
+    commitment: "1 hr / day",
+    status: "active" as const,
+    startDate: "2026-04-27",
+    description: "Revisiting transformers, tokenizers, attention, and the GPT family. Intuitive understanding for interviews and curiosity.",
+    tags: ["deep learning", "transformers", "LLMs"],
+  },
+  {
+    title: "Search Images with Words",
+    slug: "vlm-search",
+    totalDays: 10,
+    completedDays: 4,
+    commitment: "1 hr / day, weekdays",
+    status: "active" as const,
+    startDate: "2026-03-30",
+    description: "From neuroscience to CLIP to building a working on-device search prototype. How do VLMs bind words to pixels?",
+    tags: ["computer vision", "machine learning", "multimodal"],
+  },
+  {
+    title: "Understanding Emotion",
+    slug: "emotion",
+    totalDays: 7,
+    completedDays: 7,
+    commitment: "1 hr / day",
+    status: "completed" as const,
+    startDate: "2026-03-28",
+    endDate: "2026-04-09",
+    description: "What are emotions, really? The neuroscience of feeling, and why an autistic brain might process them differently.",
+    conclusion: "Nobody agrees on what emotions are, but evolution built them for a reason. Basic emotions are universal biology. Higher cognitive emotions like guilt are trust signals. Happiness comes from relationships, not money. Emotions actively distort memory, attention, and judgement. Empathy is not mirroring, it is feeling what others feel. The people we need are those who can manage it.",
+    tags: ["neuroscience", "psychology", "autism"],
+  },
+  {
+    title: "Understanding the Visual Cortex",
+    slug: "neuroscience",
+    totalDays: 7,
+    completedDays: 7,
+    commitment: "1 hr / day",
+    status: "completed" as const,
+    startDate: "2026-03-21",
+    endDate: "2026-03-27",
+    description: "How does the brain process what the eye sees? Tracing the path from retina through two parallel streams, the mechanisms at each stage, and the computations behind perception.",
+    conclusion: "The brain doesn't see the world as it is. It builds a model of what the world should be, and checks it against incoming data. The whole journey, from photon hitting the retina to a fully contextualised, emotionally-tagged memory, takes roughly 150 milliseconds.",
+    tags: ["neuroscience", "perception", "visual cortex"],
+  },
+];
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+---
+
+<Layout title={title} activeNav="/notebooks" description="Time-boxed deep dives into topics I'm curious about. Pick a question, spend a week on it, write what I learn." ogImage="/images/og-tiny-experiments.jpg">
+  <div class="te-page">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      <span>Time-boxed Inquiry</span>
+    </div>
+
+    <div class="page-header">
+      <h1>Notebooks</h1>
+    </div>
+
+    <div class="te-intro-box">
+      <div class="intro-grid">
+        <div class="intro-block">
+          <h2>The why</h2>
+          <p>We are not built to stay inside one domain. The mind reaches across boundaries instinctively. It sees a pattern in one place and wants to know if the same pattern holds somewhere else entirely. That impulse is not distraction. It is, I think, the deepest form of attention. The willingness to stay with a question long enough that the question itself begins to change shape.</p>
+          <p>I do not do this to learn a subject. I do it because something in me needs to understand how things work at the level where they stop being separate subjects and start being the same thing. The boundary between neuroscience and computation, between perception and meaning, between what the body knows and what the mind believes it knows. That boundary is where the interesting questions live.</p>
+        </div>
+
+        <div class="intro-block">
+          <h2>The practice</h2>
+          <p>One question. One week. One hour per day. The constraint is deliberate. Not because an hour is enough to understand anything, but because a bounded space forces honesty. You cannot pretend to have understood something when you only have sixty minutes. You have to confront what you actually know, write it down, and return the next day to find out where you were wrong.</p>
+          <p>Leonardo da Vinci called himself a "discepolo della esperienza", a disciple of experience. He filled notebooks not to master subjects but because the act of looking closely was itself the point. Thousands of pages of questions, observations, half-formed connections. No curriculum. No credential. Just the daily discipline of refusing to look away from what he did not understand. That is the closest description I have for what this is.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <span class="section-label">Running</span>
+      <span class="section-count">{experiments.filter(e => e.status === 'active').length}</span>
+    </div>
+
+    <div class="experiments-grid">
+      {experiments.filter(e => e.status === 'active').map(exp => (
+        <a href={`/notebooks/${exp.slug}`} class="exp-card">
+          <div class="exp-card-glow"></div>
+          <div class="exp-card-content">
+            <div class="exp-card-header">
+              <span class="exp-badge active">Day {exp.completedDays}/{exp.totalDays}</span>
+              <span class="exp-commitment">{exp.commitment}</span>
+            </div>
+            <h3>{exp.title}</h3>
+            <p>{exp.description}</p>
+            <div class="exp-progress">
+              {Array.from({length: exp.totalDays}).map((_, i) => (
+                <span class={`exp-dot ${i < exp.completedDays ? 'filled' : ''}`} />
+              ))}
+            </div>
+            <div class="exp-card-footer">
+              <div class="exp-tags">
+                {exp.tags.map(tag => (
+                  <span class="exp-tag">{tag}</span>
+                ))}
+              </div>
+              <span class="exp-date">Started {formatDate(exp.startDate)}</span>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+
+    <div class="section-header">
+      <span class="section-label">Completed</span>
+    </div>
+
+    <div class="experiments-grid">
+      {experiments.filter(e => e.status === 'completed').map(exp => {
+        const days = exp.slug === 'neuroscience' ? neuroscienceDays : exp.slug === 'emotion' ? emotionDays : [];
+        const activeDays = days.filter(d => d.curiosityTitle);
+        return (
+        <a href={`/notebooks/${exp.slug}`} class="exp-card completed">
+          <div class="exp-card-content">
+            <div class="exp-card-header">
+              <span class="exp-badge done">{exp.totalDays} days</span>
+              <span class="exp-commitment">{exp.commitment}</span>
+            </div>
+            <h3>{exp.title}</h3>
+            <p>{exp.description}</p>
+            
+            {exp.conclusion && (
+              <div class="exp-conclusion">
+                <p>{exp.conclusion}</p>
+              </div>
+            )}
+
+            <div class="exp-timeline">
+              <span class="timeline-label">The journey</span>
+              <div class="timeline-steps">
+                {activeDays.map((d) => (
+                  <div class="timeline-step">
+                    <span class="timeline-num">{d.day}</span>
+                    <span class="timeline-q">{d.curiosityTitle}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div class="exp-card-footer">
+              <div class="exp-tags">
+                {exp.tags.map(tag => (
+                  <span class="exp-tag">{tag}</span>
+                ))}
+              </div>
+              <span class="exp-cta">Read the full experiment</span>
+            </div>
+          </div>
+        </a>
+      );})}
+    </div>
+
+  </div>
+</Layout>
+
+<style>
+  .te-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .te-intro-box {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: var(--space-md);
+  }
+
+  .intro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+  }
+
+  .intro-block h2 {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-accent);
+    margin-bottom: var(--space-sm);
+  }
+
+  .intro-block p {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    margin: 0 0 var(--space-sm) 0;
+  }
+
+  .intro-block p:last-child {
+    margin-bottom: 0;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+  }
+
+  .section-count {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 500;
+    background: var(--color-accent);
+    color: white;
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+  }
+
+  .experiments-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .exp-card {
+    position: relative;
+    display: block;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: var(--space-md);
+    text-decoration: none;
+    overflow: hidden;
+    transition: all 0.25s ease;
+  }
+
+  .exp-card:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(196, 116, 63, 0.12);
+    text-decoration: none;
+  }
+
+  .exp-card-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+  }
+
+  .exp-card.completed .exp-card-glow {
+    background: linear-gradient(90deg, var(--color-text-muted), var(--color-text-secondary));
+  }
+
+  .exp-card-content {
+    position: relative;
+  }
+
+  .exp-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-xs);
+  }
+
+  .exp-badge {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+  }
+
+  .exp-badge.active {
+    background: var(--color-accent);
+    color: white;
+  }
+
+  .exp-badge.done {
+    background: var(--color-tag-bg);
+    color: var(--color-text-secondary);
+  }
+
+  .exp-commitment {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+  }
+
+  .exp-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 var(--space-xs) 0;
+  }
+
+  .exp-card > .exp-card-content > p {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin: 0 0 var(--space-sm) 0;
+  }
+
+  .exp-progress {
+    display: flex;
+    gap: 3px;
+    margin-bottom: var(--space-sm);
+  }
+
+  .exp-dot {
+    width: 10px;
+    height: 3px;
+    background: var(--color-border);
+    border-radius: 2px;
+  }
+
+  .exp-dot.filled {
+    background: var(--color-accent);
+  }
+
+  .exp-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+
+  .exp-tags {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+
+  .exp-tag {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    font-weight: 500;
+    background: var(--color-tag-bg);
+    color: var(--color-tag-text);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+  }
+
+  .exp-date {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+  }
+
+  .exp-cta {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-accent);
+  }
+
+  .exp-card:hover .exp-cta {
+    text-decoration: underline;
+  }
+
+  .exp-conclusion {
+    padding: var(--space-sm);
+    background: var(--color-accent-soft);
+    border-radius: 6px;
+    margin-bottom: var(--space-sm);
+  }
+
+  .exp-conclusion p {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--color-text);
+    margin: 0;
+    line-height: 1.7;
+  }
+
+  .exp-timeline {
+    margin-bottom: var(--space-sm);
+  }
+
+  .timeline-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    display: block;
+    margin-bottom: var(--space-xs);
+  }
+
+  .timeline-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+
+  .timeline-step {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 0.2rem 0.4rem;
+    background: var(--color-tag-bg);
+    border-radius: 3px;
+  }
+
+  .timeline-num {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  .timeline-q {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    color: var(--color-text-secondary);
+  }
+
+  @media (max-width: 600px) {
+    .intro-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

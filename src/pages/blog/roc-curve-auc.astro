@@ -1,0 +1,581 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+---
+
+<BlogPost
+  title="ROC Curves and AUC: Picking the Right Threshold for Your Model"
+  date="2024-02-01"
+  description="Why accuracy fails on skewed data, how confusion matrices work, and how to use ROC curves and AUC to evaluate and compare probabilistic classifiers."
+  tags={["machine learning", "evaluation", "ROC", "AUC", "classification"]}
+>
+
+<p>
+  In this blog we will learn about validation metrics. One of the most useful is the ROC curve.
+</p>
+
+<div class="objectives-box">
+  <p class="objectives-title">By the end of this blog you will know</p>
+  <div class="objectives-grid">
+    <span>True/False Positive &amp; Negative</span>
+    <span>Confusion matrix</span>
+    <span>ROC curve</span>
+    <span>Why accuracy fails</span>
+    <span>Best threshold selection</span>
+    <span>AUC and model comparison</span>
+  </div>
+</div>
+
+<p>
+  Suppose we have a model that predicts whether a patient has cancer or not. Output is 1 (positive) or 0 (benign).
+  Our model is a binary probabilistic classifier. It does not give a hard label. It gives a probability.
+</p>
+
+<p>
+  If you are a doctor, you want this model to be as accurate as possible. Cancer is serious.
+  So choosing the right validation metric matters a lot.
+</p>
+
+<hr />
+
+<h2>Why Accuracy Is Not Enough</h2>
+
+<p>
+  The obvious first choice is accuracy: the number of correctly classified samples divided by total samples.
+</p>
+
+<div class="eq-block">
+  $$\text&lbrace;Accuracy&rbrace; = \frac&lbrace;\text&lbrace;correct predictions&rbrace;&rbrace;&lbrace;\text&lbrace;total samples&rbrace;&rbrace;$$
+</div>
+
+<p>
+  Now suppose 70% of your 1000 test samples are cancer positive. A naive model that predicts 1 for
+  <em>everyone</em> gets 70% accuracy. If the split was 90/10, it gets 90%. That is a broken metric on skewed data.
+</p>
+
+<div class="eq-note">
+  Accuracy is only meaningful when your class distribution is balanced. In medical data, it almost never is.
+</div>
+
+<hr />
+
+<h2>True Positive, True Negative, False Positive, False Negative</h2>
+
+<p>Four values that actually tell you what is going on:</p>
+
+<div class="four-grid">
+  <div class="four-card tp">
+    <strong>True Positive (TP)</strong>
+    Patient has cancer. Model predicted cancer.
+  </div>
+  <div class="four-card tn">
+    <strong>True Negative (TN)</strong>
+    Patient is benign. Model predicted benign.
+  </div>
+  <div class="four-card fp">
+    <strong>False Positive (FP)</strong>
+    Patient is benign. Model predicted cancer.
+  </div>
+  <div class="four-card fn">
+    <strong>False Negative (FN)</strong>
+    Patient has cancer. Model predicted benign.
+  </div>
+</div>
+
+<p>
+  False negatives are the dangerous ones here. Telling a cancer patient they are fine is a serious mistake.
+  We want FN as low as possible. A few FP (sending healthy patients for more tests) is more acceptable.
+</p>
+
+<h3>Sample data</h3>
+
+<pre><code>y_true = [0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1]
+y_pred = [0.1, 0.3, 0.2, 0.6, 0.8, 0.05, 0.9,
+          0.5, 0.3, 0.66, 0.3, 0.2, 0.85, 0.15, 0.99]</code></pre>
+
+<p>
+  The model gives probabilities, not hard labels. We need to choose a threshold to turn probabilities into 0 or 1.
+</p>
+
+<h3>Threshold value</h3>
+
+<p>
+  A threshold is the cutoff: above it we predict positive, below it we predict negative.
+  At threshold 0.5:
+</p>
+
+<pre><code>threshold = 0.5
+y_output = [1 if x >= threshold else 0 for x in y_pred]
+# [0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1]</code></pre>
+
+<pre><code>from sklearn import metrics
+
+accuracy = metrics.accuracy_score(y_true, y_output)
+# 0.733</code></pre>
+
+<p>73% accuracy. Not bad looking. But we already know accuracy is misleading here.</p>
+
+<h3>Computing the four values</h3>
+
+<pre><code>def true_positive(y_true, y_pred):
+    return sum(1 for yt, yp in zip(y_true, y_pred) if yt == 1 and yp == 1)
+
+def true_negative(y_true, y_pred):
+    return sum(1 for yt, yp in zip(y_true, y_pred) if yt == 0 and yp == 0)
+
+def false_positive(y_true, y_pred):
+    return sum(1 for yt, yp in zip(y_true, y_pred) if yt == 0 and yp == 1)
+
+def false_negative(y_true, y_pred):
+    return sum(1 for yt, yp in zip(y_true, y_pred) if yt == 1 and yp == 0)</code></pre>
+
+<pre><code>tp = true_positive(y_true, y_output)   # 4
+tn = true_negative(y_true, y_output)   # 7
+fp = false_positive(y_true, y_output)  # 3
+fn = false_negative(y_true, y_output)  # 1</code></pre>
+
+<hr />
+
+<h2>Confusion Matrix</h2>
+
+<p>A confusion matrix puts those four values into a 2&times;2 table:</p>
+
+<table class="conf-matrix">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Predicted Negative</th>
+      <th>Predicted Positive</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Actual Negative</th>
+      <td class="cell-tn">True Negative (7)</td>
+      <td class="cell-fp">False Positive (3)</td>
+    </tr>
+    <tr>
+      <th>Actual Positive</th>
+      <td class="cell-fn">False Negative (1)</td>
+      <td class="cell-tp">True Positive (4)</td>
+    </tr>
+  </tbody>
+</table>
+
+<pre><code>metrics.confusion_matrix(y_true, y_output)
+# array([[7, 3],
+#        [1, 4]])</code></pre>
+
+<h3>TPR and FPR</h3>
+
+<p>
+  From the confusion matrix we derive two rates. The first is <strong>True Positive Rate (TPR)</strong>,
+  also called sensitivity: how good is the model at catching actual positive cases.
+</p>
+
+<div class="eq-block">
+  $$\text&lbrace;TPR&rbrace; = \frac&lbrace;TP&rbrace;&lbrace;TP + FN&rbrace;$$
+</div>
+
+<p>
+  The second is <strong>False Positive Rate (FPR)</strong>: how often the model incorrectly flags a negative case as positive.
+</p>
+
+<div class="eq-block">
+  $$\text&lbrace;FPR&rbrace; = \frac&lbrace;FP&rbrace;&lbrace;TN + FP&rbrace;$$
+</div>
+
+<div class="eq-note">
+  At threshold 0.5: TPR = 4/(4+1) = <strong>0.8</strong>, FPR = 3/(7+3) = <strong>0.3</strong>.
+  A good model has high TPR and low FPR. We want top-left on the ROC curve.
+</div>
+
+<p>
+  You can also compute <strong>Specificity</strong> (True Negative Rate), which is just $1 - \text&lbrace;FPR&rbrace;$:
+</p>
+
+<div class="eq-block">
+  $$\text&lbrace;TNR&rbrace; = 1 - \text&lbrace;FPR&rbrace; = \frac&lbrace;TN&rbrace;&lbrace;TN + FP&rbrace;$$
+</div>
+
+<hr />
+
+<h2>ROC Curve</h2>
+
+<p>
+  ROC stands for Receiver Operating Characteristics. Instead of picking one threshold and computing one
+  (TPR, FPR) pair, we compute it for every possible threshold and plot them all.
+</p>
+
+<pre><code>thresholds = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
+tprs = []
+fprs = []
+for threshold in thresholds:
+    y_output = [1 if x >= threshold else 0 for x in y_pred]
+    tp = true_positive(y_true, y_output)
+    tn = true_negative(y_true, y_output)
+    fp = false_positive(y_true, y_output)
+    fn = false_negative(y_true, y_output)
+    tprs.append(tp / (tp + fn))
+    fprs.append(fp / (tn + fp))
+
+import pandas as pd
+df = pd.DataFrame(&lbrace;'Threshold': thresholds, 'TPR': tprs, 'FPR': fprs&rbrace;)
+print(df)</code></pre>
+
+<p>
+  As we raise the threshold, the model becomes harder to trigger a positive prediction. TPR drops.
+  FPR also drops because if even true positives are hard to call, false positives drop even faster.
+</p>
+
+<div class="threshold-table-wrap">
+  <table class="threshold-table">
+    <thead>
+      <tr><th>Threshold</th><th>TPR</th><th>FPR</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>0.0</td><td>1.0</td><td>1.0</td></tr>
+      <tr><td>0.1</td><td>1.0</td><td>0.9</td></tr>
+      <tr><td>0.2</td><td>1.0</td><td>0.7</td></tr>
+      <tr><td>0.3</td><td>0.8</td><td>0.6</td></tr>
+      <tr><td>0.4</td><td>0.8</td><td>0.3</td></tr>
+      <tr><td>0.5</td><td>0.8</td><td>0.3</td></tr>
+      <tr class="best-row"><td>0.6 ★</td><td>0.8</td><td>0.2</td></tr>
+      <tr><td>0.7</td><td>0.6</td><td>0.1</td></tr>
+      <tr><td>0.8</td><td>0.6</td><td>0.1</td></tr>
+      <tr><td>0.9</td><td>0.4</td><td>0.0</td></tr>
+      <tr><td>1.0</td><td>0.0</td><td>0.0</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>ROC curve</h3>
+
+<p>Plot (FPR, TPR) for every threshold. The filled area is the AUC.</p>
+
+<div class="roc-chart">
+  <svg viewBox="0 0 400 360" xmlns="http://www.w3.org/2000/svg" class="roc-svg">
+    <!-- grid lines -->
+    <line x1="116" y1="20" x2="116" y2="320" stroke="var(--color-border)" stroke-width="0.5" stroke-dasharray="4,4"/>
+    <line x1="182" y1="20" x2="182" y2="320" stroke="var(--color-border)" stroke-width="0.5" stroke-dasharray="4,4"/>
+    <line x1="248" y1="20" x2="248" y2="320" stroke="var(--color-border)" stroke-width="0.5" stroke-dasharray="4,4"/>
+    <line x1="314" y1="20" x2="314" y2="320" stroke="var(--color-border)" stroke-width="0.5" stroke-dasharray="4,4"/>
+    <line x1="50" y1="260" x2="380" y2="260" stroke="var(--color-border)" stroke-width="0.5" stroke-dasharray="4,4"/>
+    <line x1="50" y1="200" x2="380" y2="200" stroke="var(--color-border)" stroke-width="0.5" stroke-dasharray="4,4"/>
+    <line x1="50" y1="140" x2="380" y2="140" stroke="var(--color-border)" stroke-width="0.5" stroke-dasharray="4,4"/>
+    <line x1="50" y1="80"  x2="380" y2="80"  stroke="var(--color-border)" stroke-width="0.5" stroke-dasharray="4,4"/>
+    <!-- diagonal (random classifier) -->
+    <line x1="50" y1="320" x2="380" y2="20" stroke="var(--color-border)" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <!-- fill under curve -->
+    <polygon points="50,320 50,200 83,140 116,80 149,80 248,80 281,20 347,20 380,20 380,320" fill="var(--color-accent)" opacity="0.12"/>
+    <!-- curve -->
+    <polyline points="50,320 50,200 83,140 116,80 149,80 248,80 281,20 347,20 380,20" fill="none" stroke="var(--color-accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <!-- axes -->
+    <line x1="50" y1="20" x2="50" y2="320" stroke="var(--color-text-muted)" stroke-width="1.5"/>
+    <line x1="50" y1="320" x2="380" y2="320" stroke="var(--color-text-muted)" stroke-width="1.5"/>
+    <!-- x-axis ticks + labels -->
+    <text x="50"  y="338" text-anchor="middle" font-size="11" fill="var(--color-text-muted)" font-family="var(--font-mono)">0</text>
+    <text x="116" y="338" text-anchor="middle" font-size="11" fill="var(--color-text-muted)" font-family="var(--font-mono)">0.2</text>
+    <text x="182" y="338" text-anchor="middle" font-size="11" fill="var(--color-text-muted)" font-family="var(--font-mono)">0.4</text>
+    <text x="248" y="338" text-anchor="middle" font-size="11" fill="var(--color-text-muted)" font-family="var(--font-mono)">0.6</text>
+    <text x="314" y="338" text-anchor="middle" font-size="11" fill="var(--color-text-muted)" font-family="var(--font-mono)">0.8</text>
+    <text x="380" y="338" text-anchor="middle" font-size="11" fill="var(--color-text-muted)" font-family="var(--font-mono)">1.0</text>
+    <text x="215" y="355" text-anchor="middle" font-size="12" fill="var(--color-text-muted)" font-family="var(--font-sans)">FPR</text>
+    <!-- y-axis ticks + labels -->
+    <text x="42" y="324" text-anchor="end" font-size="11" fill="var(--color-text-muted)" font-family="var(--font-mono)">0</text>
+    <text x="42" y="264" text-anchor="end" font-size="11" fill="var(--color-text-muted)" font-family="var(--font-mono)">0.2</text>
+    <text x="42" y="204" text-anchor="end" font-size="11" fill="var(--color-text-muted)" font-family="var(--font-mono)">0.4</text>
+    <text x="42" y="144" text-anchor="end" font-size="11" fill="var(--color-text-muted)" font-family="var(--font-mono)">0.6</text>
+    <text x="42" y="84"  text-anchor="end" font-size="11" fill="var(--color-text-muted)" font-family="var(--font-mono)">0.8</text>
+    <text x="42" y="24"  text-anchor="end" font-size="11" fill="var(--color-text-muted)" font-family="var(--font-mono)">1.0</text>
+    <text x="14" y="175" text-anchor="middle" font-size="12" fill="var(--color-text-muted)" font-family="var(--font-sans)" transform="rotate(-90 14 175)">TPR</text>
+    <!-- AUC label -->
+    <text x="340" y="130" text-anchor="end" font-size="13" fill="var(--color-accent)" font-family="var(--font-sans)" font-weight="600">AUC = 0.83</text>
+    <!-- best threshold point -->
+    <circle cx="116" cy="80" r="6" fill="var(--color-accent)" stroke="var(--color-bg)" stroke-width="2"/>
+    <line x1="116" y1="74" x2="160" y2="50" stroke="var(--color-accent)" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="163" y="48" font-size="11" fill="var(--color-accent)" font-family="var(--font-sans)" font-weight="600">threshold = 0.6</text>
+    <text x="163" y="62" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">(FPR=0.2, TPR=0.8)</text>
+    <!-- diagonal label -->
+    <text x="330" y="55" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-sans)" transform="rotate(-40 330 55)">random</text>
+  </svg>
+</div>
+
+<h3>Finding the best threshold</h3>
+
+<p>
+  We want the point on the curve closest to the top-left corner (0, 1). That is where TPR is highest
+  and FPR is lowest. Threshold 0.6 gives (FPR=0.2, TPR=0.8) which is the closest to the ideal point.
+</p>
+
+<div class="eq-note">
+  Mathematically, the best threshold minimises $\sqrt&lbrace;FPR^2 + (1 - TPR)^2&rbrace;$, the Euclidean distance to the ideal point (0, 1).
+</div>
+
+<hr />
+
+<h2>AUC (Area Under the Curve)</h2>
+
+<p>
+  AUC is the area under the ROC curve. It summarises the model's performance across all thresholds into a single number.
+</p>
+
+<div class="auc-grid">
+  <div class="auc-card">
+    <span class="auc-val">AUC = 1.0</span>
+    <span>Perfect model. TPR=1 at every threshold, FPR=0 everywhere except threshold 0.</span>
+  </div>
+  <div class="auc-card">
+    <span class="auc-val">AUC = 0.5</span>
+    <span>Random guess. The curve is just the diagonal line.</span>
+  </div>
+  <div class="auc-card">
+    <span class="auc-val">AUC &lt; 0.5</span>
+    <span>Worse than random. Flip your predictions and you get &gt;0.5.</span>
+  </div>
+</div>
+
+<h3>Comparing two models</h3>
+
+<p>
+  AUC is also useful for comparing models. Here we have two sets of predictions for the same ground truth.
+</p>
+
+<pre><code>y_pred1 = [0.6, 0.4, 0.1, 0.3, 0.9, 0.15, 0.95,
+           0.7, 0.4, 0.5, 0.6, 0.4, 0.95, 0.10, 0.80]
+
+model1_auc = metrics.roc_auc_score(y_true, y_pred)
+model2_auc = metrics.roc_auc_score(y_true, y_pred1)
+
+print("AUC model1:", model1_auc)   # 0.83
+print("AUC model2:", model2_auc)   # 0.77</code></pre>
+
+<p>
+  Model 1 has AUC 0.83 vs model 2 at 0.77. Higher AUC means the model is better at ranking
+  positive samples above negative ones across all thresholds. Model 1 wins.
+</p>
+
+<div class="eq-note">
+  AUC has a nice probabilistic interpretation: it is the probability that the model ranks a randomly chosen
+  positive sample higher than a randomly chosen negative sample.
+</div>
+
+<hr />
+
+<p>To learn about precision and recall, read <a href="#">this blog</a>.</p>
+
+<p>Questions? <a href="mailto:me@arshad-kazi.com">me@arshad-kazi.com</a></p>
+
+</BlogPost>
+
+<style>
+  .objectives-box {
+    background: var(--color-tag-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 1rem 1.4rem;
+    margin: 1.5rem 0;
+  }
+
+  .objectives-title {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 0.7rem 0;
+  }
+
+  .objectives-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .objectives-grid span {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 0.35rem 0.6rem;
+    text-align: center;
+  }
+
+  .four-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin: 1.2rem 0;
+  }
+
+  .four-card {
+    padding: 0.9rem 1rem;
+    border-radius: 8px;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+  }
+
+  .four-card strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.82rem;
+    color: var(--color-text);
+  }
+
+  .four-card.tp { background: rgba(34, 197, 94, 0.07); border-color: rgba(34, 197, 94, 0.25); }
+  .four-card.tn { background: rgba(59, 130, 246, 0.07); border-color: rgba(59, 130, 246, 0.25); }
+  .four-card.fp { background: rgba(249, 115, 22, 0.07); border-color: rgba(249, 115, 22, 0.25); }
+  .four-card.fn { background: rgba(239, 68, 68, 0.09); border-color: rgba(239, 68, 68, 0.3); }
+
+  .conf-matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    margin: 1.2rem 0;
+  }
+
+  .conf-matrix th, .conf-matrix td {
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--color-border);
+    text-align: center;
+  }
+
+  .conf-matrix thead th {
+    background: var(--color-tag-bg);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .conf-matrix tbody th {
+    background: var(--color-tag-bg);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: left;
+  }
+
+  .cell-tp { background: rgba(34, 197, 94, 0.08); font-weight: 600; }
+  .cell-tn { background: rgba(59, 130, 246, 0.08); font-weight: 600; }
+  .cell-fp { background: rgba(249, 115, 22, 0.08); }
+  .cell-fn { background: rgba(239, 68, 68, 0.1); }
+
+  .auc-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin: 1.2rem 0;
+  }
+
+  .auc-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 1rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: var(--font-sans);
+    font-size: 0.83rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+
+  .auc-val {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .eq-block {
+    margin: 1.5rem 0;
+    padding: 1rem 1.5rem;
+    background: var(--color-accent-soft);
+    border-left: 3px solid var(--color-accent);
+    border-radius: 0 8px 8px 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+
+  .eq-note {
+    margin: 0.6rem 0 1.5rem 0;
+    padding: 0.7rem 1rem;
+    background: var(--color-tag-bg);
+    border-radius: 6px;
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  .threshold-table-wrap {
+    margin: 1.2rem 0;
+    overflow-x: auto;
+  }
+
+  .threshold-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+
+  .threshold-table th, .threshold-table td {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-border);
+    text-align: center;
+  }
+
+  .threshold-table thead th {
+    background: var(--color-tag-bg);
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+  }
+
+  .threshold-table tbody tr:hover {
+    background: var(--color-tag-bg);
+  }
+
+  .threshold-table .best-row td {
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    font-weight: 700;
+    border-color: var(--color-accent);
+  }
+
+  .roc-chart {
+    margin: 1.5rem 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .roc-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  @media (max-width: 600px) {
+    .objectives-grid,
+    .auc-grid { grid-template-columns: 1fr 1fr; }
+    .four-grid { grid-template-columns: 1fr; }
+  }
+</style>

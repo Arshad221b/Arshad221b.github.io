@@ -1,0 +1,238 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = "Thoughts — Arshad Kazi";
+---
+
+<Layout title={title} activeNav="/thoughts" description="Personal writing by Arshad Kazi. Things I am confused about, excited by, or trying to put into words. Published on Substack.">
+  <div class="thoughts-page">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      <span>Personal Writing</span>
+    </div>
+
+    <div class="page-header">
+      <h1>Thoughts</h1>
+      <p class="page-subtitle">
+        I write about things I am confused about, and sometimes things that excite me. The world does not always make sense to me, and language feels like a clumsy tool to understand it. So I try to put these thoughts into words. This is my way of making sense of things that do not fit neatly into conversation, and expressing what I cannot say out loud.
+      </p>
+    </div>
+
+    <div class="substack-showcase">
+      <div class="showcase-glow"></div>
+      
+      <div class="substack-icon-wrapper">
+        <div class="substack-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+        </div>
+        <div class="icon-ripple"></div>
+      </div>
+      
+      <div class="substack-details">
+        <span class="substack-label">Published on</span>
+        <h2>Arshad's Substack</h2>
+        <p>This is where I share the thoughts I cannot easily talk about. Some things are too much to burden others with, some people do not have the time to listen, and sometimes I simply do not have the right words in the moment. Writing is my way of untangling what goes on in my mind.</p>
+        <a href="https://substack.com/@arshadkazi" target="_blank" class="substack-btn">
+          <span>Read on Substack</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </div>
+
+
+    <div class="topics-section">
+      <h3>What I Write About</h3>
+      <div class="topics-grid">
+        <div class="topic-pill">
+          <span class="topic-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <span>Confusion</span>
+        </div>
+        <div class="topic-pill">
+          <span class="topic-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </span>
+          <span>Excitement</span>
+        </div>
+        <div class="topic-pill">
+          <span class="topic-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </span>
+          <span>Self</span>
+        </div>
+        <div class="topic-pill">
+          <span class="topic-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
+          <span>Expression</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .thoughts-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2xl);
+  }
+
+  .substack-showcase {
+    position: relative;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .showcase-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 50% 30%, var(--color-accent-soft) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .substack-icon-wrapper {
+    position: relative;
+    margin-bottom: var(--space-md);
+  }
+
+  .substack-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+    border-radius: 12px;
+    color: white;
+    box-shadow: 0 4px 16px rgba(196, 116, 63, 0.3);
+  }
+
+  .icon-ripple {
+    position: absolute;
+    inset: -3px;
+    border: 2px solid var(--color-accent);
+    border-radius: 14px;
+    opacity: 0.3;
+    animation: ripple 2s infinite;
+  }
+
+  @keyframes ripple {
+    0% { transform: scale(1); opacity: 0.3; }
+    100% { transform: scale(1.1); opacity: 0; }
+  }
+
+  .substack-details {
+    position: relative;
+  }
+
+  .substack-label {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .substack-details h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: var(--space-xs) 0 var(--space-sm) 0;
+  }
+
+  .substack-details p {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--space-md) 0;
+    line-height: 1.7;
+  }
+
+  .substack-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 0.6rem 1.25rem;
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+    color: white;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 16px rgba(196, 116, 63, 0.3);
+  }
+
+  .substack-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(196, 116, 63, 0.4);
+    text-decoration: none;
+  }
+
+  .substack-btn svg {
+    transition: transform 0.2s ease;
+  }
+
+  .substack-btn:hover svg {
+    transform: translateX(3px);
+  }
+
+  .topics-section {
+    text-align: center;
+    padding: var(--space-md);
+    background: var(--color-surface);
+    border: 1px dashed var(--color-border);
+    border-radius: 12px;
+  }
+
+  .topics-section h3 {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 var(--space-md) 0;
+  }
+
+  .topics-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-sm);
+  }
+
+  .topic-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 0.3rem 0.7rem;
+    background: var(--color-tag-bg);
+    border-radius: 20px;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+
+  .topic-icon {
+    display: flex;
+    color: var(--color-accent);
+  }
+
+</style>

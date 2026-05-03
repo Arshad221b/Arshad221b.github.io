@@ -1,0 +1,763 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = "CV — Arshad Kazi";
+const description = "Arshad Kazi — Data Scientist and Computer Vision Engineer with 5+ years of experience.";
+---
+
+<Layout title={title} activeNav="/cv" description={description}>
+  <div class="cv-page">
+
+    <div class="cv-header">
+      <div class="cv-name-block">
+        <h1>Arshad Kazi</h1>
+        <p class="cv-tagline">Data Scientist &amp; Computer Vision Engineer</p>
+      </div>
+      <div class="cv-contact">
+        <a href="https://github.com/arshad221b" target="_blank" rel="noopener">github.com/arshad221b</a>
+        <a href="https://www.arshad-kazi.com" target="_blank" rel="noopener">arshad-kazi.com</a>
+        <a href="https://linkedin.com/in/arshad221b" target="_blank" rel="noopener">linkedin/arshad221b</a>
+        <a href="mailto:arshadkaji97@gmail.com">arshadkaji97@gmail.com</a>
+
+      </div>
+    </div>
+
+    <section class="cv-section">
+      <h2 class="section-title">About</h2>
+      <div class="about-block">
+        <p>
+          Computer vision and machine learning engineer with five years of industry experience. My work
+          has spanned NLP and document understanding at a large financial data company, to building
+          real-time 3D pose estimation and player analysis systems at a sports tech startup. I have
+          shipped models to production using FastAPI, Docker, and AWS, and worked across the full
+          pipeline from data preparation through inference optimization.
+        </p>
+        <p>
+          On the research side, I work on 3D human pose reconstruction from 2D video, with a focus on
+          temporal modeling and efficient inference. I tend to understand things by reimplementing them
+          from scratch (NeRF, DINO, MotionBERT-style pose uplift) before working with them in
+          applied settings. I have also published in NLP, specifically on multilingual code-switching
+          with language models.
+        </p>
+      </div>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="section-title">Open To</h2>
+      <div class="open-to-grid">
+        <div class="open-to-item"><span class="open-label">Research collaborations</span><span class="open-desc">CV, SSL, pose estimation, segmentation</span></div>
+        <div class="open-to-item"><span class="open-label">Freelance / contract</span><span class="open-desc">Building full-stack ML systems end to end</span></div>
+        <div class="open-to-item"><span class="open-label">Full-time roles</span><span class="open-desc">ML engineering with depth and autonomy</span></div>
+      </div>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="section-title">Experience</h2>
+
+      <div class="timeline">
+        <div class="timeline-entry">
+          <div class="timeline-left">
+            <div class="timeline-meta">
+              <span class="timeline-date">Mar 2024 to Present</span>
+              <span class="timeline-badge active">Current</span>
+            </div>
+          </div>
+          <div class="timeline-content">
+            <div class="role-header">
+              <h3>Data Scientist, Computer Vision</h3>
+              <span class="company">Remote Resource, Noida</span>
+            </div>
+            <p class="role-desc">
+              Early-stage startup. I was brought in to independently build the computer vision side of a
+              sports analytics platform, no existing codebase, no team to hand things off to. I owned
+              the full system from video ingestion to structured insights.
+            </p>
+            <ul class="role-bullets">
+              <li>Built a 3D pose estimation pipeline for extracting skeletal keypoints and motion features from sports video. Engineered 15+ biomechanical features including joint angles, velocities, and trajectories for downstream performance analysis.</li>
+              <li>Implemented temporal consistency mechanisms (smoothing and interpolation) to handle occlusions and improve stability across frames.</li>
+              <li>Optimized inference to achieve near real-time processing at 15 to 25 FPS on standard GPU hardware.</li>
+              <li>Built an object detection pipeline for fast-moving objects, reaching 70% accuracy under challenging conditions.</li>
+              <li>Deployed a video junk classification system with 95% accuracy and low latency in production.</li>
+              <li>Deployed the full system on AWS EC2 using Docker and FastAPI. Pitched project ideas directly to clients and iterated based on their feedback.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="timeline-entry gap-entry">
+          <div class="timeline-left">
+            <div class="timeline-meta">
+              <span class="timeline-date">Oct 2023 to Feb 2024</span>
+              <span class="timeline-badge gap">5 mo</span>
+            </div>
+          </div>
+          <div class="timeline-content">
+            <div class="role-header">
+              <h3>Independent Researcher</h3>
+              <span class="company">Self-directed</span>
+            </div>
+            <p class="role-desc">
+              After nearly three years at Morningstar, I hit a wall. Not burnout exactly, more like a growing
+              sense that I was drifting. The work was good on paper but I had stopped feeling curious about it.
+              I left without a clear plan, which felt uncomfortable at the time but turned out to be necessary.
+            </p>
+            <p class="role-desc">
+              I spent a few months trying to figure out what I actually wanted to work on. I explored a lot,
+              read widely, experimented with ideas that had nothing to do with my job title, and got frustrated
+              with how much of the ML ecosystem felt like repackaged hype. I became less interested in
+              following trends and more interested in understanding things deeply. That shift eventually
+              pulled me back toward research and toward computer vision specifically, which is where I had
+              always found the most interesting problems.
+            </p>
+            <p class="role-desc">
+              During this period I also wrote and submitted a research paper, and started working on a 3D
+              pose research project that I have continued alongside my current role.
+            </p>
+            <ul class="role-bullets">
+              <li>Published "Contextual Code Switching for Machine Translation using Language Models", accepted at IEEE SmartGenCon, Bangalore. Compared model size vs. accuracy for multilingual translation across LLMs, Prompt Tuning, and LoRA fine-tuning.</li>
+              <li>Started research on 3D human pose reconstruction from 2D inputs using spatial and temporal modeling, ongoing since Jan 2025, currently in the paper-writing phase.</li>
+              <li>Implemented 3D image segmentation for CT and MRI scans, including a custom UNet architecture for volumetric data on lower-RAM GPU setups.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="timeline-entry">
+          <div class="timeline-left">
+            <div class="timeline-meta">
+              <span class="timeline-date">Jan 2021 to Sep 2023</span>
+              <span class="timeline-badge past">2 yr 9 mo</span>
+            </div>
+          </div>
+          <div class="timeline-content">
+            <div class="role-header">
+              <h3>Associate Data Scientist</h3>
+              <span class="company">Morningstar Inc., Mumbai</span>
+            </div>
+            <p class="role-desc">
+              My first proper industry role. Worked on NLP and document understanding for financial data,
+              a domain with real messiness (scanned PDFs, multilingual docs, inconsistent formatting) that
+              forced me to care about production quality, not just benchmark numbers. Received Employee of
+              the Month and Star of the Quarter recognition multiple times.
+            </p>
+
+            <ul class="role-bullets">
+              <li>Built a custom question-answering model for financial documents using RoBERTa trained on a custom dataset. Implemented text extraction from scanned images using Tesseract OCR.</li>
+              <li>Achieved 75% automation on document processing and deployed on AWS Lambda, reducing manual intervention significantly.</li>
+              <li>Implemented multi-class document classification using SVM, Random Forest, and XGBoost across multiple global markets.</li>
+              <li>Built an end-to-end data extraction and preprocessing pipeline with Tesseract OCR, achieving 92% accuracy, above manual accuracy. Deployed on AWS EC2.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="section-title">Research</h2>
+      <div class="pub-list">
+        <div class="pub-item">
+          <div class="pub-title">Contextual Code Switching for Machine Translation using Language Models</div>
+          <p class="pub-desc">Evaluated model size versus translation accuracy for multilingual code-switching tasks across multiple LLMs. Compared zero-shot prompting, Prompt Tuning, and LoRA fine-tuning strategies on unknown multilingual data.</p>
+        </div>
+        <div class="pub-item">
+          <div class="pub-title">3D Human Pose Reconstruction from 2D Inputs via Spatial and Temporal Modeling</div>
+          <p class="pub-desc">Custom model for lifting 2D keypoints to 3D poses, with GPU-based training pipeline, custom loss function, and inference optimization. Paper writing currently underway.</p>
+        </div>
+        <div class="pub-item">
+          <div class="pub-title">3D Image Segmentation for CT and MRI Scans</div>
+          <p class="pub-desc">Custom 3D UNet for volumetric medical image segmentation on lower-RAM GPU setups, with patch-wise training and organ-level labeling.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="section-title">Projects</h2>
+      <div class="projects-grid">
+        <div class="project-card">
+          <h3>2D to 3D Human Pose Uplift</h3>
+          <p>Transformer-based system inspired by MotionBERT that converts 2D keypoints into 3D human poses. Includes temporal modeling, full training pipeline, and 3D visualization.</p>
+        </div>
+        <div class="project-card">
+          <h3>DINO from Scratch</h3>
+          <p>Full reimplementation of DINO (Self-Distillation with No Labels) in PyTorch with Vision Transformers, momentum encoders, centering, sharpening, and multi-view alignment.</p>
+        </div>
+        <div class="project-card">
+          <h3>NeRF from Scratch</h3>
+          <p>Neural Radiance Fields implementation in PyTorch with positional encoding, hierarchical volume rendering, and efficient GPU batching for novel 3D view synthesis from 2D images.</p>
+        </div>
+        <div class="project-card">
+          <h3>3D U-Net for Medical Segmentation</h3>
+          <p>3D U-Net for CT/MRI volumetric segmentation with patch-wise training, organ-level labeling, and volumetric visualization. Designed to train on lower-RAM GPUs.</p>
+        </div>
+        <div class="project-card">
+          <h3>YOLO-NAS on Indian Street Signs</h3>
+          <p>Fine-tuned YOLO-NAS via SuperGradients on a custom Indian street sign dataset. Includes custom annotation support, training scripts, and optimized inference setup.</p>
+        </div>
+        <div class="project-card">
+          <h3>RAG on PDF</h3>
+          <p>Retrieval-Augmented Generation pipeline for answering questions from PDFs using LangChain, FAISS, and LLMs. Optimized for local-first use and fast contextual retrieval.</p>
+        </div>
+        <div class="project-card">
+          <h3>Named Entity Recognition</h3>
+          <p>Fine-tuned RoBERTa for token-level NER on custom data. Includes full preprocessing, training loop, and clean inference pipeline.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="section-title">Notable</h2>
+      <div class="notable-list">
+        <div class="notable-item">
+          <span class="notable-icon">&#9679;</span>
+          <p>ML blog with 100k+ visits. Referenced in Wiley Publication's <em>Artificial Intelligence Programming with Python</em>, pages 453 to 454.</p>
+        </div>
+        <div class="notable-item">
+          <span class="notable-icon">&#9679;</span>
+          <p>Open source projects with 300+ stars on GitHub.</p>
+        </div>
+        <div class="notable-item">
+          <span class="notable-icon">&#9679;</span>
+          <p>Top 3 at HackSRM: built a real-time deep learning model for heart disease prediction.</p>
+        </div>
+        <div class="notable-item">
+          <span class="notable-icon">&#9679;</span>
+          <p>Top 0.01% in CodeVita (TCS) and HackWithInfy (Infosys) coding competitions.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cv-section two-col">
+      <div class="col">
+        <h2 class="section-title">Skills</h2>
+        <div class="skills-block">
+          <div class="skill-group">
+            <span class="skill-label">Languages</span>
+            <div class="tech-stack"><span>Python</span><span>SQL</span></div>
+          </div>
+          <div class="skill-group">
+            <span class="skill-label">Frameworks</span>
+            <div class="tech-stack"><span>PyTorch</span><span>TensorFlow</span><span>Flask</span><span>FastAPI</span><span>LangChain</span></div>
+          </div>
+          <div class="skill-group">
+            <span class="skill-label">ML</span>
+            <div class="tech-stack"><span>CNNs</span><span>ViTs</span><span>UNets</span><span>YOLO</span><span>LLMs</span><span>LoRA</span><span>SVM</span><span>GBM</span></div>
+          </div>
+          <div class="skill-group">
+            <span class="skill-label">Tools</span>
+            <div class="tech-stack"><span>Docker</span><span>AWS EC2</span><span>AWS Lambda</span><span>Git</span><span>Weights &amp; Biases</span><span>GreatExpectations</span><span>CUDA</span></div>
+          </div>
+          <div class="skill-group">
+            <span class="skill-label">Libraries</span>
+            <div class="tech-stack"><span>OpenCV</span><span>Tesseract</span><span>Hugging Face</span><span>Pandas</span><span>NumPy</span><span>Scikit-learn</span><span>Matplotlib</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <h2 class="section-title">Education</h2>
+        <div class="edu-block">
+          <h3>B.Tech in Computer Science</h3>
+          <span class="company">Ramrao Adik Institute of Technology, Mumbai</span>
+          <span class="edu-year">2020</span>
+        </div>
+        <h2 class="section-title" style="margin-top: 2rem;">Languages</h2>
+        <div class="tech-stack"><span>English</span><span>Hindi</span><span>Marathi</span></div>
+        <h2 class="section-title" style="margin-top: 2rem;">Interests</h2>
+        <div class="tech-stack"><span>Self-supervised learning</span><span>Multimodal systems</span><span>Geometric CV</span><span>3D reconstruction</span><span>Pose estimation</span><span>Visual perception</span></div>
+      </div>
+    </section>
+
+  </div>
+</Layout>
+
+<style>
+  .cv-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .cv-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-lg);
+    padding-bottom: var(--space-lg);
+    border-bottom: 2px solid var(--color-accent);
+    flex-wrap: wrap;
+  }
+
+  .cv-name-block h1 {
+    font-family: var(--font-serif);
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem;
+    color: var(--color-text);
+    line-height: 1.1;
+  }
+
+  .cv-tagline {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-accent);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .cv-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    text-align: right;
+  }
+
+  .cv-contact a,
+  .cv-contact span {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    transition: color 0.15s;
+  }
+
+  .cv-contact a:hover {
+    color: var(--color-accent);
+  }
+
+  /* Sections */
+  .cv-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .cv-section.two-col {
+    flex-direction: row;
+    gap: var(--space-xl);
+    align-items: flex-start;
+  }
+
+  .cv-section.two-col .col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .section-title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-sm);
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* Open To */
+  .open-to-grid {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .open-to-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .open-label {
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .open-desc {
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+  }
+
+  /* About */
+  .about-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .about-block p {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  /* Timeline */
+  .timeline {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-left: 0;
+  }
+
+  .timeline-entry {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: var(--space-lg);
+    padding: var(--space-lg) 0;
+    border-bottom: 1px solid var(--color-border);
+    position: relative;
+  }
+
+  .timeline-entry:last-child {
+    border-bottom: none;
+  }
+
+  .timeline-entry .timeline-content {
+    border-left: 2px solid var(--color-border);
+    padding-left: var(--space-md);
+  }
+
+  .timeline-entry:first-child .timeline-content {
+    border-left-color: var(--color-accent);
+  }
+
+  .timeline-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    padding-top: 0.1rem;
+    position: relative;
+  }
+
+  .timeline-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.4rem;
+    padding-right: 20px;
+  }
+
+  .timeline-date {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+    text-align: right;
+  }
+
+  .timeline-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    padding: 0.18rem 0.45rem;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .timeline-badge.active {
+    background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+    color: var(--color-accent);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+  }
+
+  .timeline-badge.past {
+    background: color-mix(in srgb, var(--color-text-muted) 10%, transparent);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+  }
+
+  .timeline-badge.gap {
+    background: color-mix(in srgb, #a78bfa 12%, transparent);
+    color: #a78bfa;
+    border: 1px solid color-mix(in srgb, #a78bfa 25%, transparent);
+  }
+
+  .gap-entry .timeline-content {
+    border-left: 2px dashed color-mix(in srgb, #a78bfa 30%, transparent);
+    padding-left: var(--space-md);
+  }
+
+  .timeline-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .role-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .role-header h3 {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .company {
+    font-size: 0.82rem;
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+  }
+
+  .role-desc {
+    font-size: 0.9rem;
+    line-height: 1.75;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .role-bullets {
+    margin: 0;
+    padding-left: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .role-bullets li {
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: var(--color-text);
+  }
+
+  .project-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: var(--space-sm);
+    background: var(--color-surface);
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+  }
+
+  .project-block h4 {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+    font-family: var(--font-sans);
+  }
+
+  /* Tech stack pills — skills section only */
+  .tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+  }
+
+  .tech-stack span {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+  }
+
+  /* Publications */
+  .pub-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .pub-item {
+    padding: var(--space-md);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .pub-item.in-progress {
+    opacity: 0.72;
+    border-style: dashed;
+  }
+
+  .pub-venue {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .pub-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text);
+    font-family: var(--font-serif);
+    font-style: italic;
+  }
+
+  .pub-desc {
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  /* Projects grid */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+  }
+
+  .project-card {
+    padding: var(--space-md);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    transition: border-color 0.2s;
+  }
+
+  .project-card:hover {
+    border-color: var(--color-accent);
+  }
+
+  .project-card h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+    font-family: var(--font-sans);
+  }
+
+  .project-card p {
+    font-size: 0.84rem;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  /* Notable */
+  .notable-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .notable-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+
+  .notable-icon {
+    font-size: 0.4rem;
+    color: var(--color-accent);
+    flex-shrink: 0;
+    padding-top: 0.35rem;
+  }
+
+  .notable-item p {
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  /* Skills */
+  .skills-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .skill-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .skill-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* Education */
+  .edu-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .edu-block h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+    font-family: var(--font-serif);
+  }
+
+  .edu-year {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+  }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .cv-header {
+      flex-direction: column;
+    }
+    .cv-contact {
+      text-align: left;
+    }
+    .timeline-spine {
+      display: none;
+    }
+    .timeline-entry {
+      grid-template-columns: 1fr;
+      gap: var(--space-sm);
+    }
+    .timeline-left {
+      align-items: flex-start;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .timeline-meta {
+      align-items: flex-start;
+      padding-right: 0;
+    }
+    .projects-grid {
+      grid-template-columns: 1fr;
+    }
+    .cv-section.two-col {
+      flex-direction: column;
+    }
+  }
+</style>

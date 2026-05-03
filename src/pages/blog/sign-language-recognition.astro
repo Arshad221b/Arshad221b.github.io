@@ -1,0 +1,413 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+---
+
+<BlogPost
+  title="Building a Sign Language Recognition System with CNNs and OpenCV"
+  date="2024-03-10"
+  description="A practical walkthrough of building a real-time American Sign Language alphabet recogniser from scratch. Dataset, CNN architecture with the actual math, and live webcam inference using OpenCV."
+  tags={["computer vision", "CNN", "sign language", "OpenCV", "keras", "deep learning"]}
+>
+
+<p>
+  In this blog we will build a sign language detection model based on convolutional neural networks.
+  If you want to read more about CNN read <a href="/blog/cnns-design-flaw-evolution">this blog</a>.
+</p>
+
+<p>To build a SLR (Sign Language Recognition) we need three things:</p>
+
+<div class="three-col">
+  <div class="col-card">
+    <div class="col-card-icon">01</div>
+    <strong>Dataset</strong>
+    <span>28&times;28 grayscale images of ASL alphabets</span>
+  </div>
+  <div class="col-card">
+    <div class="col-card-icon">02</div>
+    <strong>Model</strong>
+    <span>A CNN trained to classify 26 hand shapes</span>
+  </div>
+  <div class="col-card">
+    <div class="col-card-icon">03</div>
+    <strong>Platform</strong>
+    <span>OpenCV for live webcam inference</span>
+  </div>
+</div>
+
+<p>
+  Training a deep neural network requires a powerful GPU. We will not need any powerful GPU for this project.
+  But it would still be better to use an online platform like Google Colab. It is free.
+</p>
+
+<div class="projects-box">
+  <p class="projects-title">Looking for something more advanced in Computer Vision?</p>
+  <ul>
+    <li><span class="stars">&#9733;&#9733;&#9734;&#9734;&#9734;</span> Multi-task Learning &mdash; <a href="https://github.com/Arshad221b" target="_blank">GitHub</a></li>
+    <li><span class="stars">&#9733;&#9733;&#9734;&#9734;&#9734;</span> YOLO-NAS for object detection &mdash; <a href="https://github.com/Arshad221b" target="_blank">GitHub</a></li>
+    <li><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span> 3D Image segmentation &mdash; <a href="https://github.com/Arshad221b" target="_blank">GitHub</a></li>
+    <li><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 2D to 3D Human Pose estimation &mdash; <a href="https://github.com/Arshad221b" target="_blank">GitHub</a>, <a href="/blog/temporal-spatial-attention-3d-pose">Blog</a></li>
+    <li><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> Images to 3D Render (NeRF) &mdash; <a href="https://github.com/Arshad221b" target="_blank">GitHub</a></li>
+  </ul>
+</div>
+
+<hr />
+
+<h2>1) Dataset</h2>
+
+<p>
+  We will use the MNIST sign language dataset. You can download it
+  <a href="https://www.kaggle.com/datamunge/sign-language-mnist" target="_blank">here</a>.
+</p>
+
+<p>
+  The dataset has 24 ASL alphabets (J and Z are excluded because they require motion).
+  Each image is 28&times;28 pixels. That is a 2D array of 784 pixel values per image.
+</p>
+
+<p>
+  More precisely, each image is a tensor of shape $(28, 28, 1)$. The last dimension is the channel count.
+  Since the images are grayscale, there is only one channel. For RGB it would be $(28, 28, 3)$.
+</p>
+
+<h3>Loading the dataset</h3>
+
+<pre><code>import pandas as pd
+import numpy as np
+
+X_train = pd.read_csv('sign_mnist_train.csv')
+X_test  = pd.read_csv('sign_mnist_test.csv')
+
+y_train = X_train['label']
+y_test  = X_test['label']
+
+X_train = X_train.drop('label', axis=1)
+X_test  = X_test.drop('label', axis=1)</code></pre>
+
+<h3>Preprocessing</h3>
+
+<p>
+  The CSV stores each image as a flat row of 784 values. We reshape it back to $(28, 28)$ and
+  stack all images into a 4D tensor: (num_samples, height, width, channels).
+</p>
+
+<pre><code>X_train = np.array(X_train.iloc[:,:])
+X_train = np.array([np.reshape(i, (28,28)) for i in X_train])
+X_test  = np.array(X_test.iloc[:,:])
+X_test  = np.array([np.reshape(i, (28,28)) for i in X_test])
+
+num_classes = 26
+y_train = np.array(y_train).reshape(-1)
+y_test  = np.array(y_test).reshape(-1)
+
+y_train = np.eye(num_classes)[y_train]
+y_test  = np.eye(num_classes)[y_test]
+
+X_train = X_train.reshape((27455, 28, 28, 1))
+X_test  = X_test.reshape((7172, 28, 28, 1))</code></pre>
+
+<p>
+  The <code>np.eye(num_classes)[y_train]</code> line converts integer labels into one-hot vectors.
+  Label 0 becomes $[1, 0, 0, \ldots, 0]$, label 1 becomes $[0, 1, 0, \ldots, 0]$, and so on.
+  We need this because the final layer outputs a probability distribution over 26 classes.
+</p>
+
+<hr />
+
+<h2>2) Build and Train the Model</h2>
+
+<p>
+  We will use a CNN. If you are not familiar, I recommend
+  <a href="https://www.coursera.org/learn/convolutional-neural-networks" target="_blank">Andrew Ng's CNN course on Coursera</a>
+  or my own blog <a href="https://arshad-kazi.com/cnn">here</a>.
+</p>
+
+<h3>The convolution operation</h3>
+
+<p>
+  A convolutional layer slides a small filter (kernel) across the input and computes a dot product at each position.
+  For a 2D input $I$ and kernel $K$ of size $k \times k$, the output feature map $F$ at position $(i, j)$ is:
+</p>
+
+<div class="eq-block">
+  $$F(i, j) = \sum_&lbrace;m=0&rbrace;^&lbrace;k-1&rbrace; \sum_&lbrace;n=0&rbrace;^&lbrace;k-1&rbrace; I(i+m,\ j+n) \cdot K(m, n)$$
+</div>
+
+<p>
+  One filter produces one feature map. With 8 filters you get 8 feature maps stacked as output.
+</p>
+
+<p>The spatial size of the output after a convolution depends on input size $W$, kernel size $k$, padding $p$, and stride $s$:</p>
+
+<div class="eq-block">
+  $$W_&lbrace;out&rbrace; = \left\lfloor \frac&lbrace;W - k + 2p&rbrace;&lbrace;s&rbrace; \right\rfloor + 1$$
+</div>
+
+<div class="eq-note">
+  Our first Conv2D layer: $W=28$, $k=3$, $p=1$ (same padding), $s=1$.
+  Plugging in: $W_&lbrace;out&rbrace; = \lfloor(28 - 3 + 2)/1\rfloor + 1 = 28$.
+  The spatial size is preserved. Number of channels becomes 8 (our filter count).
+</div>
+
+<h3>ReLU activation</h3>
+
+<p>After each convolution we apply ReLU, which zeroes out all negative values:</p>
+
+<div class="eq-block">
+  $$\text&lbrace;ReLU&rbrace;(x) = \max(0, x)$$
+</div>
+
+<p>
+  Without a non-linearity, stacking layers collapses to a single linear transformation.
+  ReLU is also fast and avoids the vanishing gradient problem that sigmoid has.
+</p>
+
+<h3>MaxPooling</h3>
+
+<p>
+  MaxPooling reduces spatial dimensions by taking the max from each non-overlapping window.
+  With pool size $(2, 2)$:
+</p>
+
+<div class="eq-block">
+  $$\text&lbrace;MaxPool&rbrace;_&lbrace;(2,2)&rbrace;(F) \in \mathbb&lbrace;R&rbrace;^&lbrace;\lfloor H/2 \rfloor \times \lfloor W/2 \rfloor \times C&rbrace;$$
+</div>
+
+<div class="eq-note">
+  First MaxPool (2&times;2): 28&times;28 feature maps become 14&times;14.
+  Second MaxPool (4&times;4): 14&times;14 becomes 3&times;3.
+  This shrinks computation and forces the network to learn position-invariant features.
+</div>
+
+<h3>The full model</h3>
+
+<pre><code>from keras.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D, Dense, Dropout, Flatten
+
+classifier = Sequential()
+classifier.add(Conv2D(filters=8, kernel_size=(3,3), strides=(1,1), padding='same',
+                      input_shape=(28,28,1), activation='relu', data_format='channels_last'))
+classifier.add(MaxPooling2D(pool_size=(2,2)))
+classifier.add(Conv2D(filters=16, kernel_size=(3,3), strides=(1,1), padding='same', activation='relu'))
+classifier.add(Dropout(0.5))
+classifier.add(MaxPooling2D(pool_size=(4,4)))
+classifier.add(Flatten())
+classifier.add(Dense(128, activation='relu'))
+classifier.add(Dense(26, activation='softmax'))</code></pre>
+
+<p>
+  The first Conv2D takes input shape $(28, 28, 1)$. The last Dense layer outputs probabilities for 26 alphabets.
+  Dropout with $p=0.5$ randomly zeroes 50% of activations during training to prevent overfitting.
+</p>
+
+<h3>Softmax output</h3>
+
+<p>
+  The final layer uses softmax. Given raw scores $z \in \mathbb&lbrace;R&rbrace;^&lbrace;26&rbrace;$, it converts them to probabilities:
+</p>
+
+<div class="eq-block">
+  $$\text&lbrace;softmax&rbrace;(z_i) = \frac&lbrace;e^&lbrace;z_i&rbrace;&rbrace;&lbrace;\sum_&lbrace;j=1&rbrace;^&lbrace;26&rbrace; e^&lbrace;z_j&rbrace;&rbrace;$$
+</div>
+
+<p>
+  All 26 outputs sum to 1. The predicted class is $\hat&lbrace;y&rbrace; = \arg\max_i \, \text&lbrace;softmax&rbrace;(z_i)$.
+</p>
+
+<h3>Loss function</h3>
+
+<p>We use categorical cross-entropy. For one sample with true label $y$ (one-hot) and predicted $\hat&lbrace;p&rbrace;$:</p>
+
+<div class="eq-block">
+  $$\mathcal&lbrace;L&rbrace; = -\sum_&lbrace;i=1&rbrace;^&lbrace;26&rbrace; y_i \log(\hat&lbrace;p&rbrace;_i)$$
+</div>
+
+<p>
+  Since $y$ is one-hot, only the term for the correct class survives. It penalises the model when
+  it assigns low probability to the right class.
+</p>
+
+<h3>Training</h3>
+
+<pre><code>classifier.compile(optimizer='SGD', loss='categorical_crossentropy', metrics=['accuracy'])
+classifier.fit(X_train, y_train, epochs=50, batch_size=100)</code></pre>
+
+<p>We use SGD (Stochastic Gradient Descent). At each step it computes the gradient of the loss and moves weights in the opposite direction:</p>
+
+<div class="eq-block">
+  $$\theta \leftarrow \theta - \eta \cdot \nabla_\theta \mathcal&lbrace;L&rbrace;$$
+</div>
+
+<div class="eq-note">
+  $\theta$ = model weights, $\eta$ = learning rate. You can drop epochs to 25 for faster training.
+</div>
+
+<h3>Evaluate and save</h3>
+
+<pre><code>accuracy = classifier.evaluate(x=X_test, y=y_test, batch_size=32)
+print("Accuracy: ", accuracy[1])</code></pre>
+
+<pre><code>classifier.save('CNNmodel.h5')
+weights_file = drive.CreateFile(&lbrace;'title': 'CNNmodel.h5'&rbrace;)
+weights_file.SetContentFile('CNNmodel.h5')
+weights_file.Upload()
+drive.CreateFile(&lbrace;'id': weights_file.get('id')&rbrace;)</code></pre>
+
+<p>This saves the trained model to Google Drive for use locally with OpenCV.</p>
+
+<hr />
+
+<h2>3) OpenCV</h2>
+
+<h3>Capturing webcam input</h3>
+
+<p>
+  We capture a frame from the webcam, crop the region of interest, convert to grayscale,
+  blur to reduce noise, and resize to 28&times;28. This matches exactly how the training images look.
+</p>
+
+<pre><code>import cv2
+import numpy as np
+
+def main():
+    cam_capture = cv2.VideoCapture(0)
+    while True:
+        _, image_frame = cam_capture.read()
+
+        im2 = crop_image(image_frame, 300, 300, 300, 300)
+        image_grayscale = cv2.cvtColor(im2, cv2.COLOR_BGR2GRAY)
+        image_grayscale_blurred = cv2.GaussianBlur(image_grayscale, (15,15), 0)
+        im3 = cv2.resize(image_grayscale_blurred, (28,28), interpolation=cv2.INTER_AREA)
+
+        im4 = np.resize(im3, (28, 28, 1))
+        im5 = np.expand_dims(im4, axis=0)</code></pre>
+
+<h3>Prediction</h3>
+
+<p>
+  The model outputs a softmax vector of shape $(1, 26)$. We take the index of the maximum value.
+  Labels are integers: 0 for A, 1 for B, 2 for C, and so on.
+</p>
+
+<pre><code>def keras_predict(model, image):
+    data = np.asarray(image, dtype="int32")
+    pred_probab = model.predict(data)[0]
+    pred_class = list(pred_probab).index(max(pred_probab))
+    return max(pred_probab), pred_class</code></pre>
+
+<p>
+  The confidence score is $\max_i \, \hat&lbrace;p&rbrace;_i$. Below 0.6 usually means bad lighting or a cluttered background.
+  The model reaches 94% accuracy on the test set and works well in real time with a plain background.
+</p>
+
+<hr />
+
+<p>Full project on GitHub: <a href="https://github.com/Arshad221b/Sign-Language-Recognition-" target="_blank">github.com/Arshad221b/Sign-Language-Recognition-</a></p>
+
+<p>Questions or suggestions? <a href="mailto:me@arshad-kazi.com">me@arshad-kazi.com</a></p>
+
+</BlogPost>
+
+<style>
+  .three-col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .col-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1rem 1.2rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+  }
+
+  .col-card-icon {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-accent);
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+  }
+
+  .col-card strong {
+    font-size: 0.9rem;
+    color: var(--color-text);
+  }
+
+  .col-card span {
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+
+  .projects-box {
+    background: var(--color-tag-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 1rem 1.4rem;
+    margin: 1.5rem 0;
+  }
+
+  .projects-title {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 0.6rem 0;
+  }
+
+  .projects-box ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .projects-box li {
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    color: var(--color-text-secondary);
+  }
+
+  .stars {
+    color: var(--color-accent);
+    letter-spacing: -0.05em;
+    margin-right: 0.4rem;
+  }
+
+  .eq-block {
+    margin: 1.5rem 0;
+    padding: 1rem 1.5rem;
+    background: var(--color-accent-soft);
+    border-left: 3px solid var(--color-accent);
+    border-radius: 0 8px 8px 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+
+  .eq-note {
+    margin: 0.6rem 0 1.5rem 0;
+    padding: 0.7rem 1rem;
+    background: var(--color-tag-bg);
+    border-radius: 6px;
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 600px) {
+    .three-col {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

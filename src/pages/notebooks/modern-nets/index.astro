@@ -1,0 +1,81 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { experiment, days } from '../../../data/modern-nets-days';
+
+const title = "Overview of Modern Nets | Notebooks | Arshad Kazi";
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function formatDateLong(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+const activeDays = days.filter(d => d.bullets.length > 0);
+---
+
+<Layout title={title} activeNav="/notebooks" description="Revisiting transformers, tokenizers, attention, and the GPT family. Intuitive understanding for interviews and curiosity." ogImage="/images/og-tiny-experiments.jpg">
+  <div class="experiment-page">
+    <a href="/notebooks" class="back-link">&larr; All Notebooks</a>
+
+    <div class="experiment-page-header">
+      <div class="experiment-title-row">
+        <h1>{experiment.title}</h1>
+        <span class={`experiment-status ${experiment.status}`}>
+          {experiment.status === 'active' ? 'In Progress' : 'Completed'}
+        </span>
+      </div>
+      <p class="experiment-page-meta">
+        {experiment.duration} &middot; {experiment.commitment} &middot; Started {formatDateLong(experiment.startDate)}
+      </p>
+    </div>
+
+    <div class="experiment-intro">
+      <div class="intro-origin">
+        <h3>The Spark</h3>
+        <p>
+          I know transformers. I've used them. I've built things with them. But if you sat me down in an interview and asked me to explain the full architecture from tokenizer to output, I'd stumble on specifics. Not because I don't understand the concepts, but because I never sat with each piece long enough to explain it simply. That gap between "I get it" and "I can teach it" is exactly what bothers me.
+        </p>
+        <p>
+          So this is a revision. Not a first pass. I'm going back through the original transformer, BPE, positional encodings, attention, masking, BERT vs GPT, the GPT family, and whatever else comes up. The goal is intuitive understanding. No heavy maths for now. Just making sure every block in the architecture makes sense to me at the level where I can draw it on a whiteboard and explain why each piece is there.
+        </p>
+      </div>
+    </div>
+
+    <div class="experiment-progress">
+      <div class="progress-track">
+        {Array.from({ length: 10 }, (_, i) => {
+          const hasEntry = days.some(d => d.day === i + 1 && d.bullets.length > 0);
+          return <div class={`progress-dot ${hasEntry ? 'filled' : ''}`} />;
+        })}
+      </div>
+      <span class="progress-label">{activeDays.length} / 10 days</span>
+    </div>
+
+    <div class="day-list">
+      {activeDays.map(day => (
+        <a href={`/notebooks/modern-nets/day-${day.day}`} class="day-card">
+          <div class="day-card-header">
+            <span class="day-card-number">Day {day.day}</span>
+            <span class="day-card-date">{formatDate(day.date)}</span>
+          </div>
+          <h3 class="day-card-title">{day.curiosityTitle}</h3>
+          <p class="day-card-summary">{day.summary}</p>
+          <span class="day-card-link">Read more &rarr;</span>
+        </a>
+      ))}
+    </div>
+
+    {activeDays.length === 0 && (
+      <div class="experiment-empty">
+        <p>No entries yet. Day 1 starts tomorrow.</p>
+      </div>
+    )}
+  </div>
+</Layout>
+
+<style>
+</style>
