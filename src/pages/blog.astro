@@ -1,0 +1,178 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = "Technical Blogs — Arshad Kazi";
+
+const posts = ([
+  {
+    title: "Probability Mass Functions, Expectation, and Variance",
+    date: "2023-11-15",
+    description: "Relearning probability from a machine learning perspective. What PMFs are, how to compute expectation and variance from first principles, and why any of this matters for ML.",
+    tags: ["probability", "statistics", "PMF", "machine learning", "fundamentals"],
+    slug: "probability-mass-function",
+  },
+  {
+    title: "ROC Curves and AUC: Picking the Right Threshold for Your Model",
+    date: "2024-02-01",
+    description: "Why accuracy fails on skewed data, how confusion matrices work, and how to use ROC curves and AUC to evaluate and compare probabilistic classifiers.",
+    tags: ["machine learning", "evaluation", "ROC", "AUC", "classification"],
+    slug: "roc-curve-auc",
+  },
+  {
+    title: "Building a Sign Language Recognition System with CNNs and OpenCV",
+    date: "2024-03-10",
+    description: "A practical walkthrough of building a real-time ASL alphabet recogniser. Dataset, CNN architecture with the actual math, and live webcam inference using OpenCV.",
+    tags: ["computer vision", "CNN", "sign language", "OpenCV", "keras", "deep learning"],
+    slug: "sign-language-recognition",
+  },
+  {
+    title: "Vector Database Management Systems: Architecture and Internals",
+    date: "2024-01-15",
+    description: "A technical overview of how Vector Database Management Systems work, covering vectorization, indexing, hardware tradeoffs, and the core challenges in building systems that search by meaning rather than exact match.",
+    tags: ["vector databases", "VDBMS", "embeddings", "similarity search", "machine learning systems"],
+    slug: "vector-databases-vdbms",
+  },
+  {
+    title: "The Visual Cortex as a Computer Vision Architecture: Dorsal and Ventral Streams",
+    date: "2026-04-05",
+    description: "How the brain's visual cortex uses two parallel streams, feedback loops, and relative perception to process vision. Everything rewritten for engineers who build vision systems.",
+    tags: ["computer vision", "neuroscience", "visual cortex", "CNN", "architecture"],
+    slug: "cnns-design-flaw-evolution",
+  },
+  {
+    title: "Temporal and Spatial Attention for 3D Pose Estimation",
+    date: "2026-02-22",
+    description: "How temporal and spatial attention mechanisms enable accurate 2D-to-3D human pose estimation, with a deep dive into DSTformer.",
+    tags: ["pose estimation", "attention", "3D vision", "transformers"],
+    slug: "temporal-spatial-attention-3d-pose",
+  },
+]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+---
+
+<Layout title={title} activeNav="/blog" description="Technical deep dives on computer vision, 3D understanding, and ML. Notes on things I finally understood, not tutorials.">
+  <div class="blog-page">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      <span>Deep Dives</span>
+    </div>
+
+    <div class="page-header">
+      <h1>Technical Blogs</h1>
+      <p class="page-subtitle">
+        Deep dives into computer vision, geometry, and 3D understanding. When something clicks in my mind, I try to write it down. Not tutorials, just my notes on things I finally understood.
+      </p>
+    </div>
+
+    <div class="posts-grid">
+      {posts.map(post => (
+        <a href={`/blog/${post.slug}`} class="post-card">
+          <div class="post-card-glow"></div>
+          <div class="post-card-content">
+            <div class="post-card-meta">
+              <time>{formatDate(post.date)}</time>
+            </div>
+            <h3>{post.title}</h3>
+            <p>{post.description}</p>
+            <div class="post-tags">
+              {post.tags.map(tag => (
+                <span class="tag">{tag}</span>
+              ))}
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+
+  </div>
+</Layout>
+
+<style>
+  .blog-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .posts-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .post-card {
+    position: relative;
+    display: block;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: var(--space-md);
+    text-decoration: none;
+    overflow: hidden;
+    transition: all 0.25s ease;
+  }
+
+  .post-card:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(196, 116, 63, 0.15);
+    text-decoration: none;
+  }
+
+  .post-card-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+  }
+
+  .post-card-content {
+    position: relative;
+  }
+
+  .post-card-meta {
+    margin-bottom: var(--space-xs);
+  }
+
+  .post-card-meta time {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+  }
+
+  .post-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 var(--space-xs) 0;
+  }
+
+  .post-card > .post-card-content > p {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin: 0 0 var(--space-sm) 0;
+  }
+
+  .post-tags {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    font-weight: 500;
+    background: var(--color-tag-bg);
+    color: var(--color-tag-text);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+  }
+</style>

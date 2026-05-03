@@ -1,0 +1,117 @@
+---
+interface Props {
+  title: string;
+  activeNav?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const { title, activeNav = '', description = '', ogImage = '' } = Astro.props;
+const siteUrl = 'https://arshad221b.github.io';
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
+
+const navItems = [
+  { label: 'About', href: '/' },
+  { label: 'Blogs', href: '/blog' },
+  { label: 'Notebooks', href: '/notebooks' },
+  { label: 'Thoughts', href: '/thoughts' },
+];
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script is:inline>
+      (function() {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title="Arshad Kazi" href="/rss.xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="canonical" href={canonicalUrl} />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    {ogImage && (
+      <>
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={`${siteUrl}${ogImage}`} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
+      </>
+    )}
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="/" class="site-title">
+          <span class:list={['sher-art', { 'show-quote': activeNav === '/' }]}>
+            <span class="sher-decor">۞</span>
+            <span class="sher-quote">
+              <span class="sher-line"><span class="latin">بے خودی بے سبب نہیں غالبؔ</span><span class="english">Being lost has a reason, Ghalib.</span></span>
+              <span class="sher-line"><span class="latin">کچھ تو ہے جس کی پردہ داری ہے</span><span class="english">There must be something that is being concealed.</span></span>
+            </span>
+          </span>
+        </a>
+        <div class="nav-links">
+          {navItems.map(item => (
+            <a
+              href={item.href}
+              class:list={['nav-link', { active: activeNav === item.href }]}
+            >
+              {item.label}
+            </a>
+          ))}
+          <span class="nav-separator"></span>
+          <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">
+            <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <p>&copy; {new Date().getFullYear()} Arshad Kazi</p>
+        <span class="visitor-counter" id="visitor-counter" title="Total visits">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span id="visit-count">—</span> visits
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<script is:inline>
+  fetch('https://api.counterapi.dev/v1/arshadkazi/visits/up')
+    .then(r => r.json())
+    .then(d => { document.getElementById('visit-count').textContent = d.count.toLocaleString(); })
+    .catch(() => { document.getElementById('visitor-counter').style.display = 'none'; });
+
+  document.getElementById('theme-toggle').addEventListener('click', function() {
+    const html = document.documentElement;
+    const isDark = html.classList.toggle('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+
+    });
+</script>
+
+<style is:global>
+  @import '../styles/global.css';
+</style>

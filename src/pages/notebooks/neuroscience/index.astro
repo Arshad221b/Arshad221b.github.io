@@ -1,0 +1,137 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { experiment, days } from '../../../data/neuroscience-days';
+
+const title = "Understanding the Visual Cortex | Notebooks | Arshad Kazi";
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function formatDateLong(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+const activeDays = days.filter(d => d.bullets.length > 0);
+---
+
+<Layout title={title} activeNav="/notebooks" description="Curiosity-driven daily study of neuroscience. 7-day tiny experiment." ogImage="/images/og-tiny-experiments.jpg">
+  <div class="experiment-page">
+    <a href="/notebooks" class="back-link">&larr; All Notebooks</a>
+
+    <div class="experiment-page-header">
+      <div class="experiment-title-row">
+        <h1>{experiment.title}</h1>
+        <span class={`experiment-status ${experiment.status}`}>
+          {experiment.status === 'active' ? 'In Progress' : 'Completed'}
+        </span>
+      </div>
+      <p class="experiment-page-meta">
+        {experiment.duration} &middot; {experiment.commitment} &middot; Started {formatDateLong(experiment.startDate)}
+      </p>
+    </div>
+
+    <div class="experiment-intro">
+      <div class="intro-origin">
+        <h3>The Spark</h3>
+        <p>
+          I read <a href="https://en.wikipedia.org/wiki/Phantoms_in_the_Brain" target="_blank"><em>Phantoms in the Brain</em></a> by V.S. Ramachandran and was blown away. Phantom limbs, visual agnosias, the fact that perception is essentially a controlled hallucination. His <a href="https://youtu.be/Rl2LwnaUA-k?si=cSQDHEfYbyC-7N1D" target="_blank">TED talk</a> made me want to dig deeper into the visual cortex specifically, since that's the part of the brain closest to what I work on in computer vision.
+        </p>
+        <p>
+          The question that started it all: <strong>how does the brain process what the eye sees?</strong>
+        </p>
+      </div>
+
+      <div class="intro-rules">
+        <h3>The Rules</h3>
+        <ul class="rules-list">
+          <li>1 hour/day, 1 topic, 1 question</li>
+          <li>Each day's question comes from the previous day's gaps</li>
+          <li>No syllabus, follow whatever is most interesting</li>
+        </ul>
+      </div>
+
+      <div class="intro-setup">
+        <h3>Experimental Setup</h3>
+        <div class="setup-steps">
+          <div class="setup-step">
+            <span class="setup-number">1</span>
+            <div class="setup-content">
+              <strong>Ask the question</strong>
+              <span>Start with whatever I was most curious about, then ask AI models to get a high-level map of the key concepts. Claude was significantly more useful than ChatGPT here, better at distilling complex neuroscience into clear mental models</span>
+            </div>
+          </div>
+          <div class="setup-step">
+            <span class="setup-number">2</span>
+            <div class="setup-content">
+              <strong>Go to the source</strong>
+              <span>Dive deep into the textbook, <em>Principles of Neural Science</em>, chapters 23 &amp; 24 on intermediate and high-level visual processing. The textbook language was dense, so I used AI to distil difficult passages into something I could actually absorb in an hour</span>
+            </div>
+          </div>
+          <div class="setup-step">
+            <span class="setup-number">3</span>
+            <div class="setup-content">
+              <strong>Write by hand</strong>
+              <span>Handwritten notes in an A5 notebook with a fountain pen (black ink, fine nib). No AI, no typing. ~13 pages of rather small handwriting by the end. Forces real understanding, not just pattern matching</span>
+            </div>
+          </div>
+          <div class="setup-step">
+            <span class="setup-number">4</span>
+            <div class="setup-content">
+              <strong>Publish</strong>
+              <span>Upload the handwritten notes to AI to structure them for the website. The writing and understanding is mine. This entire website section was designed and built by agentic models (entirely vibe coded)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="experiment-progress">
+      <div class="progress-track">
+        {Array.from({ length: 7 }, (_, i) => {
+          const hasEntry = days.some(d => d.day === i + 1 && d.bullets.length > 0);
+          return <div class={`progress-dot ${hasEntry ? 'filled' : ''}`} />;
+        })}
+      </div>
+      <span class="progress-label">{activeDays.length} / 7 days</span>
+    </div>
+
+    <div class="day-list">
+      {activeDays.map(day => (
+        <a href={`/notebooks/neuroscience/day-${day.day}`} class="day-card">
+          <div class="day-card-header">
+            <span class="day-card-number">Day {day.day}</span>
+            <span class="day-card-date">{formatDate(day.date)}</span>
+          </div>
+          <h3 class="day-card-title">{day.curiosityTitle}</h3>
+          <p class="day-card-summary">{day.summary}</p>
+          <span class="day-card-link">Read more &rarr;</span>
+        </a>
+      ))}
+    </div>
+
+    <div class="experiment-conclusion">
+      <h2>So, how does the brain process what the eye sees?</h2>
+      <p>
+        It splits the work into two parallel streams, right from the retina. The <strong>dorsal stream</strong> is fast and memoryless: it tracks motion, builds spatial maps, and guides your hands and eyes in real-time. It never "sees" objects. The <strong>ventral stream</strong> is slow and hierarchical: it detects edges, assembles contours, extracts shapes, builds object representations, and connects them to meaning and memory.
+      </p>
+      <p>
+        At every stage, the brain uses relative perception (never absolute), fills in gaps it can't see, predicts what should come next, and resolves ambiguity through context. Perception is not passive recording. It is active construction. The brain doesn't see the world as it is. It builds a model of what the world <em>should</em> be, and checks it against incoming data. When the model is good enough, that's what you perceive.
+      </p>
+      <p>
+        The whole journey, from photon hitting the retina to a fully contextualised, emotionally-tagged memory, takes roughly 150 milliseconds.
+      </p>
+    </div>
+
+    {activeDays.length === 0 && (
+      <div class="experiment-empty">
+        <p>No entries yet. Day 1 starts today.</p>
+      </div>
+    )}
+  </div>
+</Layout>
+
+<style>
+</style>

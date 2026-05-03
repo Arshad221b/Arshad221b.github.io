@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <style>
+    .star { fill: none; stroke: #c4743f; stroke-width: 3; stroke-linejoin: round; }
+    .inner { fill: none; stroke: #c4743f; stroke-width: 2; stroke-linejoin: round; }
+    .dot { fill: #c4743f; }
+    @media (prefers-color-scheme: dark) {
+      .star { stroke: #e8944a; }
+      .inner { stroke: #e8944a; }
+      .dot { fill: #e8944a; }
+    }
+  </style>
+  <!-- Outer 8-pointed star: two overlapping squares -->
+  <polygon class="star" points="64,14 114,64 64,114 14,64"/>
+  <polygon class="star" points="99.4,28.6 99.4,99.4 28.6,99.4 28.6,28.6"/>
+  <!-- Inner octagon -->
+  <polygon class="inner" points="64,30 83.6,38.4 92,58 83.6,77.6 64,86 44.4,77.6 36,58 44.4,38.4"/>
+  <!-- Center dot -->
+  <circle class="dot" cx="64" cy="58" r="4"/>
+</svg>

@@ -1,0 +1,198 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { experiment, days } from '../../../data/emotion-days';
+
+const title = "Understanding Emotion | Notebooks | Arshad Kazi";
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function formatDateLong(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+const activeDays = days.filter(d => d.bullets.length > 0);
+---
+
+<Layout title={title} activeNav="/notebooks" description="Curiosity-driven daily study of emotion. 7-day tiny experiment." ogImage="/images/og-tiny-experiments.jpg">
+  <div class="experiment-page">
+    <a href="/notebooks" class="back-link">&larr; All Notebooks</a>
+
+    <div class="experiment-page-header">
+      <div class="experiment-title-row">
+        <h1>{experiment.title}</h1>
+        <span class={`experiment-status ${experiment.status}`}>
+          {experiment.status === 'active' ? 'In Progress' : 'Completed'}
+        </span>
+      </div>
+      <p class="experiment-page-meta">
+        {experiment.duration} &middot; {experiment.commitment} &middot; Started {formatDateLong(experiment.startDate)}
+      </p>
+    </div>
+
+    <div class="experiment-intro">
+      <div class="intro-origin">
+        <h3>The Spark</h3>
+        <p>
+          I've always struggled to understand emotions — my own and other people's. As an autistic person, emotions often feel like a foreign language everyone else picked up natively. I want to understand what emotions actually <em>are</em>, how they work in the brain, and whether the difficulty I experience is about feeling less or about processing differently.
+        </p>
+        <p>
+          The book: <a href="https://global.oup.com/academic/product/emotion-a-very-short-introduction-9780192804617" target="_blank"><em>Emotion: A Very Short Introduction</em></a> by Dylan Evans. Plus whatever neuroscience rabbit holes it leads me down.
+        </p>
+        <p>
+          The question that started it all: <strong>what are emotions, and why do I find them so hard to read?</strong>
+        </p>
+      </div>
+
+      <div class="intro-rules">
+        <h3>The Rules</h3>
+        <ul class="rules-list">
+          <li>1 hour/day, 1 topic, 1 question</li>
+          <li>Each day's question comes from the previous day's gaps</li>
+          <li>No syllabus, follow whatever is most interesting</li>
+        </ul>
+      </div>
+
+      <div class="intro-setup">
+        <h3>Experimental Setup</h3>
+        <div class="setup-steps">
+          <div class="setup-step">
+            <span class="setup-number">1</span>
+            <div class="setup-content">
+              <strong>Read the book</strong>
+              <span>Work through <em>Emotion: A Very Short Introduction</em> by Dylan Evans, one chapter or theme per day</span>
+            </div>
+          </div>
+          <div class="setup-step">
+            <span class="setup-number">2</span>
+            <div class="setup-content">
+              <strong>Go deeper</strong>
+              <span>Use AI to explore the neuroscience behind whatever the book surfaces — the amygdala, interoception, alexithymia, whatever pulls me in</span>
+            </div>
+          </div>
+          <div class="setup-step">
+            <span class="setup-number">3</span>
+            <div class="setup-content">
+              <strong>Write by hand</strong>
+              <span>Handwritten notes in the A5 notebook. Forces real understanding, not just pattern matching</span>
+            </div>
+          </div>
+          <div class="setup-step">
+            <span class="setup-number">4</span>
+            <div class="setup-content">
+              <strong>Publish</strong>
+              <span>Upload the handwritten notes to AI to structure them for the website</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="experiment-progress">
+      <div class="progress-track">
+        {Array.from({ length: 7 }, (_, i) => {
+          const hasEntry = days.some(d => d.day === i + 1 && d.bullets.length > 0);
+          return <div class={`progress-dot ${hasEntry ? 'filled' : ''}`} />;
+        })}
+      </div>
+      <span class="progress-label">{activeDays.length} / 7 days</span>
+    </div>
+
+    <div class="day-list">
+      {activeDays.map(day => (
+        <a href={`/notebooks/emotion/day-${day.day}`} class="day-card">
+          <div class="day-card-header">
+            <span class="day-card-number">Day {day.day}</span>
+            <span class="day-card-date">{formatDate(day.date)}</span>
+          </div>
+          <h3 class="day-card-title">{day.curiosityTitle}</h3>
+          <p class="day-card-summary">{day.summary}</p>
+          <span class="day-card-link">Read more &rarr;</span>
+        </a>
+      ))}
+    </div>
+
+    <div class="experiment-conclusion">
+      <h2>So, what are emotions and why do we have them?</h2>
+
+      <p>
+        The word "emotion" has no single accepted definition. Like Louis Armstrong said about jazz: if you have to ask what it is, you will never know. Modern psychologists gave up trying to pin it down and started working with examples instead <strong>(Day 1)</strong>. The best framework is Paul Griffiths' three-tier classification. <strong>Basic emotions</strong> (fear, anger, joy, distress, surprise, disgust) are universal, hardwired, and sit in the ancient limbic system. <strong>Higher cognitive emotions</strong> (guilt, shame, pride, envy, embarrassment) require the neocortex, are directed at something specific ("guilty about X", "ashamed of Y"), and evolved more recently. <strong>Culturally specific emotions</strong> exist too, but they are more about how you display the feeling than whether you feel it at all. Simon Baron-Cohen catalogued close to 1,000 emotion words across languages and collapsed them into 23 mutually exclusive categories. Even with 1,000 words, we still cannot capture what we feel. When psychologists asked people to describe their emotions freely without a predefined list, people got confused and could not do it <strong>(Day 2)</strong>. We feel in spectrums, but we talk in boxes.
+      </p>
+
+      <p>
+        Plato had a model 2,400 years ago that is still surprisingly useful: the tripartite soul <strong>(Day 1)</strong>. Logos (reason) sits in the head and should govern. Epithumia (appetite) sits in the belly and craves. Thumos (spirit) sits in the chest and is the complex mix of ambition, pride, and honour. When you eat junk food and feel ashamed, that is Thumos fighting Appetite on Reason's behalf. If trained properly, Thumos allies with Reason. That is Plato's model of a well-ordered soul, and it maps remarkably well onto how we still think about emotional regulation today.
+      </p>
+
+      <p>
+        The nature vs nurture debate was settled by Paul Ekman in the 1960s <strong>(Day 1)</strong>. He travelled to remote Papua New Guinea, to tribes that had never seen Western media, no movies, no TV, no outside cultural influence. He showed them photographs of facial expressions and asked them to match the emotion. They matched them perfectly. Basic emotions are universal biology, not cultural software. But culture does shape the <em>rules</em> of expression. Japanese and American participants watched emotionally triggering films. When watched alone, both groups showed identical facial responses. When watched with others present, Japanese participants suppressed their displays while Americans did not. The emotion is the same. The display rule is cultural. This is the critical distinction that runs through the entire experiment: what you feel is biology, how and when you show it is learned.
+      </p>
+
+      <p>
+        Most people think emotions are stupid or a sign of weakness. That is naive <strong>(Day 3)</strong>. Emotions are extremely complex to build. If evolution spent the energy, there must be a reason. Every basic emotion maps to a specific survival function. <strong>Fear</strong> makes you run from predators. Ancestors who did not feel fear got eaten. <strong>Anger</strong> makes you fight when running is not an option: the increased heart rate, the adrenaline, the tunnel vision are all built for confrontation. <strong>Surprise</strong> widens your eyes to take in maximum visual information about novel stimuli. <strong>Disgust</strong> keeps you away from rotting food, feces, open wounds, anything that carries disease. <strong>Joy</strong> is the reward signal: sex, social bonding, and gifts feel good because they helped our ancestors reproduce. <strong>Distress</strong> is the punishment signal: losing allies, resources, or mates reduced survival chances. Together, joy and distress are the fundamental motivators of all behaviour. Without the anticipation of either, there would be no point in living.
+      </p>
+
+      <p>
+        We also learn emotions from others <strong>(Day 3)</strong>. A child seeing their parents avoid a dangerous river learns the danger without having to experience it. But this has a limit: the learned behaviour must be under a threshold of believability. Basic emotions live in the <strong>limbic system</strong> (hippocampus, cingulate gyrus, thalamus), which is ancient and shared with many animals. Higher cognitive emotions live in the <strong>neocortex</strong>, the outer layer that expanded recently in humans. This maps to the evolutionary timeline: basic emotions are older, higher cognitive ones are newer.
+      </p>
+
+      <p>
+        Only humans produce emotional tears <strong>(Day 3)</strong>. There are three kinds: basal tears (constant lubrication), reflex tears (response to irritants like smoke), and emotional tears. The reason we cry under distress is chemical: emotional tears contain high levels of prolactin and adrenocorticotropic hormone, and crying reduces cortisol while increasing endorphins. That is why a "good cry" actually works. Tears are also a social signal. They are hard to fake, which makes them reliable proof of genuine distress. When we cry together it creates a pure form of bonding. Why only humans have emotional tears? A surprisingly simple reason: mutation. Just a mutation. But the social signalling value is what kept it around.
+      </p>
+
+      <p>
+        Guilt is at least two-fold <strong>(Day 4)</strong>. The first story: guilt as deterrent. If you have a conscience, the anticipation of guilt alone is enough to stop you from cheating. You do not need to actually feel the guilt. The thought of it prevents the act. The second story, from Robert Frank: guilt as trust signal. People who are known to have a conscience are more likely to be trusted and chosen as cooperation partners. It is not just about stopping yourself from doing bad things. It is about others seeing that you can feel guilt, and therefore choosing to work with you. The fact that guilt cannot be faked is exactly what makes it valuable. If you could just decide to feel guilty, nobody would trust it, and the entire system would collapse. This is the same principle as emotional tears: unfakeable signals are the only ones worth trusting.
+      </p>
+
+      <p>
+        The harder question is why guilt attaches to romantic relationships <strong>(Day 4)</strong>. Four evolutionary pressures keep partners loyal. <strong>Helpless babies:</strong> human infants cannot walk, feed themselves, or survive alone for years. Two committed parents dramatically increased a child's survival odds. <strong>Paternity uncertainty:</strong> males can never be 100% certain a child is theirs, so pair-bonding emotions (guilt, jealousy, love) give reasonable confidence. <strong>Social reputation:</strong> being seen as loyal makes you more socially connected, which meant access to food, protection, and allies. <strong>Reciprocal investment:</strong> one partner hunts while the other guards the children. Guilt enforces the deal.
+      </p>
+
+      <p>
+        But people still cheat because the mate-seeking drive never fully switched off <strong>(Day 4)</strong>. Evolution did not remove the desire. It layered guilt on top of it. Both systems run in parallel. Cheating happens when the "I can get better" instinct temporarily overpowers the guilt system. And if monogamy is just one strategy, why did it win? Because polygamy fails at scale. Polygyny (one male, multiple females) creates large populations of excluded men with no reproductive prospects, which destabilises entire societies. Polyandry (one female, multiple males) fails because males have no incentive to raise children that might not be theirs. Only 3-4% of mammals are monogamous, and 83% of human cultures permit polygamy, but monogamous societies were more internally stable and could field larger, more cooperative armies. Monogamy won not because it is morally superior but because it produces societies that can coordinate at scale <strong>(Day 4)</strong>.
+      </p>
+
+      <p>
+        These emotions are double-edged swords <strong>(Day 4)</strong>. Unrequited love is one of nature's cruellest punishments. You cannot choose to stop loving someone just because they do not love you back. We feel too much guilt, too much shame, waste months or years when things do not work out. But if the opposite were true, if moving on were easy, then your commitment would mean nothing. The pain is the proof that the bond is real. The fact that leaving hurts is what makes staying meaningful.
+      </p>
+
+      <p>
+        Happiness is a mood, not an emotion <strong>(Day 5)</strong>. This distinction matters. A mood lasts for hours or days, is lower in intensity, and sets the background state. An emotion is sharp, intense, and tied to a specific trigger. Happiness is the background tone, not a reaction to a single event. And achieving happiness is about finding and maintaining good relationships, not about materialistic things. Having more money or winning the lottery never makes anyone happier long-term. After the euphoria settles, happy people return to their happiness baseline and depressed people return to depression. This is hedonic adaptation. Humans are the only animals who have invented artificial substitutes for happiness: alcohol, drugs, and dopamine machines (social media, infinite scrolling). These spike the system and drag the baseline down over time. The same mechanism that makes lottery winners return to normal makes chronic phone users more anxious <strong>(Day 5)</strong>.
+      </p>
+
+      <p>
+        Freud's hydraulic model gives a mechanical interpretation of how emotions work <strong>(Day 5)</strong>. Like actual hydraulics, emotions build up as pressure in a closed system. Without release, the pressure eventually breaks something. Language turns out to be the most powerful release valve. "Talking it out" is not just folk wisdom. The act of putting emotions into words changes how the brain processes them. Psychotherapy is built on this principle. But when people do not have someone to talk to, the pressure has nowhere to go, leading to extreme acts. There is a counter-theory: some emotions are better left untouched, and if you do not revisit them, they fade on their own. And exposure therapy takes a third approach: go back to the painful place deliberately, again and again, until the emotional response extinguishes itself. This is the principle of extinction in behavioural psychology, and it is the basis of PTSD and OCD treatment. Different types of emotional pain probably respond to different strategies <strong>(Day 5)</strong>.
+      </p>
+
+      <p>
+        Language is one tool for emotional processing, but the brain has many inputs <strong>(Day 6)</strong>. <strong>Color:</strong> blue light is calming, red light triggers alertness. This probably maps to natural environments: red means fire, blood, danger; blue means sky, water, safety. <strong>Food:</strong> sugar cravings are a survival mechanism from when calories were scarce, now exploited by modern abundance. Food directly affects mood through serotonin and dopamine release. <strong>Music:</strong> it bypasses rational thought entirely. You do not decide to feel sad when a minor key plays. Classical music in stores makes people buy more expensive things. <strong>Chemistry:</strong> three key neurotransmitters regulate mood and emotion. Dopamine is about the anticipation of pleasure (not pleasure itself). Serotonin is about mood stability (low serotonin is linked to depression). Noradrenaline is about alertness and the stress response. Drugs hijack these specific pathways: MDMA floods serotonin, cocaine blocks dopamine reuptake, amphetamines increase noradrenaline. <strong>Film:</strong> the most complete emotional delivery system humans have built because it combines visuals, music, color, and story simultaneously. Directors learn from psychologists about how emotion works. Psychologists learn from directors who have decades of audience data <strong>(Day 6)</strong>.
+      </p>
+
+      <p>
+        Emotions are not passive feelings. They actively distort three core cognitive functions <strong>(Day 7)</strong>. <strong>Attention:</strong> anxiety is a mood that keeps the survival scanner running in the background for hours, quietly eating your ability to concentrate. Fear is an emotion that locks every resource onto one thing. An anxious person cannot enjoy dinner because of tomorrow's presentation. A frightened person forgets the presentation entirely when the fire alarm goes off. Evolution built two different attention-hijacking systems because the threats they address are structurally different. <strong>Memory:</strong> the amygdala tags emotional events for priority storage in the hippocampus. This produces flashbulb memories: vivid, detailed, durable. You remember exactly where you were when you heard terrible news. But the same system makes trauma memories replay on loop in PTSD. Mood also biases which memories you can access. Depression is self-reinforcing because the depressed mood surfaces depressing memories, which deepens the depression. <strong>Judgement:</strong> we judge people based on our own emotional state, not on who they actually are. Meet someone when happy, you rate them positively. Meet them when anxious, you rate them as untrustworthy. Studies show judges give harsher sentences before lunch and more lenient ones after eating. First impressions are nearly impossible to override because of the halo effect. We do not see people as they are. We see them through whatever we are feeling <strong>(Day 7)</strong>.
+      </p>
+
+      <p>
+        Empathy is not a mirror response or a cognitive exercise <strong>(Day 7)</strong>. It is feeling what others feel in your own body. When you watch someone get hurt, parts of your own pain matrix activate. Your brain runs a partial simulation of their distress. Psychopaths have the lowest form of empathy: they can identify emotions but do not feel them, which is why they can hurt people without hesitation. The brake that stops most of us from causing suffering, feeling a version of that suffering ourselves, does not exist for them. Highly sensitive people have the highest form: they walk into a room and absorb the mood, constantly processing everyone's feelings alongside their own. The people we actually need are not at either extreme. We need managed empathy: people who feel genuinely but can still think clearly enough to act. Guilt is empathy-adjacent. You feel guilty because you can simulate the harm you caused. The whole point of these emotions, guilt, love, empathy, might be gene-level engineering to make us cooperate. That is the question I want to take to Dawkins' <em>The Selfish Gene</em> next <strong>(Day 7)</strong>.
+      </p>
+      <p class="conclusion-note">This summary was generated by AI from my handwritten notes and daily entries.</p>
+    </div>
+
+    {activeDays.length === 0 && (
+      <div class="experiment-empty">
+        <p>No entries yet. Day 1 starts today.</p>
+      </div>
+    )}
+  </div>
+</Layout>
+
+<style>
+  .conclusion-note {
+    font-size: 0.78rem !important;
+    font-style: italic;
+    color: var(--color-text-muted) !important;
+    margin-top: 0.75rem;
+  }
+</style>

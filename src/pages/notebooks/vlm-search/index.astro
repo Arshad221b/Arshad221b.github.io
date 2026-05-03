@@ -1,0 +1,175 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { experiment, days } from '../../../data/vlm-search-days';
+
+const title = "Search Images with Words | Notebooks | Arshad Kazi";
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function formatDateLong(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+const activeDays = days.filter(d => d.bullets.length > 0);
+---
+
+<Layout title={title} activeNav="/notebooks" description="From neuroscience to CLIP to a working text-to-image search prototype. 7-day tiny experiment." ogImage="/images/og-tiny-experiments.jpg">
+  <div class="experiment-page">
+    <a href="/notebooks" class="back-link">&larr; All Notebooks</a>
+
+    <div class="experiment-page-header">
+      <div class="experiment-title-row">
+        <h1>{experiment.title}</h1>
+        <span class={`experiment-status ${experiment.status}`}>
+          {experiment.status === 'active' ? 'In Progress' : 'Completed'}
+        </span>
+      </div>
+      <p class="experiment-page-meta">
+        {experiment.duration} &middot; {experiment.commitment} &middot; Started {formatDateLong(experiment.startDate)}
+      </p>
+    </div>
+
+    <div class="experiment-intro">
+      <div class="intro-origin">
+        <h3>The Spark</h3>
+        <p>
+          You look at a dog and you just <em>know</em> it's a dog. You don't think about it. Light hits your retina, something fires in your brain, and the word is just there. That's insane if you actually stop and think about it. Pixels became a word. How? Does the brain think in pictures first and then assign language to them? Or does language shape what we see? There's no clean answer, but the question keeps pulling me in.
+        </p>
+        <p>
+          And then there's the machine side. When a VLM processes an image and a sentence together, what's the shared representation that both modalities are actually living in? A vision encoder produces one kind of feature. A language model produces another. Somewhere these have to meet in a space that's useful for both. How does that shared space form? Is it learned end-to-end or forced through a projection? And once you have it, can you fine-tune it for a specific domain and actually trust the output? What breaks, and how do people deal with that in production?
+        </p>
+        <p>
+          I'm comfortable on the vision side. Detection, segmentation, tracking, that stuff makes sense to me. But I've never properly understood the moment where vision meets language. And now I'm stuck on a more practical question too: if I actually want to solve a vision-language problem, what do I reach for? Do I need a VLM? Do I need a segmentation model like SAM? A foundation model like DINO? Some combination? How do I even decide?
+        </p>
+        <p>
+          I opened my phone, typed "birthday cake" into Photos, and it found every birthday cake I've ever photographed. I never tagged any of them. My phone did this offline. Google does the same thing but needs a data centre. Same problem, completely different engineering. I want to understand all of it. The neuroscience, the models, the engineering, the tradeoffs. And I want to build something with it.
+        </p>
+      </div>
+
+      <div class="intro-rules">
+        <h3>The Rules</h3>
+        <ul class="rules-list">
+          <li>2 hours/day, weekdays only</li>
+          <li>Open the laptop, think about how vision and language interact, write down what I find</li>
+          <li>No fixed syllabus. Follow whatever pulls me in</li>
+        </ul>
+      </div>
+
+      <div class="intro-setup">
+        <h3>Questions driving this experiment</h3>
+        <div class="setup-questions">
+          <h4>How does thinking work?</h4>
+          <ul>
+            <li>Does the brain think in images first and then assign words? Or does language shape perception? What's the actual pathway from seeing to naming?</li>
+            <li>When a VLM processes an image and text together, what is the shared representation? How does a space form that's useful for both vision and language, and is it learned end-to-end or forced through projection?</li>
+          </ul>
+        </div>
+        <div class="setup-questions">
+          <h4>What models exist and when do you use what?</h4>
+          <ul>
+            <li>What exactly is a VLM and how is it different from a vision model with a text head bolted on? What makes it actually multimodal?</li>
+            <li>How did the field move from contrastive models (CLIP-style) to generative VLMs (feeding images into language models)? Why?</li>
+            <li>When do I need a VLM vs a segmentation model like SAM vs a foundation model like DINO? How do I decide?</li>
+          </ul>
+        </div>
+        <div class="setup-questions">
+          <h4>Can you actually trust them?</h4>
+          <ul>
+            <li>Are VLMs reliable enough for production? What are the known failure modes and how do people deal with them in industry?</li>
+            <li>Where does the alignment break? Compositionality, negation, spatial reasoning. Why, and what can you do about it?</li>
+            <li>Can you fine-tune these models? How? Is it practical for a real use case or do you need massive resources?</li>
+          </ul>
+        </div>
+        <div class="setup-questions">
+          <h4>The engineering</h4>
+          <ul>
+            <li>Why does Apple run image search on-device while Google needs a data centre? What are the actual constraints?</li>
+            <li>Can I build a working text-to-image search system from scratch and understand every layer of it?</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="experiment-progress">
+      <div class="progress-track">
+        {Array.from({ length: 10 }, (_, i) => {
+          const hasEntry = days.some(d => d.day === i + 1 && d.bullets.length > 0);
+          return <div class={`progress-dot ${hasEntry ? 'filled' : ''}`} />;
+        })}
+      </div>
+      <span class="progress-label">{activeDays.length} / 10 days</span>
+    </div>
+
+    <div class="day-list">
+      {activeDays.map(day => (
+        <a href={`/notebooks/vlm-search/day-${day.day}`} class="day-card">
+          <div class="day-card-header">
+            <span class="day-card-number">Day {day.day}</span>
+            <span class="day-card-date">{formatDate(day.date)}</span>
+          </div>
+          <h3 class="day-card-title">{day.curiosityTitle}</h3>
+          <p class="day-card-summary">{day.summary}</p>
+          <span class="day-card-link">Read more &rarr;</span>
+        </a>
+      ))}
+    </div>
+
+    {activeDays.length === 0 && (
+      <div class="experiment-empty">
+        <p>No entries yet. Day 1 starts tomorrow.</p>
+      </div>
+    )}
+  </div>
+</Layout>
+
+<style>
+  .intro-setup {
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    border-left: none;
+    background: var(--color-bg);
+  }
+
+  .intro-setup p {
+    font-size: 0.92rem;
+    line-height: 1.75;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.75rem;
+  }
+
+  .setup-questions h4 {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.5rem;
+  }
+
+  .setup-questions ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .setup-questions li {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: var(--color-text-secondary);
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .setup-questions li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+</style>

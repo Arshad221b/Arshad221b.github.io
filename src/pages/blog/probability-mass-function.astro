@@ -1,0 +1,544 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+---
+
+<BlogPost
+  title="Probability Mass Functions, Expectation, and Variance"
+  date="2023-11-15"
+  description="Relearning probability from a machine learning perspective. What PMFs are, how to compute expectation and variance from first principles, and why any of this matters for ML."
+  tags={["probability", "statistics", "PMF", "machine learning", "fundamentals"]}
+>
+
+<p>
+  Probability is a topic we all learned in high-school maths. Since you are reading this blog,
+  you probably have some rust on those concepts. We will remove that rust and understand them
+  from the machine learning point of view.
+</p>
+
+<p>
+  One prerequisite: you should know how we get a probability of 1/2 from tossing a fair coin.
+  If you know that, you are ready to learn Probability Mass Functions.
+</p>
+
+<div class="objectives-box">
+  <p class="objectives-title">By the end of this blog you will know</p>
+  <div class="objectives-grid">
+    <span>Probability &amp; distributions</span>
+    <span>Probability Mass Function</span>
+    <span>Expected value</span>
+    <span>Variance</span>
+    <span>PMF derivations</span>
+    <span>Why this matters for ML</span>
+  </div>
+</div>
+
+<hr />
+
+<h2>What is Probability?</h2>
+
+<p>Take an example: tossing a coin. It will give you either heads or tails.</p>
+
+<p>
+  How can you predict beforehand whether the next toss will be heads? You cannot know for sure.
+  But you can quantify the likelihood.
+</p>
+
+<p>
+  You count how many times you tossed the coin, how many times you got heads, how many times tails.
+  Then you use that frequency as your estimate for the next toss.
+</p>
+
+<div class="eq-block">
+  $$P(\text&lbrace;heads&rbrace;) = \frac&lbrace;\text&lbrace;number of heads&rbrace;&rbrace;&lbrace;\text&lbrace;total tosses&rbrace;&rbrace;$$
+</div>
+
+<p>
+  Suppose you toss a coin 100 times and get 64 heads and 36 tails. Your estimate is $P(H) = 0.64$.
+  That does not mean the coin will land heads exactly 64 times in the next 100 tosses.
+  Probability is a measure, not a guarantee. Toss it a billion times and you will converge on 64%.
+</p>
+
+<div class="eq-note">
+  Why does it not always work for small numbers? With few tosses, random variance dominates.
+  The law of large numbers says: only as $N \to \infty$ does the empirical frequency
+  converge to the true probability.
+</div>
+
+<h3>Code: plotting the PMF for one coin</h3>
+
+<pre><code>import matplotlib.pyplot as plt
+import seaborn as sns
+import random
+
+def flip(p):
+    return 'H' if random.random() < p else 'T'
+
+def pmf(P, N, M):
+    # N = coins per sample, M = number of samples
+    l = []
+    for m in range(M):
+        flips = [flip(P) for i in range(N)]
+        l.append(flips.count('H'))
+    return l
+
+P = 0.64   # biased coin
+N = 1      # one coin per sample
+M = 100    # 100 samples
+
+plt.ylabel('PMF')
+sns.histplot(pmf(P, N, M), stat='probability', bins=2)</code></pre>
+
+<p>
+  With one coin you get two bars: one for tails, one for heads.
+  The heights are the relative frequencies, i.e. empirical probabilities.
+</p>
+
+<hr />
+
+<h2>Probability Distribution</h2>
+
+<p>
+  A probability distribution is a function that gives the probabilities of all possible outcomes
+  for an experiment.
+</p>
+
+<p>
+  Now suppose you toss 10 coins at once. How many heads do you expect? Instead of two outcomes
+  you now have eleven: 0 heads through 10 heads. Toss the set 1000 times and count how often
+  each outcome appears.
+</p>
+
+<pre><code>P = 0.64   # same biased coin
+N = 10     # 10 coins per sample
+M = 1000   # 1000 samples
+
+plt.ylabel('PMF')
+sns.histplot(pmf(P, N, M), stat='probability', bins=10)</code></pre>
+
+<p>
+  You get a histogram with 11 bars. Each bar height is the probability of getting exactly that
+  many heads in a single 10-coin toss. This shape is the probability distribution.
+</p>
+
+<div class="pmf-chart">
+  <p class="chart-title">PMF: 10 coins, p = 0.64 (binomial distribution)</p>
+  <svg viewBox="0 0 400 270" xmlns="http://www.w3.org/2000/svg" class="pmf-svg">
+    <!-- grid -->
+    <line x1="50" y1="20"  x2="380" y2="20"  stroke="var(--color-border)" stroke-width="0.5" stroke-dasharray="4,4"/>
+    <line x1="50" y1="72"  x2="380" y2="72"  stroke="var(--color-border)" stroke-width="0.5" stroke-dasharray="4,4"/>
+    <line x1="50" y1="125" x2="380" y2="125" stroke="var(--color-border)" stroke-width="0.5" stroke-dasharray="4,4"/>
+    <line x1="50" y1="178" x2="380" y2="178" stroke="var(--color-border)" stroke-width="0.5" stroke-dasharray="4,4"/>
+    <!-- y-axis -->
+    <line x1="50" y1="20" x2="50" y2="230" stroke="var(--color-text-muted)" stroke-width="1.5"/>
+    <!-- x-axis -->
+    <line x1="50" y1="230" x2="380" y2="230" stroke="var(--color-text-muted)" stroke-width="1.5"/>
+    <!-- bars (k=0..10) heights proportional to binomial pmf with p=0.64, n=10 -->
+    <!-- k=0: 0.000% ~0.5px -->
+    <rect x="52"  y="229.5" width="26" height="0.5"  fill="var(--color-accent)" opacity="0.75"/>
+    <!-- k=1: 0.06% ~0.5 -->
+    <rect x="82"  y="229.5" width="26" height="0.5"  fill="var(--color-accent)" opacity="0.75"/>
+    <!-- k=2: 0.5% ~4 -->
+    <rect x="112" y="226"   width="26" height="4"    fill="var(--color-accent)" opacity="0.75"/>
+    <!-- k=3: 2.5% ~21 -->
+    <rect x="142" y="209"   width="26" height="21"   fill="var(--color-accent)" opacity="0.75"/>
+    <!-- k=4: 7.7% ~65 -->
+    <rect x="172" y="165"   width="26" height="65"   fill="var(--color-accent)" opacity="0.75"/>
+    <!-- k=5: 16.4% ~140 -->
+    <rect x="202" y="90"    width="26" height="140"  fill="var(--color-accent)" opacity="0.75"/>
+    <!-- k=6: 24.2% ~207 -->
+    <rect x="232" y="23"    width="26" height="207"  fill="var(--color-accent)" opacity="0.85"/>
+    <!-- k=7: 24.6% ~210 (peak) -->
+    <rect x="262" y="20"    width="26" height="210"  fill="var(--color-accent)" opacity="0.85"/>
+    <!-- k=8: 16.5% ~141 -->
+    <rect x="292" y="89"    width="26" height="141"  fill="var(--color-accent)" opacity="0.75"/>
+    <!-- k=9: 6.5% ~55 -->
+    <rect x="322" y="175"   width="26" height="55"   fill="var(--color-accent)" opacity="0.75"/>
+    <!-- k=10: 1.2% ~10 -->
+    <rect x="352" y="220"   width="26" height="10"   fill="var(--color-accent)" opacity="0.75"/>
+    <!-- E(X) = 6.4 line -->
+    <line x1="242" y1="20" x2="242" y2="230" stroke="var(--color-accent)" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.6"/>
+    <text x="246" y="38" font-size="10" fill="var(--color-accent)" font-family="var(--font-sans)" font-weight="600">E(X) = 6.4</text>
+    <!-- x-axis labels -->
+    <text x="65"  y="248" text-anchor="middle" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">0</text>
+    <text x="95"  y="248" text-anchor="middle" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">1</text>
+    <text x="125" y="248" text-anchor="middle" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">2</text>
+    <text x="155" y="248" text-anchor="middle" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">3</text>
+    <text x="185" y="248" text-anchor="middle" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">4</text>
+    <text x="215" y="248" text-anchor="middle" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">5</text>
+    <text x="245" y="248" text-anchor="middle" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">6</text>
+    <text x="275" y="248" text-anchor="middle" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">7</text>
+    <text x="305" y="248" text-anchor="middle" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">8</text>
+    <text x="335" y="248" text-anchor="middle" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">9</text>
+    <text x="365" y="248" text-anchor="middle" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">10</text>
+    <!-- axis labels -->
+    <text x="215" y="265" text-anchor="middle" font-size="12" fill="var(--color-text-muted)" font-family="var(--font-sans)">Heads (k)</text>
+    <text x="10" y="130" text-anchor="middle" font-size="12" fill="var(--color-text-muted)" font-family="var(--font-sans)" transform="rotate(-90 10 130)">P(X=k)</text>
+    <!-- y-axis labels -->
+    <text x="44" y="234" text-anchor="end" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">0</text>
+    <text x="44" y="182" text-anchor="end" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">0.1</text>
+    <text x="44" y="129" text-anchor="end" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">0.2</text>
+    <text x="44" y="76"  text-anchor="end" font-size="10" fill="var(--color-text-muted)" font-family="var(--font-mono)">0.3</text>
+  </svg>
+</div>
+
+<hr />
+
+<h2>Probability Mass Function</h2>
+
+<p>
+  A probability mass function (PMF) is a function that gives the probability that a
+  <em>discrete</em> random variable is exactly equal to some value.
+</p>
+
+<div class="eq-block">
+  $$P(X = k) = \text&lbrace;probability of exactly&rbrace;\ k\ \text&lbrace;heads&rbrace;$$
+</div>
+
+<p>
+  The key word is <em>discrete</em>. The number of heads is 0, 1, 2, ... 10. No fractions.
+  A continuous random variable (like temperature) would need a different function. We will
+  cover that in the <a href="https://arshad-kazi.com/normal-distribution-and-z-score/" target="_blank">normal distribution blog</a>.
+</p>
+
+<p>Two properties every PMF must satisfy:</p>
+
+<div class="props-grid">
+  <div class="prop-card">
+    <span class="prop-label">Non-negativity</span>
+    <span>$P(X = k) \geq 0$ for all $k$</span>
+  </div>
+  <div class="prop-card">
+    <span class="prop-label">Sums to 1</span>
+    <span>$\sum_&lbrace;k&rbrace; P(X = k) = 1$</span>
+  </div>
+</div>
+
+<hr />
+
+<h2>Expected Value (Expectation)</h2>
+
+<p>
+  The expected value of a random variable is its theoretical mean.
+  To understand it, start from the ordinary mean.
+</p>
+
+<p>
+  Take the set $\lbrace 1, 1, 1, 1, 2, 2, 3, 3, 3, 3 \rbrace$. The mean is $20/10 = 2$.
+  Now rewrite it using frequencies:
+</p>
+
+<div class="derivation-block">
+  <div class="deriv-step">
+    $\bar x = \dfrac&lbrace;1+1+1+1+2+2+3+3+3+3&rbrace;&lbrace;10&rbrace;$
+  </div>
+  <div class="deriv-step">
+    $= \dfrac&lbrace;1 \cdot 4 + 2 \cdot 2 + 3 \cdot 4&rbrace;&lbrace;10&rbrace;$
+  </div>
+  <div class="deriv-step">
+    $= 1 \cdot \dfrac&lbrace;4&rbrace;&lbrace;10&rbrace; + 2 \cdot \dfrac&lbrace;2&rbrace;&lbrace;10&rbrace; + 3 \cdot \dfrac&lbrace;4&rbrace;&lbrace;10&rbrace; = 2$
+  </div>
+</div>
+
+<p>
+  Each value multiplied by its relative frequency — that is just each value multiplied by its probability.
+  So the mean is $\sum x \cdot P(x)$. That is the definition of expected value.
+</p>
+
+<div class="eq-block">
+  $$E(X) = \sum_&lbrace;x&rbrace; x \cdot P(x)$$
+</div>
+
+<h3>Computing E(X) from our data</h3>
+
+<pre><code>import collections
+import pandas as pd
+
+P = 0.64
+N = 10
+M = 100000
+
+l = pmf(P, N, M)
+counter = collections.Counter(l)
+
+df = pd.DataFrame(list(dict(counter).items()), columns=['Heads', 'Count'])
+df = df.sort_values('Heads').reset_index(drop=True)
+df['Probability'] = df['Count'] / M
+print(df)</code></pre>
+
+<p>
+  If you sum all (Count × Heads) values you get roughly 639,901. Divide by 100,000 trials
+  and you get $\bar x \approx 6.4$.
+</p>
+
+<div class="eq-note">
+  For a fair coin, $E(X) = N \cdot p = 10 \times 0.64 = 6.4$. The dashed line in the chart above marks this.
+  Expected value is just a mean. It describes where the distribution is centred.
+</div>
+
+<hr />
+
+<h2>Variance</h2>
+
+<p>
+  The mean tells you where the distribution is centred. Variance tells you how spread out it is.
+</p>
+
+<p>
+  The obvious first attempt: sum the distances from the mean. The problem is that values below
+  the mean give negative distances and values above give positive, so they cancel out.
+  You can get zero variance on a non-constant distribution if the data is symmetric around the mean.
+</p>
+
+<p>
+  Solution: square the distances before summing. This removes the sign and penalises large
+  deviations more heavily. Then take the expectation (mean) of those squared distances.
+</p>
+
+<div class="eq-block">
+  $$\text&lbrace;Var&rbrace;(X) = E\left[(x - \mu)^2\right]$$
+</div>
+
+<p>Expand and simplify using $\mu = E(X)$:</p>
+
+<div class="derivation-block">
+  <div class="deriv-step">
+    $\text&lbrace;Var&rbrace;(X) = E\left(x^2 - 2\mu x + \mu^2\right)$
+  </div>
+  <div class="deriv-step">
+    $= E(x^2) - 2\mu\, E(x) + \mu^2$
+  </div>
+  <div class="deriv-step">
+    $= E(x^2) - 2[E(x)]^2 + [E(x)]^2$
+  </div>
+  <div class="deriv-step final-step">
+    $\text&lbrace;Var&rbrace;(X) = E(x^2) - [E(x)]^2$
+  </div>
+</div>
+
+<div class="eq-note">
+  Why squared and not absolute distance? Squared distance is differentiable everywhere and
+  makes optimisation easier. It also gives more weight to outliers, which is often what we want.
+</div>
+
+<hr />
+
+<h2>Why does any of this matter for ML?</h2>
+
+<p>
+  When you train a machine learning model, what are you actually doing?
+  You are asking it to learn the probability distribution of your data.
+</p>
+
+<p>
+  If a model can predict the right expectation and variance for the 10-coin example with 1000
+  samples, it can generalise to 100,000 samples — because the distribution itself does not change.
+  Only the noise around it shrinks.
+</p>
+
+<div class="ml-grid">
+  <div class="ml-card">
+    <span class="ml-label">Expected value</span>
+    Where the data is centred. Bias in your model shows up here.
+  </div>
+  <div class="ml-card">
+    <span class="ml-label">Variance</span>
+    How spread out the data is. Overfitting shows up here.
+  </div>
+  <div class="ml-card">
+    <span class="ml-label">Distribution</span>
+    The full picture. A well-trained model approximates this.
+  </div>
+</div>
+
+<p>
+  The coin example has a special name: the Binomial Distribution. But the point here was not
+  the binomial distribution itself. It was to understand what PMF, expectation, and variance mean —
+  because these concepts appear everywhere in ML.
+</p>
+
+<p>
+  To read about continuous distributions, see the
+  <a href="https://arshad-kazi.com/normal-distribution-and-z-score/" target="_blank">normal distribution blog</a>.
+</p>
+
+<hr />
+
+<p>Related: <a href="/blog/roc-curve-auc">ROC curve and AUC from scratch</a></p>
+
+<p>Questions? <a href="mailto:me@arshad-kazi.com">me@arshad-kazi.com</a></p>
+
+</BlogPost>
+
+<style>
+  .objectives-box {
+    background: var(--color-tag-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 1rem 1.4rem;
+    margin: 1.5rem 0;
+  }
+
+  .objectives-title {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 0.7rem 0;
+  }
+
+  .objectives-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .objectives-grid span {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 0.35rem 0.6rem;
+    text-align: center;
+  }
+
+  .eq-block {
+    margin: 1.5rem 0;
+    padding: 1rem 1.5rem;
+    background: var(--color-accent-soft);
+    border-left: 3px solid var(--color-accent);
+    border-radius: 0 8px 8px 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+
+  .eq-note {
+    margin: 0.6rem 0 1.5rem 0;
+    padding: 0.7rem 1rem;
+    background: var(--color-tag-bg);
+    border-radius: 6px;
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  .pmf-chart {
+    margin: 1.5rem 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .chart-title {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.5rem 0;
+    text-align: center;
+  }
+
+  .pmf-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .props-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+
+  .prop-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.9rem 1rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    color: var(--color-text-secondary);
+  }
+
+  .prop-label {
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+  }
+
+  .derivation-block {
+    margin: 1.2rem 0;
+    padding: 1rem 1.4rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .deriv-step {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    padding: 0.3rem 0;
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .deriv-step:last-child {
+    border-bottom: none;
+  }
+
+  .final-step {
+    font-weight: 600;
+    color: var(--color-text);
+    padding-top: 0.5rem;
+  }
+
+  .ml-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin: 1.2rem 0;
+  }
+
+  .ml-card {
+    padding: 0.9rem 1rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+
+  .ml-label {
+    display: block;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    margin-bottom: 0.3rem;
+  }
+
+  @media (max-width: 600px) {
+    .objectives-grid,
+    .ml-grid { grid-template-columns: 1fr 1fr; }
+    .props-grid { grid-template-columns: 1fr; }
+  }
+</style>

@@ -1,0 +1,144 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { experiment, days } from '../../../data/vlm-search-days';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = () => {
+  return days
+    .filter(d => d.bullets.length > 0)
+    .map(d => ({ params: { day: `day-${d.day}` }, props: { dayData: d } }));
+};
+
+const { dayData: day } = Astro.props;
+
+const title = `Day ${day.day}: ${day.curiosityTitle} — Search Images with Words — Arshad Kazi`;
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+const activeDays = days.filter(d => d.bullets.length > 0);
+const currentIndex = activeDays.findIndex(d => d.day === day.day);
+const prevDay = currentIndex > 0 ? activeDays[currentIndex - 1] : null;
+const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex + 1] : null;
+---
+
+<Layout title={title} activeNav="/notebooks" description={`Day ${day.day}: ${day.curiosityTitle}`} ogImage="/images/og-tiny-experiments.jpg">
+  <div class="experiment-page">
+    <a href="/notebooks/vlm-search" class="back-link">&larr; All Days</a>
+
+    <div class="day-page-header">
+      <span class="day-page-number">Day {day.day} &mdash; {formatDate(day.date)}</span>
+      <h1 class="day-page-title">{day.curiosityTitle}</h1>
+    </div>
+
+    <div class="day-entry">
+      {day.bullets && day.bullets.length > 0 && (
+        <ul class="day-bullets">
+          {day.bullets.map(bullet => (
+            <li set:html={bullet} />
+          ))}
+        </ul>
+      )}
+
+      {day.sections && day.sections.map(section => (
+        <div class="day-section">
+          <h4 class="section-heading">{section.title}</h4>
+          {section.subtitle && <p class="section-subtitle">{section.subtitle}</p>}
+
+          {section.table && (
+            <table class="results-table">
+              <thead>
+                <tr>
+                  {section.table.headers.map(h => <th>{h}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {section.table.rows.map(row => (
+                  <tr>
+                    {row.map(cell => <td>{cell}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {section.bullets.length > 0 && (
+            <ul class="day-bullets">
+              {section.bullets.map(bullet => (
+                <li set:html={bullet} />
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+    </div>
+
+    <nav class="day-nav">
+      {prevDay ? (
+        <a href={`/notebooks/vlm-search/day-${prevDay.day}`} class="day-nav-link prev">
+          <span class="day-nav-arrow">&larr;</span>
+          <span class="day-nav-label">Day {prevDay.day}</span>
+        </a>
+      ) : <span />}
+      {nextDay ? (
+        <a href={`/notebooks/vlm-search/day-${nextDay.day}`} class="day-nav-link next">
+          <span class="day-nav-label">Day {nextDay.day}</span>
+          <span class="day-nav-arrow">&rarr;</span>
+        </a>
+      ) : <span />}
+    </nav>
+  </div>
+</Layout>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+<script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script is:inline>
+  document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.querySelector(".day-entry"), {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false }
+      ],
+      throwOnError: false
+    });
+  });
+</script>
+
+<style>
+  .day-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .day-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .day-nav-link:hover {
+    color: var(--color-text);
+  }
+
+  .day-nav-arrow {
+    font-size: 1rem;
+  }
+
+  .day-nav-label {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+  }
+</style>
