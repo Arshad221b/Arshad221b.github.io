@@ -363,10 +363,61 @@ export const days: Day[] = [
   },
   {
     day: 6,
-    date: "2026-05-02",
-    curiosityTitle: "",
-    summary: "",
-    bullets: [],
+    date: "2026-05-03",
+    curiosityTitle: "LLaMA, Mistral, and the road to reasoning models",
+    summary: "Mapped the modern model landscape. Reasoning models think in intermediate steps. Multimodals just convert embeddings across modalities. LLaMA stayed small but beat GPT via Chinchilla + RMSNorm + RoPE + SwiGLU. Mistral doubled data, added sliding window attention and GQA. Going straight to the chain of thought paper.",
+    bullets: [
+      "Newer models follow the same base transformer. The question is what pathway to take: VLMs, reasoning models, MoE. Want to understand how it all connects at high level first",
+      "Drew the model tree: encoder and decoder both come from the base transformer. Decoder branch → LLaMA/Mistral → then reasoning models, multimodals, MoE",
+    ],
+    sections: [
+      {
+        title: "Model landscape (high level)",
+        bullets: [
+          "Both encoder and decoder come from the base transformer",
+          "Decoder branch → LLaMA / Mistral → then reasoning models, multimodals, MoE",
+        ],
+      },
+      {
+        title: "Reasoning models",
+        bullets: [
+          "They don't just spit out the results. They try to do the thinking part first. Thinking as in doing the basic intermediate steps before answering",
+          "There are many techniques that make this happen. I should read the chain of thought paper (2023) to understand this. Going there directly since that's where I want to go deeper",
+        ],
+      },
+      {
+        title: "Multimodals and image generation",
+        bullets: [
+          "Multimodals are easier to understand. They just convert embeddings from one form to another and feed into the rest. Similar to what I've done in CLIP",
+          "Image generation is a totally different thing. Not getting into diffusion models yet",
+        ],
+      },
+      {
+        title: "What LLaMA did",
+        subtitle: "Smaller model, beat GPT-3 on 1 trillion tokens (Chinchilla insight)",
+        bullets: [
+          "Model size was smaller yet outperformed GPT. Followed the Chinchilla paper: train smaller models on more data",
+          "RMSNorm instead of LayerNorm",
+          "RoPE instead of learned positional embeddings",
+          "SwiGLU instead of standard FFN",
+        ],
+      },
+      {
+        title: "What Mistral did differently",
+        bullets: [
+          "Doubled training data",
+          "Sliding window attention to extend context length",
+          "Added GQA (Grouped Query Attention) for 70B KV cache",
+        ],
+      },
+      {
+        title: "Study map forward",
+        bullets: [
+          "Understand thinking (LLaMA, Mistral, paper overview) → Read chain of thought → Go deep into multihead + vision → Overview of diffusion",
+          "Sub-track: Understanding GQA & KV cache → Understanding RoPE & SwiGLU",
+        ],
+      },
+    ],
   },
   {
     day: 7,
