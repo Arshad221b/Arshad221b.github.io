@@ -3,10 +3,22 @@ import Layout from '../../layouts/Layout.astro';
 import { days as neuroscienceDays } from '../../data/neuroscience-days';
 import { days as emotionDays } from '../../data/emotion-days';
 import { days as modernNetsDays } from '../../data/modern-nets-days';
+import { days as computerVisionDays } from '../../data/computer-vision-days';
 
 const title = "Notebooks — Arshad Kazi";
 
 const experiments = [
+  {
+    title: "Overview of Computer Vision",
+    slug: "computer-vision",
+    totalDays: 10,
+    completedDays: computerVisionDays.filter(d => d.bullets.length > 0).length,
+    commitment: "1 hr / day",
+    status: "active" as const,
+    startDate: "2026-05-06",
+    description: "Revisiting the foundations of computer vision. From classical image processing to modern deep learning architectures. Building intuition for how machines see.",
+    tags: ["computer vision", "deep learning", "image processing"],
+  },
   {
     title: "Overview of Modern Nets",
     slug: "modern-nets",

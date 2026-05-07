@@ -13,60 +13,41 @@ const title = "Thoughts — Arshad Kazi";
 
     <div class="page-header">
       <h1>Thoughts</h1>
-      <p class="page-subtitle">
-        I write about things I am confused about, and sometimes things that excite me. The world does not always make sense to me, and language feels like a clumsy tool to understand it. So I try to put these thoughts into words. This is my way of making sense of things that do not fit neatly into conversation, and expressing what I cannot say out loud.
-      </p>
+    </div>
+
+    <div class="topics-section">
+      <h3>What I Write About</h3>
+      <div class="topics-text">
+        <p>Most of the time I don't know what I think about something until I write it down and read it back, which is probably the most honest reason I do this at all. Writing is the only place where I can hold a thought long enough to actually examine it, because in conversation the thought moves too fast or the other person needs a response before I've finished figuring out what I'm trying to say, and then the moment passes and I'm left with the feeling that I almost understood something but didn't quite get there.</p>
+        <p>A lot of what I write about is things I find genuinely confusing, which includes most of human behaviour, my own reactions to things, and the gap between what people say and what they seem to actually mean, something which I have never been particularly good at navigating and probably never will be. I don't have answers to most of this. I just try to describe the problem clearly enough that maybe someone reading it can see what I'm missing, because I have learned that asking for help through writing reaches people who have the patience to sit with complexity in a way that real-time conversation rarely allows.</p>
+        <p>Some of it is about being autistic, not the internet version where it's a personality trait you put in your bio, but the actual daily experience of being simultaneously too much for some people and not enough for others and never being entirely sure which one you're being at any given moment. And some of it is just me being excited about an idea, a paper, a connection between two things that nobody told me were connected, which I write about because I don't always have someone nearby who wants to hear about it, and writing is the only way to find the person who does.</p>
+      </div>
     </div>
 
     <div class="substack-showcase">
       <div class="showcase-glow"></div>
-      
+
       <div class="substack-icon-wrapper">
         <div class="substack-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
         </div>
         <div class="icon-ripple"></div>
       </div>
-      
+
       <div class="substack-details">
         <span class="substack-label">Published on</span>
         <h2>Arshad's Substack</h2>
-        <p>This is where I share the thoughts I cannot easily talk about. Some things are too much to burden others with, some people do not have the time to listen, and sometimes I simply do not have the right words in the moment. Writing is my way of untangling what goes on in my mind.</p>
+        <div class="substack-topics">
+          <span class="substack-topic">people</span>
+          <span class="substack-topic">perception</span>
+          <span class="substack-topic">science</span>
+          <span class="substack-topic">life</span>
+          <span class="substack-topic">culture</span>
+        </div>
         <a href="https://substack.com/@arshadkazi" target="_blank" class="substack-btn">
           <span>Read on Substack</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
-      </div>
-    </div>
-
-
-    <div class="topics-section">
-      <h3>What I Write About</h3>
-      <div class="topics-grid">
-        <div class="topic-pill">
-          <span class="topic-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </span>
-          <span>Confusion</span>
-        </div>
-        <div class="topic-pill">
-          <span class="topic-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-          </span>
-          <span>Excitement</span>
-        </div>
-        <div class="topic-pill">
-          <span class="topic-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          </span>
-          <span>Self</span>
-        </div>
-        <div class="topic-pill">
-          <span class="topic-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </span>
-          <span>Expression</span>
-        </div>
       </div>
     </div>
   </div>
@@ -80,6 +61,12 @@ const title = "Thoughts — Arshad Kazi";
     gap: var(--space-2xl);
   }
 
+  .thoughts-page .page-subtitle {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
   .substack-showcase {
     position: relative;
     background: var(--color-surface);
@@ -91,6 +78,7 @@ const title = "Thoughts — Arshad Kazi";
     align-items: center;
     text-align: center;
     overflow: hidden;
+    width: 100%;
   }
 
   .showcase-glow {
@@ -139,15 +127,16 @@ const title = "Thoughts — Arshad Kazi";
   }
 
   .substack-label {
-    font-family: var(--font-sans);
-    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
     font-weight: 500;
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
   }
 
   .substack-details h2 {
+    font-family: var(--font-serif);
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--color-text);
@@ -155,11 +144,29 @@ const title = "Thoughts — Arshad Kazi";
   }
 
   .substack-details p {
-    font-family: var(--font-sans);
-    font-size: 0.85rem;
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
     color: var(--color-text-secondary);
     margin: 0 0 var(--space-md) 0;
-    line-height: 1.7;
+    line-height: 1.75;
+  }
+
+  .substack-topics {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-md);
+  }
+
+  .substack-topic {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    font-weight: 500;
+    background: var(--color-tag-bg);
+    color: var(--color-tag-text);
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
   }
 
   .substack-btn {
@@ -193,46 +200,34 @@ const title = "Thoughts — Arshad Kazi";
   }
 
   .topics-section {
-    text-align: center;
-    padding: var(--space-md);
+    width: 100%;
+    padding: var(--space-lg);
     background: var(--color-surface);
-    border: 1px dashed var(--color-border);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
+    text-align: left;
   }
 
   .topics-section h3 {
-    font-family: var(--font-sans);
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 500;
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
     margin: 0 0 var(--space-md) 0;
   }
 
-  .topics-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-sm);
-  }
-
-  .topic-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs);
-    padding: 0.3rem 0.7rem;
-    background: var(--color-tag-bg);
-    border-radius: 20px;
-    font-family: var(--font-sans);
-    font-size: 0.75rem;
-    font-weight: 500;
+  .topics-text p {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
     color: var(--color-text-secondary);
+    line-height: 1.75;
+    margin: 0 0 var(--space-md) 0;
   }
 
-  .topic-icon {
-    display: flex;
-    color: var(--color-accent);
+  .topics-text p:last-child {
+    margin-bottom: 0;
   }
 
 </style>
