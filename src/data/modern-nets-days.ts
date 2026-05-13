@@ -30,9 +30,9 @@ export interface Day {
 
 export const experiment = {
   title: "Overview of Modern Nets",
-  duration: "10 days (2 weeks)",
+  duration: "7 days (1 week)",
   commitment: "1 hr / day",
-  status: "active" as const,
+  status: "complete" as const,
   startDate: "2026-04-27",
   description: "Revisiting transformers, tokenizers, attention, and the GPT family. Intuitive understanding, not maths. Interview prep meets genuine curiosity.",
 };
@@ -422,29 +422,94 @@ export const days: Day[] = [
   {
     day: 7,
     date: "2026-05-05",
-    curiosityTitle: "",
-    summary: "",
-    bullets: [],
-  },
-  {
-    day: 8,
-    date: "2026-05-06",
-    curiosityTitle: "",
-    summary: "",
-    bullets: [],
-  },
-  {
-    day: 9,
-    date: "2026-05-07",
-    curiosityTitle: "",
-    summary: "",
-    bullets: [],
-  },
-  {
-    day: 10,
-    date: "2026-05-08",
-    curiosityTitle: "",
-    summary: "",
-    bullets: [],
+    curiosityTitle: "RAG, LangChain, LangGraph, and the LLM tooling landscape",
+    summary: "Wrapped up the notebook with the stuff that sits on top of LLMs. RAG is just giving the model external knowledge at inference time. Vector DBs store the embeddings, retriever fetches relevant chunks, generator produces the answer. LangChain chains LLM calls together. LangGraph adds state machines on top. Also looked at function calling, agents, and MCP.",
+    bullets: [
+      "Final day. Want to cover the ecosystem that sits around LLMs. RAG, orchestration frameworks, agents. These are the things you actually use when building products",
+      "Starting with RAG because it connects directly to what I learned about embeddings and attention",
+    ],
+    sections: [
+      {
+        title: "RAG (Retrieval-Augmented Generation)",
+        subtitle: "Give the model knowledge it wasn't trained on",
+        bullets: [
+          "The core idea is simple. LLMs have a knowledge cutoff and can hallucinate. RAG fixes this by retrieving relevant documents at inference time and stuffing them into the context window",
+          "Three steps: 1) chunk your documents into pieces, 2) embed each chunk into a vector and store in a vector DB, 3) at query time embed the user's question, find the closest chunks, and pass them to the LLM as context",
+          "The retriever is the important part. Bad retrieval means the model gets irrelevant context and produces garbage. Good retrieval means the model has exactly what it needs",
+          "Chunking strategy matters a lot. Too small and you lose context. Too big and you dilute the relevant information. Most people use overlapping chunks of 500-1000 tokens",
+        ],
+      },
+      {
+        title: "Vector databases",
+        bullets: [
+          "These store embeddings and do fast similarity search. Pinecone, Weaviate, Qdrant, ChromaDB, FAISS. They all do roughly the same thing but with different tradeoffs on scale, speed, and filtering",
+          "The similarity search is usually cosine similarity or dot product. Same maths as attention scores. The embedding model matters more than the DB choice in most cases",
+          "I already wrote a blog post on vector databases so I won't go deep here. The key thing is they're the backbone of RAG",
+        ],
+      },
+      {
+        title: "Modern RAG improvements",
+        subtitle: "Naive RAG is just the starting point",
+        bullets: [
+          "Hybrid search: combine dense embeddings with sparse keyword search (BM25). Dense search is good at semantic matching. Sparse search is good at exact keyword matching. Together they cover more ground",
+          "Reranking: after retrieval, use a cross-encoder to rerank results. The retriever is fast but rough. The reranker is slow but precise. Cohere Rerank and similar models do this",
+          "Query decomposition: break complex questions into sub-questions, retrieve for each, then combine. This helps when the user asks something that spans multiple documents",
+          "Agentic RAG: let the LLM decide when to retrieve, what to search for, and whether the results are good enough. If not, it reformulates and tries again. This is where RAG meets agents",
+        ],
+      },
+      {
+        title: "LangChain",
+        subtitle: "The glue layer for LLM applications",
+        bullets: [
+          "LangChain is a framework for chaining LLM calls together. You have prompts, models, output parsers, and chains. A chain is just: take input, format prompt, call LLM, parse output",
+          "It also provides abstractions for document loaders, text splitters, vector stores, retrievers. Basically everything you need for RAG in one place",
+          "People have mixed feelings about it. The abstraction is heavy and changes fast. But it's the most popular framework and has the biggest ecosystem. Good for prototyping, debatable for production",
+          "LCEL (LangChain Expression Language) is their newer API. It's a pipe syntax for chaining: prompt | model | parser. Cleaner than the old chain classes",
+        ],
+      },
+      {
+        title: "LangGraph",
+        subtitle: "State machines for LLM workflows",
+        bullets: [
+          "LangGraph builds on LangChain but adds proper state management. Instead of a linear chain, you define a graph with nodes and edges. Each node is an LLM call or tool use. Edges define the flow",
+          "The big thing is conditional edges. The LLM output decides which node to go to next. This is how you build agents that can loop, retry, and make decisions",
+          "It supports human-in-the-loop workflows where the graph pauses and waits for human input before continuing. Useful for approval steps",
+          "Think of it as: LangChain = sequential pipelines, LangGraph = complex workflows with branching and state",
+        ],
+      },
+      {
+        title: "Function calling and agents",
+        bullets: [
+          "Function calling is how LLMs interact with the outside world. The model doesn't execute functions. It outputs structured JSON saying which function to call and with what arguments. Your code executes it and feeds the result back",
+          "An agent is an LLM in a loop. It gets a task, decides what tool to use, observes the result, decides the next step. ReAct pattern: Reason, Act, Observe, repeat until done",
+          "OpenAI, Anthropic, Google all have their own function calling formats. The concept is the same. Give the model a list of available tools with schemas, let it choose",
+        ],
+      },
+      {
+        title: "MCP (Model Context Protocol)",
+        subtitle: "Standardising how models talk to tools",
+        bullets: [
+          "Anthropic's open protocol for connecting LLMs to external tools and data sources. Instead of every app building its own integration, MCP provides a standard interface",
+          "Think of it like USB for LLMs. One protocol, many tools. The model connects to MCP servers that expose tools, resources, and prompts through a standard API",
+          "This is pretty new but it's gaining traction. It means you build a tool once and any MCP-compatible model can use it",
+        ],
+      },
+      {
+        title: "Other things worth knowing",
+        bullets: [
+          "Fine-tuning vs RAG: fine-tuning bakes knowledge into the weights. RAG keeps it external. RAG is cheaper, easier to update, and doesn't require retraining. Fine-tuning is better for style and format changes",
+          "LoRA and QLoRA: parameter-efficient fine-tuning. Instead of updating all weights, you add small trainable matrices. QLoRA quantises the base model to 4-bit and fine-tunes the LoRA adapters. This is how people fine-tune 70B models on consumer GPUs",
+          "Prompt engineering is still underrated. Good prompts with few-shot examples often beat fine-tuning for most tasks. Chain of thought prompting connects back to the reasoning models I covered on day 6",
+          "Guardrails and safety: output filtering, content moderation, structured output validation. These sit between the model and the user. Important for production but not the fun part",
+        ],
+      },
+      {
+        title: "Wrapping up the notebook",
+        bullets: [
+          "Seven days. Started from BPE tokenization and ended at the full LLM application stack. The core insight is that everything builds on the same transformer attention mechanism. The ecosystem on top is just plumbing to make it useful",
+          "What I still want to go deeper on: RoPE and SwiGLU internals, the chain of thought paper, diffusion models, and building something with agentic RAG. But that's for another notebook",
+        ],
+      },
+    ],
   },
 ];

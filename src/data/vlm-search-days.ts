@@ -28,10 +28,11 @@ export interface Day {
 
 export const experiment = {
   title: "Search Images with Words",
-  duration: "10 days (2 weeks)",
+  duration: "4 days",
   commitment: "1 hr / day, weekdays only",
-  status: "active" as const,
+  status: "complete" as const,
   startDate: "2026-03-30",
+  endDate: "2026-04-04",
   description: "How does the brain bind words to what it sees — and how do modern VLMs do the same? From neuroscience to CLIP to on-device vs cloud search to building a working prototype.",
 };
 
@@ -217,47 +218,5 @@ export const days: Day[] = [
         },
       },
     ],
-  },
-  {
-    day: 5,
-    date: "2026-04-03",
-    curiosityTitle: "",
-    summary: "",
-    bullets: [],
-  },
-  {
-    day: 6,
-    date: "2026-04-06",
-    curiosityTitle: "",
-    summary: "",
-    bullets: [],
-  },
-  {
-    day: 7,
-    date: "2026-04-07",
-    curiosityTitle: "",
-    summary: "",
-    bullets: [],
-  },
-  {
-    day: 8,
-    date: "2026-04-08",
-    curiosityTitle: "",
-    summary: "",
-    bullets: [],
-  },
-  {
-    day: 9,
-    date: "2026-04-09",
-    curiosityTitle: "",
-    summary: "",
-    bullets: [],
-  },
-  {
-    day: 10,
-    date: "2026-04-10",
-    curiosityTitle: "",
-    summary: "",
-    bullets: [],
   },
 ];

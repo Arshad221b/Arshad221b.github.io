@@ -1,0 +1,304 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { experiment, months, entries } from '../../../data/slam-entries';
+
+const title = "SLAM from Scratch | Notebooks | Arshad Kazi";
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function formatDateLong(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function formatMonth(monthStr: string): string {
+  const date = new Date(monthStr + '-01T00:00:00');
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+}
+
+function formatMonthShort(monthStr: string): string {
+  const date = new Date(monthStr + '-01T00:00:00');
+  return date.toLocaleDateString('en-US', { month: 'short' });
+}
+
+function getEntriesForMonth(month: string) {
+  return entries.filter(e => e.date.startsWith(month));
+}
+
+const allTags = [...new Set(entries.flatMap(e => e.tags))];
+---
+
+<Layout title={title} activeNav="/notebooks" description="Building a full SLAM pipeline from scratch. Theory and code, no shortcuts." ogImage="/images/og-tiny-experiments.jpg">
+  <div class="experiment-page">
+    <a href="/notebooks" class="back-link">&larr; All Notebooks</a>
+
+    <div class="experiment-page-header">
+      <div class="experiment-title-row">
+        <h1>{experiment.title}</h1>
+        <span class={`experiment-status ${experiment.status}`}>
+          {experiment.status === 'active' ? 'In Progress' : 'Completed'}
+        </span>
+      </div>
+      <p class="experiment-page-meta">
+        {experiment.duration} &middot; {experiment.commitment} &middot; Started {formatDateLong(experiment.startDate)}
+      </p>
+    </div>
+
+    <div class="experiment-intro">
+      <div class="intro-origin">
+        <h3>The Spark</h3>
+        <p>
+          I have never written a SLAM system. I have never done multi-view geometry. I have never written serious C++. All three at once. This is the project where I learn all of it by building the thing.
+        </p>
+        <p>
+          The pipeline: camera calibration, feature extraction, descriptor matching, essential matrix decomposition, triangulation, bundle adjustment, loop closure, pose graph optimization. Each piece requires theory I don't have yet. Epipolar geometry, Lie groups for SE(3), nonlinear least squares, factor graphs. I need to learn the maths, implement it in C++, and make each component actually work before moving to the next.
+        </p>
+        <p>
+          This is not a week-long notebook. It runs for months. No schedule. Entries logged whenever I make progress on a piece. Some weeks that might be three entries. Some weeks zero.
+        </p>
+      </div>
+    </div>
+
+    <div class="month-strip">
+      {months.map(month => {
+        const count = getEntriesForMonth(month).length;
+        return (
+          <div class={`month-block ${count > 0 ? 'has-entries' : ''}`}>
+            <span class="month-label">{formatMonthShort(month)}</span>
+            {count > 0 && <span class="month-count">{count}</span>}
+          </div>
+        );
+      })}
+    </div>
+
+    <span class="total-entries">{entries.length} {entries.length === 1 ? 'entry' : 'entries'} logged</span>
+
+    {allTags.length > 0 && (
+      <div class="tag-filter">
+        {allTags.map(tag => (
+          <span class="filter-tag">{tag}</span>
+        ))}
+      </div>
+    )}
+
+    {months.map(month => {
+      const monthEntries = getEntriesForMonth(month);
+      if (monthEntries.length === 0) return null;
+      return (
+        <div class="month-section">
+          <div class="month-header">
+            <h3>{formatMonth(month)}</h3>
+            <span class="month-entry-count">{monthEntries.length} {monthEntries.length === 1 ? 'entry' : 'entries'}</span>
+          </div>
+          <div class="entry-list">
+            {monthEntries.map(entry => (
+              <a href={`/notebooks/slam/entry-${entry.id}`} class="entry-card">
+                <div class="entry-card-left">
+                  <span class="entry-date">{formatDate(entry.date)}</span>
+                  <span class="entry-id">#{entry.id}</span>
+                </div>
+                <div class="entry-card-body">
+                  <h4 class="entry-title">{entry.title}</h4>
+                  <p class="entry-summary">{entry.summary}</p>
+                  <div class="entry-tags">
+                    {entry.tags.map(tag => (
+                      <span class="entry-tag">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      );
+    })}
+
+    {entries.length === 0 && (
+      <div class="experiment-empty">
+        <p>No entries yet. First log coming soon.</p>
+      </div>
+    )}
+  </div>
+</Layout>
+
+<style>
+  .month-strip {
+    display: flex;
+    gap: 4px;
+  }
+
+  .month-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    flex: 1;
+    padding: 0.5rem 0.3rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    transition: border-color 0.15s ease;
+  }
+
+  .month-block.has-entries {
+    border-color: var(--color-accent);
+    background: var(--color-accent-soft);
+  }
+
+  .month-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .month-block.has-entries .month-label {
+    color: var(--color-accent);
+  }
+
+  .month-count {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .total-entries {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+  }
+
+  .tag-filter {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+
+  .filter-tag {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    font-weight: 500;
+    background: var(--color-tag-bg);
+    color: var(--color-tag-text);
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+  }
+
+  .month-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .month-header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+  }
+
+  .month-header h3 {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .month-entry-count {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+  }
+
+  .entry-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .entry-card {
+    display: flex;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .entry-card:hover {
+    border-color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  .entry-card-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+    min-width: 5rem;
+    padding-top: 0.1rem;
+  }
+
+  .entry-date {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .entry-id {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  .entry-card-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .entry-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 0.2rem 0;
+  }
+
+  .entry-summary {
+    font-size: 0.78rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin: 0 0 0.35rem 0;
+  }
+
+  .entry-tags {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+
+  .entry-tag {
+    font-family: var(--font-sans);
+    font-size: 0.6rem;
+    font-weight: 500;
+    background: var(--color-tag-bg);
+    color: var(--color-tag-text);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+  }
+
+  .experiment-empty {
+    padding: var(--space-lg);
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
+</style>
