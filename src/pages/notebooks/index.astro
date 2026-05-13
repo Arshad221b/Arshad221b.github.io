@@ -3,42 +3,62 @@ import Layout from '../../layouts/Layout.astro';
 import { days as neuroscienceDays } from '../../data/neuroscience-days';
 import { days as emotionDays } from '../../data/emotion-days';
 import { days as modernNetsDays } from '../../data/modern-nets-days';
-import { days as computerVisionDays } from '../../data/computer-vision-days';
+import { days as vlmSearchDays } from '../../data/vlm-search-days';
+import { entries as slamEntries, months as slamMonths } from '../../data/slam-entries';
+
 
 const title = "Notebooks — Arshad Kazi";
 
-const experiments = [
+const longRunning = [
   {
-    title: "Overview of Computer Vision",
-    slug: "computer-vision",
-    totalDays: 10,
-    completedDays: computerVisionDays.filter(d => d.bullets.length > 0).length,
-    commitment: "1 hr / day",
+    title: "SLAM from Scratch",
+    slug: "slam",
+    duration: "6 months",
+    commitment: "whenever it happens",
     status: "active" as const,
-    startDate: "2026-05-06",
-    description: "Revisiting the foundations of computer vision. From classical image processing to modern deep learning architectures. Building intuition for how machines see.",
-    tags: ["computer vision", "deep learning", "image processing"],
+    startDate: "2026-05-13",
+    description: "Building a full SLAM pipeline from scratch. Camera models, feature extraction, matching, motion estimation, mapping, loop closure, graph optimization. Theory and code, no shortcuts.",
+    tags: ["computer vision", "robotics", "geometry"],
+    entryCount: slamEntries.length,
+    months: slamMonths,
+    entries: slamEntries,
   },
+];
+
+function getEntriesForMonth(entries: typeof slamEntries, month: string) {
+  return entries.filter(e => e.date.startsWith(month));
+}
+
+function formatMonthShort(monthStr: string): string {
+  const date = new Date(monthStr + '-01T00:00:00');
+  return date.toLocaleDateString('en-US', { month: 'short' });
+}
+
+const experiments = [
   {
     title: "Overview of Modern Nets",
     slug: "modern-nets",
-    totalDays: 10,
-    completedDays: modernNetsDays.filter(d => d.bullets.length > 0).length,
+    totalDays: 7,
+    completedDays: 7,
     commitment: "1 hr / day",
-    status: "active" as const,
+    status: "completed" as const,
     startDate: "2026-04-27",
+    endDate: "2026-05-05",
     description: "Revisiting transformers, tokenizers, attention, and the GPT family. Intuitive understanding for interviews and curiosity.",
+    conclusion: "Everything builds on the same transformer attention mechanism. From BPE tokenization to multi-head attention to the full GPT family. The ecosystem on top (RAG, LangChain, agents) is plumbing to make it useful. Still want to go deeper on RoPE, SwiGLU, the chain of thought paper, and diffusion models.",
     tags: ["deep learning", "transformers", "LLMs"],
   },
   {
     title: "Search Images with Words",
     slug: "vlm-search",
-    totalDays: 10,
+    totalDays: 4,
     completedDays: 4,
     commitment: "1 hr / day, weekdays",
-    status: "active" as const,
+    status: "completed" as const,
     startDate: "2026-03-30",
+    endDate: "2026-04-04",
     description: "From neuroscience to CLIP to building a working on-device search prototype. How do VLMs bind words to pixels?",
+    conclusion: "Went from the CLIP paper to a working implementation from scratch. Two encoders, one shared embedding space, contrastive loss. The key insight is that aligning text and image representations lets you do zero-shot classification and text-to-image search without task-specific training.",
     tags: ["computer vision", "machine learning", "multimodal"],
   },
   {
@@ -90,24 +110,57 @@ function formatDate(dateStr: string): string {
       <div class="intro-grid">
         <div class="intro-block">
           <h2>The why</h2>
-          <p>We are not built to stay inside one domain. The mind reaches across boundaries instinctively. It sees a pattern in one place and wants to know if the same pattern holds somewhere else entirely. That impulse is not distraction. It is, I think, the deepest form of attention. The willingness to stay with a question long enough that the question itself begins to change shape.</p>
-          <p>I do not do this to learn a subject. I do it because something in me needs to understand how things work at the level where they stop being separate subjects and start being the same thing. The boundary between neuroscience and computation, between perception and meaning, between what the body knows and what the mind believes it knows. That boundary is where the interesting questions live.</p>
+          <p>Transfer learning works in brains too. Neuroscience research shows that learning across domains strengthens abstract reasoning. The prefrontal cortex builds schema, mental frameworks that compress patterns from one domain and apply them to another. The more domains you feed it, the richer the schema. Convolutions in V1 and convolutions in CNNs are the same idea discovered independently. Attention in the parietal cortex and attention in transformers solve the same resource allocation problem. These are not metaphors. They are convergent solutions.</p>
+          <p>Leonardo da Vinci studied anatomy to paint better and painted to understand anatomy better. Feynman learned to pick locks to understand information theory. Ramanujan found number theory in temple floor patterns. Cross-domain learning is not a distraction from depth. It is how depth actually works.</p>
         </div>
 
         <div class="intro-block">
           <h2>The practice</h2>
-          <p>One question. One week. One hour per day. The constraint is deliberate. Not because an hour is enough to understand anything, but because a bounded space forces honesty. You cannot pretend to have understood something when you only have sixty minutes. You have to confront what you actually know, write it down, and return the next day to find out where you were wrong.</p>
-          <p>Leonardo da Vinci called himself a "discepolo della esperienza", a disciple of experience. He filled notebooks not to master subjects but because the act of looking closely was itself the point. Thousands of pages of questions, observations, half-formed connections. No curriculum. No credential. Just the daily discipline of refusing to look away from what he did not understand. That is the closest description I have for what this is.</p>
+          <p>Spaced repetition research shows that retrieval under time pressure consolidates memory faster than passive review. The hippocampus encodes better when the learning session has a clear boundary. One question, one week, one hour per day. The constraint forces active recall. You cannot passively read for sixty minutes and pretend you understood it. You have to write what you know, find the gaps, and come back the next day to fill them.</p>
+          <p>I am a Leonardo fanboy, not because I think I am smart like him because I am really not, but because the man had no formal education past age 14 and still taught himself anatomy and optics and geology and engineering from whatever books and mentors he could get his hands on, and that is the only way I have ever been able to learn anything either. He kept notebooks his entire life, thousands of pages, anatomy next to fluid dynamics next to machine designs, not organized by subject but by date, and he called himself "discepolo della esperienza" which means disciple of experience, and I think the notebook was never documentation for him, it was the actual thinking tool, the place where looking at something carefully enough turns into understanding it.</p>
         </div>
       </div>
     </div>
 
     <div class="section-header">
       <span class="section-label">Running</span>
-      <span class="section-count">{experiments.filter(e => e.status === 'active').length}</span>
+      <span class="section-count">{experiments.filter(e => e.status === 'active').length + longRunning.length}</span>
     </div>
 
     <div class="experiments-grid">
+      {longRunning.map(proj => (
+        <a href={`/notebooks/${proj.slug}`} class="exp-card">
+          <div class="exp-card-glow"></div>
+          <div class="exp-card-content">
+            <div class="exp-card-header">
+              <span class="exp-badge active">{proj.entryCount} {proj.entryCount === 1 ? 'entry' : 'entries'}</span>
+              <span class="exp-commitment">{proj.duration} &middot; {proj.commitment}</span>
+            </div>
+            <h3>{proj.title}</h3>
+            <p>{proj.description}</p>
+            <div class="lr-month-strip">
+              {proj.months.map(month => {
+                const count = getEntriesForMonth(proj.entries, month);
+                return (
+                  <div class={`lr-month ${count.length > 0 ? 'has-entries' : ''}`}>
+                    <span class="lr-month-label">{formatMonthShort(month)}</span>
+                    {count.length > 0 && <span class="lr-month-count">{count.length}</span>}
+                  </div>
+                );
+              })}
+            </div>
+            <div class="exp-card-footer">
+              <div class="exp-tags">
+                {proj.tags.map(tag => (
+                  <span class="exp-tag">{tag}</span>
+                ))}
+              </div>
+              <span class="exp-date">Started {formatDate(proj.startDate)}</span>
+            </div>
+          </div>
+        </a>
+      ))}
+
       {experiments.filter(e => e.status === 'active').map(exp => (
         <a href={`/notebooks/${exp.slug}`} class="exp-card">
           <div class="exp-card-glow"></div>
@@ -142,7 +195,7 @@ function formatDate(dateStr: string): string {
 
     <div class="experiments-grid">
       {experiments.filter(e => e.status === 'completed').map(exp => {
-        const days = exp.slug === 'neuroscience' ? neuroscienceDays : exp.slug === 'emotion' ? emotionDays : [];
+        const days = exp.slug === 'neuroscience' ? neuroscienceDays : exp.slug === 'emotion' ? emotionDays : exp.slug === 'modern-nets' ? modernNetsDays : exp.slug === 'vlm-search' ? vlmSearchDays : [];
         const activeDays = days.filter(d => d.curiosityTitle);
         return (
         <a href={`/notebooks/${exp.slug}`} class="exp-card completed">
@@ -455,6 +508,49 @@ function formatDate(dateStr: string): string {
     font-family: var(--font-sans);
     font-size: 0.7rem;
     color: var(--color-text-secondary);
+  }
+
+  .lr-month-strip {
+    display: flex;
+    gap: 3px;
+    margin-bottom: var(--space-sm);
+  }
+
+  .lr-month {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    flex: 1;
+    padding: 0.3rem 0.2rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+  }
+
+  .lr-month.has-entries {
+    border-color: var(--color-accent);
+    background: var(--color-accent-soft);
+  }
+
+  .lr-month-label {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .lr-month.has-entries .lr-month-label {
+    color: var(--color-accent);
+  }
+
+  .lr-month-count {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: var(--color-accent);
   }
 
   @media (max-width: 600px) {

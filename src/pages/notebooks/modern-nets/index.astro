@@ -47,12 +47,12 @@ const activeDays = days.filter(d => d.bullets.length > 0);
 
     <div class="experiment-progress">
       <div class="progress-track">
-        {Array.from({ length: 10 }, (_, i) => {
+        {Array.from({ length: 7 }, (_, i) => {
           const hasEntry = days.some(d => d.day === i + 1 && d.bullets.length > 0);
           return <div class={`progress-dot ${hasEntry ? 'filled' : ''}`} />;
         })}
       </div>
-      <span class="progress-label">{activeDays.length} / 10 days</span>
+      <span class="progress-label">{activeDays.length} / 7 days</span>
     </div>
 
     <div class="day-list">
