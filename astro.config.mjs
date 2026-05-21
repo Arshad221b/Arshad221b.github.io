@@ -5,6 +5,6 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://arshad221b.github.io',
+  site: 'https://arshad-kazi.com',
   integrations: [sitemap()],
 });
