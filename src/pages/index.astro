@@ -5,6 +5,21 @@ const title = "Arshad Kazi";
 ---
 
 <Layout title={title} activeNav="/" description="Arshad Kazi — CV/ML engineer building things to understand how they work. Computer vision, 3D geometry, representation learning." ogImage="/images/profile.png">
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Arshad Kazi",
+    "url": "https://arshad221b.github.io",
+    "image": "https://arshad221b.github.io/images/profile.png",
+    "jobTitle": "CV/ML Engineer",
+    "description": "CV/ML engineer building things to understand how they work. Computer vision, 3D geometry, representation learning.",
+    "sameAs": [
+      "https://github.com/Arshad221b",
+      "https://www.linkedin.com/in/arshad221b/",
+      "https://medium.com/@arshad_221b",
+      "https://substack.com/@arshadkazi"
+    ]
+  })} />
   <div class="home">
     <header class="hero">
       <div class="hero-intro">

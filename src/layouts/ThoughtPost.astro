@@ -9,13 +9,29 @@ const { title, date, description } = Astro.props;
 
 import Layout from './Layout.astro';
 
+const siteUrl = 'https://arshad221b.github.io';
+const articleUrl = new URL(Astro.url.pathname, siteUrl).href;
+
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 ---
 
-<Layout title={`${title} — Arshad Kazi`} activeNav="/thoughts" description={description}>
+<Layout title={`${title} — Arshad Kazi`} activeNav="/thoughts" description={description} ogImage="/images/og-thoughts.jpg">
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": title,
+    "description": description,
+    "datePublished": date,
+    "url": articleUrl,
+    "author": {
+      "@type": "Person",
+      "name": "Arshad Kazi",
+      "url": siteUrl
+    }
+  })} />
   <article class="blog-post">
     <header class="blog-post-header">
       <div class="blog-post-meta">

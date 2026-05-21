@@ -9,6 +9,9 @@ interface Props {
 const { title, activeNav = '', description = '', ogImage = '' } = Astro.props;
 const siteUrl = 'https://arshad221b.github.io';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
+const defaultDescription = 'Arshad Kazi — CV/ML engineer building things to understand how they work. Computer vision, 3D geometry, representation learning.';
+const metaDescription = description || defaultDescription;
+const metaImage = ogImage ? `${siteUrl}${ogImage}` : `${siteUrl}/images/profile.png`;
 
 const navItems = [
   { label: 'About', href: '/' },
@@ -38,19 +41,18 @@ const navItems = [
     <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <link rel="canonical" href={canonicalUrl} />
     <title>{title}</title>
-    {description && <meta name="description" content={description} />}
-    {ogImage && (
-      <>
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:image" content={`${siteUrl}${ogImage}`} />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={title} />
-        <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
-      </>
-    )}
+    <meta name="description" content={metaDescription} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={metaDescription} />
+    <meta property="og:image" content={metaImage} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Arshad Kazi" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={metaDescription} />
+    <meta name="twitter:image" content={metaImage} />
+    <slot name="head" />
   </head>
   <body>
     <header>
