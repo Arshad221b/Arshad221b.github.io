@@ -659,6 +659,17 @@ main {
   font-weight: 600;
 }
 
+.blog-post-content img {
+  max-width: 100%;
+  max-height: 500px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  margin: var(--space-md) auto;
+  display: block;
+}
+
 .blog-post-footer {
   margin-top: var(--space-xl);
   padding-top: var(--space-md);
