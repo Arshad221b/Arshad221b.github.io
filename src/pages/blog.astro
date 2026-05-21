@@ -23,7 +23,8 @@ const posts = ([
     date: "2024-03-10",
     description: "A practical walkthrough of building a real-time ASL alphabet recogniser. Dataset, CNN architecture with the actual math, and live webcam inference using OpenCV.",
     tags: ["computer vision", "CNN", "sign language", "OpenCV", "keras", "deep learning"],
-    slug: "sign-language-recognition",
+    slug: "sign-language-recognition-using-cnn-and-opencv",
+    href: "/sign-language-recognition-using-cnn-and-opencv",
   },
   {
     title: "Vector Database Management Systems: Architecture and Internals",
@@ -70,7 +71,7 @@ function formatDate(dateStr: string): string {
 
     <div class="posts-grid">
       {posts.map(post => (
-        <a href={`/blog/${post.slug}`} class="post-card">
+        <a href={post.href || `/blog/${post.slug}`} class="post-card">
           <div class="post-card-glow"></div>
           <div class="post-card-content">
             <div class="post-card-meta">
