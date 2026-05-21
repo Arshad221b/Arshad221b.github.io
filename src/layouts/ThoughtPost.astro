@@ -1,0 +1,76 @@
+---
+interface Props {
+  title: string;
+  date: string;
+  description: string;
+}
+
+const { title, date, description } = Astro.props;
+
+import Layout from './Layout.astro';
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+---
+
+<Layout title={`${title} — Arshad Kazi`} activeNav="/thoughts" description={description}>
+  <article class="blog-post">
+    <header class="blog-post-header">
+      <div class="blog-post-meta">
+        <time>{formatDate(date)}</time>
+      </div>
+      <h1>{title}</h1>
+    </header>
+
+    <div class="blog-post-content">
+      <slot />
+    </div>
+
+    <div id="disqus_thread" class="disqus-section"></div>
+
+    <footer class="blog-post-footer">
+      <a href="/thoughts" class="back-link">&larr; Back to thoughts</a>
+    </footer>
+  </article>
+</Layout>
+
+<script is:inline>
+  var disqus_config = function () {
+    this.page.url = window.location.href;
+    this.page.identifier = window.location.pathname;
+  };
+  function loadDisqus() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://arshad-kazi-blog.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  }
+  function syncDisqusTheme() {
+    var isDark = document.documentElement.classList.contains('dark');
+    var thread = document.getElementById('disqus_thread');
+    if (thread) {
+      thread.setAttribute('data-color-scheme', isDark ? 'dark' : 'light');
+    }
+    if (window.DISQUS) {
+      window.DISQUS.reset({ reload: true, config: disqus_config });
+    }
+  }
+  loadDisqus();
+  var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(m) {
+      if (m.attributeName === 'class') syncDisqusTheme();
+    });
+  });
+  observer.observe(document.documentElement, { attributes: true });
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+<style>
+  .disqus-section {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+  }
+</style>
