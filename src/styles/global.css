@@ -230,10 +230,6 @@ nav {
   padding: 0.3em 0;
 }
 
-.sher-art.show-quote {
-  border-radius: 4px 4px 20px 20px;
-  padding: 0.6em 1.5em 0.8em;
-}
 
 .sher-decor {
   display: block;
@@ -286,41 +282,15 @@ nav {
   }
 }
 
-.sher-line .english {
-  display: none;
-  font-family: 'Scheherazade New', serif;
-  font-size: 0.8em;
-  letter-spacing: 0.02em;
-  font-weight: 400;
-  line-height: 1;
+.site-tagline {
+  font-family: 'Libre Franklin', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   color: var(--color-accent);
-  opacity: 0.85;
 }
 
-.sher-line {
-  display: block;
-  line-height: 1.05;
-}
-
-.sher-art:not(.show-quote) .sher-line {
-  display: none;
-}
-
-.sher-art.show-quote:hover .latin {
-  display: none;
-}
-
-.sher-art.show-quote:hover .english {
-  display: inline;
-}
-
-.sher-art:not(.show-quote):hover .latin {
-  display: inline;
-}
-
-.sher-art:not(.show-quote):hover .english {
-  display: none;
-}
 
 .sher-art:hover .sher-decor {
   opacity: 0.7;
