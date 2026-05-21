@@ -43,6 +43,21 @@ function formatDate(dateStr: string): string {
       <a href="/blog" class="back-link">&larr; Back to all posts</a>
     </footer>
   </article>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+  <script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script is:inline>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.querySelector(".blog-post-content"), {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false }
+        ],
+        throwOnError: false
+      });
+    });
+  </script>
 </Layout>
 
 <script is:inline>
@@ -84,17 +99,3 @@ function formatDate(dateStr: string): string {
   }
 </style>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
-<script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-<script is:inline>
-  document.addEventListener("DOMContentLoaded", function() {
-    renderMathInElement(document.querySelector(".blog-post-content"), {
-      delimiters: [
-        { left: "$$", right: "$$", display: true },
-        { left: "$", right: "$", display: false }
-      ],
-      throwOnError: false
-    });
-  });
-</script>
