@@ -4,54 +4,84 @@ import Layout from '../layouts/Layout.astro';
 const title = "Thoughts — Arshad Kazi";
 
 const posts = ([
-  {
-    title: "What You See in a City Is What You Brought to It",
-    date: "2026-05-10",
-    description: "I went to Bangalore to test an idea: that whatever you see in other people is just a reflection of you. Every encounter became a report on my own interior.",
-    slug: "what-you-see-in-a-city",
-  },
-  {
-    title: "Why High-Functioning Autistic Never Learn to Ask for HELP!",
-    date: "2026-04-15",
-    description: "High-functioning autism creates an invisible struggle. You're smart enough to act normal, but the cost of that performance is something nobody sees.",
-    slug: "why-high-functioning-autistic",
-  },
-  {
-    title: "Why Do You Feel Like You Are Missing Something?",
-    date: "2026-04-01",
-    description: "The scroll shows you lives you didn't live. But that feeling of missing out isn't insight. It's a trap built on a premise worth questioning.",
-    slug: "why-do-you-feel-like-missing-something",
-  },
-  {
-    title: "Eid, Sheer Khurma and Mother-Son Bond",
-    date: "2026-03-28",
-    description: "I am an atheist in a Muslim household. But Eid evening, when my mum makes Sheer Khurma, is the one time the usual friction between us temporarily stops interfering.",
-    slug: "eid-sheer-khurma",
-  },
-  {
-    title: "Stories We Tell to Survive Each Other...",
-    date: "2026-03-20",
-    description: "A philosophical reflection on loneliness, meaning, and the human. Exploring Camus, absurdism, and the hidden depths of everyday life.",
-    slug: "stories-we-tell-to-survive",
-  },
-  {
-    title: "You Are Not Einstein. Neither Was He.",
-    date: "2026-03-10",
-    description: "Einstein's genius wasn't about being smarter. It was about staring at the gap between expectation and reality until it revealed something new.",
-    slug: "you-are-not-einstein",
-  },
-  {
-    title: "Why you are living just to never feel lonely...",
-    date: "2026-02-25",
-    description: "Strip away everything materialistic and emotional from your life, and you're left with just a body, a soul, and an almost empty mind.",
-    slug: "living-to-never-feel-lonely",
-  },
-  {
-    title: "Why should I write about me when nobody cares?",
-    date: "2026-02-15",
-    description: "I'm just another Indian guy from a small town. Statistically insignificant, emotionally immature, underdeveloped as a writer. Yet I continue because I exist.",
-    slug: "why-should-i-write",
-  },
+{ title: '5 Honest Things I’ve Learned in the Last 5 Years', date: '2025-03-29', description: 'Some blogs just happen. I sit down, and the words come without trying too hard. There’s a rhythm to it…thoughts connect, and it all flows naturally…This one’s not like that!', tags: ['self-reflection', 'life lessons'], slug: '5-honest-things-ive-learned-in-the-last-5-years' },
+  { title: '9 Year old kid\'s Curiosity and Exploration with Truth', date: '2023-11-25', description: 'A 9yr old girl, told me about a YouTube video discussing S. Bose’s death in a helicopter crash and the associated conspiracy. She conveyed it as a belief. Upon my further (soft) inquiry, I discover...', tags: ['curiosity', 'observation'], slug: '9-year-old-kids-curiosity-and-exploration-with-truth' },
+  { title: 'A Clarity You Get When You Learn to Fight Alone', date: '2024-08-31', description: 'There comes a moment in life, a subtle shift, when the early excitement of your career begins to fade, no more honeymoon period. It\'s around the same time you notice that your friends are drifting ...', tags: ['loneliness', 'personal growth'], slug: 'a-clarity-you-get-when-you-learn-to-fight-alone' },
+  { title: 'A Letter to the Social Media World from an Introvert', date: '2024-10-12', description: 'Dear (Extroverted) Social Media World,', tags: ['social media', 'introversion'], slug: 'a-letter-to-the-social-media-world-from-an-introvert' },
+  { title: 'A Philosophy of Exercise Which Transforms Body and Soul', date: '2024-08-24', description: 'I’m few km into my bike ride. It’s a slight decline, around 2-4%, so my breathing rate is lower since I’m peddling easily. But now, I can’t listen anything around me because my heart rate is well a...', tags: ['health', 'philosophy'], slug: 'a-philosophy-of-exercise-which-transforms-body-and-soul' },
+  { title: 'A silent Diwali: Dealing with loneliness during festivals', date: '2024-11-03', description: 'A firecracker’s just a quick chemical trick...a pop, a crack, a flash of colour if you’re lucky. It all unfolds in an instant, just long enough to break the dark with noise and light, and then it’s...', tags: ['loneliness', 'culture'], slug: 'a-silent-diwali-dealing-with-loneliness-during-festivals' },
+  { title: 'Adult Children of Emotionally Immature Parents', date: '2025-11-25', description: 'Blaming your parents isn’t easy. Even if part of you knows that they have done something wrong with you (or have made little to no effort in accepting their wrong doings), it is really hard to put ...', tags: ['book review', 'psychology'], slug: 'adult-children-of-emotionally-immature-parents' },
+  { title: 'AI’s Growing Complexity: The Next Era of Human Curiosity', date: '2025-01-31', description: 'There are two tangents to this conversation: one, I feel like doing software engineering is a dead-end job (with arguments to support it), and two, I feel that “AI” will turn into a field like quan...', tags: ['technology', 'curiosity'], slug: 'ais-growing-complexity-the-next-era-of-human-curiosity' },
+  { title: 'Autism for Indians: 5 common questions', date: '2024-11-09', description: 'Here are five questions which I think are important to raise awareness about Autism in Indian adults:', tags: ['autism', 'india'], slug: 'autism-for-indians-5-common-questions' },
+  { title: 'Autism: Story of a kid with a different brain...', date: '2024-08-27', description: 'There are many blogs and books about understanding autism and neurodivergence in general. But most people I know aren\'t aware of these concepts because you never search for something unless you\'re ...', tags: ['autism', 'personal'], slug: 'autism-story-of-a-kid-with-a-different-brain' },
+  { title: 'Autism: Things Indian Parents/Students need to know...', date: '2024-05-22', description: 'I want to raise awareness about Autism Spectrum Disorder (ASD) among Indian students and, especially, adults. Many Indian schools and parents lack knowledge about learning disabilities, leading to ...', tags: ['autism', 'india'], slug: 'autism-things-indian-parentsstudents-need-to-know' },
+  { title: 'Basic process of finding happiness in work: Flow', date: '2024-09-14', description: 'We are among the 8 billion other slightly smarter monkeys living on a tiny planet. Earth is one of eight planets revolving around a star, the Sun, which is just an ordinary star. There are billions...', tags: ['book review', 'psychology'], slug: 'basic-process-of-finding-happiness-in-work-flow' },
+  { title: 'Becoming "Self-Learning" Ninja!', date: '2024-09-07', description: 'Leonardo did not invent the scientific method, nor did Aristotle or Alhazen or Galileo or any Bacon. But his uncanny abilities to engage in the dialogue between experience and theory made him a pri...', tags: ['self-learning', 'curiosity'], slug: 'becoming-self-learning-ninja' },
+  { title: 'Building Patience Takes Patience...', date: '2024-02-11', description: '"It takes time", that\'s what they all say, especially to a most impatient person like me. Telling me to "have patience" is like telling a bird not to fly. It\'s suffocating when things don\'t work ou...', tags: ['personal growth', 'self-reflection'], slug: 'building-patience-takes-patience' },
+  { title: 'Buying something with my first salary!', date: '2021-04-18', description: 'I remember getting my first salary after graduation. It was more money than I’d ever seen, and I wanted to spend it on something meaningful—something that would stick with me for a long time, somet...', tags: ['personal', 'nostalgia'], slug: 'buying-something-with-my-first-salary' },
+  { title: 'Career Break: Do you really know “why” you are making money?', date: '2024-10-19', description: 'Like any kid, I imagined life would open up beautifully, getting paid to do what you love, spending that hard-earned cash on whatever caught your eye, no more pinching pennies like back in the host...', tags: ['career', 'purpose'], slug: 'career-break-do-you-really-know-why-you-are-making-money' },
+  { title: 'Cybertruck: Witness the Genius, Grit, and Vision of Tesla', date: '2023-12-02', description: 'Revolutionary Features of the Cybertruck', tags: ['technology', 'review'], slug: 'cybertruck-witness-the-genius-grit-and-vision-of-tesla' },
+  { title: 'Dismantling the mountain: Setting goals for New Year', date: '2025-01-03', description: 'At the end of every year, I open my notebook and plan out the next year. I jot down the things I want to achieve and complete. These aren\'t just material possessions; there are also a few emotional...', tags: ['personal growth', 'goals'], slug: 'dismantling-the-mountain-setting-goals-for-new-year' },
+  { title: '"Drive My Car": A movie about love and disconnect', date: '2024-12-22', description: 'He walks into his apartment and sees his wife cheating on him with someone else. She’s physically engaged with the guy. He sees them in the reflection in the mirror. It’s not clear who he is; maybe...', tags: ['film', 'love'], slug: 'drive-my-car-a-movie-about-love-and-disconnect' },
+  { title: 'Educated: A life-story which turned into an inspirational memoir', date: '2021-07-06', description: 'Educated is a journey of a girl who fought with the her conservative circumstances and harsh realities to become a real life \' Educated \'.', tags: ['book review', 'resilience'], slug: 'educated-a-life-story-which-turned-into-an-inspirational-memoir' },
+  { title: 'Effective Altruism: Why do people like to help others?', date: '2023-12-11', description: 'We are among the first generations who are living in a world where every question has an answer at our fingertips. Day by day we are building smarter and smarter searching tools. "Google it!" is sy...', tags: ['philosophy', 'society'], slug: 'effective-altruism-why-do-people-like-to-help-others' },
+  { title: 'Eid, Sheer Khurma and Mother-Son Bond', date: '2026-03-28', description: 'I am an atheist in a Muslim household. But Eid evening, when my mum makes Sheer Khurma, is the one time the usual friction between us temporarily stops interfering.', tags: ['family', 'culture', 'personal'], slug: 'eid-sheer-khurma' },
+  { title: 'Father’s Day for those who don\'t have a father...', date: '2025-06-15', description: 'Most of the people I’m drawn to, without meaning to, have had some rupture in their relationship with their father. Either dead, distant, violent, or just emotionally hollow. Not all of them talk a...', tags: ['family', 'grief'], slug: 'fathers-day-for-those-who-dont-have-a-father' },
+  { title: 'Five Levels of Perfectionism, From Pressure to Purpose', date: '2024-12-15', description: 'Perfectionism, as explored in Dabrowski\'s studies, unfolds across five levels, each representing a progressive journey towards self-realization. Although his studies were conducted with gifted chil...', tags: ['psychology', 'personal growth'], slug: 'five-levels-of-perfectionism-from-pressure-to-purpose' },
+  { title: 'For those who feel like falling behind and still finding themselves...', date: '2024-12-29', description: 'I know how it feels to watch everyone else moving forward while you’re stuck in the same place. One friend is getting engaged, another is getting married, someone’s expecting a kid, someone else ju...', tags: ['self-reflection', 'personal growth'], slug: 'for-those-who-feel-like-falling-behind-and-still-finding-themselves' },
+  { title: 'Friendship, Grandpa\'s Contact List and His Life Journey', date: '2023-11-25', description: 'A few weeks ago, I was organizing my grandpa\'s contact list based on the surname/first name basis—it was quite messy, especially in Marathi. Both of my grandparents were preparing to leave for Hajj...', tags: ['family', 'nostalgia'], slug: 'friendship-grandpas-contact-list-and-his-life-journey' },
+  { title: 'Garden with a wilted flower', date: '2025-02-22', description: 'Maybe it’s just the weight of my nonzero years speaking, but my garden is nothing more than a graveyard of wilted flowers now. It wasn’t always this way. I remember when it thrived, when the colors...', tags: ['poetry', 'loss'], slug: 'garden-with-a-wilted-flower' },
+  { title: 'Here\'s how to choose a good college after 12th JEE/NEET...', date: '2024-05-12', description: 'This blog is intended towards those who are in pivotal moment in their lives, those are in the 10th standard, 12th standard (especially) or someone who is switching job or getting a job for the fir...', tags: ['education', 'india'], slug: 'heres-how-to-choose-a-good-college-after-12th-jeeneet' },
+  { title: 'I didn\'t decide to build this, yet I did...', date: '2026-01-08', description: 'This project started as love, empathy, and a certain sense of responsibility toward my parents. I wanted them to have a retirement home that would make them comfortable, but also allow them to live...', tags: ['personal', 'family'], slug: 'i-didnt-decide-to-build-this-yet-i-did' },
+  { title: 'Ikigai: The Japanese Secret for Happiness', date: '2021-05-03', description: 'In simple words, ikigai is your reason for being. It is the reason you flow. You dedicate your life to that thing and live an un-stressful, calm, and long life. This book is best for those who are ...', tags: ['book review', 'purpose'], slug: 'ikigai-the-japanese-secret-for-happiness' },
+  { title: 'Indian Corporate Culture, Gen Z & A Conformity Trap', date: '2024-10-26', description: 'Financial security is the carrot dangling after college, especially if you picked engineering. That stability becomes almost automatic, luring people down a path they don’t always love. For many, t...', tags: ['india', 'career', 'culture'], slug: 'indian-corporate-culture-gen-z-a-conformity-trap' },
+  { title: 'Indian "Hookup" Culture: Things we don\'t talk about...', date: '2024-06-24', description: 'Indian youth are changing. It’s more common now to have sexual relationships before marriage than ever before. People are meeting, interacting, and having fun. Add social media and dating apps to t...', tags: ['india', 'relationships', 'culture'], slug: 'indian-hookup-culture-things-we-dont-talk-about' },
+  { title: 'Is It Okay to Post Personal Pictures on LinkedIn?', date: '2024-06-01', description: '" Is it okay to post personal pictures on LinkedIn? " This question came from a friend who had just shared a picture of herself below a post about neuroscience and other intellectual pursuits . The...', tags: ['social media', 'opinion'], slug: 'is-it-okay-to-post-personal-pictures-on-linkedin' },
+  { title: 'Learned Helplessness: Study about Trauma', date: '2024-06-30', description: 'Martin Seligman was a psychologist who coined the term "learned helplessness". Basically, he did a bunch of experiments with dogs (and later with other animals) to understand how they respond to pa...', tags: ['psychology', 'trauma'], slug: 'learned-helplessness-study-about-trauma' },
+  { title: 'Learning to Accept the Noise Instead of Resenting It', date: '2025-02-07', description: 'This might resonate with those who are still finding themselves, who haven’t given up on the messy but important idea of understanding themselves . I’m trying to explain something peculiar, somethi...', tags: ['neurodivergence', 'self-reflection'], slug: 'learning-to-accept-the-noise-instead-of-resenting-it' },
+  { title: 'Library: A Book Heaven I Cherish(ed)', date: '2023-11-25', description: 'It stands as a venerable institution, boasting a legacy of over a century as one of the largest libraries in southern Maharashtra. This distinguished establishment, renowned for nurturing Field Med...', tags: ['books', 'nostalgia'], slug: 'library-a-book-heaven-i-cherished' },
+  { title: 'Life of Endurance', date: '2025-07-17', description: 'I’m gonna pretend like a Dalai Lama for a bit. Not because I’m enlightened. Just because I need to say something without watering it down. Also I\'m no master of living this way either: The way I li...', tags: ['resilience', 'philosophy'], slug: 'life-of-endurance' },
+  { title: 'Life\'s Strains, Pursuit of Purpose and Varicose', date: '2023-11-25', description: 'My mom is a teacher. She handles more than 120 students per class, teaching 4-5 classes a day, each lasting 45 minutes. She avoids using a speaker-microphone and never sits during classes, even sta...', tags: ['family', 'health'], slug: 'lifes-strains-pursuit-of-purpose-and-varicose' },
+  { title: 'Why you are living just to never feel lonely...', date: '2026-02-25', description: 'Strip away everything materialistic and emotional from your life, and you\'re left with just a body, a soul, and an almost empty mind. That feeling goes deeper than loneliness.', tags: ['loneliness', 'philosophy'], slug: 'living-to-never-feel-lonely' },
+  { title: 'Meet the Savarnas: Indian Millennials Whose Mediocrity Broke Everything', date: '2025-11-26', description: 'I will start with the same sentence author starts with this book , because it practically capsulates the exact reaction I feel readers will have, it also captures the tone and level of articutlatio...', tags: ['book review', 'india', 'society'], slug: 'meet-the-savarnas-indian-millennials-whose-mediocrity-broke-everything' },
+  { title: 'Most of you will not have most of the things in life (ever)', date: '2024-06-28', description: 'All of us dream. All of us aspire to be something. But let’s be realistic… the world doesn’t care about you or your dreams.', tags: ['self-reflection', 'philosophy'], slug: 'most-of-you-will-not-have-most-of-the-things-in-life-ever' },
+  { title: 'Most people follow & desire, only few choose & wonder!', date: '2024-07-18', description: 'Consider a typical Indian scenario. A 15-year-old kid, clueless about his future, faces a significant decision. If he does not hate math and has good 10th board marks, he chooses the science stream...', tags: ['philosophy', 'india', 'conformity'], slug: 'most-people-follow-desire-only-few-choose-wonder' },
+  { title: 'My Curious look on Belief as an Atheist', date: '2022-07-24', description: 'I am an atheist , or should I say a rationalist, agnostic, whatever you want to call me. I don’t like to believe in anything and try to avoid  believing  in things without scientific evidence. God,...', tags: ['philosophy', 'belief'], slug: 'my-curious-look-on-belief-as-an-atheist' },
+  { title: 'Non-thoughts & Mindlessness', date: '2025-05-23', description: 'Somewhere along the way, we convinced ourselves that thought is a tool, that more of it, sharper, faster, better-focused thought, would make us wiser, more productive, more in control. But sometime...', tags: ['mindfulness', 'philosophy'], slug: 'non-thoughts-mindlessness' },
+  { title: 'Once in a while we should live—just to breathe.', date: '2024-07-15', description: 'Most of my waking time, I’m thinking about work or work-related stuff. It’s mostly non-human, transactional relationships. And obviously, I’m not the only one. People around me spend most of their ...', tags: ['mindfulness', 'self-reflection'], slug: 'once-in-a-while-we-should-livejust-to-breathe' },
+  { title: 'Paradoxes of Life (It\'s a sad story)', date: '2024-05-07', description: 'There\'s a peculiar paradox. On one side, you see people suffering extreme pain: financial stress, emotional turmoil, family drama, marital strife, parental pressure, health and mental issues, histo...', tags: ['philosophy', 'self-reflection'], slug: 'paradoxes-of-life-its-a-sad-story' },
+  { title: 'Radical Self-confrontation & Self-awareness Trigger', date: '2025-05-30', description: 'Don\'t read this if you are in a good mood. Because this is going to hurt.', tags: ['psychology', 'personal growth'], slug: 'radical-self-confrontation-self-awareness-trigger' },
+  { title: 'Self blame: How to Always See The Glass Half Full?', date: '2023-12-15', description: 'Let me share a simple analogy: think of your body as a bucket for energy. We absorb energy from our surroundings and fill our bucket. When it overflows, we share that energy with the world. This ap...', tags: ['psychology', 'self-reflection'], slug: 'self-blame-how-to-always-see-the-glass-half-full' },
+  { title: 'Steve Jobs by Walter Isaacson', date: '2020-12-01', description: 'Steve Jobs was a man with all the qualities you have to have to get out of rat race.', tags: ['book review', 'biography'], slug: 'steve-jobs-by-walter-isaacson' },
+  { title: 'Stone-Age Minds in a Digital World: Stress & Anxiety', date: '2025-12-08', description: 'Human evolution has progressed rapidly over the past few centuries. Just a few thousand years ago, we were grappling with basic needs like food and shelter, crafting tools from rocks, and wearing a...', tags: ['psychology', 'anxiety', 'technology'], slug: 'stone-age-minds-in-a-digital-world-stress-anxiety' },
+  { title: 'Stories We Tell to Survive Each Other...', date: '2026-03-20', description: 'A philosophical reflection on loneliness, meaning, and the human. Exploring Camus, absurdism, and the hidden depths of everyday life.', tags: ['philosophy', 'existentialism'], slug: 'stories-we-tell-to-survive' },
+  { title: 'Story of my Grandfather', date: '2020-12-25', description: 'This is the story of my grandfather, a man with curiosity. There is a lot to learn from him..', tags: ['family', 'personal'], slug: 'story-of-my-grandfather' },
+  { title: 'The Anxious Generation: How the Great Rewiring of Childhood Is Causing an Epidemic of Mental Illness', date: '2026-06-16', description: 'My distilled understanding of The Anxious Generation -- the arguments that made sense, the patterns that matched what I already observe, and the parts that helped me understand the current situation without emotional overreaction or moral panic.', tags: ['book review', 'social media', 'mental health'], slug: 'the-anxious-generation' },
+  { title: 'The Four Agreements', date: '2022-01-29', description: '“I’m the Smokey mirror, because I am looking at myself in all of you, but we don’t recognise each other because of the smoke in-between us. That smoke is the Dream, and the mirror is you, the dream...', tags: ['book review', 'philosophy'], slug: 'the-four-agreements' },
+  { title: 'The Moral Reason Not to Die', date: '2025-09-19', description: 'What\'s the meaning of my life? Why should I exist? Why shouldn’t I die? Why should I keep living? Philosophically and spiritually these questions have been getting in my head for so long now. They ...', tags: ['philosophy', 'existentialism'], slug: 'the-moral-reason-not-to-die' },
+  { title: 'The Poetry of Love: Why Your Brain is Basically a Dating AI', date: '2025-03-18', description: 'Most people romanticize love as this enigmatic, poetic force beyond explanation. But it\'s actually a beautifully intricate algorithm running inside your brain. A system built on patterns, probabili...', tags: ['love', 'neuroscience'], slug: 'the-poetry-of-love-why-your-brain-is-basically-a-dating-ai' },
+  { title: 'This Girl Escaped North Korea in order to live', date: '2023-06-16', description: 'I read this book when I was a little worried about the increasing intolerance in India (Especially, in recent times). Although I won\'t consider it is directly related, but, this book will help you ...', tags: ['book review', 'freedom'], slug: 'this-girl-escaped-north-korea-in-order-to-live' },
+  { title: 'Through my window: my neighbor and his alcoholism...', date: '2025-04-12', description: 'I was looking out of this window, from this exact spot. The view hasn’t changed much over the years, though everything inside it has. I was looking at that same house right across from me, the one ...', tags: ['personal', 'observation'], slug: 'through-my-window-my-neighbor-and-his-alcoholism' },
+  { title: 'Time: The Only Thing We Can Control When We Feel Stuck', date: '2024-08-10', description: 'There’s a young man, not quite new to adulthood but still adjusting to the peculiar rhythm of it. He finds himself in the thick of what they call a quarter-life crisis, that unsettling feeling that...', tags: ['personal growth', 'self-reflection'], slug: 'time-the-only-thing-we-can-control-when-we-feel-stuck' },
+  { title: 'What I learned from reading Haruki Murakami', date: '2024-09-21', description: 'There was a time in my life where I had very few connections of my own, but each one was too strange to explain. I remember the anxiety creeping in…was I the only one surrounded by such weird and d...', tags: ['book review', 'literature'], slug: 'what-i-learned-from-reading-haruki-murakami' },
+  { title: 'What is "Ambition" ?', date: '2024-11-15', description: 'You can cry all you want. Beg for someone to care, to understand, to throw you a lifeline. You can wear yourself out trying to make them happy, break yourself in half just to prove you’d do anythin...', tags: ['philosophy', 'personal growth'], slug: 'what-is-ambition' },
+  { title: 'What You See in a City Is What You Brought to It', date: '2026-05-10', description: 'I went to Bangalore to test an idea: that whatever you see in other people is just a reflection of you. Every encounter became a report on my own interior.', tags: ['travel', 'self-reflection'], slug: 'what-you-see-in-a-city' },
+  { title: 'What\'s the difference between good & bad music?', date: '2023-12-17', description: 'When I asked her if we could predict the next note in the music based on previous notes, my piano teacher said a hard “No!”. Although I agree (because she’s trustworthy), my mind can’t make sense o...', tags: ['music', 'neuroscience'], slug: 'whats-the-difference-between-good-bad-music' },
+  { title: 'When Breath Becomes Air', date: '2021-05-15', description: 'A neurosurgeon, at the peak of his career, finds that he has cancer. This book is about Paul Kalanithi, a doctor who chose the medical field (or neuroscience for that matter) to connect his interes...', tags: ['book review', 'meaning', 'death'], slug: 'when-breath-becomes-air' },
+  { title: 'Where YOU Really Exist', date: '2025-08-06', description: 'There’s only a finite amount of time and space in the universe, and in your life. Don’t take this too philosophically. But don’t ignore it either.', tags: ['philosophy', 'existentialism'], slug: 'where-you-really-exist' },
+  { title: 'Why Being Unstylish Can Be Fun...', date: '2024-05-28', description: 'We live in a world where trends dictate much of what we do and how we think. Everyone wants to be part of the latest craze, whether it’s the newest tech, style, or even job trends. But what if foll...', tags: ['culture', 'opinion'], slug: 'why-being-unstylish-can-be-fun' },
+  { title: 'Why being \'Wonder\'ful beats being \'Hope\'ful', date: '2025-01-18', description: 'There’s no guarantee your job will last the next few months. No guarantee the girl you’re dating will marry you. No guarantee you’ll ever be rich, or even keep a full head of hair a few years down ...', tags: ['philosophy', 'wonder'], slug: 'why-being-wonderful-beats-being-hopeful' },
+  { title: 'Why do I struggle to understand Emotions?', date: '2024-02-27', description: 'Consider this for a moment: everything around us, whether material or immaterial, is intricately connected to emotion in some form or another. Our beliefs give rise to religions and governments. Ou...', tags: ['emotions', 'neurodivergence'], slug: 'why-do-i-struggle-to-understand-emotions' },
+  { title: 'Why Do You Feel Like You Are Missing Something?', date: '2026-04-01', description: 'The scroll shows you lives you didn\'t live. But that feeling of missing out isn\'t insight. It\'s a trap built on a premise worth questioning.', tags: ['social media', 'psychology'], slug: 'why-do-you-feel-like-missing-something' },
+  { title: 'Why following intuition is actually "Scientific"', date: '2024-03-30', description: 'Thankfully/sadly, I’m an only child. I would have to take care of my parents and be the sole earner of the family (someday). If I get married, I will have to ensure my spouse’s security. If I have ...', tags: ['science', 'intuition'], slug: 'why-following-intuition-is-actually-scientific' },
+  { title: 'Why High-Functioning Autistic Never Learn to Ask for HELP!', date: '2026-04-15', description: 'High-functioning autism creates an invisible struggle. You\'re smart enough to act normal, but the cost of that performance is something nobody sees.', tags: ['autism', 'neurodivergence'], slug: 'why-high-functioning-autistic' },
+  { title: 'Why is it hard to think positive when you are traumatized?', date: '2024-09-28', description: '"I think human consciousness, is a tragic misstep in evolution. We became too self-aware, nature created an aspect of nature separate from itself, we are creatures that should not exist by natural ...', tags: ['trauma', 'psychology'], slug: 'why-is-it-hard-to-think-positive-when-you-are-traumatized' },
+  { title: 'Why should I write about me when nobody cares?', date: '2026-02-15', description: 'I\'m just another Indian guy from a small town. Statistically insignificant, emotionally immature, underdeveloped as a writer. Yet I continue because I exist.', tags: ['writing', 'personal'], slug: 'why-should-i-write' },
+  { title: 'Why you should think really hard before relocating for Study/Job', date: '2024-02-24', description: 'Less than 10% of the population actually lives in metro cities in India. For villagers like me, it\'s clear that we often need to leave home for education or a job. Depending on our life stage, we f...', tags: ['career', 'india'], slug: 'why-you-should-think-really-hard-before-relocating-for-studyjob' },
+  { title: 'Women I Love(d)', date: '2024-01-28', description: 'As I’m writing this down, there’s a certain sadness on one side and a relief on the other. It’s not just about recounting how my last few days went; it\'s more about capturing a feeling that needs t...', tags: ['love', 'relationships'], slug: 'women-i-loved' },
+  { title: 'You actually love multiple people without even realising it...', date: '2024-12-07', description: 'I’m fascinated by dating culture, love, relationships, and all the complicated things young people seem to do to each other (lol). Probably because, as a mildly older single guy, it’s exactly what ...', tags: ['love', 'relationships'], slug: 'you-actually-love-multiple-people-without-even-realising-it' },
+  { title: 'You Are Not Einstein. Neither Was He.', date: '2026-03-10', description: 'Einstein\'s genius wasn\'t about being smarter. It was about staring at the gap between expectation and reality until it revealed something new.', tags: ['curiosity', 'personal growth'], slug: 'you-are-not-einstein' },
+  { title: 'Your Laziness has its reason and you can fix it', date: '2023-12-08', description: 'Every child is unique; we often hear this sentiment. Yet, despite celebrating individual differences, children are often funneled into a uniform educational structure, where they find themselves en...', tags: ['psychology', 'motivation'], slug: 'your-laziness-has-its-reason-and-you-can-fix-it' },
 ]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
 function formatDate(dateStr: string): string {
@@ -109,9 +139,23 @@ function formatDate(dateStr: string): string {
 
     <div class="posts-section">
       <h3 class="posts-section-title">All Writing</h3>
-      <div class="posts-grid">
+
+      <div class="search-bar">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-input" placeholder="Search by title, description, or tag..." autocomplete="off" />
+      </div>
+
+      <div class="tag-filters" id="tag-filters">
+        {[...new Set(posts.flatMap(p => p.tags))].sort().map(tag => (
+          <button class="tag-chip" data-tag={tag}>{tag}</button>
+        ))}
+      </div>
+
+      <p class="results-count" id="results-count"></p>
+
+      <div class="posts-grid" id="posts-grid">
         {posts.map(post => (
-          <a href={`/thoughts/${post.slug}`} class="post-card">
+          <a href={`/thoughts/${post.slug}`} class="post-card" data-title={post.title.toLowerCase()} data-description={post.description.toLowerCase()} data-tags={post.tags.join(',')}>
             <div class="post-card-glow"></div>
             <div class="post-card-content">
               <div class="post-card-meta">
@@ -119,6 +163,11 @@ function formatDate(dateStr: string): string {
               </div>
               <h3>{post.title}</h3>
               <p>{post.description}</p>
+              <div class="post-tags">
+                {post.tags.map(tag => (
+                  <span class="tag">{tag}</span>
+                ))}
+              </div>
             </div>
           </a>
         ))}
@@ -377,7 +426,155 @@ function formatDate(dateStr: string): string {
     font-size: 0.85rem;
     color: var(--color-text-secondary);
     line-height: 1.6;
-    margin: 0;
+    margin: 0 0 var(--space-sm) 0;
+  }
+
+  .search-bar {
+    position: relative;
+    width: 100%;
+    margin-bottom: var(--space-sm);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    pointer-events: none;
+  }
+
+  #search-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem 0.6rem 2.25rem;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  #search-input:focus {
+    border-color: var(--color-accent);
+  }
+
+  #search-input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .tag-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: var(--space-md);
+  }
+
+  .tag-chip {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    font-weight: 500;
+    background: var(--color-tag-bg);
+    color: var(--color-tag-text);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .tag-chip:hover {
+    border-color: var(--color-accent);
+  }
+
+  .tag-chip.active {
+    background: var(--color-accent);
+    color: white;
+    border-color: var(--color-accent);
+  }
+
+  .results-count {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-sm) 0;
+  }
+
+  .results-count:empty {
+    display: none;
+  }
+
+  .post-tags {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    font-weight: 500;
+    background: var(--color-tag-bg);
+    color: var(--color-tag-text);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
   }
 
 </style>
+
+<style is:global>
+  .post-card.hidden {
+    display: none !important;
+  }
+</style>
+
+<script is:inline>
+(function() {
+  const input = document.getElementById('search-input');
+  const grid = document.getElementById('posts-grid');
+  const cards = grid.querySelectorAll('.post-card');
+  const chips = document.querySelectorAll('.tag-chip');
+  const counter = document.getElementById('results-count');
+  let activeTag = null;
+
+  function filter() {
+    const q = input.value.toLowerCase().trim();
+    let visible = 0;
+    cards.forEach(card => {
+      const title = card.dataset.title;
+      const desc = card.dataset.description;
+      const tags = card.dataset.tags;
+      const matchesText = !q || title.includes(q) || desc.includes(q) || tags.includes(q);
+      const matchesTag = !activeTag || tags.split(',').includes(activeTag);
+      const show = matchesText && matchesTag;
+      card.classList.toggle('hidden', !show);
+      if (show) visible++;
+    });
+    if (q || activeTag) {
+      counter.textContent = visible + ' of ' + cards.length + ' posts';
+    } else {
+      counter.textContent = '';
+    }
+  }
+
+  input.addEventListener('input', filter);
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const tag = chip.dataset.tag;
+      if (activeTag === tag) {
+        activeTag = null;
+        chip.classList.remove('active');
+      } else {
+        chips.forEach(c => c.classList.remove('active'));
+        activeTag = tag;
+        chip.classList.add('active');
+      }
+      filter();
+    });
+  });
+})();
+</script>

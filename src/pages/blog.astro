@@ -69,9 +69,22 @@ function formatDate(dateStr: string): string {
       </p>
     </div>
 
-    <div class="posts-grid">
+    <div class="search-bar">
+      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="search-input" placeholder="Search by title, description, or tag..." autocomplete="off" />
+    </div>
+
+    <div class="tag-filters" id="tag-filters">
+      {[...new Set(posts.flatMap(p => p.tags))].sort().map(tag => (
+        <button class="tag-chip" data-tag={tag}>{tag}</button>
+      ))}
+    </div>
+
+    <p class="results-count" id="results-count"></p>
+
+    <div class="posts-grid" id="posts-grid">
       {posts.map(post => (
-        <a href={post.href || `/blog/${post.slug}`} class="post-card">
+        <a href={post.href || `/blog/${post.slug}`} class="post-card" data-title={post.title.toLowerCase()} data-description={post.description.toLowerCase()} data-tags={post.tags.join(',')}>
           <div class="post-card-glow"></div>
           <div class="post-card-content">
             <div class="post-card-meta">
@@ -176,4 +189,137 @@ function formatDate(dateStr: string): string {
     padding: 0.15rem 0.4rem;
     border-radius: 4px;
   }
+
+  .search-bar {
+    position: relative;
+    width: 100%;
+    margin-bottom: var(--space-sm);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    pointer-events: none;
+  }
+
+  #search-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem 0.6rem 2.25rem;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  #search-input:focus {
+    border-color: var(--color-accent);
+  }
+
+  #search-input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .tag-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: var(--space-md);
+  }
+
+  .tag-chip {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    font-weight: 500;
+    background: var(--color-tag-bg);
+    color: var(--color-tag-text);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .tag-chip:hover {
+    border-color: var(--color-accent);
+  }
+
+  .tag-chip.active {
+    background: var(--color-accent);
+    color: white;
+    border-color: var(--color-accent);
+  }
+
+  .results-count {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-sm) 0;
+  }
+
+  .results-count:empty {
+    display: none;
+  }
+
 </style>
+
+<style is:global>
+  .post-card.hidden {
+    display: none !important;
+  }
+</style>
+
+<script is:inline>
+(function() {
+  const input = document.getElementById('search-input');
+  const grid = document.getElementById('posts-grid');
+  const cards = grid.querySelectorAll('.post-card');
+  const chips = document.querySelectorAll('.tag-chip');
+  const counter = document.getElementById('results-count');
+  let activeTag = null;
+
+  function filter() {
+    const q = input.value.toLowerCase().trim();
+    let visible = 0;
+    cards.forEach(card => {
+      const title = card.dataset.title;
+      const desc = card.dataset.description;
+      const tags = card.dataset.tags;
+      const matchesText = !q || title.includes(q) || desc.includes(q) || tags.includes(q);
+      const matchesTag = !activeTag || tags.split(',').includes(activeTag);
+      const show = matchesText && matchesTag;
+      card.classList.toggle('hidden', !show);
+      if (show) visible++;
+    });
+    if (q || activeTag) {
+      counter.textContent = visible + ' of ' + cards.length + ' posts';
+    } else {
+      counter.textContent = '';
+    }
+  }
+
+  input.addEventListener('input', filter);
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const tag = chip.dataset.tag;
+      if (activeTag === tag) {
+        activeTag = null;
+        chip.classList.remove('active');
+      } else {
+        chips.forEach(c => c.classList.remove('active'));
+        activeTag = tag;
+        chip.classList.add('active');
+      }
+      filter();
+    });
+  });
+})();
+</script>
