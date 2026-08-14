@@ -2,6 +2,20 @@
 import Layout from '../layouts/Layout.astro';
 
 const title = "Arshad Kazi";
+
+const correspondence = [
+  { label: "GitHub", href: "https://github.com/Arshad221b" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/arshad221b/" },
+  { label: "Substack", href: "https://substack.com/@arshadkazi" },
+  { label: "Medium", href: "https://medium.com/@arshad_221b" },
+  { label: "Email", href: "mailto:arshadkaziblog@gmail.com" },
+];
+
+const vitals = [
+  { term: "Trade", detail: "Computer vision, ML" },
+  { term: "Method", detail: "Build it, break it, look again" },
+  { term: "Subjects", detail: "Geometry, structure, representation" },
+];
 ---
 
 <Layout title={title} activeNav="/" description="Arshad Kazi — CV/ML engineer building things to understand how they work. Computer vision, 3D geometry, representation learning." ogImage="/images/profile.png">
@@ -20,85 +34,416 @@ const title = "Arshad Kazi";
       "https://substack.com/@arshadkazi"
     ]
   })} />
-  <div class="home">
-    <header class="hero">
-      <div class="hero-intro">
-        <div class="hero-avatar">
-          <img src="/images/profile.png" alt="Arshad Kazi" />
-        </div>
-        <div class="home-hero-text">
-          <h1>Arshad Kazi</h1>
-          <p class="hero-title">exploring &ldquo;brain&rdquo;</p>
-        </div>
-      </div>
-      <div class="home-links">
-        <a href="https://github.com/Arshad221b" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>GitHub</a>
-        <a href="https://www.linkedin.com/in/arshad221b/" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>LinkedIn</a>
-        <a href="https://substack.com/@arshadkazi" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>Substack</a>
-        <a href="https://medium.com/@arshad_221b" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zm7.42 0c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/></svg>Medium</a>
-        <a href="mailto:arshadkaziblog@gmail.com"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Email</a>
-      </div>
-    </header>
 
-    <section class="letter">
-      <p class="salutation">If you're reading this, you probably ended up here by accident.</p>
-      <p class="intro-text">I am a trained engineer working around machine learning. I build things mostly to understand how they work, not just to make them work. Most of my work involves implementing models from scratch and working through training dynamics rather than relying on prebuilt abstractions (<a href="https://github.com/Arshad221b">see my work on GitHub</a>).</p>
-      <p class="intro-text">I am not a researcher and not a conventional developer, even though I spend a lot of time building. I tend to follow problems that require some level of reasoning, and I usually end up exploring them by building, breaking, and figuring out what is actually going on.</p>
-      <p class="intro-text">My primary interest is computer vision, especially problems involving structure, geometry, and representation. Things that can be tested, visualized, and taken apart: 3D reconstruction, pose estimation, representation learning. Some of this lives in my <a href="/notebooks">notebooks</a>.</p>
-      <p class="intro-text">I am intense when I am interested, atheist, and a chronic overthinker. Anxious, often unsatisfied, hard to relax. I jump between ideas, go deep into one, drop it halfway, and return later with a better understanding.</p>
-      <p class="intro-text">I have millions of interests, thousands of questions, and billions of problems I want to resolve. I think about color theory, neuroscience, food, film, music, language, and whatever else pulls me in on a given week. I write some of it down in my <a href="/thoughts">thoughts</a>. Most of it stays in my head. I will stay strong though.</p>
-      <p class="intro-text">I am still trying to understand where I stand and what I am trying to do in the long run. This is where I dump things I am working through. Not optimized, not curated, and not meant for social media.</p>
-      <p class="intro-text">Still trying to get found. Maybe that and finding myself are the same search. IDK.</p>
-      <p class="closing">Yours truly,<br /><span class="closing-name">Arshad</span></p>
-    </section>
+  <div class="folio">
+    <div class="folio-rule">
+      <span class="folio-mark">Folio&nbsp;I</span>
+      <span class="folio-line"></span>
+      <span class="folio-mark">Recto</span>
+    </div>
+
+    <div class="folio-body">
+      <!-- Margin column: the plate and its annotations -->
+      <aside class="margin">
+        <figure class="plate">
+          <div class="plate-frame">
+            <img src="/images/profile.png" alt="Arshad Kazi" />
+          </div>
+          <figcaption>
+            <span class="fig-num">Fig. 1</span>
+            <span class="fig-desc">The author, from life</span>
+          </figcaption>
+        </figure>
+
+        <dl class="vitals">
+          {vitals.map(v => (
+            <div class="vital">
+              <dt>{v.term}</dt>
+              <dd>{v.detail}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <div class="correspondence">
+          <span class="margin-label">Correspondence</span>
+          <ol>
+            {correspondence.map(c => (
+              <li>
+                <a href={c.href} target={c.href.startsWith('mailto') ? undefined : '_blank'} rel="noopener">{c.label}</a>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </aside>
+
+      <!-- Main column: the letter itself -->
+      <article class="letter">
+        <h1>Arshad Kazi</h1>
+        <p class="standfirst">exploring &ldquo;brain&rdquo;</p>
+
+        <p class="salutation">If you're reading this, you probably ended up here by accident.</p>
+
+        <div class="prose">
+          <p>I am a trained engineer working around machine learning. I build things mostly to understand how they work, not just to make them work. Most of my work involves implementing models from scratch and working through training dynamics rather than relying on prebuilt abstractions (<a href="https://github.com/Arshad221b">see my work on GitHub</a>).</p>
+          <p>I am not a researcher and not a conventional developer, even though I spend a lot of time building. I tend to follow problems that require some level of reasoning, and I usually end up exploring them by building, breaking, and figuring out what is actually going on.</p>
+          <p>My primary interest is computer vision, especially problems involving structure, geometry, and representation. Things that can be tested, visualized, and taken apart: 3D reconstruction, pose estimation, representation learning. Some of this lives in my <a href="/notebooks">notebooks</a>.</p>
+          <p>I am intense when I am interested, atheist, and a chronic overthinker. Anxious, often unsatisfied, hard to relax. I jump between ideas, go deep into one, drop it halfway, and return later with a better understanding.</p>
+          <p>I have millions of interests, thousands of questions, and billions of problems I want to resolve. I think about color theory, neuroscience, food, film, music, language, and whatever else pulls me in on a given week. I write some of it down in my <a href="/thoughts">thoughts</a>. Most of it stays in my head. I will stay strong though.</p>
+          <p>I am still trying to understand where I stand and what I am trying to do in the long run. This is where I dump things I am working through. Not optimized, not curated, and not meant for social media.</p>
+          <p>Still trying to get found. Maybe that and finding myself are the same search. IDK.</p>
+        </div>
+
+        <p class="closing">
+          Yours truly,
+          <span class="signature">Arshad</span>
+        </p>
+
+      </article>
+    </div>
 
     <p class="site-note">* This site is managed by AI, but the content written here is purely human.</p>
-
   </div>
 </Layout>
 
 <style>
-  .home { display: flex; flex-direction: column; gap: var(--space-xl); max-width: 680px; margin: 0 auto; margin-top: calc(-1 * var(--space-2xl)); }
+  .folio {
+    max-width: 760px;
+    margin: 0 auto;
+  }
 
-  .hero { padding: var(--space-md) 0; text-align: center; }
+  /* ── Folio rule across the top of the page ─────────── */
+  .folio-rule {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+  }
 
-  .hero-intro { display: flex; flex-direction: column; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg); text-align: center; }
-  .hero-avatar { width: 130px; height: 130px; flex-shrink: 0; aspect-ratio: 1; }
-  .hero-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; aspect-ratio: 1; }
+  .folio-mark {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-style: normal;
+    font-size: 0.92rem;
+    letter-spacing: 0.09em;
+    text-transform: none;
 
-  .home-hero-text { flex: 1; text-align: center; }
-  .hero h1 { font-size: 1.8rem; margin: 0 0 4px; letter-spacing: -0.02em; }
-  .hero-title { font-family: var(--font-sans); font-size: 0.78rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin: 0; }
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
 
-  .home-links { display: flex; gap: var(--space-lg); flex-wrap: wrap; justify-content: center; }
-  .home-links a { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-sans); font-size: 0.8rem; color: var(--color-text-muted); text-decoration: none; transition: color 0.15s; }
-  .home-links a:hover { color: var(--color-accent); }
-  .home-links a svg { opacity: 0.5; transition: opacity 0.15s; }
-  .home-links a:hover svg { opacity: 1; }
+  .folio-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
 
-  .letter {
+  .folio-body {
+    display: grid;
+    grid-template-columns: 186px 1fr;
+    gap: var(--space-2xl);
+    align-items: start;
+  }
+
+  /* ── Margin column ─────────────────────────────────── */
+  .margin {
+    position: sticky;
+    top: 84px;
     display: flex;
     flex-direction: column;
-    gap: 1.4em;
-    background: var(--color-surface);
+    gap: var(--space-lg);
+  }
+
+  .plate {
+    margin: 0;
+  }
+
+  /* Registration ticks at the corners, like a printed plate. */
+  .plate-frame {
+    position: relative;
+    padding: 7px;
     border: 1px solid var(--color-border);
-    border-radius: 12px;
-    padding: var(--space-lg);
   }
-  .salutation { font-family: var(--font-serif); font-size: 1rem; color: var(--color-text-muted); font-style: italic; margin: 0; padding-bottom: 0.6em; border-bottom: 1px solid var(--color-border-light, var(--color-border)); }
-  .intro-text { font-size: 1rem; color: var(--color-text-secondary); line-height: 1.85; margin: 0; }
-  .intro-text a { color: var(--color-accent); text-decoration: none; }
-  .intro-text a:hover { text-decoration: underline; }
-  .closing { font-family: var(--font-serif); color: var(--color-text-muted); font-style: italic; margin: 0.6em 0 0; line-height: 1.9; padding-top: 0.6em; border-top: 1px solid var(--color-border-light, var(--color-border)); }
-  .closing-name { font-style: normal; color: var(--color-text); font-weight: 600; }
 
-  .site-note { font-family: var(--font-sans); font-size: 0.75rem; color: var(--color-text-muted); text-align: center; margin: 0; opacity: 0.7; }
-
-  @media (max-width: 600px) {
-    .hero { padding: var(--space-sm) 0 0; }
-    .hero-intro { gap: var(--space-md); }
-    .hero-avatar { width: 80px; height: 80px; }
-    .hero h1 { font-size: 1.4rem; }
-    .home-links { gap: var(--space-md); }
+  .plate-frame::before,
+  .plate-frame::after {
+    content: '';
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border: 1px solid var(--color-accent);
+    opacity: 0.55;
   }
+
+  .plate-frame::before {
+    top: -1px;
+    left: -1px;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .plate-frame::after {
+    bottom: -1px;
+    right: -1px;
+    border-left: none;
+    border-top: none;
+  }
+
+  .plate-frame img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    /* Push the photo toward a sepia study rather than a snapshot. */
+    filter: grayscale(1) sepia(0.42) contrast(1.06) brightness(1.02);
+  }
+
+  .plate figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: var(--space-sm);
+  }
+
+  .fig-num {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-style: normal;
+    font-size: 0.92rem;
+    letter-spacing: 0.09em;
+    text-transform: none;
+
+    color: var(--color-accent);
+  }
+
+  .fig-desc {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+  }
+
+  .vitals {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin: 0;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .vital dt {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-style: normal;
+    font-size: 0.92rem;
+    letter-spacing: 0.09em;
+    text-transform: none;
+
+    color: var(--color-text-muted);
+    margin-bottom: 1px;
+  }
+
+  .vital dd {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  .margin-label {
+    display: block;
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-style: normal;
+    font-size: 0.92rem;
+    letter-spacing: 0.09em;
+    text-transform: none;
+
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-sm);
+  }
+
+  .correspondence {
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .correspondence ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: corr;
+  }
+
+  .correspondence li {
+    counter-increment: corr;
+    margin-bottom: 0.28rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .correspondence li::before {
+    content: counter(corr, upper-roman) '.';
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--color-text-muted);
+    min-width: 1.6em;
+    text-align: right;
+  }
+
+  .correspondence a {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+
+  .correspondence a:hover {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  /* ── The letter ────────────────────────────────────── */
+  .letter h1 {
+    font-size: 2.1rem;
+    margin: -0.15em 0 0.1em;
+  }
+
+  .standfirst {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.15rem;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-lg);
+  }
+
+  .salutation {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  /* Marginal paragraph numerals, the way notes get indexed. */
+  .prose {
+    counter-reset: para;
+  }
+
+  .prose p {
+    position: relative;
+    font-size: 1.05rem;
+    line-height: 1.85;
+    color: var(--color-text-secondary);
+    margin: 0 0 1.3em;
+  }
+
+  .prose p::before {
+    counter-increment: para;
+    content: counter(para);
+    position: absolute;
+    left: -2.4rem;
+    top: 0.45em;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--color-text-muted);
+    opacity: 0.55;
+  }
+
+  .prose a {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-accent-soft);
+  }
+
+  .prose a:hover {
+    border-bottom-color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  .closing {
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--color-text-muted);
+    margin: var(--space-lg) 0 0;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .signature {
+    display: block;
+    font-style: normal;
+    font-size: 1.5rem;
+    color: var(--color-text);
+    margin-top: 0.2em;
+  }
+
+  .site-note {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    opacity: 0.7;
+    margin: var(--space-2xl) 0 0;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  @media (max-width: 700px) {
+    /* Flatten both columns into one reading order: who, then the
+       plate, then the letter, with the links last. */
+    .folio-body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+    }
+
+    .margin,
+    .letter {
+      display: contents;
+    }
+
+    .letter h1 { order: 1; margin: 0; font-size: 1.75rem; }
+    .standfirst { order: 2; margin: 0; }
+    .plate { order: 3; }
+    .vitals { order: 4; border-top: none; padding-top: 0; }
+    .salutation { order: 5; margin: 0; padding-bottom: var(--space-md); }
+    .prose { order: 6; }
+    .closing { order: 7; margin: 0; }
+    .correspondence { order: 8; }
+
+    .plate-frame {
+      max-width: 210px;
+    }
+
+    .vitals {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md);
+    }
+
+    .prose p::before {
+      display: none;
+    }
+
+    .site-note {
+      margin-top: var(--space-xl);
+    }
+  }
+
+  @media (max-width: 420px) {
+    .vitals {
+      grid-template-columns: 1fr;
+    }
+  }
+
 </style>

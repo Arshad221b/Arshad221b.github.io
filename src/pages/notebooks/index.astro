@@ -95,467 +95,458 @@ function formatDate(dateStr: string): string {
 }
 ---
 
-<Layout title={title} activeNav="/notebooks" description="Time-boxed deep dives into topics I'm curious about. Pick a question, spend a week on it, write what I learn." ogImage="/images/og-thoughts.jpg">
-  <div class="te-page">
-    <div class="hero-badge">
-      <span class="badge-dot"></span>
-      <span>Time-boxed Inquiry</span>
+<Layout title={title} activeNav="/notebooks" description="Time-boxed deep dives into topics I'm curious about. Pick a question, spend a week on it, write what I learn." ogImage="/images/og-notebooks.jpg">
+  <div class="codex">
+    <div class="folio-rule">
+      <span class="folio-mark">The Notebooks</span>
+      <span class="folio-line"></span>
+      <span class="folio-mark">{longRunning.length + experiments.length} volumes</span>
     </div>
 
-    <div class="page-header">
+    <header class="lede">
       <h1>Notebooks</h1>
-    </div>
+      <p>One question, one week, one hour a day. I write down what I learn while I learn it.</p>
 
-    <div class="te-intro-box">
-      <div class="intro-grid">
-        <div class="intro-block">
-          <h2>The why</h2>
-          <p>Transfer learning works in brains too. Neuroscience research shows that learning across domains strengthens abstract reasoning. The prefrontal cortex builds schema, mental frameworks that compress patterns from one domain and apply them to another. The more domains you feed it, the richer the schema. Convolutions in V1 and convolutions in CNNs are the same idea discovered independently. Attention in the parietal cortex and attention in transformers solve the same resource allocation problem. These are not metaphors. They are convergent solutions.</p>
-          <p>Leonardo da Vinci studied anatomy to paint better and painted to understand anatomy better. Feynman learned to pick locks to understand information theory. Ramanujan found number theory in temple floor patterns. Cross-domain learning is not a distraction from depth. It is how depth actually works.</p>
-        </div>
-
-        <div class="intro-block">
-          <h2>The practice</h2>
-          <p>Spaced repetition research shows that retrieval under time pressure consolidates memory faster than passive review. The hippocampus encodes better when the learning session has a clear boundary. One question, one week, one hour per day. The constraint forces active recall. You cannot passively read for sixty minutes and pretend you understood it. You have to write what you know, find the gaps, and come back the next day to fill them.</p>
+      <details class="why">
+        <summary>Why I work this way</summary>
+        <div class="why-body">
+          <p>Transfer learning works in brains too. The prefrontal cortex builds schema, mental frameworks that compress patterns from one domain and apply them to another. The more domains you feed it, the richer the schema. Convolutions in V1 and convolutions in CNNs are the same idea discovered independently. Attention in the parietal cortex and attention in transformers solve the same resource allocation problem. These are not metaphors. They are convergent solutions.</p>
+          <p>Leonardo studied anatomy to paint better and painted to understand anatomy better. Feynman learned to pick locks to understand information theory. Ramanujan found number theory in temple floor patterns. Cross-domain learning is not a distraction from depth. It is how depth actually works.</p>
+          <p>The time box is the point. Retrieval under pressure consolidates memory faster than passive review, and the hippocampus encodes better when a session has a clear boundary. You cannot passively read for sixty minutes and pretend you understood it. You have to write what you know, find the gaps, and come back the next day to fill them.</p>
           <p>I am a Leonardo fanboy, not because I think I am smart like him because I am really not, but because the man had no formal education past age 14 and still taught himself anatomy and optics and geology and engineering from whatever books and mentors he could get his hands on, and that is the only way I have ever been able to learn anything either. He kept notebooks his entire life, thousands of pages, anatomy next to fluid dynamics next to machine designs, not organized by subject but by date, and he called himself "discepolo della esperienza" which means disciple of experience, and I think the notebook was never documentation for him, it was the actual thinking tool, the place where looking at something carefully enough turns into understanding it.</p>
         </div>
-      </div>
+      </details>
+    </header>
+
+    <!-- ── Open ──────────────────────────────────────── -->
+    <div class="ledger-head">
+      <span class="ledger-title">Open</span>
+      <span class="ledger-rule"></span>
     </div>
 
-    <div class="section-header">
-      <span class="section-label">Running</span>
-      <span class="section-count">{experiments.filter(e => e.status === 'active').length + longRunning.length}</span>
-    </div>
-
-    <div class="experiments-grid">
-      {longRunning.map(proj => (
-        <a href={`/notebooks/${proj.slug}`} class="exp-card">
-          <div class="exp-card-glow"></div>
-          <div class="exp-card-content">
-            <div class="exp-card-header">
-              <span class="exp-badge active">{proj.entryCount} {proj.entryCount === 1 ? 'entry' : 'entries'}</span>
-              <span class="exp-commitment">{proj.duration} &middot; {proj.commitment}</span>
-            </div>
-            <h3>{proj.title}</h3>
+    <div class="ledger">
+      {longRunning.map((proj, i) => (
+        <a href={`/notebooks/${proj.slug}`} class="volume open">
+          <span class="vol-num">{String(i + 1).padStart(2, '0')}</span>
+          <div class="vol-main">
+            <h2>{proj.title}</h2>
             <p>{proj.description}</p>
-            <div class="lr-month-strip">
-              {proj.months.map(month => {
-                const count = getEntriesForMonth(proj.entries, month);
-                return (
-                  <div class={`lr-month ${count.length > 0 ? 'has-entries' : ''}`}>
-                    <span class="lr-month-label">{formatMonthShort(month)}</span>
-                    {count.length > 0 && <span class="lr-month-count">{count.length}</span>}
-                  </div>
-                );
-              })}
-            </div>
-            <div class="exp-card-footer">
-              <div class="exp-tags">
-                {proj.tags.map(tag => (
-                  <span class="exp-tag">{tag}</span>
-                ))}
-              </div>
-              <span class="exp-date">Started {formatDate(proj.startDate)}</span>
-            </div>
+          </div>
+          <div class="vol-meta">
+            <span class="meta-figure">{proj.entryCount}</span>
+            <span class="meta-unit">{proj.entryCount === 1 ? 'entry' : 'entries'}</span>
+            <span class="meta-date">from {formatDate(proj.startDate)}</span>
           </div>
         </a>
       ))}
 
-      {experiments.filter(e => e.status === 'active').map(exp => (
-        <a href={`/notebooks/${exp.slug}`} class="exp-card">
-          <div class="exp-card-glow"></div>
-          <div class="exp-card-content">
-            <div class="exp-card-header">
-              <span class="exp-badge active">Day {exp.completedDays}/{exp.totalDays}</span>
-              <span class="exp-commitment">{exp.commitment}</span>
-            </div>
-            <h3>{exp.title}</h3>
+      {experiments.filter(e => e.status === 'active').map((exp, i) => (
+        <a href={`/notebooks/${exp.slug}`} class="volume open">
+          <span class="vol-num">{String(longRunning.length + i + 1).padStart(2, '0')}</span>
+          <div class="vol-main">
+            <h2>{exp.title}</h2>
             <p>{exp.description}</p>
-            <div class="exp-progress">
-              {Array.from({length: exp.totalDays}).map((_, i) => (
-                <span class={`exp-dot ${i < exp.completedDays ? 'filled' : ''}`} />
+            <div class="tally">
+              {Array.from({length: exp.totalDays}).map((_, d) => (
+                <span class={`tick ${d < exp.completedDays ? 'struck' : ''}`}></span>
               ))}
             </div>
-            <div class="exp-card-footer">
-              <div class="exp-tags">
-                {exp.tags.map(tag => (
-                  <span class="exp-tag">{tag}</span>
-                ))}
-              </div>
-              <span class="exp-date">Started {formatDate(exp.startDate)}</span>
-            </div>
+          </div>
+          <div class="vol-meta">
+            <span class="meta-figure">{exp.completedDays}<span class="of">/{exp.totalDays}</span></span>
+            <span class="meta-unit">days</span>
+            <span class="meta-date">from {formatDate(exp.startDate)}</span>
           </div>
         </a>
       ))}
     </div>
 
-    <div class="section-header">
-      <span class="section-label">Completed</span>
+    <!-- ── Closed ────────────────────────────────────── -->
+    <div class="ledger-head">
+      <span class="ledger-title">Closed</span>
+      <span class="ledger-rule"></span>
     </div>
 
-    <div class="experiments-grid">
-      {experiments.filter(e => e.status === 'completed').map(exp => {
+    <div class="ledger">
+      {experiments.filter(e => e.status === 'completed').map((exp, i) => {
         const days = exp.slug === 'neuroscience' ? neuroscienceDays : exp.slug === 'emotion' ? emotionDays : exp.slug === 'modern-nets' ? modernNetsDays : exp.slug === 'vlm-search' ? vlmSearchDays : [];
         const activeDays = days.filter(d => d.curiosityTitle);
         return (
-        <a href={`/notebooks/${exp.slug}`} class="exp-card completed">
-          <div class="exp-card-content">
-            <div class="exp-card-header">
-              <span class="exp-badge done">{exp.totalDays} days</span>
-              <span class="exp-commitment">{exp.commitment}</span>
+        <div class="volume-wrap">
+          <a href={`/notebooks/${exp.slug}`} class="volume">
+            <span class="vol-num">{String(longRunning.length + experiments.filter(e => e.status === 'active').length + i + 1).padStart(2, '0')}</span>
+            <div class="vol-main">
+              <h2>{exp.title}</h2>
+              <p>{exp.description}</p>
             </div>
-            <h3>{exp.title}</h3>
-            <p>{exp.description}</p>
-            
-            {exp.conclusion && (
-              <div class="exp-conclusion">
-                <p>{exp.conclusion}</p>
-              </div>
-            )}
+            <div class="vol-meta">
+              <span class="meta-figure">{exp.totalDays}</span>
+              <span class="meta-unit">days</span>
+              <span class="meta-date">{formatDate(exp.endDate)}</span>
+            </div>
+          </a>
 
-            <div class="exp-timeline">
-              <span class="timeline-label">The journey</span>
-              <div class="timeline-steps">
-                {activeDays.map((d) => (
-                  <div class="timeline-step">
-                    <span class="timeline-num">{d.day}</span>
-                    <span class="timeline-q">{d.curiosityTitle}</span>
-                  </div>
+          {activeDays.length > 0 && (
+            <details class="contents">
+              <summary>Contents<span class="sum-count">{activeDays.length}</span></summary>
+              <ol class="questions">
+                {activeDays.map(d => (
+                  <li>
+                    <span class="q-day">{String(d.day).padStart(2, '0')}</span>
+                    <span class="q-text">{d.curiosityTitle}</span>
+                  </li>
                 ))}
-              </div>
-            </div>
-
-            <div class="exp-card-footer">
-              <div class="exp-tags">
-                {exp.tags.map(tag => (
-                  <span class="exp-tag">{tag}</span>
-                ))}
-              </div>
-              <span class="exp-cta">Read the full experiment</span>
-            </div>
-          </div>
-        </a>
+              </ol>
+            </details>
+          )}
+        </div>
       );})}
     </div>
-
   </div>
 </Layout>
 
 <style>
-  .te-page {
+  .codex {
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
   }
 
-  .te-intro-box {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    padding: var(--space-md);
-  }
-
-  .intro-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+  /* ── Folio rule ────────────────────────────────────── */
+  .folio-rule {
+    display: flex;
+    align-items: center;
     gap: var(--space-md);
+    margin-bottom: var(--space-xl);
   }
 
-  .intro-block h2 {
-    font-family: var(--font-mono);
-    font-size: 1rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--color-accent);
+  .folio-mark {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-style: normal;
+    font-size: 0.92rem;
+    letter-spacing: 0.09em;
+    text-transform: none;
+
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .folio-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  /* ── Lede ──────────────────────────────────────────── */
+  .lede {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .lede h1 {
+    font-size: 2rem;
     margin-bottom: var(--space-sm);
   }
 
-  .intro-block p {
-    font-size: 1rem;
+  .lede > p {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.1rem;
+    line-height: 1.6;
     color: var(--color-text-secondary);
-    line-height: 1.7;
-    margin: 0 0 var(--space-sm) 0;
+    max-width: 52ch;
+    margin: 0 0 var(--space-md);
   }
 
-  .intro-block p:last-child {
+  /* The long rationale stays folded until asked for. */
+  .why summary,
+  .contents summary {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-style: normal;
+    font-size: 0.92rem;
+    letter-spacing: 0.09em;
+    text-transform: none;
+
+    color: var(--color-text-muted);
+    cursor: pointer;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.2rem 0;
+    user-select: none;
+  }
+
+  .why summary::-webkit-details-marker,
+  .contents summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .why summary::before,
+  .contents summary::before {
+    content: '+';
+    font-size: 0.85rem;
+    line-height: 1;
+  }
+
+  .why[open] summary::before,
+  .contents[open] summary::before {
+    content: '−';
+  }
+
+  .why summary:hover,
+  .contents summary:hover {
+    color: var(--color-accent);
+  }
+
+  .why-body {
+    padding-top: var(--space-md);
+    max-width: 66ch;
+  }
+
+  .why-body p {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .why-body p:last-child {
     margin-bottom: 0;
   }
 
-  .section-header {
+  /* ── Ledger ────────────────────────────────────────── */
+  .ledger-head {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-  }
-
-  .section-label {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--color-text-muted);
-  }
-
-  .section-count {
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    font-weight: 500;
-    background: var(--color-accent);
-    color: white;
-    padding: 0.1rem 0.3rem;
-    border-radius: 3px;
-  }
-
-  .experiments-grid {
-    display: flex;
-    flex-direction: column;
     gap: var(--space-md);
-  }
-
-  .exp-card {
-    position: relative;
-    display: block;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    padding: var(--space-md);
-    text-decoration: none;
-    overflow: hidden;
-    transition: all 0.25s ease;
-  }
-
-  .exp-card:hover {
-    border-color: var(--color-accent);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(196, 116, 63, 0.12);
-    text-decoration: none;
-  }
-
-  .exp-card-glow {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
-  }
-
-  .exp-card.completed .exp-card-glow {
-    background: linear-gradient(90deg, var(--color-text-muted), var(--color-text-secondary));
-  }
-
-  .exp-card-content {
-    position: relative;
-  }
-
-  .exp-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     margin-bottom: var(--space-xs);
   }
 
-  .exp-badge {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    font-weight: 600;
-    padding: 0.15rem 0.4rem;
-    border-radius: 3px;
-  }
+  .ledger-title {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-style: normal;
+    font-size: 0.92rem;
+    letter-spacing: 0.09em;
+    text-transform: none;
 
-  .exp-badge.active {
-    background: var(--color-accent);
-    color: white;
-  }
-
-  .exp-badge.done {
-    background: var(--color-tag-bg);
-    color: var(--color-text-secondary);
-  }
-
-  .exp-commitment {
-    font-family: var(--font-sans);
-    font-size: 0.7rem;
-    color: var(--color-text-muted);
-  }
-
-  .exp-card h3 {
-    font-size: 1rem;
-    font-weight: 600;
     color: var(--color-text);
-    margin: 0 0 var(--space-xs) 0;
   }
 
-  .exp-card > .exp-card-content > p {
-    font-size: 0.85rem;
-    color: var(--color-text-secondary);
-    line-height: 1.6;
-    margin: 0 0 var(--space-sm) 0;
-  }
-
-  .exp-progress {
-    display: flex;
-    gap: 3px;
-    margin-bottom: var(--space-sm);
-  }
-
-  .exp-dot {
-    width: 10px;
-    height: 3px;
+  .ledger-rule {
+    flex: 1;
+    height: 1px;
     background: var(--color-border);
-    border-radius: 2px;
   }
 
-  .exp-dot.filled {
-    background: var(--color-accent);
-  }
-
-  .exp-card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: var(--space-xs);
-  }
-
-  .exp-tags {
-    display: flex;
-    gap: var(--space-xs);
-    flex-wrap: wrap;
-  }
-
-  .exp-tag {
-    font-family: var(--font-sans);
-    font-size: 0.65rem;
-    font-weight: 500;
-    background: var(--color-tag-bg);
-    color: var(--color-tag-text);
-    padding: 0.1rem 0.4rem;
-    border-radius: 3px;
-  }
-
-  .exp-date {
-    font-family: var(--font-sans);
-    font-size: 0.7rem;
-    color: var(--color-text-muted);
-  }
-
-  .exp-cta {
-    font-family: var(--font-sans);
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--color-accent);
-  }
-
-  .exp-card:hover .exp-cta {
-    text-decoration: underline;
-  }
-
-  .exp-conclusion {
-    padding: var(--space-sm);
-    background: var(--color-accent-soft);
-    border-radius: 6px;
-    margin-bottom: var(--space-sm);
-  }
-
-  .exp-conclusion p {
-    font-size: 0.85rem;
-    font-style: italic;
-    color: var(--color-text);
-    margin: 0;
-    line-height: 1.7;
-  }
-
-  .exp-timeline {
-    margin-bottom: var(--space-sm);
-  }
-
-  .timeline-label {
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--color-text-muted);
-    display: block;
-    margin-bottom: var(--space-xs);
-  }
-
-  .timeline-steps {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-xs);
-  }
-
-  .timeline-step {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-    padding: 0.2rem 0.4rem;
-    background: var(--color-tag-bg);
-    border-radius: 3px;
-  }
-
-  .timeline-num {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: var(--color-accent);
-  }
-
-  .timeline-q {
-    font-family: var(--font-sans);
-    font-size: 0.7rem;
-    color: var(--color-text-secondary);
-  }
-
-  .lr-month-strip {
-    display: flex;
-    gap: 3px;
-    margin-bottom: var(--space-sm);
-  }
-
-  .lr-month {
+  .ledger {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.15rem;
-    flex: 1;
-    padding: 0.3rem 0.2rem;
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
+    margin-bottom: var(--space-2xl);
   }
 
-  .lr-month.has-entries {
-    border-color: var(--color-accent);
-    background: var(--color-accent-soft);
+  .volume-wrap {
+    border-bottom: 1px solid var(--color-border-light);
   }
 
-  .lr-month-label {
+  .volume-wrap:last-child {
+    border-bottom: none;
+  }
+
+  /* One aligned row per volume: number, entry, figures. */
+  .volume {
+    display: grid;
+    grid-template-columns: 2.4rem 1fr 6.5rem;
+    gap: var(--space-md);
+    align-items: baseline;
+    padding: var(--space-md) 0;
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .volume-wrap .volume {
+    border-bottom: none;
+    padding-bottom: var(--space-sm);
+  }
+
+  .ledger > .volume:last-child {
+    border-bottom: none;
+  }
+
+  .volume:hover {
+    text-decoration: none;
+  }
+
+  .vol-num {
     font-family: var(--font-mono);
-    font-size: 0.55rem;
-    font-weight: 600;
+    font-size: 0.95rem;
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+    opacity: 0.6;
+    transition: color 0.15s ease, opacity 0.15s ease;
   }
 
-  .lr-month.has-entries .lr-month-label {
+  .volume.open .vol-num {
+    color: var(--color-accent);
+    opacity: 0.9;
+  }
+
+  .volume:hover .vol-num {
+    color: var(--color-accent);
+    opacity: 1;
+  }
+
+  .vol-main h2 {
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-text);
+    margin: 0 0 0.25rem;
+    transition: color 0.15s ease;
+  }
+
+  .volume:hover .vol-main h2 {
     color: var(--color-accent);
   }
 
-  .lr-month-count {
+  .vol-main p {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+    margin: 0;
+    max-width: 54ch;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ── Figures column, right aligned like a ledger ───── */
+  .vol-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+    text-align: right;
+  }
+
+  .meta-figure {
     font-family: var(--font-mono);
-    font-size: 0.55rem;
-    font-weight: 700;
-    color: var(--color-accent);
+    font-size: 1.1rem;
+    line-height: 1.1;
+    color: var(--color-text-secondary);
   }
 
-  @media (max-width: 600px) {
-    .intro-grid {
-      grid-template-columns: 1fr;
+  .meta-figure .of {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+  }
+
+  .meta-unit {
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .meta-date {
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    color: var(--color-text-muted);
+    opacity: 0.7;
+    margin-top: 0.3rem;
+    white-space: nowrap;
+  }
+
+  /* ── Tally marks ───────────────────────────────────── */
+  .tally {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    margin-top: var(--space-sm);
+  }
+
+  .tick {
+    width: 2px;
+    height: 13px;
+    background: var(--color-border);
+  }
+
+  .tick.struck {
+    background: var(--color-accent);
+  }
+
+  /* ── Contents disclosure ───────────────────────────── */
+  .contents {
+    padding: 0 0 var(--space-md) calc(2.4rem + var(--space-md));
+  }
+
+  .sum-count {
+    font-size: 0.6rem;
+    opacity: 0.65;
+  }
+
+  .questions {
+    list-style: none;
+    padding: var(--space-sm) 0 0;
+    margin: 0;
+  }
+
+  .questions li {
+    display: flex;
+    gap: 0.7rem;
+    align-items: baseline;
+    padding: 0.12rem 0;
+    margin: 0;
+  }
+
+  .q-day {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--color-accent);
+    opacity: 0.8;
+  }
+
+  .q-text {
+    font-family: var(--font-serif);
+    font-size: 0.96rem;
+    line-height: 1.45;
+    color: var(--color-text-secondary);
+  }
+
+  @media (max-width: 640px) {
+    .volume {
+      grid-template-columns: 1.9rem 1fr;
+      gap: var(--space-sm) var(--space-md);
+    }
+
+    .vol-meta {
+      grid-column: 2;
+      flex-direction: row;
+      align-items: baseline;
+      gap: 0.4rem;
+      text-align: left;
+    }
+
+    .meta-figure {
+      font-size: 0.85rem;
+    }
+
+    .meta-date {
+      margin-top: 0;
+    }
+
+    .vol-main h2 {
+      font-size: 1.2rem;
+    }
+
+    .contents {
+      padding-left: calc(1.9rem + var(--space-md));
     }
   }
 </style>

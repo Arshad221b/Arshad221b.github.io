@@ -49,59 +49,74 @@ const posts = ([
   },
 ]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-function formatDate(dateStr: string): string {
+const allTags = [...new Set(posts.flatMap(p => p.tags))].sort();
+
+// Group posts by year so the index is scannable.
+const years = [...new Set(posts.map(p => p.date.slice(0, 4)))];
+const grouped = years.map(year => ({
+  year,
+  items: posts.filter(p => p.date.slice(0, 4) === year),
+}));
+
+function shortDate(dateStr: string): string {
   const date = new Date(dateStr + 'T00:00:00');
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 ---
 
 <Layout title={title} activeNav="/blog" description="Technical deep dives on computer vision, 3D understanding, and ML. Notes on things I finally understood, not tutorials.">
   <div class="blog-page">
-    <div class="hero-badge">
-      <span class="badge-dot"></span>
-      <span>Deep Dives</span>
+    <div class="folio-rule">
+      <span class="folio-mark">Technical Blogs</span>
+      <span class="folio-line"></span>
+      <span class="folio-mark">{posts.length} essays</span>
     </div>
 
-    <div class="page-header">
+    <div class="blog-intro">
       <h1>Technical Blogs</h1>
-      <p class="page-subtitle">
-        Deep dives into computer vision, geometry, and 3D understanding. When something clicks in my mind, I try to write it down. Not tutorials, just my notes on things I finally understood.
+      <p>
+        Deep dives into computer vision, geometry, and 3D understanding. Not tutorials, just my notes on things I finally understood.
       </p>
     </div>
 
-    <div class="search-bar">
-      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="search-input" placeholder="Search by title, description, or tag..." autocomplete="off" />
-    </div>
+    <div class="filters">
+      <div class="search-bar">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-input" placeholder="Search posts" autocomplete="off" />
+      </div>
 
-    <div class="tag-filters" id="tag-filters">
-      {[...new Set(posts.flatMap(p => p.tags))].sort().map(tag => (
-        <button class="tag-chip" data-tag={tag}>{tag}</button>
-      ))}
+      <details class="topics">
+        <summary>Browse by topic<span class="topic-count">{allTags.length}</span></summary>
+        <div class="tag-filters" id="tag-filters">
+          {allTags.map(tag => (
+            <button class="tag-chip" data-tag={tag}>{tag}</button>
+          ))}
+        </div>
+      </details>
     </div>
 
     <p class="results-count" id="results-count"></p>
 
-    <div class="posts-grid" id="posts-grid">
-      {posts.map(post => (
-        <a href={post.href || `/blog/${post.slug}`} class="post-card" data-title={post.title.toLowerCase()} data-description={post.description.toLowerCase()} data-tags={post.tags.join(',')}>
-          <div class="post-card-glow"></div>
-          <div class="post-card-content">
-            <div class="post-card-meta">
-              <time>{formatDate(post.date)}</time>
-            </div>
-            <h3>{post.title}</h3>
-            <p>{post.description}</p>
-            <div class="post-tags">
-              {post.tags.map(tag => (
-                <span class="tag">{tag}</span>
-              ))}
-            </div>
-          </div>
-        </a>
+    <div class="post-index" id="post-index">
+      {grouped.map(group => (
+        <section class="year-group" data-year={group.year}>
+          <h2 class="year-label">{group.year}</h2>
+          <ul class="entry-list">
+            {group.items.map(post => (
+              <li class="entry" data-title={post.title.toLowerCase()} data-description={post.description.toLowerCase()} data-tags={post.tags.join(',')}>
+                <a href={post.href || `/blog/${post.slug}`}>
+                  <time datetime={post.date}>{shortDate(post.date)}</time>
+                  <h3>{post.title}</h3>
+                  <p>{post.description}</p>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
       ))}
     </div>
 
+    <p class="no-results" id="no-results">No posts match that search.</p>
   </div>
 </Layout>
 
@@ -109,96 +124,70 @@ function formatDate(dateStr: string): string {
   .blog-page {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xl);
   }
 
-  .posts-grid {
+  /* ── Folio rule ────────────────────────────────────── */
+  .folio-rule {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+  }
+
+  .folio-mark {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-style: normal;
+    font-size: 0.92rem;
+    letter-spacing: 0.09em;
+    text-transform: none;
+
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .folio-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  /* ── Intro ─────────────────────────────────────────── */
+  .blog-intro {
+    margin-bottom: var(--space-xl);
+  }
+
+  .blog-intro h1 {
+    font-size: 2rem;
+    margin-bottom: var(--space-sm);
+  }
+
+  .blog-intro p {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    max-width: 54ch;
+    margin: 0;
+  }
+
+  /* ── Filters ───────────────────────────────────────── */
+  .filters {
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
-  }
-
-  .post-card {
-    position: relative;
-    display: block;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    padding: var(--space-md);
-    text-decoration: none;
-    overflow: hidden;
-    transition: all 0.25s ease;
-  }
-
-  .post-card:hover {
-    border-color: var(--color-accent);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(196, 116, 63, 0.15);
-    text-decoration: none;
-  }
-
-  .post-card-glow {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
-  }
-
-  .post-card-content {
-    position: relative;
-  }
-
-  .post-card-meta {
-    margin-bottom: var(--space-xs);
-  }
-
-  .post-card-meta time {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    color: var(--color-text-muted);
-  }
-
-  .post-card h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--color-text);
-    margin: 0 0 var(--space-xs) 0;
-  }
-
-  .post-card > .post-card-content > p {
-    font-size: 0.85rem;
-    color: var(--color-text-secondary);
-    line-height: 1.6;
-    margin: 0 0 var(--space-sm) 0;
-  }
-
-  .post-tags {
-    display: flex;
-    gap: var(--space-xs);
-    flex-wrap: wrap;
-  }
-
-  .tag {
-    font-family: var(--font-sans);
-    font-size: 0.65rem;
-    font-weight: 500;
-    background: var(--color-tag-bg);
-    color: var(--color-tag-text);
-    padding: 0.15rem 0.4rem;
-    border-radius: 4px;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
   }
 
   .search-bar {
     position: relative;
-    width: 100%;
-    margin-bottom: var(--space-sm);
+    max-width: 340px;
   }
 
   .search-icon {
     position: absolute;
-    left: 12px;
+    left: 11px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--color-text-muted);
@@ -207,16 +196,15 @@ function formatDate(dateStr: string): string {
 
   #search-input {
     width: 100%;
-    padding: 0.6rem 0.75rem 0.6rem 2.25rem;
-    font-family: var(--font-sans);
-    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem 0.5rem 2.1rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
     color: var(--color-text);
-    background: var(--color-surface);
+    background: transparent;
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: 2px;
     outline: none;
     transition: border-color 0.2s ease;
-    box-sizing: border-box;
   }
 
   #search-input:focus {
@@ -227,51 +215,207 @@ function formatDate(dateStr: string): string {
     color: var(--color-text-muted);
   }
 
+  /* Topic list stays folded away until asked for. */
+  .topics summary {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-style: normal;
+    font-size: 0.92rem;
+    letter-spacing: 0.09em;
+    text-transform: none;
+
+    color: var(--color-text-muted);
+    cursor: pointer;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0;
+    user-select: none;
+  }
+
+  .topics summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .topics summary::before {
+    content: '+';
+    font-size: 0.85rem;
+    line-height: 1;
+    color: var(--color-text-muted);
+  }
+
+  .topics[open] summary::before {
+    content: '−';
+  }
+
+  .topics summary:hover {
+    color: var(--color-accent);
+  }
+
+  .topic-count {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    opacity: 0.7;
+  }
+
   .tag-filters {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: var(--space-md);
+    gap: 5px;
+    padding-top: var(--space-sm);
   }
 
   .tag-chip {
-    font-family: var(--font-sans);
-    font-size: 0.65rem;
-    font-weight: 500;
-    background: var(--color-tag-bg);
-    color: var(--color-tag-text);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 400;
+    background: transparent;
+    color: var(--color-text-muted);
     padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    border: 1px solid transparent;
+    border-radius: 2px;
+    border: 1px solid var(--color-border);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: color 0.15s ease, border-color 0.15s ease;
   }
 
   .tag-chip:hover {
+    color: var(--color-accent);
     border-color: var(--color-accent);
   }
 
   .tag-chip.active {
     background: var(--color-accent);
-    color: white;
+    color: #fff;
     border-color: var(--color-accent);
+  }
+
+  /* ── Index ─────────────────────────────────────────── */
+  .post-index {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .year-group {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr;
+    gap: var(--space-md);
+  }
+
+  .year-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    letter-spacing: 0.08em;
+    margin: 0;
+    padding-top: 0.55rem;
+  }
+
+  .entry-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .entry {
+    margin: 0;
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .entry:first-child {
+    border-top: none;
+  }
+
+  .entry a {
+    display: block;
+    padding: var(--space-md) 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .entry a:hover {
+    text-decoration: none;
+  }
+
+  .entry time {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.35rem;
+  }
+
+  /* The title is the one thing that should catch the eye. */
+  .entry h3 {
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--color-text);
+    margin: 0 0 0.35rem 0;
+    transition: color 0.15s ease;
+  }
+
+  .entry a:hover h3 {
+    color: var(--color-accent);
+  }
+
+  .entry p {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+    margin: 0;
+    max-width: 62ch;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .results-count {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     color: var(--color-text-muted);
-    margin: 0 0 var(--space-sm) 0;
+    margin: 0 0 var(--space-md) 0;
   }
 
   .results-count:empty {
     display: none;
   }
 
+  .no-results {
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+    padding: var(--space-xl) 0;
+    margin: 0;
+    display: none;
+  }
+
+  @media (max-width: 600px) {
+    .year-group {
+      grid-template-columns: 1fr;
+      gap: var(--space-sm);
+    }
+
+    .year-label {
+      padding-top: 0;
+    }
+
+    .entry h3 {
+      font-size: 1.2rem;
+    }
+  }
 </style>
 
 <style is:global>
-  .post-card.hidden {
+  .entry.hidden,
+  .year-group.hidden {
     display: none !important;
   }
 </style>
@@ -279,30 +423,39 @@ function formatDate(dateStr: string): string {
 <script is:inline>
 (function() {
   const input = document.getElementById('search-input');
-  const grid = document.getElementById('posts-grid');
-  const cards = grid.querySelectorAll('.post-card');
+  const index = document.getElementById('post-index');
+  const entries = index.querySelectorAll('.entry');
+  const groups = index.querySelectorAll('.year-group');
   const chips = document.querySelectorAll('.tag-chip');
   const counter = document.getElementById('results-count');
+  const empty = document.getElementById('no-results');
   let activeTag = null;
 
   function filter() {
     const q = input.value.toLowerCase().trim();
     let visible = 0;
-    cards.forEach(card => {
-      const title = card.dataset.title;
-      const desc = card.dataset.description;
-      const tags = card.dataset.tags;
-      const matchesText = !q || title.includes(q) || desc.includes(q) || tags.includes(q);
-      const matchesTag = !activeTag || tags.split(',').includes(activeTag);
+
+    entries.forEach(entry => {
+      const matchesText = !q
+        || entry.dataset.title.includes(q)
+        || entry.dataset.description.includes(q)
+        || entry.dataset.tags.includes(q);
+      const matchesTag = !activeTag || entry.dataset.tags.split(',').includes(activeTag);
       const show = matchesText && matchesTag;
-      card.classList.toggle('hidden', !show);
+      entry.classList.toggle('hidden', !show);
       if (show) visible++;
     });
-    if (q || activeTag) {
-      counter.textContent = visible + ' of ' + cards.length + ' posts';
-    } else {
-      counter.textContent = '';
-    }
+
+    // Drop a year heading entirely when nothing under it survived.
+    groups.forEach(group => {
+      const anyVisible = group.querySelector('.entry:not(.hidden)');
+      group.classList.toggle('hidden', !anyVisible);
+    });
+
+    counter.textContent = (q || activeTag)
+      ? visible + ' of ' + entries.length + ' posts'
+      : '';
+    empty.style.display = visible === 0 ? 'block' : 'none';
   }
 
   input.addEventListener('input', filter);
