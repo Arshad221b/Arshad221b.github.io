@@ -85,95 +85,84 @@ const posts = ([
   { title: 'Your Laziness has its reason and you can fix it', date: '2023-12-08', description: 'Every child is unique; we often hear this sentiment. Yet, despite celebrating individual differences, children are often funneled into a uniform educational structure, where they find themselves en...', tags: ['psychology', 'motivation'], slug: 'your-laziness-has-its-reason-and-you-can-fix-it' },
 ]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-function formatDate(dateStr: string): string {
+const allTags = [...new Set(posts.flatMap(p => p.tags))].sort();
+
+// Group posts by year so a long archive stays scannable.
+const years = [...new Set(posts.map(p => p.date.slice(0, 4)))];
+const grouped = years.map(year => ({
+  year,
+  items: posts.filter(p => p.date.slice(0, 4) === year),
+}));
+
+function shortDate(dateStr: string): string {
   const date = new Date(dateStr + 'T00:00:00');
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 ---
 
 <Layout title={title} activeNav="/thoughts" description="Personal writing by Arshad Kazi. Things I am confused about, excited by, or trying to put into words. Published on Substack.">
   <div class="thoughts-page">
-    <div class="hero-badge">
-      <span class="badge-dot"></span>
-      <span>Personal Writing</span>
+    <div class="folio-rule">
+      <span class="folio-mark">Thoughts</span>
+      <span class="folio-line"></span>
+      <span class="folio-mark">{posts.length} notes</span>
     </div>
 
-    <div class="page-header">
+    <div class="thoughts-intro">
       <h1>Thoughts</h1>
-    </div>
+      <p>
+        Personal writing. Things I am confused about, excited by, or trying to put into words.
+      </p>
 
-    <div class="topics-section">
-      <h3>What I Write About</h3>
-      <div class="topics-text">
-        <p>Most of the time I don't know what I think about something until I write it down and read it back, which is probably the most honest reason I do this at all. Writing is the only place where I can hold a thought long enough to actually examine it, because in conversation the thought moves too fast or the other person needs a response before I've finished figuring out what I'm trying to say, and then the moment passes and I'm left with the feeling that I almost understood something but didn't quite get there.</p>
-        <p>A lot of what I write about is things I find genuinely confusing, which includes most of human behaviour, my own reactions to things, and the gap between what people say and what they seem to actually mean, something which I have never been particularly good at navigating and probably never will be. I don't have answers to most of this. I just try to describe the problem clearly enough that maybe someone reading it can see what I'm missing, because I have learned that asking for help through writing reaches people who have the patience to sit with complexity in a way that real-time conversation rarely allows.</p>
-        <p>Some of it is about being autistic, not the internet version where it's a personality trait you put in your bio, but the actual daily experience of being simultaneously too much for some people and not enough for others and never being entirely sure which one you're being at any given moment. And some of it is just me being excited about an idea, a paper, a connection between two things that nobody told me were connected, which I write about because I don't always have someone nearby who wants to hear about it, and writing is the only way to find the person who does.</p>
-      </div>
-    </div>
-
-    <div class="substack-showcase">
-      <div class="showcase-glow"></div>
-
-      <div class="substack-icon-wrapper">
-        <div class="substack-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+      <details class="why">
+        <summary>Why I write these</summary>
+        <div class="why-body">
+          <p>Most of the time I don't know what I think about something until I write it down and read it back, which is probably the most honest reason I do this at all. Writing is the only place where I can hold a thought long enough to actually examine it, because in conversation the thought moves too fast or the other person needs a response before I've finished figuring out what I'm trying to say.</p>
+          <p>A lot of what I write about is things I find genuinely confusing, which includes most of human behaviour, my own reactions to things, and the gap between what people say and what they seem to actually mean. I don't have answers to most of this. I just try to describe the problem clearly enough that maybe someone reading it can see what I'm missing.</p>
+          <p>Some of it is about being autistic, not the internet version where it's a personality trait you put in your bio, but the actual daily experience of being simultaneously too much for some people and not enough for others. And some of it is just me being excited about an idea, a paper, a connection between two things that nobody told me were connected.</p>
+          <p class="substack-line">These are also published on <a href="https://substack.com/@arshadkazi" target="_blank" rel="noopener">Substack</a>.</p>
         </div>
-        <div class="icon-ripple"></div>
-      </div>
-
-      <div class="substack-details">
-        <span class="substack-label">Published on</span>
-        <h2>Arshad's Substack</h2>
-        <div class="substack-topics">
-          <span class="substack-topic">people</span>
-          <span class="substack-topic">perception</span>
-          <span class="substack-topic">science</span>
-          <span class="substack-topic">life</span>
-          <span class="substack-topic">culture</span>
-        </div>
-        <a href="https://substack.com/@arshadkazi" target="_blank" class="substack-btn">
-          <span>Read on Substack</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </a>
-      </div>
+      </details>
     </div>
 
-    <div class="posts-section">
-      <h3 class="posts-section-title">All Writing</h3>
-
+    <div class="filters">
       <div class="search-bar">
-        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="search-input" placeholder="Search by title, description, or tag..." autocomplete="off" />
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-input" placeholder="Search writing" autocomplete="off" />
       </div>
 
-      <div class="tag-filters" id="tag-filters">
-        {[...new Set(posts.flatMap(p => p.tags))].sort().map(tag => (
-          <button class="tag-chip" data-tag={tag}>{tag}</button>
-        ))}
-      </div>
-
-      <p class="results-count" id="results-count"></p>
-
-      <div class="posts-grid" id="posts-grid">
-        {posts.map(post => (
-          <a href={`/thoughts/${post.slug}`} class="post-card" data-title={post.title.toLowerCase()} data-description={post.description.toLowerCase()} data-tags={post.tags.join(',')}>
-            <div class="post-card-glow"></div>
-            <div class="post-card-content">
-              <div class="post-card-meta">
-                <time>{formatDate(post.date)}</time>
-              </div>
-              <h3>{post.title}</h3>
-              <p>{post.description}</p>
-              <div class="post-tags">
-                {post.tags.map(tag => (
-                  <span class="tag">{tag}</span>
-                ))}
-              </div>
-            </div>
-          </a>
-        ))}
-      </div>
+      <details class="topics">
+        <summary>Browse by topic<span class="topic-count">{allTags.length}</span></summary>
+        <div class="tag-filters" id="tag-filters">
+          {allTags.map(tag => (
+            <button class="tag-chip" data-tag={tag}>{tag}</button>
+          ))}
+        </div>
+      </details>
     </div>
+
+    <p class="results-count" id="results-count"></p>
+
+    <div class="post-index" id="post-index">
+      {grouped.map(group => (
+        <section class="year-group" data-year={group.year}>
+          <h2 class="year-label">{group.year}</h2>
+          <ul class="entry-list">
+            {group.items.map(post => (
+              <li class="entry" data-title={post.title.toLowerCase()} data-description={post.description.toLowerCase()} data-tags={post.tags.join(',')}>
+                <a href={`/thoughts/${post.slug}`}>
+                  <time datetime={post.date}>{shortDate(post.date)}</time>
+                  <h3>{post.title}</h3>
+                  <p>{post.description}</p>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+
+    <p class="no-results" id="no-results">No writing matches that search.</p>
   </div>
 </Layout>
 
@@ -181,264 +170,131 @@ function formatDate(dateStr: string): string {
   .thoughts-page {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: var(--space-2xl);
   }
 
-  .thoughts-page .page-subtitle {
+  /* ── Intro ─────────────────────────────────────────── */
+  .thoughts-intro {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .thoughts-intro h1 {
+    font-size: 2rem;
+    margin-bottom: var(--space-sm);
+  }
+
+  .thoughts-intro p {
     font-family: var(--font-serif);
-    font-size: 1rem;
-    line-height: 1.75;
-  }
-
-  .substack-showcase {
-    position: relative;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 16px;
-    padding: var(--space-lg);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    overflow: hidden;
-    width: 100%;
-  }
-
-  .showcase-glow {
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at 50% 30%, var(--color-accent-soft) 0%, transparent 60%);
-    pointer-events: none;
-  }
-
-  .substack-icon-wrapper {
-    position: relative;
-    margin-bottom: var(--space-md);
-  }
-
-  .substack-icon {
-    width: 56px;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
-    border-radius: 12px;
-    color: white;
-    box-shadow: 0 4px 16px rgba(196, 116, 63, 0.3);
-  }
-
-  .icon-ripple {
-    position: absolute;
-    inset: -3px;
-    border: 2px solid var(--color-accent);
-    border-radius: 14px;
-    opacity: 0.3;
-    animation: ripple 2s infinite;
-  }
-
-  @keyframes ripple {
-    0% { transform: scale(1); opacity: 0.3; }
-    100% { transform: scale(1.1); opacity: 0; }
-  }
-
-  .substack-details {
-    position: relative;
-  }
-
-  .substack-label {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    font-weight: 500;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-
-  .substack-details h2 {
-    font-family: var(--font-serif);
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--color-text);
-    margin: var(--space-xs) 0 var(--space-sm) 0;
-  }
-
-  .substack-details p {
-    font-family: var(--font-serif);
-    font-size: 0.95rem;
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.6;
     color: var(--color-text-secondary);
-    margin: 0 0 var(--space-md) 0;
-    line-height: 1.75;
+    max-width: 54ch;
+    margin: 0;
   }
 
-  .substack-topics {
+  /* ── Folio rule ────────────────────────────────────── */
+  .folio-rule {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-xs);
-    margin-bottom: var(--space-md);
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
   }
 
-  .substack-topic {
-    font-family: var(--font-sans);
-    font-size: 0.7rem;
-    font-weight: 500;
-    background: var(--color-tag-bg);
-    color: var(--color-tag-text);
-    padding: 0.15rem 0.5rem;
-    border-radius: 3px;
+  .folio-mark {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-style: normal;
+    font-size: 0.92rem;
+    letter-spacing: 0.09em;
+    text-transform: none;
+
+    color: var(--color-text-muted);
+    white-space: nowrap;
   }
 
-  .substack-btn {
+  .folio-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  /* The longer reasoning stays folded until asked for. */
+  .why {
+    margin-top: var(--space-md);
+  }
+
+  .why summary {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-style: normal;
+    font-size: 0.92rem;
+    letter-spacing: 0.09em;
+    text-transform: none;
+
+    color: var(--color-text-muted);
+    cursor: pointer;
+    list-style: none;
     display: inline-flex;
     align-items: center;
-    gap: var(--space-sm);
-    padding: 0.6rem 1.25rem;
-    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
-    color: white;
-    font-family: var(--font-sans);
+    gap: 0.45rem;
+    padding: 0.2rem 0;
+    user-select: none;
+  }
+
+  .why summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .why summary::before {
+    content: '+';
     font-size: 0.85rem;
-    font-weight: 600;
-    text-decoration: none;
-    border-radius: 8px;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 16px rgba(196, 116, 63, 0.3);
+    line-height: 1;
   }
 
-  .substack-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(196, 116, 63, 0.4);
-    text-decoration: none;
+  .why[open] summary::before {
+    content: '−';
   }
 
-  .substack-btn svg {
-    transition: transform 0.2s ease;
+  .why summary:hover {
+    color: var(--color-accent);
   }
 
-  .substack-btn:hover svg {
-    transform: translateX(3px);
+  .why-body {
+    padding-top: var(--space-md);
+    max-width: 66ch;
   }
 
-  .topics-section {
-    width: 100%;
-    padding: var(--space-lg);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    text-align: left;
-  }
-
-  .topics-section h3 {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    font-weight: 500;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin: 0 0 var(--space-md) 0;
-  }
-
-  .topics-text p {
-    font-family: var(--font-serif);
-    font-size: 0.95rem;
+  .why-body p {
+    font-size: 1rem;
+    line-height: 1.8;
     color: var(--color-text-secondary);
-    line-height: 1.75;
-    margin: 0 0 var(--space-md) 0;
+    margin: 0 0 var(--space-md);
   }
 
-  .topics-text p:last-child {
-    margin-bottom: 0;
-  }
-
-  .posts-section {
-    width: 100%;
-  }
-
-  .posts-section-title {
+  .substack-line {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
-    font-weight: 500;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin: 0 0 var(--space-md) 0;
+    font-size: 0.7rem !important;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted) !important;
+    margin-bottom: 0 !important;
   }
 
-  .posts-grid {
+  /* ── Filters ───────────────────────────────────────── */
+  .filters {
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
-  }
-
-  .post-card {
-    position: relative;
-    display: block;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    padding: var(--space-md);
-    text-decoration: none;
-    overflow: hidden;
-    transition: all 0.25s ease;
-  }
-
-  .post-card:hover {
-    border-color: var(--color-accent);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(196, 116, 63, 0.15);
-    text-decoration: none;
-  }
-
-  .post-card-glow {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
-  }
-
-  .post-card-content {
-    position: relative;
-  }
-
-  .post-card-meta {
-    margin-bottom: var(--space-xs);
-  }
-
-  .post-card-meta time {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    color: var(--color-text-muted);
-  }
-
-  .post-card h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--color-text);
-    margin: 0 0 var(--space-xs) 0;
-  }
-
-  .post-card > .post-card-content > p {
-    font-size: 0.85rem;
-    color: var(--color-text-secondary);
-    line-height: 1.6;
-    margin: 0 0 var(--space-sm) 0;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
   }
 
   .search-bar {
     position: relative;
-    width: 100%;
-    margin-bottom: var(--space-sm);
+    max-width: 340px;
   }
 
   .search-icon {
     position: absolute;
-    left: 12px;
+    left: 11px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--color-text-muted);
@@ -447,16 +303,15 @@ function formatDate(dateStr: string): string {
 
   #search-input {
     width: 100%;
-    padding: 0.6rem 0.75rem 0.6rem 2.25rem;
-    font-family: var(--font-sans);
-    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem 0.5rem 2.1rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
     color: var(--color-text);
-    background: var(--color-surface);
+    background: transparent;
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: 2px;
     outline: none;
     transition: border-color 0.2s ease;
-    box-sizing: border-box;
   }
 
   #search-input:focus {
@@ -467,67 +322,207 @@ function formatDate(dateStr: string): string {
     color: var(--color-text-muted);
   }
 
+  /* Long topic list stays folded away until asked for. */
+  .topics summary {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-style: normal;
+    font-size: 0.92rem;
+    letter-spacing: 0.09em;
+    text-transform: none;
+
+    color: var(--color-text-muted);
+    cursor: pointer;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0;
+    user-select: none;
+  }
+
+  .topics summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .topics summary::before {
+    content: '+';
+    font-size: 0.85rem;
+    line-height: 1;
+    color: var(--color-text-muted);
+  }
+
+  .topics[open] summary::before {
+    content: '−';
+  }
+
+  .topics summary:hover {
+    color: var(--color-accent);
+  }
+
+  .topic-count {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    opacity: 0.7;
+  }
+
   .tag-filters {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: var(--space-md);
+    gap: 5px;
+    padding-top: var(--space-sm);
   }
 
   .tag-chip {
-    font-family: var(--font-sans);
-    font-size: 0.65rem;
-    font-weight: 500;
-    background: var(--color-tag-bg);
-    color: var(--color-tag-text);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 400;
+    background: transparent;
+    color: var(--color-text-muted);
     padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    border: 1px solid transparent;
+    border-radius: 2px;
+    border: 1px solid var(--color-border);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: color 0.15s ease, border-color 0.15s ease;
   }
 
   .tag-chip:hover {
+    color: var(--color-accent);
     border-color: var(--color-accent);
   }
 
   .tag-chip.active {
     background: var(--color-accent);
-    color: white;
+    color: #fff;
     border-color: var(--color-accent);
+  }
+
+  /* ── Index ─────────────────────────────────────────── */
+  .post-index {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .year-group {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr;
+    gap: var(--space-md);
+  }
+
+  .year-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    letter-spacing: 0.08em;
+    margin: 0;
+    padding-top: 0.55rem;
+  }
+
+  .entry-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .entry {
+    margin: 0;
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .entry:first-child {
+    border-top: none;
+  }
+
+  .entry a {
+    display: block;
+    padding: var(--space-md) 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .entry a:hover {
+    text-decoration: none;
+  }
+
+  .entry time {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.35rem;
+  }
+
+  /* The title is the one thing that should catch the eye. */
+  .entry h3 {
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--color-text);
+    margin: 0 0 0.35rem 0;
+    transition: color 0.15s ease;
+  }
+
+  .entry a:hover h3 {
+    color: var(--color-accent);
+  }
+
+  .entry p {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+    margin: 0;
+    max-width: 62ch;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .results-count {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     color: var(--color-text-muted);
-    margin: 0 0 var(--space-sm) 0;
+    margin: 0 0 var(--space-md) 0;
   }
 
   .results-count:empty {
     display: none;
   }
 
-  .post-tags {
-    display: flex;
-    gap: var(--space-xs);
-    flex-wrap: wrap;
-  }
-
-  .tag {
+  .no-results {
     font-family: var(--font-sans);
-    font-size: 0.65rem;
-    font-weight: 500;
-    background: var(--color-tag-bg);
-    color: var(--color-tag-text);
-    padding: 0.15rem 0.4rem;
-    border-radius: 4px;
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+    padding: var(--space-xl) 0;
+    margin: 0;
+    display: none;
   }
 
+  @media (max-width: 600px) {
+    .year-group {
+      grid-template-columns: 1fr;
+      gap: var(--space-sm);
+    }
+
+    .year-label {
+      padding-top: 0;
+    }
+
+    .entry h3 {
+      font-size: 1.2rem;
+    }
+  }
 </style>
 
 <style is:global>
-  .post-card.hidden {
+  .entry.hidden,
+  .year-group.hidden {
     display: none !important;
   }
 </style>
@@ -535,30 +530,39 @@ function formatDate(dateStr: string): string {
 <script is:inline>
 (function() {
   const input = document.getElementById('search-input');
-  const grid = document.getElementById('posts-grid');
-  const cards = grid.querySelectorAll('.post-card');
+  const index = document.getElementById('post-index');
+  const entries = index.querySelectorAll('.entry');
+  const groups = index.querySelectorAll('.year-group');
   const chips = document.querySelectorAll('.tag-chip');
   const counter = document.getElementById('results-count');
+  const empty = document.getElementById('no-results');
   let activeTag = null;
 
   function filter() {
     const q = input.value.toLowerCase().trim();
     let visible = 0;
-    cards.forEach(card => {
-      const title = card.dataset.title;
-      const desc = card.dataset.description;
-      const tags = card.dataset.tags;
-      const matchesText = !q || title.includes(q) || desc.includes(q) || tags.includes(q);
-      const matchesTag = !activeTag || tags.split(',').includes(activeTag);
+
+    entries.forEach(entry => {
+      const matchesText = !q
+        || entry.dataset.title.includes(q)
+        || entry.dataset.description.includes(q)
+        || entry.dataset.tags.includes(q);
+      const matchesTag = !activeTag || entry.dataset.tags.split(',').includes(activeTag);
       const show = matchesText && matchesTag;
-      card.classList.toggle('hidden', !show);
+      entry.classList.toggle('hidden', !show);
       if (show) visible++;
     });
-    if (q || activeTag) {
-      counter.textContent = visible + ' of ' + cards.length + ' posts';
-    } else {
-      counter.textContent = '';
-    }
+
+    // Drop a year heading entirely when nothing under it survived.
+    groups.forEach(group => {
+      const anyVisible = group.querySelector('.entry:not(.hidden)');
+      group.classList.toggle('hidden', !anyVisible);
+    });
+
+    counter.textContent = (q || activeTag)
+      ? visible + ' of ' + entries.length + ' posts'
+      : '';
+    empty.style.display = visible === 0 ? 'block' : 'none';
   }
 
   input.addEventListener('input', filter);

@@ -428,10 +428,10 @@ print("AUC model2:", model2_auc)   # 0.77</code></pre>
     color: var(--color-text);
   }
 
-  .four-card.tp { background: rgba(34, 197, 94, 0.07); border-color: rgba(34, 197, 94, 0.25); }
-  .four-card.tn { background: rgba(59, 130, 246, 0.07); border-color: rgba(59, 130, 246, 0.25); }
-  .four-card.fp { background: rgba(249, 115, 22, 0.07); border-color: rgba(249, 115, 22, 0.25); }
-  .four-card.fn { background: rgba(239, 68, 68, 0.09); border-color: rgba(239, 68, 68, 0.3); }
+  .four-card.tp { background: rgba(94, 122, 74, 0.10); border-color: rgba(94, 122, 74, 0.40); }
+  .four-card.tn { background: rgba(74, 96, 122, 0.10); border-color: rgba(74, 96, 122, 0.40); }
+  .four-card.fp { background: rgba(168, 124, 54, 0.12); border-color: rgba(168, 124, 54, 0.42); }
+  .four-card.fn { background: rgba(156, 81, 56, 0.13); border-color: rgba(156, 81, 56, 0.45); }
 
   .conf-matrix {
     width: 100%;
@@ -466,10 +466,10 @@ print("AUC model2:", model2_auc)   # 0.77</code></pre>
     text-align: left;
   }
 
-  .cell-tp { background: rgba(34, 197, 94, 0.08); font-weight: 600; }
-  .cell-tn { background: rgba(59, 130, 246, 0.08); font-weight: 600; }
-  .cell-fp { background: rgba(249, 115, 22, 0.08); }
-  .cell-fn { background: rgba(239, 68, 68, 0.1); }
+  .cell-tp { background: rgba(94, 122, 74, 0.12); font-weight: 600; }
+  .cell-tn { background: rgba(74, 96, 122, 0.12); font-weight: 600; }
+  .cell-fp { background: rgba(168, 124, 54, 0.14); }
+  .cell-fn { background: rgba(156, 81, 56, 0.15); }
 
   .auc-grid {
     display: grid;
@@ -501,10 +501,10 @@ print("AUC model2:", model2_auc)   # 0.77</code></pre>
 
   .eq-block {
     margin: 1.5rem 0;
-    padding: 1rem 1.5rem;
-    background: var(--color-accent-soft);
-    border-left: 3px solid var(--color-accent);
-    border-radius: 0 8px 8px 0;
+    padding: 0.6rem 1.5rem;
+    background: none;
+    border-left: 1px solid var(--color-accent);
+    border-radius: 0;
     overflow-x: auto;
     text-align: center;
   }
@@ -512,8 +512,9 @@ print("AUC model2:", model2_auc)   # 0.77</code></pre>
   .eq-note {
     margin: 0.6rem 0 1.5rem 0;
     padding: 0.7rem 1rem;
-    background: var(--color-tag-bg);
-    border-radius: 6px;
+    background: var(--color-code-bg);
+    border: 1px solid var(--color-border-light);
+    border-radius: 2px;
     font-family: var(--font-sans);
     font-size: 0.88rem;
     color: var(--color-text-secondary);
