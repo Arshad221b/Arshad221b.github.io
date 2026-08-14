@@ -704,7 +704,7 @@ main {
 .blog-post-description {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 1.15rem;
+  font-size: 1.26rem;
   color: var(--color-text-secondary);
   line-height: 1.6;
   margin-bottom: var(--space-md);
@@ -786,8 +786,15 @@ main {
   margin-bottom: var(--space-sm);
 }
 
+/* Hold the measure near 70 characters, as the index pages do. */
+.blog-post-content p,
+.blog-post-content li,
+.blog-post-content blockquote {
+  max-width: 66ch;
+}
+
 .blog-post-content p {
-  font-size: 1.08rem;
+  font-size: 1.2rem;
   margin-bottom: var(--space-md);
 }
 
@@ -799,7 +806,7 @@ main {
 .blog-post-content li {
   margin-bottom: var(--space-xs);
   line-height: 1.75;
-  font-size: 1.05rem;
+  font-size: 1.16rem;
 }
 
 .blog-post-content a {
