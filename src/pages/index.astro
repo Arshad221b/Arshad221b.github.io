@@ -442,8 +442,16 @@ const vitals = [
     .closing { order: 7; margin: 0; }
     .correspondence { order: 8; }
 
+    /* Centred and modest, so it reads as a plate on the page rather
+       than a thumbnail stranded beside empty space. */
     .plate-frame {
-      max-width: 196px;
+      max-width: 232px;
+      margin: 0 auto;
+    }
+
+    .plate figcaption {
+      align-items: center;
+      text-align: center;
     }
 
     /* Two up, so the index fills the width instead of running down a
