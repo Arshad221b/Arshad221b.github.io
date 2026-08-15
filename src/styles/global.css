@@ -1013,7 +1013,12 @@ html.dark .post-card:hover {
   }
 
   .masthead {
+    min-height: 132px;
     padding: var(--space-md) var(--space-sm);
+  }
+
+  .masthead::before {
+    background-size: auto 150px;
   }
 
   .masthead .site-title {
