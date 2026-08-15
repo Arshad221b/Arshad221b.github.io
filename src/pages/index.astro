@@ -12,9 +12,15 @@ const correspondence = [
 ];
 
 const vitals = [
-  { term: "Trade", detail: "Computer vision, ML" },
+  { term: "Trained as", detail: "Engineer. Everything after that, self-taught" },
+  { term: "Works on", detail: "3D vision, geometry, representation learning" },
+  { term: "Builds", detail: "Models from scratch. Training dynamics, not wrappers" },
+  { term: "Reads", detail: "Neuroscience, psychology, philosophy" },
+  { term: "Writes", detail: "Notebooks while learning, thoughts when they arrive" },
+  { term: "Also into", detail: "Colour, food, film, music, language" },
+  { term: "Wired", detail: "Autistic. Intense when interested, restless otherwise" },
   { term: "Method", detail: "Build it, break it, look again" },
-  { term: "Subjects", detail: "Geometry, structure, representation" },
+  { term: "Constant", detail: "More questions than answers" },
 ];
 ---
 
@@ -47,7 +53,8 @@ const vitals = [
       <aside class="margin">
         <figure class="plate">
           <div class="plate-frame">
-            <img src="/images/profile.png" alt="Arshad Kazi" />
+            <img src="/images/profile.png" alt="Arshad Kazi" draggable="false" oncontextmenu="return false" />
+            <span class="plate-guard" aria-hidden="true"></span>
           </div>
           <figcaption>
             <span class="fig-num">Fig. 1</span>
@@ -139,15 +146,13 @@ const vitals = [
 
   .folio-body {
     display: grid;
-    grid-template-columns: 186px 1fr;
+    grid-template-columns: 208px 1fr;
     gap: var(--space-2xl);
     align-items: start;
   }
 
   /* ── Margin column ─────────────────────────────────── */
   .margin {
-    position: sticky;
-    top: 84px;
     display: flex;
     flex-direction: column;
     gap: var(--space-lg);
@@ -195,6 +200,22 @@ const vitals = [
     object-fit: cover;
     /* Push the photo toward a sepia study rather than a snapshot. */
     filter: grayscale(1) sepia(0.42) contrast(1.06) brightness(1.02);
+    /* Not selectable, not draggable, no long-press save sheet. */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+
+  /* Sits over the photo so a press lands here, never on the image. */
+  .plate-guard {
+    position: absolute;
+    inset: 0;
+    display: block;
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .plate figcaption {
@@ -399,12 +420,12 @@ const vitals = [
   }
 
   @media (max-width: 700px) {
-    /* Flatten both columns into one reading order: who, then the
-       plate, then the letter, with the links last. */
+    /* Flatten both columns into one reading order: who, then the plate,
+       then the index of vitals, then the letter, with the links last. */
     .folio-body {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-lg);
+      display: grid;
+      grid-template-columns: 1fr;
+      row-gap: var(--space-lg);
     }
 
     .margin,
@@ -422,13 +443,16 @@ const vitals = [
     .correspondence { order: 8; }
 
     .plate-frame {
-      max-width: 210px;
+      max-width: 196px;
     }
 
+    /* Two up, so the index fills the width instead of running down a
+       narrow strip beside the plate. */
     .vitals {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: var(--space-md);
+      column-gap: var(--space-lg);
+      row-gap: var(--space-md);
     }
 
     .prose p::before {
@@ -440,9 +464,10 @@ const vitals = [
     }
   }
 
-  @media (max-width: 420px) {
+  @media (max-width: 400px) {
     .vitals {
       grid-template-columns: 1fr;
+      row-gap: var(--space-sm);
     }
   }
 
