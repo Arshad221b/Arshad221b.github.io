@@ -1036,56 +1036,30 @@ html.dark .post-card:hover {
 
 }
 
-/* ── Shared Page Components ─────────────────────────── */
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: 0.25rem 0.6rem;
-  background: var(--color-accent-soft);
-  border-radius: 20px;
-  font-family: var(--font-sans);
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--color-accent);
-  width: fit-content;
-  margin: 0 auto;
-}
-
-.badge-dot {
-  width: 5px;
-  height: 5px;
-  background: var(--color-accent);
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
 /* ── Notebook Experiment Shared ─────────────────────── */
 .experiment-intro {
-  margin-bottom: 1.75rem;
+  margin-bottom: var(--space-xl);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: var(--space-lg);
 }
 
 .experiment-intro h3 {
   font-family: var(--font-serif);
+  font-variant: small-caps;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.09em;
   color: var(--color-accent);
-  margin-bottom: 0.4rem;
+  margin: 0 0 0.5rem;
 }
 
 .experiment-intro p {
-  font-size: 0.92rem;
-  line-height: 1.75;
+  font-size: 1.12rem;
+  line-height: 1.8;
   color: var(--color-text-secondary);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.7rem;
+  max-width: 66ch;
 }
 
 .experiment-intro p:last-child {
@@ -1094,87 +1068,82 @@ html.dark .post-card:hover {
 
 .experiment-intro a {
   color: var(--color-accent);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-accent-soft);
 }
 
 .experiment-intro a:hover {
-  color: var(--color-text);
+  border-bottom-color: var(--color-accent);
 }
 
-.intro-origin {
-  padding: 1rem 1.25rem;
-  border-left: 3px solid var(--color-accent);
-  background: var(--color-accent-soft);
-  border-radius: 0 8px 8px 0;
-}
-
-html.dark .intro-origin {
-  background: var(--color-accent-soft);
+/* Notes set off behind a hairline, not in a tinted box. */
+.intro-origin,
+.intro-setup {
+  padding: 0 0 0 var(--space-lg);
+  border-left: 1px solid var(--color-accent);
+  background: none;
+  border-radius: 0;
 }
 
 .intro-rules {
-  padding: 1rem 1.25rem;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
+  padding: var(--space-md) 0 0;
+  border: none;
+  border-top: 1px solid var(--color-border);
+  border-radius: 0;
 }
 
 .rules-list {
-  list-style: disc;
-  padding-left: 1.25rem;
+  list-style: none;
+  padding-left: 0;
   margin: 0;
 }
 
 .rules-list li {
-  font-family: var(--font-sans);
-  font-size: 0.88rem;
-  line-height: 1.6;
+  position: relative;
+  font-family: var(--font-serif);
+  font-size: 1.06rem;
+  line-height: 1.7;
   color: var(--color-text-secondary);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.3rem;
+  padding-left: 1.1rem;
+}
+
+.rules-list li::before {
+  content: '·';
+  position: absolute;
+  left: 0.2rem;
+  color: var(--color-accent);
 }
 
 .rules-list li:last-child {
   margin-bottom: 0;
 }
 
-.intro-setup {
-  padding: 1rem 1.25rem;
-  border-left: 3px solid var(--color-accent);
-  background: var(--color-accent-soft);
-  border-radius: 0 8px 8px 0;
-}
-
-html.dark .intro-setup {
-  background: var(--color-accent-soft);
-}
-
 .setup-steps {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 0.25rem;
+  gap: 0.85rem;
+  margin-top: 0.5rem;
 }
 
 .setup-step {
   display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
+  align-items: baseline;
+  gap: 0.85rem;
 }
 
+/* A numeral in the margin, not a filled dot. */
 .setup-number {
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--color-bg);
-  background: var(--color-accent);
-  min-width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: var(--color-accent);
+  background: none;
+  min-width: 1.2rem;
+  height: auto;
+  border-radius: 0;
+  display: block;
   flex-shrink: 0;
-  margin-top: 0.1rem;
+  text-align: right;
 }
 
 .setup-content {
@@ -1184,122 +1153,151 @@ html.dark .intro-setup {
 }
 
 .setup-content strong {
-  font-family: var(--font-sans);
-  font-size: 0.88rem;
+  font-family: var(--font-serif);
+  font-size: 1.08rem;
   font-weight: 600;
   color: var(--color-text);
 }
 
 .setup-content span {
-  font-family: var(--font-sans);
-  font-size: 0.82rem;
+  font-family: var(--font-serif);
+  font-size: 1.02rem;
   color: var(--color-text-secondary);
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
+/* ── Day entries, as ledger rows ─────────────────────── */
 .day-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
 }
 
 .day-card {
-  display: block;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 1rem 1.25rem;
-  background: var(--color-bg);
+  display: grid;
+  grid-template-columns: 3.2rem 1fr;
+  gap: var(--space-md);
+  align-items: baseline;
+  border: none;
+  border-top: 1px solid var(--color-border-light);
+  border-radius: 0;
+  padding: var(--space-md) 0;
+  background: none;
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: none;
   cursor: pointer;
 }
 
+.day-card:first-child {
+  border-top: none;
+}
+
 .day-card:hover {
-  border-color: var(--color-accent);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-color: var(--color-border-light);
+  box-shadow: none;
+  text-decoration: none;
 }
 
 .day-card-header {
+  grid-column: 1;
+  grid-row: 1 / span 3;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.35rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  margin-bottom: 0;
 }
 
 .day-card-number {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  opacity: 0.7;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.day-card:hover .day-card-number {
   color: var(--color-accent);
-  background: var(--color-accent-soft);
-  padding: 0.15rem 0.5rem;
-  border-radius: 3px;
+  opacity: 1;
 }
 
 .day-card-date {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
   color: var(--color-text-muted);
 }
 
 .day-card-title {
+  grid-column: 2;
   font-family: var(--font-serif);
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--color-text);
-  margin-bottom: 0.4rem;
-  line-height: 1.4;
-}
-
-.day-card-summary {
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-  line-height: 1.6;
-  margin-bottom: 0.5rem;
-}
-
-.day-card-link {
-  font-family: var(--font-sans);
-  font-size: 0.8rem;
+  font-size: 1.3rem;
   font-weight: 600;
-  color: var(--color-accent);
-  text-decoration: none;
+  color: var(--color-text);
+  margin-bottom: 0.3rem;
+  line-height: 1.35;
   transition: color 0.15s ease;
 }
 
+.day-card:hover .day-card-title {
+  color: var(--color-accent);
+}
+
+.day-card-summary {
+  grid-column: 2;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.06rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin-bottom: 0.4rem;
+  max-width: 62ch;
+}
+
+.day-card-link {
+  grid-column: 2;
+  font-family: var(--font-serif);
+  font-variant: small-caps;
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0.07em;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
 .day-card-link:hover {
-  color: var(--color-text);
-  text-decoration: underline;
+  color: var(--color-accent-hover);
+  text-decoration: none;
 }
 
+/* ── What it came to ─────────────────────────────────── */
 .experiment-conclusion {
-  margin-top: 2rem;
-  padding: 1.25rem 1.5rem;
-  border-top: 2px solid var(--color-accent);
-  background: var(--color-accent-soft);
-  border-radius: 0 0 8px 8px;
-}
-
-html.dark .experiment-conclusion {
-  background: var(--color-accent-soft);
+  margin-top: var(--space-2xl);
+  padding: var(--space-md) 0 0;
+  border-top: 1px dashed var(--color-border);
+  background: none;
+  border-radius: 0;
 }
 
 .experiment-conclusion h2 {
   font-family: var(--font-serif);
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: 1.3rem;
+  font-weight: 600;
   color: var(--color-text);
-  margin-bottom: 0.75rem;
-  line-height: 1.4;
+  margin: 0 0 0.6rem;
+  line-height: 1.35;
 }
 
 .experiment-conclusion p {
-  font-size: 0.92rem;
-  line-height: 1.75;
+  font-size: 1.12rem;
+  line-height: 1.8;
   color: var(--color-text-secondary);
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.7rem;
+  max-width: 66ch;
 }
 
 .experiment-conclusion p:last-child {
@@ -1308,7 +1306,32 @@ html.dark .experiment-conclusion {
 
 @media (max-width: 600px) {
   .setup-steps {
+    gap: 0.7rem;
+  }
+
+  /* Single column on small screens, with the day label on one line. */
+  .day-card {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .day-card-header {
+    grid-column: 1;
+    grid-row: auto;
+    flex-direction: row;
+    align-items: baseline;
     gap: 0.6rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .day-card-title,
+  .day-card-summary,
+  .day-card-link {
+    grid-column: 1;
+  }
+
+  .day-card-title {
+    font-size: 1.18rem;
   }
 }
 
@@ -1341,15 +1364,33 @@ html.dark .experiment-conclusion {
   margin-bottom: 0;
 }
 
+.experiment-status {
+  font-family: var(--font-serif);
+  font-variant: small-caps;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  padding-bottom: 0.15rem;
+}
+
+.experiment-status.active {
+  color: var(--color-accent);
+}
+
 .experiment-page-meta {
-  font-family: var(--font-sans);
-  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
   color: var(--color-text-muted);
   margin-bottom: var(--space-xs);
 }
 
 .experiment-page-description {
-  font-size: 0.95rem;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.2rem;
+  max-width: 62ch;
   color: var(--color-text-secondary);
   line-height: 1.7;
   margin-bottom: 0;
@@ -1361,34 +1402,37 @@ html.dark .experiment-conclusion {
   align-items: center;
   gap: var(--space-md);
   margin-bottom: var(--space-2xl);
-  padding: var(--space-md) var(--space-lg);
-  background: var(--color-surface);
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: linear-gradient(var(--color-surface), var(--color-surface)) padding-box, linear-gradient(135deg, var(--color-border-light), var(--color-surface)) border-box;
+  padding: 0 0 var(--space-md);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-border-light);
+  border-radius: 0;
 }
 
+/* Counted off as tally marks, as on the index. */
 .progress-track {
   display: flex;
-  gap: var(--space-sm);
+  align-items: flex-end;
+  gap: 5px;
 }
 
 .progress-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid var(--color-border);
-  transition: all 0.2s ease;
+  width: 2px;
+  height: 15px;
+  border-radius: 0;
+  border: none;
+  background: var(--color-border);
+  transition: background 0.2s ease;
 }
 
 .progress-dot.filled {
   background: var(--color-accent);
-  border-color: var(--color-accent);
+  border-color: transparent;
 }
 
 .progress-label {
-  font-family: var(--font-sans);
-  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
   color: var(--color-text-muted);
   margin-left: auto;
 }
