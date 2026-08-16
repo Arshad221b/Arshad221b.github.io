@@ -101,90 +101,73 @@ const navItems = [
       <slot />
     </main>
 
-    <!-- Section scale, built only where an article has sections to measure -->
-    <aside class="margin-scale" id="margin-scale">
-      <span class="scale-track"></span>
-      <span class="scale-fill" id="scale-fill"></span>
-      <span class="scale-cursor" id="scale-cursor"></span>
-      <span class="scale-label" id="scale-label"></span>
-    </aside>
+    <!-- Contents of the piece, listed in the margin -->
+    <nav class="margin-toc" id="margin-toc" aria-label="Sections"></nav>
 
     <script is:inline>
       (function () {
-        var scale = document.getElementById('margin-scale');
+        var toc = document.getElementById('margin-toc');
         var headings = [].slice.call(
           document.querySelectorAll('.blog-post-content h2, .day-section .section-heading')
         ).filter(function (h) { return h.textContent.trim(); });
 
-        // nothing worth measuring on a page without sections
-        if (!scale || headings.length < 2) return;
+        if (!toc || headings.length < 2) return;
 
-        var fill = document.getElementById('scale-fill');
-        var cursor = document.getElementById('scale-cursor');
-        var label = document.getElementById('scale-label');
-        var TOP = 0.20, SPAN = 0.62;   // track runs 20vh to 82vh
-        var ticks = [];
+        var title = document.createElement('span');
+        title.className = 'toc-title';
+        title.textContent = 'Contents';
+        toc.appendChild(title);
+
+        var list = document.createElement('ol');
+        var items = [];
 
         headings.forEach(function (h, i) {
           if (!h.id) h.id = 'section-' + (i + 1);
-          var tick = document.createElement('button');
-          tick.className = 'scale-tick';
-          tick.type = 'button';
-          tick.setAttribute('aria-label', 'Jump to ' + h.textContent.trim());
-          tick.addEventListener('click', function () {
+          var li = document.createElement('li');
+          var a = document.createElement('a');
+          a.href = '#' + h.id;
+          a.innerHTML = '<span class="toc-num">' + String(i + 1).padStart(2, '0') +
+                        '</span><span class="toc-text"></span>';
+          a.querySelector('.toc-text').textContent = h.textContent.trim();
+          a.addEventListener('click', function (e) {
+            e.preventDefault();
             h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            history.replaceState(null, '', '#' + h.id);
           });
-          var num = document.createElement('span');
-          num.className = 'scale-num';
-          num.textContent = String(i + 1).padStart(2, '0');
-          scale.appendChild(tick);
-          scale.appendChild(num);
-          ticks.push({ h: h, tick: tick, num: num });
+          li.appendChild(a);
+          list.appendChild(li);
+          items.push({ h: h, li: li });
         });
 
-        function place() {
-          var docH = document.documentElement.scrollHeight;
-          var vh = window.innerHeight;
-          ticks.forEach(function (t) {
-            var ratio = Math.min(Math.max(t.h.offsetTop / docH, 0), 1);
-            var top = (TOP + ratio * SPAN) * vh;
-            t.tick.style.top = top + 'px';
-            t.num.style.top = top + 'px';
-          });
-        }
+        toc.appendChild(list);
+        toc.classList.add('ready');
 
-        function update() {
-          var docH = document.documentElement.scrollHeight;
-          var vh = window.innerHeight;
-          // the point on the page you are actually reading
-          var read = window.scrollY + vh * 0.35;
-          var ratio = Math.min(Math.max(read / docH, 0), 1);
-          fill.style.height = (ratio * SPAN * vh) + 'px';
-          cursor.style.top = ((TOP + ratio * SPAN) * vh - 3) + 'px';
-
-          var current = -1;
-          ticks.forEach(function (t, i) {
-            if (window.scrollY + vh * 0.35 >= t.h.offsetTop) current = i;
+        // whichever section heading was last passed, measured live so it
+        // stays right whatever the layout does
+        var ticking = false;
+        function mark() {
+          ticking = false;
+          var current = 0;
+          for (var i = 0; i < items.length; i++) {
+            if (items[i].h.getBoundingClientRect().top <= 140) current = i;
+          }
+          items.forEach(function (it, i) {
+            it.li.classList.toggle('active', i === current);
           });
-          ticks.forEach(function (t, i) {
-            t.tick.classList.toggle('active', i === current);
-            t.num.classList.toggle('active', i === current);
-          });
-
-          if (current >= 0) {
-            label.textContent = ticks[current].h.textContent.trim();
-            label.style.top = ticks[current].tick.style.top;
-            label.classList.add('on');
-          } else {
-            label.classList.remove('on');
+          var active = items[current].li;
+          // keep the marked entry in view when the list is long
+          if (toc.scrollHeight > toc.clientHeight) {
+            var top = active.offsetTop - toc.clientHeight / 2 + active.offsetHeight / 2;
+            toc.scrollTo({ top: top, behavior: 'smooth' });
           }
         }
+        function onScroll() {
+          if (!ticking) { ticking = true; requestAnimationFrame(mark); }
+        }
 
-        place();
-        update();
-        scale.classList.add('ready');
-        addEventListener('scroll', update, { passive: true });
-        addEventListener('resize', function () { place(); update(); });
+        mark();
+        addEventListener('scroll', onScroll, { passive: true });
+        addEventListener('resize', onScroll);
       })();
     </script>
 
