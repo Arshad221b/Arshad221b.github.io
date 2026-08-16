@@ -70,6 +70,122 @@ body {
   flex-direction: column;
 }
 
+/* ── Margin scale ────────────────────────────────────────
+   A ruled scale in the outer margin: one tick per section, placed
+   where that section falls in the page, with the read portion filled.
+   It measures the article rather than decorating it. Only shown when
+   the gutter is wide enough that it cannot reach the text. */
+.margin-scale {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: calc((100vw - var(--max-width)) / 2);
+  display: none;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* At 1200px the gutter is 190px, which still leaves ~58px clear
+   between the scale and the text column. */
+@media (min-width: 1200px) {
+  .margin-scale.ready {
+    display: block;
+  }
+}
+
+.scale-track,
+.scale-fill {
+  position: absolute;
+  right: 58px;
+  width: 1px;
+}
+
+.scale-track {
+  top: 20vh;
+  height: 62vh;
+  background: var(--color-border);
+}
+
+.scale-fill {
+  top: 20vh;
+  height: 0;
+  background: var(--color-accent);
+  transition: height 0.12s linear;
+}
+
+/* the reading position, a small diamond riding the rule */
+.scale-cursor {
+  position: absolute;
+  right: 55px;
+  width: 7px;
+  height: 7px;
+  background: var(--color-accent);
+  transform: rotate(45deg) translateY(0);
+  transition: top 0.12s linear;
+}
+
+.scale-tick {
+  position: absolute;
+  right: 58px;
+  height: 1px;
+  width: 10px;
+  padding: 0;
+  border: none;
+  background: var(--color-border);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: width 0.15s ease, background 0.15s ease;
+}
+
+.scale-tick:hover,
+.scale-tick.active {
+  width: 18px;
+  background: var(--color-accent);
+}
+
+.scale-num {
+  position: absolute;
+  right: 76px;
+  transform: translateY(-0.62em);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--color-text-muted);
+  opacity: 0.7;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.scale-tick.active + .scale-num,
+.scale-num.active {
+  color: var(--color-accent);
+  opacity: 1;
+}
+
+/* the section you are in, named */
+.scale-label {
+  position: absolute;
+  right: 96px;
+  max-width: calc(100% - 110px);
+  transform: translateY(-0.62em);
+  text-align: right;
+  font-family: var(--font-serif);
+  font-variant: small-caps;
+  font-size: 0.92rem;
+  letter-spacing: 0.07em;
+  line-height: 1.25;
+  color: var(--color-text-muted);
+  opacity: 0;
+  transition: opacity 0.2s ease, top 0.12s linear;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.scale-label.on {
+  opacity: 1;
+}
+
 /* ── Typography ──────────────────────────────────────── */
 h1, h2, h3, h4 {
   font-family: var(--font-serif);

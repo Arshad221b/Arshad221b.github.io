@@ -101,6 +101,93 @@ const navItems = [
       <slot />
     </main>
 
+    <!-- Section scale, built only where an article has sections to measure -->
+    <aside class="margin-scale" id="margin-scale">
+      <span class="scale-track"></span>
+      <span class="scale-fill" id="scale-fill"></span>
+      <span class="scale-cursor" id="scale-cursor"></span>
+      <span class="scale-label" id="scale-label"></span>
+    </aside>
+
+    <script is:inline>
+      (function () {
+        var scale = document.getElementById('margin-scale');
+        var headings = [].slice.call(
+          document.querySelectorAll('.blog-post-content h2, .day-section .section-heading')
+        ).filter(function (h) { return h.textContent.trim(); });
+
+        // nothing worth measuring on a page without sections
+        if (!scale || headings.length < 2) return;
+
+        var fill = document.getElementById('scale-fill');
+        var cursor = document.getElementById('scale-cursor');
+        var label = document.getElementById('scale-label');
+        var TOP = 0.20, SPAN = 0.62;   // track runs 20vh to 82vh
+        var ticks = [];
+
+        headings.forEach(function (h, i) {
+          if (!h.id) h.id = 'section-' + (i + 1);
+          var tick = document.createElement('button');
+          tick.className = 'scale-tick';
+          tick.type = 'button';
+          tick.setAttribute('aria-label', 'Jump to ' + h.textContent.trim());
+          tick.addEventListener('click', function () {
+            h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+          var num = document.createElement('span');
+          num.className = 'scale-num';
+          num.textContent = String(i + 1).padStart(2, '0');
+          scale.appendChild(tick);
+          scale.appendChild(num);
+          ticks.push({ h: h, tick: tick, num: num });
+        });
+
+        function place() {
+          var docH = document.documentElement.scrollHeight;
+          var vh = window.innerHeight;
+          ticks.forEach(function (t) {
+            var ratio = Math.min(Math.max(t.h.offsetTop / docH, 0), 1);
+            var top = (TOP + ratio * SPAN) * vh;
+            t.tick.style.top = top + 'px';
+            t.num.style.top = top + 'px';
+          });
+        }
+
+        function update() {
+          var docH = document.documentElement.scrollHeight;
+          var vh = window.innerHeight;
+          // the point on the page you are actually reading
+          var read = window.scrollY + vh * 0.35;
+          var ratio = Math.min(Math.max(read / docH, 0), 1);
+          fill.style.height = (ratio * SPAN * vh) + 'px';
+          cursor.style.top = ((TOP + ratio * SPAN) * vh - 3) + 'px';
+
+          var current = -1;
+          ticks.forEach(function (t, i) {
+            if (window.scrollY + vh * 0.35 >= t.h.offsetTop) current = i;
+          });
+          ticks.forEach(function (t, i) {
+            t.tick.classList.toggle('active', i === current);
+            t.num.classList.toggle('active', i === current);
+          });
+
+          if (current >= 0) {
+            label.textContent = ticks[current].h.textContent.trim();
+            label.style.top = ticks[current].tick.style.top;
+            label.classList.add('on');
+          } else {
+            label.classList.remove('on');
+          }
+        }
+
+        place();
+        update();
+        scale.classList.add('ready');
+        addEventListener('scroll', update, { passive: true });
+        addEventListener('resize', function () { place(); update(); });
+      })();
+    </script>
+
     <footer>
       <div class="footer-content">
         <p>&copy; {new Date().getFullYear()} Arshad Kazi</p>
