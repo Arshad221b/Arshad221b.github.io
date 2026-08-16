@@ -70,122 +70,119 @@ body {
   flex-direction: column;
 }
 
-/* ── Margin scale ────────────────────────────────────────
-   A ruled scale in the outer margin: one tick per section, placed
-   where that section falls in the page, with the read portion filled.
-   It measures the article rather than decorating it. Only shown when
-   the gutter is wide enough that it cannot reach the text. */
-.margin-scale {
+/* ── Margin contents ─────────────────────────────────────
+   The sections of the piece, listed in the outer margin. Not a
+   proportional mini-map: just what is in the article, in order, with
+   the one you are reading marked. Real text, so it is legible and
+   clickable. Only appears when the gutter can hold it. */
+.margin-toc {
   position: fixed;
-  top: 0;
+  top: 50%;
   left: 0;
-  height: 100vh;
+  transform: translateY(-50%);
   width: calc((100vw - var(--max-width)) / 2);
+  padding: 0 44px 0 22px;
+  box-sizing: border-box;
+  max-height: 76vh;
+  overflow-y: auto;
   display: none;
   z-index: 5;
-  pointer-events: none;
+  scrollbar-width: none;
 }
 
-/* At 1200px the gutter is 190px, which still leaves ~58px clear
-   between the scale and the text column. */
-@media (min-width: 1200px) {
-  .margin-scale.ready {
+.margin-toc::-webkit-scrollbar {
+  display: none;
+}
+
+/* 1180px leaves a 180px gutter, still ~80px clear of the text column. */
+@media (min-width: 1180px) {
+  .margin-toc.ready {
     display: block;
   }
 }
 
-.scale-track,
-.scale-fill {
-  position: absolute;
-  /* the rule sits right of the gutter centre, so that the numerals and
-     ticks hanging off its left balance around the middle */
-  right: calc(50% - 20px);
-  width: 1px;
+/* more room to breathe once the gutter is genuinely wide */
+@media (min-width: 1400px) {
+  .margin-toc {
+    padding: 0 60px 0 32px;
+  }
 }
 
-.scale-track {
-  top: 20vh;
-  height: 62vh;
-  background: var(--color-border);
-}
-
-.scale-fill {
-  top: 20vh;
-  height: 0;
-  background: var(--color-accent);
-  transition: height 0.12s linear;
-}
-
-/* the reading position, a small diamond riding the rule */
-.scale-cursor {
-  position: absolute;
-  right: calc(50% - 23px);
-  width: 7px;
-  height: 7px;
-  background: var(--color-accent);
-  transform: rotate(45deg) translateY(0);
-  transition: top 0.12s linear;
-}
-
-.scale-tick {
-  position: absolute;
-  right: calc(50% - 20px);
-  height: 1px;
-  width: 10px;
-  padding: 0;
-  border: none;
-  background: var(--color-border);
-  cursor: pointer;
-  pointer-events: auto;
-  transition: width 0.15s ease, background 0.15s ease;
-}
-
-.scale-tick:hover,
-.scale-tick.active {
-  width: 18px;
-  background: var(--color-accent);
-}
-
-.scale-num {
-  position: absolute;
-  right: calc(50% + 2px);
-  transform: translateY(-0.62em);
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
+.toc-title {
+  display: block;
+  font-family: var(--font-serif);
+  font-variant: small-caps;
+  font-size: 0.88rem;
+  letter-spacing: 0.1em;
   color: var(--color-text-muted);
-  opacity: 0.7;
-  transition: color 0.15s ease, opacity 0.15s ease;
+  opacity: 0.75;
+  margin-bottom: var(--space-sm);
+  padding-left: 0.95rem;
 }
 
-.scale-tick.active + .scale-num,
-.scale-num.active {
-  color: var(--color-accent);
+.margin-toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid var(--color-border);
+}
+
+.margin-toc li {
+  position: relative;
+  margin: 0;
+}
+
+/* the marked section: a thicker segment of the margin rule */
+.margin-toc li::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-accent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.margin-toc li.active::before {
   opacity: 1;
 }
 
-/* the section you are in, named */
-.scale-label {
-  position: absolute;
-  right: calc(50% + 22px);
-  max-width: calc(50% - 22px);
-  transform: translateY(-0.62em);
-  text-align: right;
-  font-family: var(--font-serif);
-  font-variant: small-caps;
-  font-size: 0.92rem;
-  letter-spacing: 0.07em;
-  line-height: 1.25;
+.margin-toc a {
+  display: flex;
+  gap: 0.55rem;
+  padding: 0.34rem 0 0.34rem 0.95rem;
+  text-decoration: none;
   color: var(--color-text-muted);
-  opacity: 0;
-  transition: opacity 0.2s ease, top 0.12s linear;
+  transition: color 0.15s ease;
+}
+
+.margin-toc a:hover {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.margin-toc li.active a {
+  color: var(--color-text-secondary);
+}
+
+.toc-num {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  line-height: 1.9;
+  opacity: 0.6;
+}
+
+.toc-text {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.scale-label.on {
-  opacity: 1;
 }
 
 /* ── Typography ──────────────────────────────────────── */
