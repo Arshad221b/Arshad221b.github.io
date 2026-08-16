@@ -62,18 +62,12 @@ body {
   font-family: var(--font-serif);
   color: var(--color-text);
   background-color: var(--color-bg);
-  background-image: url('/images/paper.svg');
-  background-size: 200px 200px;
   line-height: 1.8;
   font-size: 1.3rem;
   font-weight: 500;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-html.dark body {
-  background-image: url('/images/paper-dark.svg');
 }
 
 /* ── Typography ──────────────────────────────────────── */
@@ -249,15 +243,9 @@ html.dark .masthead::before {
   inset: -22px -70px;
   z-index: -1;
   background-color: var(--color-bg);
-  background-image: url('/images/paper.svg');
-  background-size: 200px 200px;
   -webkit-mask-image: radial-gradient(ellipse 58% 56% at 50% 50%, #000 62%, transparent 100%);
   mask-image: radial-gradient(ellipse 58% 56% at 50% 50%, #000 62%, transparent 100%);
   pointer-events: none;
-}
-
-html.dark .masthead .site-title::before {
-  background-image: url('/images/paper-dark.svg');
 }
 
 /* ── Sticky nav bar ─────────────────────────────────── */
