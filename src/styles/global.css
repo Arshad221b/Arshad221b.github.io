@@ -97,7 +97,9 @@ body {
 .scale-track,
 .scale-fill {
   position: absolute;
-  right: 58px;
+  /* the rule sits right of the gutter centre, so that the numerals and
+     ticks hanging off its left balance around the middle */
+  right: calc(50% - 20px);
   width: 1px;
 }
 
@@ -117,7 +119,7 @@ body {
 /* the reading position, a small diamond riding the rule */
 .scale-cursor {
   position: absolute;
-  right: 55px;
+  right: calc(50% - 23px);
   width: 7px;
   height: 7px;
   background: var(--color-accent);
@@ -127,7 +129,7 @@ body {
 
 .scale-tick {
   position: absolute;
-  right: 58px;
+  right: calc(50% - 20px);
   height: 1px;
   width: 10px;
   padding: 0;
@@ -146,7 +148,7 @@ body {
 
 .scale-num {
   position: absolute;
-  right: 76px;
+  right: calc(50% + 2px);
   transform: translateY(-0.62em);
   font-family: var(--font-mono);
   font-size: 0.58rem;
@@ -164,8 +166,8 @@ body {
 /* the section you are in, named */
 .scale-label {
   position: absolute;
-  right: 96px;
-  max-width: calc(100% - 110px);
+  right: calc(50% + 22px);
+  max-width: calc(50% - 22px);
   transform: translateY(-0.62em);
   text-align: right;
   font-family: var(--font-serif);
