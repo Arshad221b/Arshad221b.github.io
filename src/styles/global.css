@@ -25,6 +25,7 @@
   --font-sans: 'Libre Franklin', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   --max-width: 820px;
+  --column: calc(820px - 2 * 2rem);   /* main's inner width */
   --space-xs: 0.3rem;
   --space-sm: 0.6rem;
   --space-md: 1.2rem;
@@ -889,11 +890,26 @@ main {
   margin-bottom: var(--space-sm);
 }
 
-/* Hold the measure near 70 characters, as the index pages do. */
-.blog-post-content p,
-.blog-post-content li,
-.blog-post-content blockquote {
+/* The article column is the measure itself, centred in the page, so
+   headings, prose and rules all share one right edge. Wide blocks
+   below break back out to the full column width. */
+.blog-post {
   max-width: 66ch;
+  margin-inline: auto;
+}
+
+/* Code, tables and diagrams are figures, not prose: they may run wider
+   than the measure, centred on it. */
+@media (min-width: 900px) {
+  /* .blog-post prefix so these beat per-post scoped margins */
+  .blog-post .blog-post-content pre,
+  .blog-post .blog-post-content table,
+  .blog-post .blog-post-content .mini-diagram {
+    width: var(--column);
+    max-width: var(--column);
+    margin-left: calc((100% - var(--column)) / 2);
+    margin-right: calc((100% - var(--column)) / 2);
+  }
 }
 
 .blog-post-content p {
