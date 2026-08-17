@@ -299,6 +299,54 @@ const edges = ties.map(([a, b]) => ({
   x2: facets[idx[b]].x, y2: facets[idx[b]].y,
 }));
 
+/* A phone is not a small desktop, and it has no pointer to hover with.
+   On a narrow screen the drawing keeps its shape but drops its names, and
+   the list underneath becomes the thing you actually operate. So this
+   arrangement only has to keep the cells apart, not the words. */
+const TALL_W = 800, TALL_H = 1040;
+const wideXs = facets.map(f => f.x), wideYs = facets.map(f => f.y);
+const minX = Math.min(...wideXs), minY = Math.min(...wideYs);
+const spanX = Math.max(...wideXs) - minX;
+const spanY = Math.max(...wideYs) - minY;
+
+const tall = facets.map(f => ({
+  x: 70 + ((f.x - minX) / spanX) * (TALL_W - 140),
+  y: 70 + ((f.y - minY) / spanY) * (TALL_H - 140),
+}));
+tall.forEach(t => { t.x0 = t.x; t.y0 = t.y; });
+
+const MIN_GAP = 62;
+for (let pass = 0; pass < 700; pass++) {
+  for (let i = 0; i < tall.length; i++) {
+    for (let j = i + 1; j < tall.length; j++) {
+      const A = tall[i], B = tall[j];
+      let vx = A.x - B.x, vy = A.y - B.y;
+      let d = Math.hypot(vx, vy);
+      if (d < 0.01) { vx = 1; vy = 0; d = 0.01; }
+      if (d < MIN_GAP) {
+        const push = (MIN_GAP - d) / 2;
+        A.x += (vx / d) * push; A.y += (vy / d) * push;
+        B.x -= (vx / d) * push; B.y -= (vy / d) * push;
+      }
+    }
+  }
+  for (const t of tall) {
+    t.x += (t.x0 - t.x) * 0.03;
+    t.y += (t.y0 - t.y) * 0.03;
+    t.x = Math.max(60, Math.min(TALL_W - 60, t.x));
+    t.y = Math.max(60, Math.min(TALL_H - 60, t.y));
+  }
+}
+
+const tallLayout = {
+  w: TALL_W, h: TALL_H,
+  pos: tall.map(t => ({ x: Math.round(t.x), y: Math.round(t.y) })),
+};
+const wideLayout = {
+  w: 1100, h: 900,
+  pos: facets.map(f => ({ x: f.x, y: f.y })),
+};
+
 const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle');
 ---
 
@@ -366,6 +414,30 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
       </svg>
     </figure>
 
+    <!-- On a touch screen there is nothing to hover, so each facet opens
+         where your thumb already is. -->
+    <ul class="facet-list" id="facet-list">
+      {facets.map((f, i) => (
+        <li data-i={i}>
+          <button type="button" aria-expanded="false">
+            <span class="fl-name">{f.label}</span>
+            <span class="fl-mark" aria-hidden="true"></span>
+          </button>
+          <div class="fl-body" hidden>
+            <p class="fl-line">{f.line}</p>
+            <p class="fl-ev">
+              {f.ev.map((e, k) => (
+                <>
+                  {k > 0 && <span class="sep">·</span>}
+                  <a href={e.h} target={e.h.startsWith('http') ? '_blank' : undefined} rel="noopener">{e.t}</a>
+                </>
+              ))}
+            </p>
+          </div>
+        </li>
+      ))}
+    </ul>
+
     <!-- Whatever you are pointing at explains itself here. -->
     <section class="readout" id="readout" aria-live="polite">
       <p class="ro-empty" id="ro-empty">Thirteen of them. Pick one.</p>
@@ -391,7 +463,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   </div>
 </Layout>
 
-<script is:inline define:vars={{ facets }}>
+<script is:inline define:vars={{ facets, wideLayout, tallLayout }}>
 (function () {
   const svg = document.getElementById('self-svg');
   if (!svg) return;
@@ -415,6 +487,29 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
     neighbours[a].push(b);
     neighbours[b].push(a);
   });
+
+  const narrow = window.matchMedia('(max-width: 760px)');
+  let layout = narrow.matches ? tallLayout : wideLayout;
+  let labelOff = layout === tallLayout ? 26 : 16;
+
+  // Put every element where the chosen arrangement says, viewBox included.
+  function placeStatic(L) {
+    svg.setAttribute('viewBox', '0 0 ' + L.w + ' ' + L.h);
+    for (let i = 0; i < groups.length; i++) {
+      const q = L.pos[i];
+      pips[i].setAttribute('cx', q.x); pips[i].setAttribute('cy', q.y);
+      hits[i].setAttribute('cx', q.x); hits[i].setAttribute('cy', q.y);
+      names[i].setAttribute('x', q.x); names[i].setAttribute('y', q.y - labelOff);
+      names[i].setAttribute('text-anchor',
+        q.x < L.w * 0.24 ? 'start' : q.x > L.w * 0.76 ? 'end' : 'middle');
+    }
+    for (let k = 0; k < lines.length; k++) {
+      const l = lines[k], A = L.pos[Number(l.dataset.a)], B = L.pos[Number(l.dataset.b)];
+      l.setAttribute('x1', A.x); l.setAttribute('y1', A.y);
+      l.setAttribute('x2', B.x); l.setAttribute('y2', B.y);
+    }
+  }
+  placeStatic(layout);
 
   let held = -1;
   const draw = lines.map(() => null);   // per tie: how far the light has run
@@ -465,14 +560,54 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
     g.addEventListener('mouseenter', () => show(i));
     g.addEventListener('focus', () => show(i));
     g.addEventListener('click', () => show(i));
-    g.addEventListener('touchstart', () => show(i), { passive: true });
   });
   svg.addEventListener('mouseleave', clear);
+
+  /* Touch. Tapping a row opens it where the thumb already is and lights
+     that part of the drawing above, so the picture still answers even
+     though nothing is being hovered. Tapping a cell in the drawing works
+     the other way round: it opens the matching row and brings it to you. */
+  const list = document.getElementById('facet-list');
+  if (list) {
+    const rows = Array.from(list.children);
+    let openRow = -1;
+
+    function openAt(i, scroll) {
+      rows.forEach((li, k) => {
+        const on = k === i;
+        li.classList.toggle('open', on);
+        li.querySelector('button').setAttribute('aria-expanded', String(on));
+        li.querySelector('.fl-body').hidden = !on;
+      });
+      openRow = i;
+      if (i >= 0) {
+        show(i);
+        if (scroll) rows[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        clear();
+      }
+    }
+
+    rows.forEach((li, i) => {
+      li.querySelector('button').addEventListener('click', () => openAt(openRow === i ? -1 : i, false));
+    });
+
+    groups.forEach((g, i) => {
+      g.addEventListener('touchstart', function () {
+        if (narrow.matches) openAt(i, true);
+        else show(i);
+      }, { passive: true });
+    });
+  }
 
   /* Tactility. Every part is sprung to where it sits and damped past
      critical, so it moves when you reach for it and then stops dead.
      What you are holding draws its own relations in a little closer. */
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const restatic = e => { layout = e.matches ? tallLayout : wideLayout; labelOff = layout === tallLayout ? 26 : 16; placeStatic(layout); };
+    narrow.addEventListener ? narrow.addEventListener('change', restatic) : narrow.addListener(restatic);
+    return;
+  }
 
   const HOME = 40, DRAG = 26, PULL = 300;
   const clamp = v => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -495,7 +630,23 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   }
   const travellers = []; travellers.spare = [];
   let spark = 1.2;
-  const nodes = facets.map(f => ({ x0: f.x, y0: f.y, x: f.x, y: f.y, vx: 0, vy: 0 }));
+  const nodes = layout.pos.map(q => ({ x0: q.x, y0: q.y, x: q.x, y: q.y, vx: 0, vy: 0 }));
+
+  // Turning the phone, or dragging a desktop window narrow, re-homes every
+  // facet and lets the springs carry it to the new arrangement.
+  function adopt(L) {
+    layout = L;
+    labelOff = L === tallLayout ? 26 : 16;
+    svg.setAttribute('viewBox', '0 0 ' + L.w + ' ' + L.h);
+    for (let i = 0; i < nodes.length; i++) {
+      nodes[i].x0 = L.pos[i].x;
+      nodes[i].y0 = L.pos[i].y;
+      names[i].setAttribute('text-anchor',
+        L.pos[i].x < L.w * 0.24 ? 'start' : L.pos[i].x > L.w * 0.76 ? 'end' : 'middle');
+    }
+  }
+  const onWidth = e => adopt(e.matches ? tallLayout : wideLayout);
+  narrow.addEventListener ? narrow.addEventListener('change', onWidth) : narrow.addListener(onWidth);
   let clock = 0, last = performance.now(), onScreen = true;
 
   if (window.IntersectionObserver) {
@@ -517,8 +668,9 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
       else if (cyc < 0.46) fill = 1;
       else if (cyc < 0.86) fill = 0.5 + 0.5 * Math.cos(Math.PI * ((cyc - 0.46) / 0.4));
       else fill = 0;
-      field.setAttribute('transform',
-        'translate(550,450) scale(' + (1 + fill * 0.012).toFixed(5) + ') translate(-550,-450)');
+      const cx = layout.w / 2, cy = layout.h / 2;
+      field.setAttribute('transform', 'translate(' + cx + ',' + cy + ') scale(' +
+        (1 + fill * 0.012).toFixed(5) + ') translate(' + (-cx) + ',' + (-cy) + ')');
 
       for (let i = 0; i < nodes.length; i++) {
         const n = nodes[i];
@@ -540,7 +692,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
         pips[i].setAttribute('cx', x); pips[i].setAttribute('cy', y);
         hits[i].setAttribute('cx', x); hits[i].setAttribute('cy', y);
         names[i].setAttribute('x', x);
-        names[i].setAttribute('y', (n.y - 16).toFixed(2));
+        names[i].setAttribute('y', (n.y - labelOff).toFixed(2));
       }
 
       // The whole field draws itself in once, ties first, names after.
@@ -849,6 +1001,118 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
     fill: var(--color-accent);
   }
 
+  /* ── The touch list ────────────────────────────────── */
+  .facet-list {
+    display: none;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-xl);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .facet-list li {
+    margin: 0;
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .facet-list button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    /* Comfortably past the minimum a thumb needs. */
+    min-height: 52px;
+    padding: 0.75rem 0;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-family: var(--font-serif);
+    font-size: 1.28rem;
+    color: var(--color-text-secondary);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .facet-list li.open button {
+    color: var(--color-accent);
+  }
+
+  .fl-mark {
+    position: relative;
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+  }
+
+  .fl-mark::before,
+  .fl-mark::after {
+    content: '';
+    position: absolute;
+    background: var(--color-text-muted);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease;
+  }
+
+  .fl-mark::before {
+    top: 6px;
+    left: 0;
+    width: 13px;
+    height: 1px;
+  }
+
+  .fl-mark::after {
+    top: 0;
+    left: 6px;
+    width: 1px;
+    height: 13px;
+  }
+
+  /* The cross becomes a rule when the row is open. */
+  .facet-list li.open .fl-mark::after {
+    transform: scaleY(0);
+  }
+
+  .facet-list li.open .fl-mark::before {
+    background: var(--color-accent);
+  }
+
+  .fl-body {
+    overflow: hidden;
+    padding-bottom: var(--space-md);
+    animation: unfold 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes unfold {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .fl-line {
+    font-family: var(--font-serif);
+    font-size: 1.14rem;
+    line-height: 1.65;
+    color: var(--color-text);
+    margin: 0 0 var(--space-sm);
+  }
+
+  .fl-ev {
+    margin: 0;
+  }
+
+  .fl-ev a {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .fl-ev .sep {
+    color: var(--color-text-muted);
+    opacity: 0.5;
+    margin: 0 0.5rem;
+  }
+
   /* ── Readout ───────────────────────────────────────── */
   .readout {
     min-height: 12.5rem;
@@ -1002,8 +1266,31 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
       font-size: 2.1rem;
     }
 
-    .facet .name {
-      font-size: 27px;
+    /* No pointer, so the drawing keeps its shape and loses its labels.
+       The list below carries the words and takes the taps. */
+    .facet .name,
+    .hover-label {
+      display: none;
+    }
+
+    .facet .pip {
+      r: 5;
+    }
+
+    #self-svg .facet.on .pip {
+      r: 9;
+    }
+
+    .facet-list {
+      display: block;
+    }
+
+    .readout {
+      display: none;
+    }
+
+    .field {
+      margin-bottom: var(--space-md);
     }
 
     .readout {
