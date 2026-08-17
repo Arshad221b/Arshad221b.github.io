@@ -3,6 +3,8 @@ import Layout from '../layouts/Layout.astro';
 
 const title = "Technical Blogs — Arshad Kazi";
 
+// `contents` mirrors the section headings inside each post, so the index says
+// what a post actually covers instead of making you open it to find out.
 const posts = ([
   {
     title: "Probability Mass Functions, Expectation, and Variance",
@@ -10,6 +12,15 @@ const posts = ([
     description: "Relearning probability from a machine learning perspective. What PMFs are, how to compute expectation and variance from first principles, and why any of this matters for ML.",
     tags: ["probability", "statistics", "PMF", "machine learning", "fundamentals"],
     slug: "probability-mass-function",
+    minutes: 5,
+    contents: [
+      "What is Probability?",
+      "Probability Distribution",
+      "Probability Mass Function",
+      "Expected Value (Expectation)",
+      "Variance",
+      "Why does any of this matter for ML?",
+    ],
   },
   {
     title: "ROC Curves and AUC: Picking the Right Threshold for Your Model",
@@ -17,6 +28,14 @@ const posts = ([
     description: "Why accuracy fails on skewed data, how confusion matrices work, and how to use ROC curves and AUC to evaluate and compare probabilistic classifiers.",
     tags: ["machine learning", "evaluation", "ROC", "AUC", "classification"],
     slug: "roc-curve-auc",
+    minutes: 5,
+    contents: [
+      "Why Accuracy Is Not Enough",
+      "True Positive, True Negative, False Positive, False Negative",
+      "Confusion Matrix",
+      "ROC Curve",
+      "AUC (Area Under the Curve)",
+    ],
   },
   {
     title: "Building a Sign Language Recognition System with CNNs and OpenCV",
@@ -25,6 +44,12 @@ const posts = ([
     tags: ["computer vision", "CNN", "sign language", "OpenCV", "keras", "deep learning"],
     slug: "sign-language-recognition-using-cnn-and-opencv",
     href: "/sign-language-recognition-using-cnn-and-opencv",
+    minutes: 5,
+    contents: [
+      "Dataset",
+      "Build and Train the Model",
+      "OpenCV",
+    ],
   },
   {
     title: "Vector Database Management Systems: Architecture and Internals",
@@ -32,6 +57,14 @@ const posts = ([
     description: "A technical overview of how Vector Database Management Systems work, covering vectorization, indexing, hardware tradeoffs, and the core challenges in building systems that search by meaning rather than exact match.",
     tags: ["vector databases", "VDBMS", "embeddings", "similarity search", "machine learning systems"],
     slug: "vector-databases-vdbms",
+    minutes: 6,
+    contents: [
+      "What is a Vector Database?",
+      "Why Not a Regular Database?",
+      "General Architecture of a VDBMS",
+      "Use Cases",
+      "Challenges and Limitations",
+    ],
   },
   {
     title: "The Visual Cortex as a Computer Vision Architecture: Dorsal and Ventral Streams",
@@ -39,6 +72,13 @@ const posts = ([
     description: "How the brain's visual cortex uses two parallel streams, feedback loops, and relative perception to process vision. Everything rewritten for engineers who build vision systems.",
     tags: ["computer vision", "neuroscience", "visual cortex", "CNN", "architecture"],
     slug: "cnns-design-flaw-evolution",
+    minutes: 15,
+    contents: [
+      "The Split You Did Not Know Was in Your Design",
+      "The Dorsal Stream: Real-Time Spatial Inference",
+      "The Ventral Stream: Hierarchical Object Recognition",
+      "Implications for Computer Vision Engineering",
+    ],
   },
   {
     title: "Temporal and Spatial Attention for 3D Pose Estimation",
@@ -46,10 +86,19 @@ const posts = ([
     description: "How temporal and spatial attention mechanisms enable accurate 2D-to-3D human pose estimation, with a deep dive into DSTformer.",
     tags: ["pose estimation", "attention", "3D vision", "transformers"],
     slug: "temporal-spatial-attention-3d-pose",
+    minutes: 6,
+    contents: [
+      "The Ill-Posed Problem: Lifting 2D to 3D",
+      "Temporal Attention: Understanding Motion Over Time",
+      "Spatial Attention: Maintaining Anatomical Consistency",
+      "Fusion of Temporal and Spatial Streams",
+    ],
   },
 ]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
 const allTags = [...new Set(posts.flatMap(p => p.tags))].sort();
+const totalMinutes = posts.reduce((n, p) => n + p.minutes, 0);
+const totalSections = posts.reduce((n, p) => n + p.contents.length, 0);
 
 // Group posts by year so the index is scannable.
 const years = [...new Set(posts.map(p => p.date.slice(0, 4)))];
@@ -69,7 +118,7 @@ function shortDate(dateStr: string): string {
     <div class="folio-rule">
       <span class="folio-mark">Technical Blogs</span>
       <span class="folio-line"></span>
-      <span class="folio-mark">{posts.length} essays</span>
+      <span class="folio-mark">{posts.length} essays, {totalMinutes} minutes</span>
     </div>
 
     <div class="blog-intro">
@@ -79,20 +128,32 @@ function shortDate(dateStr: string): string {
       </p>
     </div>
 
-    <div class="filters">
-      <div class="search-bar">
-        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="search-input" placeholder="Search posts" autocomplete="off" />
+    <dl class="figures">
+      <div>
+        <dt>Essays</dt>
+        <dd>{posts.length}</dd>
       </div>
+      <div>
+        <dt>Sections</dt>
+        <dd>{totalSections}</dd>
+      </div>
+      <div>
+        <dt>Minutes of reading</dt>
+        <dd>{totalMinutes}</dd>
+      </div>
+      <div>
+        <dt>Topics</dt>
+        <dd>{allTags.length}</dd>
+      </div>
+    </dl>
 
-      <details class="topics">
-        <summary>Browse by topic<span class="topic-count">{allTags.length}</span></summary>
-        <div class="tag-filters" id="tag-filters">
-          {allTags.map(tag => (
-            <button class="tag-chip" data-tag={tag}>{tag}</button>
-          ))}
-        </div>
-      </details>
+    <div class="filters">
+      <p class="filter-label">Filter by topic</p>
+      <div class="tag-filters" id="tag-filters">
+        {allTags.map(tag => (
+          <button class="tag-chip" data-tag={tag}>{tag}</button>
+        ))}
+      </div>
     </div>
 
     <p class="results-count" id="results-count"></p>
@@ -105,9 +166,23 @@ function shortDate(dateStr: string): string {
             {group.items.map(post => (
               <li class="entry" data-title={post.title.toLowerCase()} data-description={post.description.toLowerCase()} data-tags={post.tags.join(',')}>
                 <a href={post.href || `/blog/${post.slug}`}>
-                  <time datetime={post.date}>{shortDate(post.date)}</time>
+                  <div class="entry-head">
+                    <time datetime={post.date}>{shortDate(post.date)}</time>
+                    <span class="entry-mins">{post.minutes} min read</span>
+                  </div>
                   <h3>{post.title}</h3>
                   <p>{post.description}</p>
+                  <ol class="contents">
+                    {post.contents.map((section, i) => (
+                      <li>
+                        <span class="sec-num">{String(i + 1).padStart(2, '0')}</span>
+                        <span class="sec-text">{section}</span>
+                      </li>
+                    ))}
+                  </ol>
+                  <ul class="entry-tags">
+                    {post.tags.map(tag => <li>{tag}</li>)}
+                  </ul>
                 </a>
               </li>
             ))}
@@ -172,99 +247,60 @@ function shortDate(dateStr: string): string {
     margin: 0;
   }
 
+  /* ── Figures band ──────────────────────────────────── */
+  .figures {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-md) 0;
+    margin: 0 0 var(--space-xl);
+  }
+
+  .figures div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.25rem;
+  }
+
+  .figures dt {
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .figures dd {
+    font-family: var(--font-serif);
+    font-size: 1.9rem;
+    line-height: 1;
+    color: var(--color-text);
+    margin: 0;
+  }
+
   /* ── Filters ───────────────────────────────────────── */
   .filters {
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
+    gap: var(--space-xs);
     margin-bottom: var(--space-xl);
   }
 
-  .search-bar {
-    position: relative;
-    max-width: 340px;
-  }
-
-  .search-icon {
-    position: absolute;
-    left: 11px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--color-text-muted);
-    pointer-events: none;
-  }
-
-  #search-input {
-    width: 100%;
-    padding: 0.5rem 0.75rem 0.5rem 2.1rem;
+  .filter-label {
     font-family: var(--font-mono);
-    font-size: 0.76rem;
-    color: var(--color-text);
-    background: transparent;
-    border: 1px solid var(--color-border);
-    border-radius: 2px;
-    outline: none;
-    transition: border-color 0.2s ease;
-  }
-
-  #search-input:focus {
-    border-color: var(--color-accent);
-  }
-
-  #search-input::placeholder {
+    font-size: 0.56rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--color-text-muted);
-  }
-
-  /* Topic list stays folded away until asked for. */
-  .topics summary {
-    font-family: var(--font-serif);
-    font-variant: small-caps;
-    font-style: normal;
-    font-size: 0.92rem;
-    letter-spacing: 0.09em;
-    text-transform: none;
-
-    color: var(--color-text-muted);
-    cursor: pointer;
-    list-style: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.2rem 0;
-    user-select: none;
-  }
-
-  .topics summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .topics summary::before {
-    content: '+';
-    font-size: 0.85rem;
-    line-height: 1;
-    color: var(--color-text-muted);
-  }
-
-  .topics[open] summary::before {
-    content: '−';
-  }
-
-  .topics summary:hover {
-    color: var(--color-accent);
-  }
-
-  .topic-count {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    color: var(--color-text-muted);
-    opacity: 0.7;
+    margin: 0;
   }
 
   .tag-filters {
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
-    padding-top: var(--space-sm);
   }
 
   .tag-chip {
@@ -340,12 +376,23 @@ function shortDate(dateStr: string): string {
     text-decoration: none;
   }
 
-  .entry time {
-    display: block;
+  .entry-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .entry time,
+  .entry-mins {
     font-family: var(--font-mono);
     font-size: 0.7rem;
     color: var(--color-text-muted);
-    margin-bottom: 0.35rem;
+  }
+
+  .entry-mins {
+    font-size: 0.6rem;
+    opacity: 0.7;
   }
 
   /* The title is the one thing that should catch the eye. */
@@ -371,10 +418,61 @@ function shortDate(dateStr: string): string {
     color: var(--color-text-muted);
     margin: 0;
     max-width: 62ch;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  }
+
+  /* The section list is what tells you a post has substance. */
+  .contents {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-sm) 0 0;
+    max-width: 62ch;
+  }
+
+  .contents li {
+    display: flex;
+    gap: 0.7rem;
+    align-items: baseline;
+    padding: 0.2rem 0;
+    margin: 0;
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .contents li:first-child {
+    border-top: none;
+  }
+
+  .sec-num {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--color-accent);
+    opacity: 0.75;
+    flex-shrink: 0;
+  }
+
+  .sec-text {
+    font-family: var(--font-sans);
+    font-size: 0.86rem;
+    line-height: 1.45;
+    color: var(--color-text-secondary);
+  }
+
+  .entry-tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 0;
+    margin: var(--space-sm) 0 0;
+  }
+
+  .entry-tags li {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    padding: 0.12rem 0.4rem;
+    margin: 0;
   }
 
   .results-count {
@@ -410,6 +508,15 @@ function shortDate(dateStr: string): string {
     .entry h3 {
       font-size: 1.2rem;
     }
+
+    .figures {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-sm) var(--space-md);
+    }
+
+    .figures dd {
+      font-size: 1.5rem;
+    }
   }
 </style>
 
@@ -422,7 +529,6 @@ function shortDate(dateStr: string): string {
 
 <script is:inline>
 (function() {
-  const input = document.getElementById('search-input');
   const index = document.getElementById('post-index');
   const entries = index.querySelectorAll('.entry');
   const groups = index.querySelectorAll('.year-group');
@@ -432,16 +538,10 @@ function shortDate(dateStr: string): string {
   let activeTag = null;
 
   function filter() {
-    const q = input.value.toLowerCase().trim();
     let visible = 0;
 
     entries.forEach(entry => {
-      const matchesText = !q
-        || entry.dataset.title.includes(q)
-        || entry.dataset.description.includes(q)
-        || entry.dataset.tags.includes(q);
-      const matchesTag = !activeTag || entry.dataset.tags.split(',').includes(activeTag);
-      const show = matchesText && matchesTag;
+      const show = !activeTag || entry.dataset.tags.split(',').includes(activeTag);
       entry.classList.toggle('hidden', !show);
       if (show) visible++;
     });
@@ -452,13 +552,11 @@ function shortDate(dateStr: string): string {
       group.classList.toggle('hidden', !anyVisible);
     });
 
-    counter.textContent = (q || activeTag)
+    counter.textContent = activeTag
       ? visible + ' of ' + entries.length + ' posts'
       : '';
     empty.style.display = visible === 0 ? 'block' : 'none';
   }
-
-  input.addEventListener('input', filter);
 
   chips.forEach(chip => {
     chip.addEventListener('click', () => {
