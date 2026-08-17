@@ -341,10 +341,14 @@ for (let pass = 0; pass < 700; pass++) {
 
 const tallLayout = {
   w: TALL_W, h: TALL_H,
+  // Room on every side for a name to sit beside its cell without leaving
+  // the box, so nothing is clipped and nothing pushes the page sideways.
+  vb: (-96) + ' ' + (-30) + ' ' + (TALL_W + 192) + ' ' + (TALL_H + 60),
   pos: tall.map(t => ({ x: Math.round(t.x), y: Math.round(t.y) })),
 };
 const wideLayout = {
   w: 1100, h: 900,
+  vb: '0 0 1100 900',
   pos: facets.map(f => ({ x: f.x, y: f.y })),
 };
 
@@ -417,7 +421,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
     <!-- Whatever you are pointing at explains itself here. -->
     <section class="readout" id="readout" aria-live="polite">
-      <p class="ro-empty" id="ro-empty">{facets.length} of them. Pick one.</p>
+      <p class="ro-empty" id="ro-empty"></p>
       <div class="ro-body" id="ro-body" hidden>
         <p class="ro-label" id="ro-label"></p>
         <p class="ro-line" id="ro-line"></p>
@@ -471,7 +475,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   // Put every element where the chosen arrangement says, viewBox included.
   function placeStatic(L) {
-    svg.setAttribute('viewBox', '0 0 ' + L.w + ' ' + L.h);
+    svg.setAttribute('viewBox', L.vb);
     // ~44px of reach once the portrait canvas is scaled to a phone.
     const reach = L === tallLayout ? 46 : 34;
     hits.forEach(h => h.setAttribute('r', reach));
@@ -587,6 +591,14 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   }
   const travellers = []; travellers.spare = [];
   let spark = 1.2;
+
+  // The demonstration picks whichever facet is tied to the most others,
+  // because that is the one that shows the most when it lights up.
+  let demoDone = false, demoState = 0, demoClock = 0;
+  let demoPick = 0;
+  for (let i = 1; i < neighbours.length; i++) {
+    if (neighbours[i].length > neighbours[demoPick].length) demoPick = i;
+  }
   const nodes = layout.pos.map(q => ({ x0: q.x, y0: q.y, x: q.x, y: q.y, vx: 0, vy: 0 }));
 
   // Turning the phone, or dragging a desktop window narrow, re-homes every
@@ -595,7 +607,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
     layout = L;
     labelOff = L === tallLayout ? 30 : 16;
     hits.forEach(h => h.setAttribute('r', L === tallLayout ? 46 : 34));
-    svg.setAttribute('viewBox', '0 0 ' + L.w + ' ' + L.h);
+    svg.setAttribute('viewBox', L.vb);
     for (let i = 0; i < nodes.length; i++) {
       nodes[i].x0 = L.pos[i].x;
       nodes[i].y0 = L.pos[i].y;
@@ -689,6 +701,24 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
         }
       } else if (groups[0].style.opacity !== '') {
         groups.forEach(g => { g.style.opacity = ''; });
+      }
+
+      /* Nobody knows a drawing is interactive by looking at it. So once,
+         a moment after it finishes drawing itself, the page reaches out and
+         touches its own most connected part, holds it long enough to read,
+         and lets go. Any real interaction cancels it. */
+      if (!demoDone && intro >= 1) {
+        if (held >= 0 && demoState === 0) { demoDone = true; }
+        else {
+          demoClock += dt;
+          if (demoState === 0 && demoClock > 0.9) { demoState = 1; show(demoPick); }
+          else if (demoState === 1 && demoClock > 3.4) {
+            demoState = 2; demoDone = true;
+            // The words stay where the demonstration left them. Nothing on
+            // this page tells you what to do; it just shows you once.
+            clear();
+          }
+        }
       }
 
       // A quiet signal crossing one connection now and then, so the thing
@@ -1116,7 +1146,9 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
        you tapped and the ones it is tied to say their names, which is at
        most six words on screen at a time and all of them legible. */
     .facet .name {
-      font-size: 34px;
+      /* Sized against the padded portrait box, so the rendered text lands
+         around 13px on a 320 wide phone and 17px on a large one. */
+      font-size: 44px;
       opacity: 0;
       pointer-events: none;
     }
