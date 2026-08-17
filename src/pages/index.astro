@@ -23,7 +23,7 @@ const facets = [
   },
   {
     id: "cv", label: "computer vision", x: 300, y: 196,
-    line: "Structure, geometry, and how a machine gets from flat pixels to a world with depth in it. 3D reconstruction, pose, representation. It is the closest thing I have to a discipline, and it pays for the rest of this.",
+    line: "How a machine gets from flat pixels to a world with depth in it. Reconstruction, pose, representation. The closest thing I have to a discipline, and it pays for the rest of this.",
     ev: [{ t: "the technical blogs", h: "/blog" }, { t: "Attention for 3D pose", h: "/blog/temporal-spatial-attention-3d-pose" }, { t: "SLAM from scratch", h: "/notebooks/slam" }],
   },
   {
@@ -58,7 +58,7 @@ const facets = [
   },
   {
     id: "smalltown", label: "from a small town", x: 300, y: 382,
-    line: "Less than a tenth of India lives in the metros. I came from the rest of it. I left, the way you are supposed to, and it takes far longer to finish leaving than anybody tells you.",
+    line: "Less than a tenth of India lives in the metros. I came from the rest of it, and it takes far longer to finish leaving than anybody tells you.",
     ev: [{ t: "Before relocating", h: "/thoughts/why-you-should-think-really-hard-before-relocating-for-studyjob" }, { t: "Choosing a college", h: "/thoughts/heres-how-to-choose-a-good-college-after-12th-jeeneet" }],
   },
   {
@@ -88,7 +88,7 @@ const facets = [
   },
   {
     id: "inlove", label: "in love, often", x: 520, y: 670,
-    line: "You can love several people at once without meaning to, and without any of it cancelling out. Writing it down is the only way I have found to survive knowing that.",
+    line: "You can love several people at once without meaning to, and without any of it cancelling out. Writing it down is how I survive knowing that.",
     ev: [{ t: "Women I Love(d)", h: "/thoughts/women-i-loved" }, { t: "Loving multiple people", h: "/thoughts/you-actually-love-multiple-people-without-even-realising-it" }],
   },
   {
@@ -113,7 +113,7 @@ const facets = [
   },
   {
     id: "selftaught", label: "self-taught", x: 690, y: 200,
-    line: "Leonardo had no schooling past fourteen and taught himself anatomy and optics from whatever books and mentors he could get hold of. It is the only method that has ever worked on me.",
+    line: "Leonardo had no schooling past fourteen and taught himself anatomy and optics from whatever he could get hold of. It is the only method that has ever worked on me.",
     ev: [{ t: "Becoming a self-learning ninja", h: "/thoughts/becoming-self-learning-ninja" }, { t: "the notebooks", h: "/notebooks" }],
   },
   {
@@ -415,6 +415,9 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
               </g>
             ))}
           </g>
+
+          <!-- The glass. Only visible while a finger is on the plate. -->
+          <circle class="lens" id="lens" cx="0" cy="0" r="150" opacity="0" aria-hidden="true" />
         </g>
       </svg>
     </figure>
@@ -550,14 +553,72 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   /* Touch. The drawing stays the interface: tap a cell and it names itself
      along with whatever it is tied to, and the words come up from the
      bottom edge rather than sitting a screenful away. */
-  /* Touch. No overlay and nothing to dismiss: the drawing names what you
-     touched, and the words appear directly underneath it in the page, where
-     they were always going to be. Touching another cell just replaces them. */
+  /* Touch. Not a map, not a list, not a card.
+
+     Thirty two names will never fit legibly on a phone at once, and a field
+     of anonymous dots gives you no reason to tap any particular one. So the
+     names are there the whole time, under the surface, and you bring them up
+     by dragging a glass across the plate the way you would read a crowded
+     sheet with a magnifier. Whatever falls under the glass says its name.
+     Whatever is nearest its centre lights up with its threads and puts its
+     words below. Nothing is hidden behind a control, and nothing has to be
+     discovered, because the page performs the gesture for you once. */
+  const lens = document.getElementById('lens');
+  const LENS_R = 250;          // how far the glass reaches, in drawing units
+  let lensOn = false, lensX = 0, lensY = 0;
+
+  function toDrawing(clientX, clientY) {
+    const box = svg.getBoundingClientRect();
+    const vb = svg.viewBox.baseVal;
+    return {
+      x: vb.x + ((clientX - box.left) / box.width) * vb.width,
+      y: vb.y + ((clientY - box.top) / box.height) * vb.height
+    };
+  }
+
+  function moveLens(x, y) {
+    lensOn = true;
+    lensX = x; lensY = y;
+    lens.setAttribute('cx', x.toFixed(1));
+    lens.setAttribute('cy', y.toFixed(1));
+    lens.setAttribute('opacity', '0.5');
+
+    // Whatever sits closest to the centre of the glass is the one being read.
+    let best = -1, bestD = Infinity;
+    for (let i = 0; i < nodes.length; i++) {
+      const d = Math.hypot(nodes[i].x - x, nodes[i].y - y);
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    if (best >= 0 && bestD < LENS_R && best !== held) show(best);
+  }
+
+  function liftLens() {
+    lensOn = false;
+    lens.setAttribute('opacity', '0');
+    for (let i = 0; i < names.length; i++) names[i].style.opacity = '';
+  }
+
+  svg.addEventListener('touchstart', function (e) {
+    if (!narrow.matches) return;
+    const t = e.touches[0];
+    const p = toDrawing(t.clientX, t.clientY);
+    moveLens(p.x, p.y);
+  }, { passive: true });
+
+  svg.addEventListener('touchmove', function (e) {
+    if (!narrow.matches) return;
+    const t = e.touches[0];
+    const p = toDrawing(t.clientX, t.clientY);
+    moveLens(p.x, p.y);
+    e.preventDefault();          // the glass moves, the page stays put
+  }, { passive: false });
+
+  svg.addEventListener('touchend', liftLens, { passive: true });
+  svg.addEventListener('touchcancel', liftLens, { passive: true });
+
+  // Pointer taps still work, for anyone who just prods at it.
   groups.forEach((g, i) => {
-    g.addEventListener('touchstart', function (e) {
-      show(i);
-      if (narrow.matches) e.stopPropagation();
-    }, { passive: true });
+    g.addEventListener('touchstart', function () { show(i); }, { passive: true });
   });
 
 
@@ -594,7 +655,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   // The demonstration picks whichever facet is tied to the most others,
   // because that is the one that shows the most when it lights up.
-  let demoDone = false, demoState = 0, demoClock = 0;
+  let demoDone = false, demoState = 0, demoClock = 0, demoDrag = false;
   let demoPick = 0;
   for (let i = 1; i < neighbours.length; i++) {
     if (neighbours[i].length > neighbours[demoPick].length) demoPick = i;
@@ -693,6 +754,17 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
         }
       }
 
+      /* Under the glass, a name is as visible as it is close to the centre.
+         This is the whole interface on a phone, so it runs before the
+         intro fade below and wins while a finger is down. */
+      if (lensOn) {
+        for (let i = 0; i < names.length; i++) {
+          const d = Math.hypot(nodes[i].x - lensX, nodes[i].y - lensY);
+          const near = clamp(1 - d / LENS_R);
+          names[i].style.opacity = (near * near).toFixed(3);
+        }
+      }
+
       // Names fade up after the lines that reach them.
       if (intro < 1) {
         for (let i = 0; i < groups.length; i++) {
@@ -707,16 +779,33 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
          a moment after it finishes drawing itself, the page reaches out and
          touches its own most connected part, holds it long enough to read,
          and lets go. Any real interaction cancels it. */
+      /* The page shows you the gesture rather than describing it. On a
+         phone it drags the glass across the plate itself, once, and names
+         surface under it exactly as they will under your finger. On a
+         pointer it simply reaches out and touches its most connected part.
+         Any real interaction cancels it immediately. */
       if (!demoDone && intro >= 1) {
-        if (held >= 0 && demoState === 0) { demoDone = true; }
+        if (held >= 0 && demoState === 0 && !demoDrag) { demoDone = true; }
         else {
           demoClock += dt;
-          if (demoState === 0 && demoClock > 0.9) { demoState = 1; show(demoPick); }
-          else if (demoState === 1 && demoClock > 3.4) {
-            demoState = 2; demoDone = true;
-            // The words stay where the demonstration left them. Nothing on
-            // this page tells you what to do; it just shows you once.
-            clear();
+          if (narrow.matches) {
+            if (demoState === 0 && demoClock > 0.7) { demoState = 1; demoDrag = true; }
+            else if (demoState === 1) {
+              // A slow sweep from the top left down through the middle.
+              const p = clamp((demoClock - 0.7) / 2.6);
+              const e = ease(p);
+              const vb = svg.viewBox.baseVal;
+              const x = vb.x + vb.width * (0.24 + 0.52 * e);
+              const y = vb.y + vb.height * (0.18 + 0.5 * Math.sin(e * Math.PI * 0.85));
+              moveLens(x, y);
+              if (p >= 1) { demoState = 2; demoClock = 0; }
+            } else if (demoState === 2 && demoClock > 0.5) {
+              demoState = 3; demoDone = true; demoDrag = false;
+              liftLens();
+            }
+          } else {
+            if (demoState === 0 && demoClock > 0.9) { demoState = 1; show(demoPick); }
+            else if (demoState === 1 && demoClock > 3.4) { demoState = 3; demoDone = true; clear(); }
           }
         }
       }
@@ -903,7 +992,10 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   .field svg {
     display: block;
     width: 100%;
-    height: auto;
+    /* Sized against the viewport so the plate and the words it produces
+       always share one screen. preserveAspectRatio letterboxes rather than
+       distorting, so the arrangement is never squashed. */
+    height: min(58vh, 620px);
     overflow: visible;
   }
 
@@ -925,6 +1017,23 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   .facet {
     cursor: pointer;
     outline: none;
+  }
+
+  .lens {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 1.2;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  /* The glass. Only ever visible while a finger is on the plate. */
+  .lens {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 1.1;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
   }
 
   .facet .hit {
@@ -991,7 +1100,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   /* ── Readout ───────────────────────────────────────── */
   .readout {
-    min-height: 12.5rem;
+    min-height: 11rem;
     padding-top: var(--space-md);
     border-top: 1px solid var(--color-border);
     margin-bottom: var(--space-2xl);
@@ -1036,8 +1145,10 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   .ro-line {
     font-family: var(--font-serif);
-    font-size: 1.42rem;
-    line-height: 1.6;
+    /* Eases down on short screens so the longest facet still fits beside
+       the drawing rather than pushing it off the bottom. */
+    font-size: clamp(1.02rem, 2.4vh, 1.32rem);
+    line-height: 1.55;
     color: var(--color-text);
     max-width: 54ch;
     margin: 0 0 var(--space-md);
@@ -1049,7 +1160,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   .ro-ev :global(a) {
     font-family: var(--font-mono);
-    font-size: 0.66rem;
+    font-size: 0.64rem;
     letter-spacing: 0.04em;
     color: var(--color-text-muted);
     text-decoration: none;
@@ -1185,22 +1296,48 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
       margin-bottom: 0;
     }
 
+    .field svg {
+      height: min(44vh, 430px);
+    }
+
     .readout {
-      min-height: 13rem;
+      min-height: 10.5rem;
       border-top: none;
       padding-top: var(--space-sm);
       scroll-margin-top: 70px;
     }
 
     .ro-line {
-      font-size: 1.24rem;
-      line-height: 1.55;
+      font-size: clamp(0.98rem, 2.2vh, 1.16rem);
+      line-height: 1.5;
     }
 
     .ro-ev :global(a) {
       display: inline-block;
-      padding: 0.3rem 0;
-      font-size: 0.7rem;
+      padding: 0.14rem 0;
+      font-size: 0.64rem;
+      line-height: 1.35;
+    }
+  }
+
+  /* Short viewports last, so it overrides the width based sizes above.
+     When there is not enough screen, the plate is what gives way. */
+  @media (max-height: 720px) {
+    .field svg {
+      height: min(36vh, 330px);
+    }
+
+    .readout {
+      min-height: 7rem;
+    }
+
+    .ro-line {
+      font-size: clamp(0.94rem, 2vh, 1.06rem);
+      line-height: 1.45;
+    }
+
+    .ro-label {
+      margin-bottom: 0.35rem;
     }
   }
 </style>
