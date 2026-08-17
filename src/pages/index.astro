@@ -300,10 +300,11 @@ const edges = ties.map(([a, b]) => ({
 }));
 
 /* A phone is not a small desktop, and it has no pointer to hover with.
-   On a narrow screen the drawing keeps its shape but drops its names, and
-   the list underneath becomes the thing you actually operate. So this
-   arrangement only has to keep the cells apart, not the words. */
-const TALL_W = 800, TALL_H = 1040;
+   On a narrow screen the drawing is still the interface, but it is operated
+   by tapping rather than pointing: cells are spaced for a thumb, names stay
+   out of the way until you touch something, and the words arrive from the
+   bottom of the screen where your hand already is. */
+const TALL_W = 800, TALL_H = 1360;
 const wideXs = facets.map(f => f.x), wideYs = facets.map(f => f.y);
 const minX = Math.min(...wideXs), minY = Math.min(...wideYs);
 const spanX = Math.max(...wideXs) - minX;
@@ -315,7 +316,7 @@ const tall = facets.map(f => ({
 }));
 tall.forEach(t => { t.x0 = t.x; t.y0 = t.y; });
 
-const MIN_GAP = 62;
+const MIN_GAP = 104;   // a thumb needs room, so cells sit further apart
 for (let pass = 0; pass < 700; pass++) {
   for (let i = 0; i < tall.length; i++) {
     for (let j = i + 1; j < tall.length; j++) {
@@ -414,29 +415,13 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
       </svg>
     </figure>
 
-    <!-- On a touch screen there is nothing to hover, so each facet opens
-         where your thumb already is. -->
-    <ul class="facet-list" id="facet-list">
-      {facets.map((f, i) => (
-        <li data-i={i}>
-          <button type="button" aria-expanded="false">
-            <span class="fl-name">{f.label}</span>
-            <span class="fl-mark" aria-hidden="true"></span>
-          </button>
-          <div class="fl-body" hidden>
-            <p class="fl-line">{f.line}</p>
-            <p class="fl-ev">
-              {f.ev.map((e, k) => (
-                <>
-                  {k > 0 && <span class="sep">·</span>}
-                  <a href={e.h} target={e.h.startsWith('http') ? '_blank' : undefined} rel="noopener">{e.t}</a>
-                </>
-              ))}
-            </p>
-          </div>
-        </li>
-      ))}
-    </ul>
+    <!-- On touch, what you tapped comes to your hand instead. -->
+    <div class="sheet" id="sheet" hidden>
+      <button class="sheet-close" id="sheet-close" type="button" aria-label="Close">&times;</button>
+      <p class="sheet-label" id="sheet-label"></p>
+      <p class="sheet-line" id="sheet-line"></p>
+      <p class="sheet-ev" id="sheet-ev"></p>
+    </div>
 
     <!-- Whatever you are pointing at explains itself here. -->
     <section class="readout" id="readout" aria-live="polite">
@@ -490,11 +475,14 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   const narrow = window.matchMedia('(max-width: 760px)');
   let layout = narrow.matches ? tallLayout : wideLayout;
-  let labelOff = layout === tallLayout ? 26 : 16;
+  let labelOff = layout === tallLayout ? 30 : 16;
 
   // Put every element where the chosen arrangement says, viewBox included.
   function placeStatic(L) {
     svg.setAttribute('viewBox', '0 0 ' + L.w + ' ' + L.h);
+    // ~44px of reach once the portrait canvas is scaled to a phone.
+    const reach = L === tallLayout ? 46 : 34;
+    hits.forEach(h => h.setAttribute('r', reach));
     for (let i = 0; i < groups.length; i++) {
       const q = L.pos[i];
       pips[i].setAttribute('cx', q.x); pips[i].setAttribute('cy', q.y);
@@ -561,44 +549,51 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
     g.addEventListener('focus', () => show(i));
     g.addEventListener('click', () => show(i));
   });
-  svg.addEventListener('mouseleave', clear);
+  svg.addEventListener('mouseleave', function () { if (!narrow.matches) clear(); });
 
-  /* Touch. Tapping a row opens it where the thumb already is and lights
-     that part of the drawing above, so the picture still answers even
-     though nothing is being hovered. Tapping a cell in the drawing works
-     the other way round: it opens the matching row and brings it to you. */
-  const list = document.getElementById('facet-list');
-  if (list) {
-    const rows = Array.from(list.children);
-    let openRow = -1;
+  /* Touch. The drawing stays the interface: tap a cell and it names itself
+     along with whatever it is tied to, and the words come up from the
+     bottom edge rather than sitting a screenful away. */
+  const sheet = document.getElementById('sheet');
+  const sheetLabel = document.getElementById('sheet-label');
+  const sheetLine = document.getElementById('sheet-line');
+  const sheetEv = document.getElementById('sheet-ev');
 
-    function openAt(i, scroll) {
-      rows.forEach((li, k) => {
-        const on = k === i;
-        li.classList.toggle('open', on);
-        li.querySelector('button').setAttribute('aria-expanded', String(on));
-        li.querySelector('.fl-body').hidden = !on;
-      });
-      openRow = i;
-      if (i >= 0) {
-        show(i);
-        if (scroll) rows[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else {
-        clear();
-      }
-    }
-
-    rows.forEach((li, i) => {
-      li.querySelector('button').addEventListener('click', () => openAt(openRow === i ? -1 : i, false));
-    });
-
-    groups.forEach((g, i) => {
-      g.addEventListener('touchstart', function () {
-        if (narrow.matches) openAt(i, true);
-        else show(i);
-      }, { passive: true });
-    });
+  function openSheet(i) {
+    const f = facets[i];
+    sheetLabel.textContent = f.label;
+    sheetLine.textContent = f.line;
+    sheetEv.innerHTML = f.ev.map(function (e) {
+      const ext = e.h.indexOf('http') === 0 ? ' target="_blank" rel="noopener"' : '';
+      return '<a href="' + e.h + '"' + ext + '>' + e.t + '</a>';
+    }).join('<span class="sep">·</span>');
+    sheet.hidden = false;
+    sheet.style.animation = 'none';
+    void sheet.offsetWidth;
+    sheet.style.animation = '';
   }
+
+  function closeSheet() {
+    sheet.hidden = true;
+    clear();
+  }
+
+  document.getElementById('sheet-close').addEventListener('click', closeSheet);
+
+  groups.forEach((g, i) => {
+    g.addEventListener('touchstart', function (e) {
+      if (!narrow.matches) { show(i); return; }
+      e.stopPropagation();
+      show(i);
+      openSheet(i);
+    }, { passive: true });
+  });
+
+  // Tapping the empty page around the drawing puts it away again.
+  svg.addEventListener('touchstart', function () {
+    if (narrow.matches && !sheet.hidden) closeSheet();
+  }, { passive: true });
+
 
   /* Tactility. Every part is sprung to where it sits and damped past
      critical, so it moves when you reach for it and then stops dead.
@@ -636,7 +631,8 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   // facet and lets the springs carry it to the new arrangement.
   function adopt(L) {
     layout = L;
-    labelOff = L === tallLayout ? 26 : 16;
+    labelOff = L === tallLayout ? 30 : 16;
+    hits.forEach(h => h.setAttribute('r', L === tallLayout ? 46 : 34));
     svg.setAttribute('viewBox', '0 0 ' + L.w + ' ' + L.h);
     for (let i = 0; i < nodes.length; i++) {
       nodes[i].x0 = L.pos[i].x;
@@ -1001,116 +997,81 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
     fill: var(--color-accent);
   }
 
-  /* ── The touch list ────────────────────────────────── */
-  .facet-list {
+  /* ── The sheet, on touch ──────────────────────────── */
+  .sheet {
     display: none;
-    list-style: none;
-    padding: 0;
-    margin: 0 0 var(--space-xl);
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    padding: var(--space-lg) var(--space-md) calc(var(--space-lg) + env(safe-area-inset-bottom));
+    background: var(--color-bg);
     border-top: 1px solid var(--color-border);
+    box-shadow: 0 -18px 40px -24px rgba(0, 0, 0, 0.45);
+    animation: sheet-up 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  .facet-list li {
-    margin: 0;
-    border-bottom: 1px solid var(--color-border-light);
+  @keyframes sheet-up {
+    from { transform: translateY(100%); }
+    to { transform: none; }
   }
 
-  .facet-list button {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-md);
-    /* Comfortably past the minimum a thumb needs. */
-    min-height: 52px;
-    padding: 0.75rem 0;
+  @media (prefers-reduced-motion: reduce) {
+    .sheet { animation: none; }
+  }
+
+  .sheet-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.6rem;
+    width: 44px;
+    height: 44px;
     background: none;
     border: none;
-    text-align: left;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--color-text-muted);
     cursor: pointer;
-    font-family: var(--font-serif);
-    font-size: 1.28rem;
-    color: var(--color-text-secondary);
     -webkit-tap-highlight-color: transparent;
   }
 
-  .facet-list li.open button {
+  .sheet-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--color-accent);
-  }
-
-  .fl-mark {
-    position: relative;
-    width: 13px;
-    height: 13px;
-    flex-shrink: 0;
-  }
-
-  .fl-mark::before,
-  .fl-mark::after {
-    content: '';
-    position: absolute;
-    background: var(--color-text-muted);
-    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease;
-  }
-
-  .fl-mark::before {
-    top: 6px;
-    left: 0;
-    width: 13px;
-    height: 1px;
-  }
-
-  .fl-mark::after {
-    top: 0;
-    left: 6px;
-    width: 1px;
-    height: 13px;
-  }
-
-  /* The cross becomes a rule when the row is open. */
-  .facet-list li.open .fl-mark::after {
-    transform: scaleY(0);
-  }
-
-  .facet-list li.open .fl-mark::before {
-    background: var(--color-accent);
-  }
-
-  .fl-body {
-    overflow: hidden;
-    padding-bottom: var(--space-md);
-    animation: unfold 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  @keyframes unfold {
-    from { opacity: 0; transform: translateY(-6px); }
-    to { opacity: 1; transform: none; }
-  }
-
-  .fl-line {
-    font-family: var(--font-serif);
-    font-size: 1.14rem;
-    line-height: 1.65;
-    color: var(--color-text);
     margin: 0 0 var(--space-sm);
   }
 
-  .fl-ev {
+  .sheet-line {
+    font-family: var(--font-serif);
+    font-size: 1.24rem;
+    line-height: 1.6;
+    color: var(--color-text);
+    margin: 0 0 var(--space-md);
+  }
+
+  .sheet-ev {
     margin: 0;
   }
 
-  .fl-ev a {
+  /* Injected at runtime, so it needs :global to escape Astro's scoping. */
+  .sheet-ev :global(a) {
+    display: inline-block;
     font-family: var(--font-mono);
-    font-size: 0.68rem;
+    font-size: 0.7rem;
     color: var(--color-text-muted);
     text-decoration: none;
     border-bottom: 1px solid var(--color-border);
+    padding: 0.35rem 0;
   }
 
-  .fl-ev .sep {
+  .sheet-ev :global(.sep) {
     color: var(--color-text-muted);
     opacity: 0.5;
-    margin: 0 0.5rem;
+    margin: 0 0.6rem;
   }
 
   /* ── Readout ───────────────────────────────────────── */
@@ -1266,31 +1227,48 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
       font-size: 2.1rem;
     }
 
-    /* No pointer, so the drawing keeps its shape and loses its labels.
-       The list below carries the words and takes the taps. */
-    .facet .name,
-    .hover-label {
-      display: none;
+    /* No pointer, so nothing is labelled until you touch it. Then the cell
+       you tapped and the ones it is tied to say their names, which is at
+       most six words on screen at a time and all of them legible. */
+    .facet .name {
+      font-size: 34px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* The desktop rule only dims the rest. On a phone they have to go
+       entirely, or all thirty two names are on screen again. */
+    #self-svg.lit .facet .name {
+      opacity: 0;
+    }
+
+    #self-svg.lit .facet.on .name {
+      opacity: 1;
+    }
+
+    #self-svg.lit .facet.kin .name {
+      opacity: 0.7;
     }
 
     .facet .pip {
-      r: 5;
+      r: 6;
     }
 
     #self-svg .facet.on .pip {
-      r: 9;
+      r: 11;
     }
 
-    .facet-list {
-      display: block;
-    }
-
+    .hover-label,
     .readout {
       display: none;
     }
 
     .field {
       margin-bottom: var(--space-md);
+    }
+
+    .sheet {
+      display: block;
     }
 
     .readout {
