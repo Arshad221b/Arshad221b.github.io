@@ -355,7 +355,7 @@ const wideLayout = {
 const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle');
 ---
 
-<Layout title={title} activeNav="/" description="Arshad Kazi. Computer vision engineer, writer, reader, son, autistic, curious. A personal site about all of it rather than any one of them." ogImage="/images/profile.png">
+<Layout title={title} activeNav="/" description="Arshad Kazi. Computer vision engineer, writer, reader, son, autistic, curious. A personal site about all of it rather than any one of them." ogImage="/images/og-about.jpg">
   <script type="application/ld+json" slot="head" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Person",
@@ -857,6 +857,15 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
     --nav-h: 47px;
     --words: 13.5rem;
     --gaps: 2.4rem;
+
+    /* One type scale for the page. Each step is defined against the one
+       above it, so the order can never invert on a short screen: title,
+       then the sentence you are reading, then the lede, then the marks. */
+    --t-title: clamp(1.95rem, 4.2vh, 2.85rem);
+    --t-read: clamp(1.1rem, 0.55rem + 1.6vh, 1.34rem);
+    --t-lede: clamp(0.98rem, 0.5rem + 1.1vh, 1.14rem);
+    --t-link: 0.66rem;
+    --t-mark: 0.6rem;
   }
 
   /* ── Folio rule ────────────────────────────────────── */
@@ -959,7 +968,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   .fig-num {
     font-family: var(--font-mono);
-    font-size: 0.56rem;
+    font-size: var(--t-mark);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--color-accent);
@@ -968,13 +977,13 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   .fig-desc {
     font-family: var(--font-serif);
     font-style: italic;
-    font-size: 0.98rem;
+    font-size: 0.94rem;
     line-height: 1.4;
     color: var(--color-text-muted);
   }
 
   .opening h1 {
-    font-size: clamp(1.9rem, 4.4vh, 2.9rem);
+    font-size: var(--t-title);
     line-height: 1.06;
     margin: -0.12em 0 var(--space-sm);
   }
@@ -982,8 +991,8 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   .opening p {
     font-family: var(--font-serif);
     font-style: italic;
-    font-size: clamp(0.98rem, 1.9vh, 1.16rem);
-    line-height: 1.5;
+    font-size: var(--t-lede);
+    line-height: 1.55;
     color: var(--color-text-muted);
     max-width: 52ch;
     margin: 0;
@@ -1057,7 +1066,10 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   .facet .name {
     font-family: var(--font-serif);
-    font-size: 21px;
+    /* Drawing units, and the box is scaled up on a wide screen, so this
+       lands just under the sentence you are reading. The drawing is the
+       index; the sentence is the content. */
+    font-size: 18px;
     fill: var(--color-text-secondary);
     transition: fill 0.2s ease, opacity 0.2s ease;
     user-select: none;
@@ -1121,7 +1133,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   .ro-empty {
     font-family: var(--font-mono);
-    font-size: 0.6rem;
+    font-size: var(--t-mark);
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--color-text-muted);
@@ -1131,7 +1143,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   .ro-label {
     font-family: var(--font-mono);
-    font-size: 0.6rem;
+    font-size: var(--t-mark);
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--color-accent);
@@ -1158,9 +1170,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   .ro-line {
     font-family: var(--font-serif);
-    /* Eases down on short screens so the longest facet still fits beside
-       the drawing rather than pushing it off the bottom. */
-    font-size: clamp(1.02rem, 2.4vh, 1.32rem);
+    font-size: var(--t-read);
     line-height: 1.55;
     color: var(--color-text);
     max-width: 54ch;
@@ -1173,7 +1183,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   .ro-ev :global(a) {
     font-family: var(--font-mono);
-    font-size: 0.64rem;
+    font-size: var(--t-link);
     letter-spacing: 0.04em;
     color: var(--color-text-muted);
     text-decoration: none;
@@ -1194,7 +1204,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   /* ── Correspondence ────────────────────────────────── */
   .rubric {
     font-family: var(--font-mono);
-    font-size: 0.56rem;
+    font-size: var(--t-mark);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--color-text-muted);
@@ -1233,7 +1243,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   .correspondence a {
     font-family: var(--font-serif);
-    font-size: 1.1rem;
+    font-size: var(--t-lede);
     color: var(--color-text-secondary);
     border-bottom: 1px solid transparent;
   }
@@ -1245,7 +1255,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   .colophon {
     font-family: var(--font-mono);
-    font-size: 0.6rem;
+    font-size: var(--t-mark);
     letter-spacing: 0.08em;
     color: var(--color-text-muted);
     opacity: 0.7;
@@ -1334,14 +1344,12 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
     }
 
     .ro-line {
-      font-size: clamp(0.98rem, 2.2vh, 1.16rem);
       line-height: 1.5;
     }
 
     .ro-ev :global(a) {
       display: inline-block;
       padding: 0.14rem 0;
-      font-size: 0.64rem;
       line-height: 1.35;
     }
   }
@@ -1352,11 +1360,6 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
     .self {
       --words: 13.5rem;
       --gaps: 1rem;
-    }
-
-    .ro-line {
-      font-size: clamp(0.94rem, 2vh, 1.06rem);
-      line-height: 1.45;
     }
 
     .ro-label {
