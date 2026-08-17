@@ -87,6 +87,16 @@ const posts = ([
 
 const allTags = [...new Set(posts.flatMap(p => p.tags))].sort();
 
+// The themes I return to most, ordered by how often I come back to them.
+// Counts are used to order this list, never shown.
+const tagWeight = new Map<string, number>();
+posts.forEach(p => p.tags.forEach(t => tagWeight.set(t, (tagWeight.get(t) ?? 0) + 1)));
+const recurring = [...tagWeight.entries()]
+  .filter(([, n]) => n >= 3)
+  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  .map(([tag]) => tag);
+const otherTags = allTags.filter(t => !recurring.includes(t));
+
 // Group posts by year so a long archive stays scannable.
 const years = [...new Set(posts.map(p => p.date.slice(0, 4)))];
 const grouped = years.map(year => ({
@@ -98,6 +108,170 @@ function shortDate(dateStr: string): string {
   const date = new Date(dateStr + 'T00:00:00');
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
+
+/* ── The map ──────────────────────────────────────────────
+   Every essay is a node. Two essays are joined when they share
+   a theme, which means the clusters draw themselves: the things
+   I keep circling end up dense, the one-offs sit out on the edge.
+   The layout is solved here at build time, so the drawing is
+   identical on every visit and needs no JavaScript to appear. */
+
+const MAP_W = 1000;
+const MAP_H = 620;
+
+type MapNode = { i: number; title: string; slug: string; year: string; deg: number; x: number; y: number };
+
+const mapNodes: MapNode[] = posts.map((p, i) => ({
+  i,
+  title: p.title,
+  slug: p.slug,
+  year: p.date.slice(0, 4),
+  deg: 0,
+  x: 0,
+  y: 0,
+}));
+
+// Chain the essays inside each theme in the order they were written,
+// rather than joining every pair. A thread, not a mesh.
+const edges: { a: number; b: number }[] = [];
+allTags.forEach(tag => {
+  const members = posts
+    .map((p, i) => ({ p, i }))
+    .filter(({ p }) => p.tags.includes(tag))
+    .sort((m, n) => new Date(m.p.date).getTime() - new Date(n.p.date).getTime());
+  for (let k = 1; k < members.length; k++) {
+    edges.push({ a: members[k - 1].i, b: members[k].i });
+  }
+});
+edges.forEach(e => { mapNodes[e.a].deg++; mapNodes[e.b].deg++; });
+
+// Deterministic pseudo-random start, so the drawing never shifts.
+function mulberry32(seed: number) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const rand = mulberry32(20260817);
+
+mapNodes.forEach((n, i) => {
+  const angle = (i / mapNodes.length) * Math.PI * 2;
+  const radius = 150 + rand() * 120;
+  n.x = MAP_W / 2 + Math.cos(angle) * radius;
+  n.y = MAP_H / 2 + Math.sin(angle) * radius * 0.62;
+});
+
+// Fruchterman-Reingold: edges pull, every node pushes, heat cools.
+const area = MAP_W * MAP_H;
+const kForce = Math.sqrt(area / mapNodes.length) * 1.15;
+// Repulsion is local. Without a cutoff an essay that shares a theme with
+// nothing gets pushed off the page by all 78 others at once.
+const REPEL_RANGE = kForce * 2.6;
+const ITER = 520;
+
+for (let step = 0; step < ITER; step++) {
+  const temp = (1 - step / ITER) ** 1.5 * (MAP_W / 9);
+  const dx = new Array(mapNodes.length).fill(0);
+  const dy = new Array(mapNodes.length).fill(0);
+
+  for (let a = 0; a < mapNodes.length; a++) {
+    for (let b = a + 1; b < mapNodes.length; b++) {
+      let vx = mapNodes[a].x - mapNodes[b].x;
+      let vy = mapNodes[a].y - mapNodes[b].y;
+      let dist = Math.hypot(vx, vy) || 0.01;
+      if (dist < 0.05) { vx = rand() - 0.5; vy = rand() - 0.5; dist = 0.05; }
+      if (dist > REPEL_RANGE) continue;
+      const push = (kForce * kForce) / dist;
+      dx[a] += (vx / dist) * push; dy[a] += (vy / dist) * push;
+      dx[b] -= (vx / dist) * push; dy[b] -= (vy / dist) * push;
+    }
+  }
+
+  edges.forEach(e => {
+    const vx = mapNodes[e.a].x - mapNodes[e.b].x;
+    const vy = mapNodes[e.a].y - mapNodes[e.b].y;
+    const dist = Math.hypot(vx, vy) || 0.01;
+    const pull = (dist * dist) / kForce;
+    dx[e.a] -= (vx / dist) * pull; dy[e.a] -= (vy / dist) * pull;
+    dx[e.b] += (vx / dist) * pull; dy[e.b] += (vy / dist) * pull;
+  });
+
+  mapNodes.forEach((n, i) => {
+    // A little gravity, so unconnected essays do not drift off the page.
+    dx[i] += (MAP_W / 2 - n.x) * 0.035;
+    dy[i] += (MAP_H / 2 - n.y) * 0.05;
+    const disp = Math.hypot(dx[i], dy[i]) || 0.01;
+    n.x += (dx[i] / disp) * Math.min(disp, temp);
+    n.y += (dy[i] / disp) * Math.min(disp, temp);
+  });
+}
+
+// Normalise into the viewBox with room for the theme labels.
+const pad = 46;
+const xs = mapNodes.map(n => n.x);
+const ys = mapNodes.map(n => n.y);
+const minX = Math.min(...xs), maxX = Math.max(...xs);
+const minY = Math.min(...ys), maxY = Math.max(...ys);
+const scaleX = (MAP_W - pad * 2) / (maxX - minX);
+const scaleY = (MAP_H - pad * 2) / (maxY - minY);
+mapNodes.forEach(n => {
+  n.x = pad + (n.x - minX) * scaleX;
+  n.y = pad + (n.y - minY) * scaleY;
+});
+
+const mapEdges = edges.map(e => ({
+  a: e.a,
+  b: e.b,
+  x1: mapNodes[e.a].x, y1: mapNodes[e.a].y,
+  x2: mapNodes[e.b].x, y2: mapNodes[e.b].y,
+}));
+
+// Name only the heaviest clusters, at the centre of mass of their essays,
+// then nudge the names apart so they stay readable where clusters overlap.
+const clusterLabels = recurring.slice(0, 7).map(tag => {
+  const members = posts
+    .map((p, i) => ({ p, i }))
+    .filter(({ p }) => p.tags.includes(tag));
+  const cx = members.reduce((s, m) => s + mapNodes[m.i].x, 0) / members.length;
+  const cy = members.reduce((s, m) => s + mapNodes[m.i].y, 0) / members.length;
+  return { tag, x: cx, y: cy, w: tag.length * 7 + 16 };
+});
+
+for (let pass = 0; pass < 240; pass++) {
+  for (let a = 0; a < clusterLabels.length; a++) {
+    for (let b = a + 1; b < clusterLabels.length; b++) {
+      const A = clusterLabels[a], B = clusterLabels[b];
+      const overlapX = (A.w + B.w) / 2 - Math.abs(A.x - B.x);
+      const overlapY = 21 - Math.abs(A.y - B.y);
+      if (overlapX > 0 && overlapY > 0) {
+        const shove = Math.min(overlapY, 4) / 2 + 0.6;
+        const dir = A.y <= B.y ? -1 : 1;
+        A.y += shove * dir;
+        B.y -= shove * dir;
+        A.x += (A.x <= B.x ? -1 : 1) * Math.min(overlapX, 3) * 0.35;
+        B.x += (A.x <= B.x ? 1 : -1) * Math.min(overlapX, 3) * 0.35;
+      }
+    }
+  }
+}
+
+const nodeRadius = (deg: number) => 2.6 + Math.min(deg, 9) * 0.42;
+
+// Axons bow rather than run straight. Nothing in a head is a ruled line.
+const axons = mapEdges.map((e, i) => {
+  const dx = e.x2 - e.x1, dy = e.y2 - e.y1;
+  const len = Math.hypot(dx, dy) || 1;
+  const bow = (i % 2 ? 1 : -1) * len * (0.07 + ((i * 37) % 11) / 190);
+  const cx = (e.x1 + e.x2) / 2 + (-dy / len) * bow;
+  const cy = (e.y1 + e.y2) / 2 + (dx / len) * bow;
+  return {
+    a: e.a, b: e.b,
+    cx, cy,
+    d: `M${e.x1.toFixed(1)} ${e.y1.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${e.x2.toFixed(1)} ${e.y2.toFixed(1)}`,
+  };
+});
 ---
 
 <Layout title={title} activeNav="/thoughts" description="Personal writing by Arshad Kazi. Things I am confused about, excited by, or trying to put into words. Published on Substack.">
@@ -105,7 +279,7 @@ function shortDate(dateStr: string): string {
     <div class="folio-rule">
       <span class="folio-mark">Thoughts</span>
       <span class="folio-line"></span>
-      <span class="folio-mark">{posts.length} notes</span>
+      <span class="folio-mark">Personal essays</span>
     </div>
 
     <div class="thoughts-intro">
@@ -125,16 +299,66 @@ function shortDate(dateStr: string): string {
       </details>
     </div>
 
+    <figure class="cortex">
+      <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} role="img" aria-label="Every essay, joined where it shares a theme with another" id="cortex-svg">
+        <g id="cortex-field">
+        <g class="axons">
+          {axons.map(ax => (
+            <path d={ax.d} data-a={ax.a} data-b={ax.b} />
+          ))}
+        </g>
+
+        <g class="cluster-names">
+          {clusterLabels.map(c => (
+            <text x={c.x.toFixed(1)} y={c.y.toFixed(1)}>{c.tag}</text>
+          ))}
+        </g>
+
+        <!-- Charge sits under the cell bodies, so a firing soma glows through. -->
+        <g class="charge">
+          {mapNodes.map(n => (
+            <circle cx={n.x.toFixed(1)} cy={n.y.toFixed(1)} r={nodeRadius(n.deg).toFixed(2)} opacity="0" />
+          ))}
+        </g>
+
+        <g class="somas">
+          {mapNodes.map(n => (
+            <a href={`/thoughts/${n.slug}`} data-i={n.i} data-title={n.title} data-year={n.year} data-x={n.x.toFixed(1)} data-y={n.y.toFixed(1)}>
+              <circle class="hit" cx={n.x.toFixed(1)} cy={n.y.toFixed(1)} r="12" />
+              <circle class="soma" cx={n.x.toFixed(1)} cy={n.y.toFixed(1)} r={nodeRadius(n.deg).toFixed(2)} />
+            </a>
+          ))}
+        </g>
+
+        <!-- Action potentials in flight. Filled in at runtime. -->
+        <g class="signals"></g>
+
+        <g class="hover-label" id="cortex-label" aria-hidden="true">
+          <text><tspan class="lab-year"></tspan><tspan class="lab-title" dx="8"></tspan></text>
+        </g>
+        </g>
+      </svg>
+    </figure>
+
     <div class="filters">
       <div class="search-bar">
         <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="search-input" placeholder="Search writing" autocomplete="off" />
       </div>
 
+      <div class="themes">
+        <p class="theme-label">What I keep coming back to</p>
+        <div class="tag-filters">
+          {recurring.map(tag => (
+            <button class="tag-chip" data-tag={tag}>{tag}</button>
+          ))}
+        </div>
+      </div>
+
       <details class="topics">
-        <summary>Browse by topic<span class="topic-count">{allTags.length}</span></summary>
-        <div class="tag-filters" id="tag-filters">
-          {allTags.map(tag => (
+        <summary>Everything else I have written about</summary>
+        <div class="tag-filters">
+          {otherTags.map(tag => (
             <button class="tag-chip" data-tag={tag}>{tag}</button>
           ))}
         </div>
@@ -154,6 +378,7 @@ function shortDate(dateStr: string): string {
                   <time datetime={post.date}>{shortDate(post.date)}</time>
                   <h3>{post.title}</h3>
                   <p>{post.description}</p>
+                  <span class="entry-tags">{post.tags.join(' · ')}</span>
                 </a>
               </li>
             ))}
@@ -279,12 +504,117 @@ function shortDate(dateStr: string): string {
     margin-bottom: 0 !important;
   }
 
+  /* ── The map ───────────────────────────────────────── */
+  .cortex {
+    width: min(1140px, 94vw);
+    margin-left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: var(--space-xl);
+    padding: 0;
+  }
+
+  .cortex svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .axons path {
+    fill: none;
+    stroke: var(--color-border);
+    stroke-width: 0.7;
+    stroke-linecap: round;
+  }
+
+  .somas .soma {
+    fill: var(--color-text-muted);
+    opacity: 0.72;
+  }
+
+  .charge circle {
+    fill: var(--color-accent);
+  }
+
+  .somas .hit {
+    fill: transparent;
+  }
+
+  .somas a {
+    cursor: crosshair;
+  }
+
+  .signals circle {
+    fill: var(--color-accent);
+  }
+
+  .cluster-names text {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 16px;
+    fill: var(--color-text-muted);
+    opacity: 0.62;
+    text-anchor: middle;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Stimulating one cell quietens the rest of the tissue. */
+  .cortex svg.lit .axons path {
+    stroke-opacity: 0.3;
+  }
+
+  .cortex svg.lit .somas .soma {
+    opacity: 0.22;
+  }
+
+  .cortex svg.lit .cluster-names text {
+    opacity: 0.16;
+  }
+
+  /* The title rides on the node you are pointing at. */
+  .hover-label {
+    opacity: 0;
+    transition: opacity 0.16s ease;
+    pointer-events: none;
+  }
+
+  .hover-label.show {
+    opacity: 1;
+  }
+
+  .hover-label .lab-title {
+    font-family: var(--font-serif);
+    font-size: 17px;
+    fill: var(--color-text);
+  }
+
+  .hover-label .lab-year {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    fill: var(--color-accent);
+  }
+
+  .theme-label {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-style: normal;
+    font-size: 0.92rem;
+    letter-spacing: 0.09em;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-xs);
+  }
+
   /* ── Filters ───────────────────────────────────────── */
   .filters {
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
+    gap: var(--space-md);
     margin-bottom: var(--space-xl);
+  }
+
+  .themes .tag-filters {
+    padding-top: 0;
   }
 
   .search-bar {
@@ -358,13 +688,6 @@ function shortDate(dateStr: string): string {
 
   .topics summary:hover {
     color: var(--color-accent);
-  }
-
-  .topic-count {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    color: var(--color-text-muted);
-    opacity: 0.7;
   }
 
   .tag-filters {
@@ -478,15 +801,27 @@ function shortDate(dateStr: string): string {
     color: var(--color-text-muted);
     margin: 0;
     max-width: 62ch;
+    /* Three lines, not two. Enough for the voice to come through. */
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  .results-count {
+  .entry-tags {
+    display: block;
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+    opacity: 0.6;
+    margin-top: 0.5rem;
+  }
+
+  .results-count {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.05rem;
     color: var(--color-text-muted);
     margin: 0 0 var(--space-md) 0;
   }
@@ -529,6 +864,251 @@ function shortDate(dateStr: string): string {
 
 <script is:inline>
 (function() {
+  /* ── The tissue ────────────────────────────────────────────────
+     This is not a diagram that moves. It is a small nervous system.
+     Aliveness comes from conduction, not from displacement: cells
+     fire, the charge runs down the axon, and whatever it reaches
+     fires in turn. Nothing is ever jostled out of position, which is
+     why there is no wobble to speak of. Brains do not wobble.
+     Pointing at a cell stimulates it. The cascade you see spreading
+     is the real shape of what that essay is tied to.            */
+
+  const svg = document.getElementById('cortex-svg');
+  if (svg) {
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const field = document.getElementById('cortex-field');
+    const label = document.getElementById('cortex-label');
+    const labelText = label.querySelector('text');
+    const labYear = label.querySelector('.lab-year');
+    const labTitle = label.querySelector('.lab-title');
+    const signalLayer = svg.querySelector('.signals');
+    const NS = 'http://www.w3.org/2000/svg';
+
+    const anchors = Array.from(svg.querySelectorAll('.somas a'));
+    const somas = Array.from(svg.querySelectorAll('.somas .soma'));
+    const charges = Array.from(svg.querySelectorAll('.charge circle'));
+    const paths = Array.from(svg.querySelectorAll('.axons path'));
+
+    const cells = anchors.map(function (a, i) {
+      return {
+        x: parseFloat(a.dataset.x),
+        y: parseFloat(a.dataset.y),
+        rest: parseFloat(somas[i].getAttribute('r')),
+        charge: 0,      // how lit the cell body is, 0 to 1
+        refractory: 0,  // a cell that just fired cannot fire again yet
+        out: []         // the axons leaving it
+      };
+    });
+
+    // Every axon knows its curve, so a signal can be placed anywhere along it.
+    const axons = paths.map(function (el) {
+      const a = Number(el.dataset.a), b = Number(el.dataset.b);
+      const d = el.getAttribute('d');
+      const nums = d.match(/-?\d+(\.\d+)?/g).map(Number);
+      const ax = { el: el, a: a, b: b,
+        x0: nums[0], y0: nums[1], cx: nums[2], cy: nums[3], x1: nums[4], y1: nums[5],
+        heat: 0 };
+      ax.len = Math.hypot(ax.x1 - ax.x0, ax.y1 - ax.y0) * 1.06;
+      cells[a].out.push(ax);
+      cells[b].out.push(ax);
+      return ax;
+    });
+
+    function pointOn(ax, t, fromA) {
+      const u = fromA ? t : 1 - t, v = 1 - u;
+      return {
+        x: v * v * ax.x0 + 2 * v * u * ax.cx + u * u * ax.x1,
+        y: v * v * ax.y0 + 2 * v * u * ax.cy + u * u * ax.y1
+      };
+    }
+
+    // A fixed pool of signal dots, so firing never allocates mid-flight.
+    const POOL = 140;
+    const pool = [];
+    for (let i = 0; i < POOL; i++) {
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('r', '2.1');
+      c.setAttribute('opacity', '0');
+      signalLayer.appendChild(c);
+      pool.push({ el: c, live: false, ax: null, fromA: true, t: 0, speed: 0, depth: 0, strength: 1 });
+    }
+
+    const SPEED = 235;        // how fast charge travels, units per second
+    const DECAY = 3.6;        // how fast a lit cell body fades
+    const REFRACTORY = 0.42;  // silence after firing, in seconds
+
+    function fire(i, depth, strength) {
+      const cell = cells[i];
+      if (cell.refractory > 0 || depth <= 0) return;
+      cell.charge = Math.min(1, cell.charge + strength);
+      cell.refractory = REFRACTORY;
+      for (let k = 0; k < cell.out.length; k++) {
+        const ax = cell.out[k];
+        const slot = pool.find(function (s) { return !s.live; });
+        if (!slot) return;
+        slot.live = true;
+        slot.ax = ax;
+        slot.fromA = ax.a === i;
+        slot.t = 0;
+        slot.speed = SPEED / ax.len;
+        slot.depth = depth - 1;
+        slot.strength = strength * 0.6;
+      }
+    }
+
+    /* ── Pointing at a cell stimulates it ─────────────────────── */
+    let hovered = -1;
+    let stimTimer = 0;
+
+    function placeLabel(x, y) {
+      labelText.setAttribute('text-anchor', x < 250 ? 'start' : x > 750 ? 'end' : 'middle');
+      labelText.setAttribute('x', x.toFixed(1));
+      labelText.setAttribute('y', (y - 18).toFixed(1));
+    }
+
+    function touch(anchor) {
+      hovered = Number(anchor.dataset.i);
+      svg.classList.add('lit');
+      labYear.textContent = anchor.dataset.year;
+      labTitle.textContent = anchor.dataset.title;
+      placeLabel(cells[hovered].x, cells[hovered].y);
+      label.classList.add('show');
+      cells[hovered].refractory = 0;
+      fire(hovered, 4, 1);
+      stimTimer = 0.95;
+    }
+
+    function release() {
+      hovered = -1;
+      svg.classList.remove('lit');
+      label.classList.remove('show');
+    }
+
+    anchors.forEach(function (a) {
+      a.addEventListener('mouseenter', function () { touch(a); });
+      a.addEventListener('focus', function () { touch(a); });
+      a.addEventListener('touchstart', function () { touch(a); }, { passive: true });
+    });
+    svg.addEventListener('mouseleave', release);
+
+    if (still) {
+      // No animation wanted: keep the stimulation readable, statically.
+      anchors.forEach(function (a, i) {
+        a.addEventListener('mouseenter', function () {
+          charges[i].setAttribute('opacity', '1');
+          cells[i].out.forEach(function (ax) { ax.el.style.stroke = 'var(--color-accent)'; });
+        });
+        a.addEventListener('mouseleave', function () {
+          charges[i].setAttribute('opacity', '0');
+          cells[i].out.forEach(function (ax) { ax.el.style.stroke = ''; });
+        });
+      });
+      return;
+    }
+
+    /* ── The loop ─────────────────────────────────────────────── */
+    const BREATH = 0.016;      // how far the tissue swells
+    const BREATH_PERIOD = 6.4; // one full breath, in seconds
+    const RESTING_RATE = 1.15; // spontaneous fires per second when left alone
+
+    let clock = 0;
+    let last = performance.now();
+    let onScreen = true;
+    if (window.IntersectionObserver) {
+      new IntersectionObserver(function (e) { onScreen = e[0].isIntersecting; },
+        { rootMargin: '140px' }).observe(svg);
+    }
+
+    function frame(now) {
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+
+      if (!document.hidden && onScreen) {
+        clock += dt;
+
+        /* The breath: one uniform scale about the centre. Every distance
+           changes by the same factor, so the drawing cannot shimmer. It
+           fills, holds, empties slower than it filled, and rests. */
+        const cycle = (clock % BREATH_PERIOD) / BREATH_PERIOD;
+        let fill;
+        if (cycle < 0.34) fill = 0.5 - 0.5 * Math.cos(Math.PI * (cycle / 0.34));
+        else if (cycle < 0.46) fill = 1;
+        else if (cycle < 0.86) fill = 0.5 + 0.5 * Math.cos(Math.PI * ((cycle - 0.46) / 0.40));
+        else fill = 0;
+        const swell = 1 + fill * BREATH;
+        field.setAttribute('transform',
+          'translate(500,310) scale(' + swell.toFixed(5) + ') translate(-500,-310)');
+
+        // Resting activity. A brain left alone is not a brain switched off.
+        if (hovered < 0 && Math.random() < RESTING_RATE * dt) {
+          fire(Math.floor(Math.random() * cells.length), 3, 0.85);
+        }
+
+        // Holding the pointer on a cell keeps stimulating it.
+        if (hovered >= 0) {
+          stimTimer -= dt;
+          if (stimTimer <= 0) {
+            cells[hovered].refractory = 0;
+            fire(hovered, 4, 1);
+            stimTimer = 0.95;
+          }
+          placeLabel(cells[hovered].x, cells[hovered].y);
+        }
+
+        for (let i = 0; i < cells.length; i++) {
+          const c = cells[i];
+          if (c.refractory > 0) c.refractory -= dt;
+          if (c.charge > 0.001) {
+            c.charge -= c.charge * DECAY * dt;
+            charges[i].setAttribute('opacity', c.charge.toFixed(3));
+            charges[i].setAttribute('r', (c.rest + c.charge * 5.5).toFixed(2));
+          } else if (c.charge !== 0) {
+            c.charge = 0;
+            charges[i].setAttribute('opacity', '0');
+          }
+        }
+
+        for (let s = 0; s < pool.length; s++) {
+          const sig = pool[s];
+          if (!sig.live) continue;
+          sig.t += sig.speed * dt;
+          if (sig.t >= 1) {
+            sig.live = false;
+            sig.el.setAttribute('opacity', '0');
+            const target = sig.fromA ? sig.ax.b : sig.ax.a;
+            sig.ax.heat = Math.max(sig.ax.heat, sig.strength);
+            if (sig.depth > 0 && sig.strength > 0.18) fire(target, sig.depth, sig.strength);
+            continue;
+          }
+          const p = pointOn(sig.ax, sig.t, sig.fromA);
+          sig.el.setAttribute('cx', p.x.toFixed(1));
+          sig.el.setAttribute('cy', p.y.toFixed(1));
+          sig.el.setAttribute('opacity', (0.35 + sig.strength * 0.65).toFixed(2));
+          sig.ax.heat = Math.max(sig.ax.heat, sig.strength * 0.85);
+        }
+
+        for (let k = 0; k < axons.length; k++) {
+          const ax = axons[k];
+          if (ax.heat > 0.004) {
+            ax.heat -= ax.heat * 2.6 * dt;
+            ax.el.style.stroke = 'var(--color-accent)';
+            ax.el.style.strokeOpacity = ax.heat.toFixed(3);
+            ax.el.style.strokeWidth = (0.7 + ax.heat * 0.9).toFixed(2);
+          } else if (ax.heat !== 0) {
+            ax.heat = 0;
+            ax.el.style.stroke = '';
+            ax.el.style.strokeOpacity = '';
+            ax.el.style.strokeWidth = '';
+          }
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+})();
+
+(function() {
   const input = document.getElementById('search-input');
   const index = document.getElementById('post-index');
   const entries = index.querySelectorAll('.entry');
@@ -559,9 +1139,16 @@ function shortDate(dateStr: string): string {
       group.classList.toggle('hidden', !anyVisible);
     });
 
-    counter.textContent = (q || activeTag)
-      ? visible + ' of ' + entries.length + ' posts'
-      : '';
+    // Say what is on screen in words. This page is not a dashboard.
+    if (activeTag && q) {
+      counter.textContent = 'Everything about ' + activeTag + ' that mentions "' + q + '".';
+    } else if (activeTag) {
+      counter.textContent = 'Everything I have written about ' + activeTag + '.';
+    } else if (q) {
+      counter.textContent = 'Everything that mentions "' + q + '".';
+    } else {
+      counter.textContent = '';
+    }
     empty.style.display = visible === 0 ? 'block' : 'none';
   }
 

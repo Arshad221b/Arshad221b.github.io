@@ -11,20 +11,298 @@ const correspondence = [
   { label: "Email", href: "mailto:arshadkaziblog@gmail.com" },
 ];
 
-const vitals = [
-  { term: "Trained as", detail: "Engineer. Everything after that, self-taught" },
-  { term: "Works on", detail: "3D vision, geometry, representation learning" },
-  { term: "Builds", detail: "Models from scratch. Training dynamics, not wrappers" },
-  { term: "Reads", detail: "Neuroscience, psychology, philosophy" },
-  { term: "Writes", detail: "Notebooks while learning, thoughts when they arrive" },
-  { term: "Also into", detail: "Architecture, visual art, food, film, music" },
-  { term: "Wired", detail: "Autistic, highly anxious. Intense when interested, restless otherwise" },
-  { term: "Method", detail: "Build it, break it, look again" },
-  { term: "Constant", detail: "More questions than answers" },
+/* Thirty two facets, none of them the container for the others. Every one
+   carries the evidence for itself, because a claim about yourself is worth
+   nothing without somewhere it actually shows. Placed by hand rather than
+   by a layout solver, so nothing sits at a centre. */
+const facets = [
+  {
+    id: "engineer", label: "engineer", x: 170, y: 108,
+    line: "I build things to find out how they work, not to make them work. Most of it is written from scratch, because I do not trust anything I have not taken apart.",
+    ev: [{ t: "the notebooks", h: "/notebooks" }, { t: "the code", h: "https://github.com/Arshad221b" }],
+  },
+  {
+    id: "cv", label: "computer vision", x: 300, y: 196,
+    line: "Structure, geometry, and how a machine gets from flat pixels to a world with depth in it. 3D reconstruction, pose, representation. It is the closest thing I have to a discipline, and it pays for the rest of this.",
+    ev: [{ t: "the technical blogs", h: "/blog" }, { t: "Attention for 3D pose", h: "/blog/temporal-spatial-attention-3d-pose" }, { t: "SLAM from scratch", h: "/notebooks/slam" }],
+  },
+  {
+    id: "visual", label: "visual thinker", x: 404, y: 66,
+    line: "I think in pictures. Language is a translation layer on top of that, and it is slow, which is why I would rather write to you than talk to you.",
+    ev: [{ t: "Story of a kid with a different brain", h: "/thoughts/autism-story-of-a-kid-with-a-different-brain" }],
+  },
+  {
+    id: "curious", label: "curious", x: 730, y: 92,
+    line: "One question, one hour a day, for about a week. Then the next question. It is the only way anything has ever stayed in my head.",
+    ev: [{ t: "the notebooks", h: "/notebooks" }, { t: "Becoming a self-learning ninja", h: "/thoughts/becoming-self-learning-ninja" }],
+  },
+  {
+    id: "moves", label: "moves to think", x: 980, y: 176,
+    line: "When a thought will not resolve, I go and move until it does. The body sorts out things the head has been failing at all week.",
+    ev: [{ t: "A philosophy of exercise", h: "/thoughts/a-philosophy-of-exercise-which-transforms-body-and-soul" }],
+  },
+  {
+    id: "reader", label: "reader", x: 800, y: 252,
+    line: "Grandin, Price, Murakami, Kalanithi. I read to borrow other people's eyes for a while, especially the ones who see nothing like I do.",
+    ev: [{ t: "Reading Murakami", h: "/thoughts/what-i-learned-from-reading-haruki-murakami" }, { t: "When Breath Becomes Air", h: "/thoughts/when-breath-becomes-air" }],
+  },
+  {
+    id: "autistic", label: "autistic", x: 432, y: 222,
+    line: "Diagnosed in my late twenties. It explained about twenty years of being called clever and lazy in the same breath by the same people.",
+    ev: [{ t: "Never learning to ask for help", h: "/thoughts/why-high-functioning-autistic" }, { t: "For Indian parents and students", h: "/thoughts/autism-things-indian-parentsstudents-need-to-know" }],
+  },
+  {
+    id: "writer", label: "writer", x: 148, y: 262,
+    line: "I do not know what I think until I have written it down and read it back. That is the whole reason any of this exists.",
+    ev: [{ t: "the thoughts", h: "/thoughts" }, { t: "Why should I write about me", h: "/thoughts/why-should-i-write" }],
+  },
+  {
+    id: "smalltown", label: "from a small town", x: 300, y: 382,
+    line: "Less than a tenth of India lives in the metros. I came from the rest of it. I left, the way you are supposed to, and it takes far longer to finish leaving than anybody tells you.",
+    ev: [{ t: "Before relocating", h: "/thoughts/why-you-should-think-really-hard-before-relocating-for-studyjob" }, { t: "Choosing a college", h: "/thoughts/heres-how-to-choose-a-good-college-after-12th-jeeneet" }],
+  },
+  {
+    id: "arts", label: "film and music", x: 950, y: 352,
+    line: "Why does a minor key sound sad in every culture that has one? I have been chasing that for two years and I still cannot answer it.",
+    ev: [{ t: "Good and bad music", h: "/thoughts/whats-the-difference-between-good-bad-music" }, { t: "Drive My Car", h: "/thoughts/drive-my-car-a-movie-about-love-and-disconnect" }],
+  },
+  {
+    id: "lonely", label: "often alone", x: 770, y: 476,
+    line: "The thing I understand least, which is exactly why it is the thing I keep writing about.",
+    ev: [{ t: "A silent Diwali", h: "/thoughts/a-silent-diwali-dealing-with-loneliness-during-festivals" }, { t: "Living just to never feel lonely", h: "/thoughts/living-to-never-feel-lonely" }],
+  },
+  {
+    id: "son", label: "son", x: 296, y: 500,
+    line: "My mother taught chemistry in the same school for thirty two years. I sat in one of those classes. She retired this year and it ended an era for both of us.",
+    ev: [{ t: "A mother and a retired chemistry teacher", h: "/thoughts/my-mother-after-thirty-two-years" }, { t: "Life's strains", h: "/thoughts/lifes-strains-pursuit-of-purpose-and-varicose" }],
+  },
+  {
+    id: "atheist", label: "atheist", x: 110, y: 436,
+    line: "An atheist in a Muslim household. Eid is still sheer khurma and my mother in the kitchen, and that has never needed me to believe anything.",
+    ev: [{ t: "Eid, Sheer Khurma", h: "/thoughts/eid-sheer-khurma" }, { t: "Belief, as an atheist", h: "/thoughts/my-curious-look-on-belief-as-an-atheist" }],
+  },
+  {
+    id: "anxious", label: "anxious", x: 540, y: 320,
+    line: "Anxious, hard to relax, unsatisfied more often than not. A stone age nervous system running in a world it was never issued for.",
+    ev: [{ t: "Stone-age minds in a digital world", h: "/thoughts/stone-age-minds-in-a-digital-world-stress-anxiety" }, { t: "Thinking positive after trauma", h: "/thoughts/why-is-it-hard-to-think-positive-when-you-are-traumatized" }],
+  },
+  {
+    id: "inlove", label: "in love, often", x: 520, y: 670,
+    line: "You can love several people at once without meaning to, and without any of it cancelling out. Writing it down is the only way I have found to survive knowing that.",
+    ev: [{ t: "Women I Love(d)", h: "/thoughts/women-i-loved" }, { t: "Loving multiple people", h: "/thoughts/you-actually-love-multiple-people-without-even-realising-it" }],
+  },
+  {
+    id: "introvert", label: "introvert", x: 810, y: 440,
+    line: "I am bad at being visible and worse at performing it. At one point I wrote an actual letter to the extroverted internet about it.",
+    ev: [{ t: "Letter from an introvert", h: "/thoughts/a-letter-to-the-social-media-world-from-an-introvert" }, { t: "Personal pictures on LinkedIn", h: "/thoughts/is-it-okay-to-post-personal-pictures-on-linkedin" }],
+  },
+  {
+    id: "doubter", label: "career doubter", x: 1010, y: 560,
+    line: "Financial security is the carrot they dangle in front of you after college. I took the break and asked what exactly the money was for.",
+    ev: [{ t: "Career break", h: "/thoughts/career-break-do-you-really-know-why-you-are-making-money" }, { t: "The conformity trap", h: "/thoughts/indian-corporate-culture-gen-z-a-conformity-trap" }],
+  },
+  {
+    id: "housebuilder", label: "built a house", x: 260, y: 670,
+    line: "Seven months went into building a house for my parents, and somewhere in the middle of it the house got larger than the reason for it.",
+    ev: [{ t: "I didn't decide to build this", h: "/thoughts/i-didnt-decide-to-build-this-yet-i-did" }],
+  },
+  {
+    id: "existential", label: "asks why he exists", x: 975, y: 496,
+    line: "Why should I exist, and why should I keep going. I have been carrying both of those for years and most of what I write circles them.",
+    ev: [{ t: "The moral reason not to die", h: "/thoughts/the-moral-reason-not-to-die" }, { t: "Where YOU really exist", h: "/thoughts/where-you-really-exist" }],
+  },
+  {
+    id: "selftaught", label: "self-taught", x: 690, y: 200,
+    line: "Leonardo had no schooling past fourteen and taught himself anatomy and optics from whatever books and mentors he could get hold of. It is the only method that has ever worked on me.",
+    ev: [{ t: "Becoming a self-learning ninja", h: "/thoughts/becoming-self-learning-ninja" }, { t: "the notebooks", h: "/notebooks" }],
+  },
+  {
+    id: "observer", label: "observer", x: 150, y: 320,
+    line: "I watch people from a distance and take notes. My neighbour across the road taught me more about addiction than any book did.",
+    ev: [{ t: "Through my window", h: "/thoughts/through-my-window-my-neighbor-and-his-alcoholism" }, { t: "A nine year old's curiosity", h: "/thoughts/9-year-old-kids-curiosity-and-exploration-with-truth" }],
+  },
+  {
+    id: "impatient", label: "impatient", x: 330, y: 320,
+    line: "Telling me to have patience is like telling a bird not to fly. I am working on it slowly, which is the joke.",
+    ev: [{ t: "Building patience takes patience", h: "/thoughts/building-patience-takes-patience" }],
+  },
+  {
+    id: "food", label: "food", x: 560, y: 560,
+    line: "Sheer khurma once a year, and a running question about why sugar has that particular grip on all of us.",
+    ev: [{ t: "Eid, Sheer Khurma", h: "/thoughts/eid-sheer-khurma" }, { t: "Understanding Emotion", h: "/notebooks/emotion" }],
+  },
+  {
+    id: "perfectionist", label: "perfectionist", x: 800, y: 700,
+    line: "Perfectionism has levels, and the useful part is finding out you can move between them. Nobody told me that until well into my twenties.",
+    ev: [{ t: "Five levels of perfectionism", h: "/thoughts/five-levels-of-perfectionism-from-pressure-to-purpose" }],
+  },
+  {
+    id: "planner", label: "plans every year", x: 210, y: 810,
+    line: "At the end of every year I open the notebook and write down what the next one is for. Not things to own. Mostly things I want to stop being.",
+    ev: [{ t: "Dismantling the mountain", h: "/thoughts/dismantling-the-mountain-setting-goals-for-new-year" }],
+  },
+  {
+    id: "advocate", label: "advocate", x: 430, y: 580,
+    line: "Most Indian schools have no idea what a learning disability looks like. I write the explainers I needed at fifteen and nobody had written yet.",
+    ev: [{ t: "Things Indian parents need to know", h: "/thoughts/autism-things-indian-parentsstudents-need-to-know" }, { t: "Five common questions", h: "/thoughts/autism-for-indians-5-common-questions" }],
+  },
+  {
+    id: "endures", label: "endures", x: 1010, y: 700,
+    line: "Endurance was never a virtue I picked. It is what is left over when the alternatives run out, and it turns out to be enough.",
+    ev: [{ t: "Life of endurance", h: "/thoughts/life-of-endurance" }, { t: "Learning to fight alone", h: "/thoughts/a-clarity-you-get-when-you-learn-to-fight-alone" }],
+  },
+  {
+    id: "stopthinking", label: "tries to stop thinking", x: 640, y: 830,
+    line: "More thought, faster and sharper, was supposed to make me wiser. Some days the answer is to stop entirely and just breathe.",
+    ev: [{ t: "Non-thoughts and mindlessness", h: "/thoughts/non-thoughts-mindlessness" }, { t: "Just to breathe", h: "/thoughts/once-in-a-while-we-should-livejust-to-breathe" }],
+  },
+  {
+    id: "library", label: "library kid", x: 140, y: 570,
+    line: "A century old library in southern Maharashtra raised about half of me. I still measure other rooms against that one.",
+    ev: [{ t: "A book heaven I cherished", h: "/thoughts/library-a-book-heaven-i-cherished" }],
+  },
+  {
+    id: "unstylish", label: "unstylish", x: 900, y: 830,
+    line: "Trends decide most of what people wear and do. Opting out is cheaper, quieter, and a good deal more fun.",
+    ev: [{ t: "Why being unstylish can be fun", h: "/thoughts/why-being-unstylish-can-be-fun" }],
+  },
+  {
+    id: "wonder", label: "prefers wonder to hope", x: 350, y: 730,
+    line: "Hope needs the world to cooperate with you. Wonder does not, which makes it the more reliable of the two.",
+    ev: [{ t: "Wonder beats hope", h: "/thoughts/why-being-wonderful-beats-being-hopeful" }],
+  },
+  {
+    id: "ai", label: "watches AI closely", x: 1010, y: 300,
+    line: "I think AI is turning into something like quantum physics. A field where the questions get stranger the closer you look at them.",
+    ev: [{ t: "AI's growing complexity", h: "/thoughts/ais-growing-complexity-the-next-era-of-human-curiosity" }],
+  },
 ];
+
+/* Placed by intent, then relaxed so no two names sit on top of each other.
+   Each one is sprung back toward where it was put, so the arrangement is
+   still mine and not a solver's idea of a nice graph. */
+const box = (l: string) => l.length * 10.5 + 34;
+const LABEL_H = 46;
+const rel = facets.map(f => ({ x: f.x, y: f.y, x0: f.x, y0: f.y, w: box(f.label) }));
+
+for (let pass = 0; pass < 600; pass++) {
+  for (let i = 0; i < rel.length; i++) {
+    for (let j = i + 1; j < rel.length; j++) {
+      const A = rel[i], B = rel[j];
+      const overX = (A.w + B.w) / 2 - Math.abs(A.x - B.x);
+      const overY = LABEL_H - Math.abs(A.y - B.y);
+      if (overX > 0 && overY > 0) {
+        if (overX / (A.w + B.w) < overY / LABEL_H) {
+          const s = Math.min(overX, 7) / 2 * (A.x <= B.x ? -1 : 1);
+          A.x += s; B.x -= s;
+        } else {
+          const s = Math.min(overY, 7) / 2 * (A.y <= B.y ? -1 : 1);
+          A.y += s; B.y -= s;
+        }
+      }
+    }
+  }
+  for (const r of rel) {
+    r.x += (r.x0 - r.x) * 0.018;
+    r.y += (r.y0 - r.y) * 0.018;
+    r.x = Math.max(104, Math.min(996, r.x));
+    r.y = Math.max(74, Math.min(846, r.y));
+  }
+}
+facets.forEach((f, i) => { f.x = Math.round(rel[i].x); f.y = Math.round(rel[i].y); });
+
+// Where one part of a person is plainly tied to another.
+const ties: [string, string][] = [
+  ["cv", "engineer"],
+  ["cv", "visual"],
+  ["cv", "curious"],
+  ["cv", "ai"],
+  ["cv", "selftaught"],
+  ["engineer", "curious"],
+  ["engineer", "visual"],
+  ["visual", "autistic"],
+  ["autistic", "writer"],
+  ["autistic", "lonely"],
+  ["autistic", "smalltown"],
+  ["writer", "lonely"],
+  ["writer", "reader"],
+  ["writer", "atheist"],
+  ["writer", "son"],
+  ["reader", "curious"],
+  ["curious", "moves"],
+  ["moves", "lonely"],
+  ["arts", "reader"],
+  ["arts", "curious"],
+  ["son", "atheist"],
+  ["son", "smalltown"],
+  ["lonely", "son"],
+  ["anxious", "autistic"],
+  ["anxious", "lonely"],
+  ["anxious", "impatient"],
+  ["anxious", "existential"],
+  ["inlove", "writer"],
+  ["inlove", "lonely"],
+  ["inlove", "arts"],
+  ["introvert", "lonely"],
+  ["introvert", "writer"],
+  ["introvert", "autistic"],
+  ["doubter", "engineer"],
+  ["doubter", "smalltown"],
+  ["doubter", "existential"],
+  ["housebuilder", "son"],
+  ["housebuilder", "engineer"],
+  ["existential", "atheist"],
+  ["existential", "reader"],
+  ["selftaught", "curious"],
+  ["selftaught", "engineer"],
+  ["selftaught", "reader"],
+  ["observer", "writer"],
+  ["observer", "visual"],
+  ["observer", "smalltown"],
+  ["impatient", "engineer"],
+  ["impatient", "curious"],
+  ["food", "son"],
+  ["food", "atheist"],
+  ["food", "curious"],
+  ["perfectionist", "anxious"],
+  ["perfectionist", "autistic"],
+  ["perfectionist", "impatient"],
+  ["planner", "writer"],
+  ["planner", "curious"],
+  ["planner", "selftaught"],
+  ["advocate", "autistic"],
+  ["advocate", "smalltown"],
+  ["advocate", "writer"],
+  ["endures", "anxious"],
+  ["endures", "lonely"],
+  ["endures", "existential"],
+  ["stopthinking", "anxious"],
+  ["stopthinking", "moves"],
+  ["stopthinking", "existential"],
+  ["library", "reader"],
+  ["library", "smalltown"],
+  ["library", "curious"],
+  ["unstylish", "introvert"],
+  ["unstylish", "doubter"],
+  ["wonder", "curious"],
+  ["wonder", "existential"],
+  ["wonder", "atheist"],
+  ["ai", "engineer"],
+  ["ai", "curious"],
+  ["ai", "doubter"],
+];
+
+const idx = Object.fromEntries(facets.map((f, i) => [f.id, i]));
+const edges = ties.map(([a, b]) => ({
+  a: idx[a], b: idx[b],
+  x1: facets[idx[a]].x, y1: facets[idx[a]].y,
+  x2: facets[idx[b]].x, y2: facets[idx[b]].y,
+}));
+
+const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle');
 ---
 
-<Layout title={title} activeNav="/" description="Arshad Kazi — CV/ML engineer building things to understand how they work. Computer vision, 3D geometry, representation learning." ogImage="/images/profile.png">
+<Layout title={title} activeNav="/" description="Arshad Kazi. Computer vision engineer, writer, reader, son, autistic, curious. A personal site about all of it rather than any one of them." ogImage="/images/profile.png">
   <script type="application/ld+json" slot="head" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Person",
@@ -41,84 +319,310 @@ const vitals = [
     ]
   })} />
 
-  <div class="folio">
+  <div class="self">
     <div class="folio-rule">
-      <span class="folio-mark">Folio&nbsp;I</span>
+      <span class="folio-mark">Arshad Kazi</span>
       <span class="folio-line"></span>
-      <span class="folio-mark">Recto</span>
+      <span class="folio-mark">All of it at once</span>
     </div>
 
-    <div class="folio-body">
-      <!-- Margin column: the plate and its annotations -->
-      <aside class="margin">
-        <figure class="plate">
-          <div class="plate-frame">
-            <img src="/images/profile.png" alt="Arshad Kazi" draggable="false" oncontextmenu="return false" />
-            <span class="plate-guard" aria-hidden="true"></span>
-          </div>
-          <figcaption>
-            <span class="fig-num">Fig. 1</span>
-            <span class="fig-desc">The author, from life</span>
-          </figcaption>
-        </figure>
+    <header class="opening">
+      <div class="opening-text">
+        <h1>I have never been<br />one thing.</h1>
+        <p>Every part below is load bearing, and none of them is the heading the others live under. Touch one and it will show you where it turns up.</p>
+      </div>
 
-        <dl class="vitals">
-          {vitals.map(v => (
-            <div class="vital">
-              <dt>{v.term}</dt>
-              <dd>{v.detail}</dd>
-            </div>
-          ))}
-        </dl>
+      <figure class="plate">
+        <div class="plate-frame">
+          <img src="/images/profile.png" alt="Arshad Kazi" draggable="false" oncontextmenu="return false" />
+          <span class="plate-guard" aria-hidden="true"></span>
+        </div>
+        <figcaption>
+          <span class="fig-num">Fig. 1</span>
+          <span class="fig-desc">All of the above, in one body</span>
+        </figcaption>
+      </figure>
+    </header>
 
-        <div class="correspondence">
-          <span class="margin-label">Correspondence</span>
-          <ol>
-            {correspondence.map(c => (
-              <li>
-                <a href={c.href} target={c.href.startsWith('mailto') ? undefined : '_blank'} rel="noopener">{c.label}</a>
-              </li>
+    <figure class="field">
+      <svg viewBox="0 0 1100 900" id="self-svg" role="img" aria-label="The parts of one person and how they connect">
+        <g id="self-field">
+          <g class="ties">
+            {edges.map(e => (
+              <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} data-a={e.a} data-b={e.b} />
             ))}
-          </ol>
-        </div>
-      </aside>
+          </g>
 
-      <!-- Main column: the letter itself -->
-      <article class="letter">
-        <h1>Arshad Kazi</h1>
-        <p class="standfirst">exploring &ldquo;brain&rdquo;</p>
+          <g class="facets">
+            {facets.map((f, i) => (
+              <g class="facet" data-i={i} tabindex="0" role="button" aria-label={f.label}>
+                <circle class="hit" cx={f.x} cy={f.y} r="34" />
+                <circle class="pip" cx={f.x} cy={f.y} r="4" />
+                <text class="name" x={f.x} y={f.y - 16} text-anchor={anchorFor(f.x)}>{f.label}</text>
+              </g>
+            ))}
+          </g>
+        </g>
+      </svg>
+    </figure>
 
-        <p class="salutation">If you're reading this, you probably ended up here by accident.</p>
+    <!-- Whatever you are pointing at explains itself here. -->
+    <section class="readout" id="readout" aria-live="polite">
+      <p class="ro-empty" id="ro-empty">Thirteen of them. Pick one.</p>
+      <div class="ro-body" id="ro-body" hidden>
+        <p class="ro-label" id="ro-label"></p>
+        <p class="ro-line" id="ro-line"></p>
+        <p class="ro-ev" id="ro-ev"></p>
+      </div>
+    </section>
 
-        <div class="prose">
-          <p>I am a trained engineer working around machine learning. I build things mostly to understand how they work, not just to make them work. Most of my work involves implementing models from scratch and working through training dynamics rather than relying on prebuilt abstractions (<a href="https://github.com/Arshad221b">see my work on GitHub</a>).</p>
-          <p>I am not a researcher and not a conventional developer, even though I spend a lot of time building. I tend to follow problems that require some level of reasoning, and I usually end up exploring them by building, breaking, and figuring out what is actually going on.</p>
-          <p>My primary interest is computer vision, especially problems involving structure, geometry, and representation. Things that can be tested, visualized, and taken apart: 3D reconstruction, pose estimation, representation learning. Some of this lives in my <a href="/notebooks">notebooks</a>.</p>
-          <p>I am intense when I am interested, atheist, and a chronic overthinker. Anxious, often unsatisfied, hard to relax. I jump between ideas, go deep into one, drop it halfway, and return later with a better understanding.</p>
-          <p>I have millions of interests, thousands of questions, and billions of problems I want to resolve. I think about neuroscience, architecture, visual art, food, film, music, and whatever else pulls me in on a given week. I write some of it down in my <a href="/thoughts">thoughts</a>. Most of it stays in my head. I will stay strong though.</p>
-          <p>I am still trying to understand where I stand and what I am trying to do in the long run. This is where I dump things I am working through. Not optimized, not curated, and not meant for social media.</p>
-          <p>Still trying to get found. Maybe that and finding myself are the same search. IDK.</p>
-        </div>
+    <section class="correspondence">
+      <p class="rubric">Correspondence</p>
+      <ol>
+        {correspondence.map(c => (
+          <li>
+            <a href={c.href} target={c.href.startsWith('mailto') ? undefined : '_blank'} rel="noopener">{c.label}</a>
+          </li>
+        ))}
+      </ol>
+    </section>
 
-        <p class="closing">
-          Yours truly,
-          <span class="signature">Arshad</span>
-        </p>
-
-      </article>
-    </div>
-
-    <p class="site-note">* This site is managed by AI, but the content written here is purely human.</p>
+    <p class="colophon">* This site is managed by AI, but the content written here is purely human.</p>
   </div>
 </Layout>
 
+<script is:inline define:vars={{ facets }}>
+(function () {
+  const svg = document.getElementById('self-svg');
+  if (!svg) return;
+
+  const field = document.getElementById('self-field');
+  const groups = Array.from(svg.querySelectorAll('.facet'));
+  const lines = Array.from(svg.querySelectorAll('.ties line'));
+  const pips = groups.map(g => g.querySelector('.pip'));
+  const hits = groups.map(g => g.querySelector('.hit'));
+  const names = groups.map(g => g.querySelector('.name'));
+
+  const empty = document.getElementById('ro-empty');
+  const body = document.getElementById('ro-body');
+  const elLabel = document.getElementById('ro-label');
+  const elLine = document.getElementById('ro-line');
+  const elEv = document.getElementById('ro-ev');
+
+  const neighbours = facets.map(() => []);
+  lines.forEach(l => {
+    const a = Number(l.dataset.a), b = Number(l.dataset.b);
+    neighbours[a].push(b);
+    neighbours[b].push(a);
+  });
+
+  let held = -1;
+  const draw = lines.map(() => null);   // per tie: how far the light has run
+  let intro = 0;                        // one time reveal on first sight
+
+  function show(i) {
+    held = i;
+    const f = facets[i];
+    svg.classList.add('lit');
+    const kin = neighbours[i];
+    groups.forEach((g, k) => {
+      g.classList.toggle('on', k === i);
+      g.classList.toggle('kin', kin.indexOf(k) !== -1);
+    });
+    lines.forEach((l, k) => {
+      const a = Number(l.dataset.a), b = Number(l.dataset.b);
+      const lit = a === i || b === i;
+      l.classList.toggle('on', lit);
+      // Draw outward from the part you are holding, never inward.
+      draw[k] = lit ? { t: 0, from: a === i ? 1 : -1 } : null;
+    });
+    elLabel.textContent = f.label;
+    elLine.textContent = f.line;
+    elEv.innerHTML = f.ev.map(function (e) {
+      const ext = e.h.indexOf('http') === 0 ? ' target="_blank" rel="noopener"' : '';
+      return '<a href="' + e.h + '"' + ext + '>' + e.t + '</a>';
+    }).join('<span class="sep">·</span>');
+    empty.hidden = true;
+    body.hidden = false;
+
+    // Restart the rise so every facet arrives, rather than only the first.
+    [elLabel, elLine, elEv].forEach(function (el) {
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.animation = '';
+    });
+  }
+
+  function clear() {
+    held = -1;
+    for (let k = 0; k < draw.length; k++) draw[k] = null;
+    svg.classList.remove('lit');
+    groups.forEach(g => g.classList.remove('on', 'kin'));
+    lines.forEach(l => l.classList.remove('on'));
+  }
+
+  groups.forEach((g, i) => {
+    g.addEventListener('mouseenter', () => show(i));
+    g.addEventListener('focus', () => show(i));
+    g.addEventListener('click', () => show(i));
+    g.addEventListener('touchstart', () => show(i), { passive: true });
+  });
+  svg.addEventListener('mouseleave', clear);
+
+  /* Tactility. Every part is sprung to where it sits and damped past
+     critical, so it moves when you reach for it and then stops dead.
+     What you are holding draws its own relations in a little closer. */
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const HOME = 40, DRAG = 26, PULL = 300;
+  const clamp = v => (v < 0 ? 0 : v > 1 ? 1 : v);
+  const ease = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+  const sparkLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  sparkLayer.setAttribute('class', 'sparks');
+  const cid = Array.prototype.slice.call(svg.attributes)
+    .filter(a => a.name.indexOf('data-astro-cid-') === 0)[0];
+  if (cid) sparkLayer.setAttribute(cid.name, '');
+  field.appendChild(sparkLayer);
+
+  function makeSpark() {
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('r', '2.6');
+    c.setAttribute('opacity', '0');
+    if (cid) c.setAttribute(cid.name, '');
+    sparkLayer.appendChild(c);
+    return c;
+  }
+  const travellers = []; travellers.spare = [];
+  let spark = 1.2;
+  const nodes = facets.map(f => ({ x0: f.x, y0: f.y, x: f.x, y: f.y, vx: 0, vy: 0 }));
+  let clock = 0, last = performance.now(), onScreen = true;
+
+  if (window.IntersectionObserver) {
+    new IntersectionObserver(e => { onScreen = e[0].isIntersecting; }, { rootMargin: '140px' }).observe(svg);
+  }
+
+  function frame(now) {
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+
+    if (!document.hidden && onScreen) {
+      clock += dt;
+
+      // One uniform breath about the centre. Nothing shifts relative to
+      // anything else, so it cannot shimmer.
+      const cyc = (clock % 7) / 7;
+      let fill;
+      if (cyc < 0.34) fill = 0.5 - 0.5 * Math.cos(Math.PI * (cyc / 0.34));
+      else if (cyc < 0.46) fill = 1;
+      else if (cyc < 0.86) fill = 0.5 + 0.5 * Math.cos(Math.PI * ((cyc - 0.46) / 0.4));
+      else fill = 0;
+      field.setAttribute('transform',
+        'translate(550,450) scale(' + (1 + fill * 0.012).toFixed(5) + ') translate(-550,-450)');
+
+      for (let i = 0; i < nodes.length; i++) {
+        const n = nodes[i];
+        let fx = (n.x0 - n.x) * HOME - n.vx * DRAG;
+        let fy = (n.y0 - n.y) * HOME - n.vy * DRAG;
+
+        if (held >= 0 && held !== i && neighbours[held].indexOf(i) !== -1) {
+          const h = nodes[held];
+          const vx = h.x - n.x, vy = h.y - n.y;
+          const d = Math.hypot(vx, vy) || 1;
+          fx += (vx / d) * PULL;
+          fy += (vy / d) * PULL;
+        }
+
+        n.vx += fx * dt; n.vy += fy * dt;
+        n.x += n.vx * dt; n.y += n.vy * dt;
+
+        const x = n.x.toFixed(2), y = n.y.toFixed(2);
+        pips[i].setAttribute('cx', x); pips[i].setAttribute('cy', y);
+        hits[i].setAttribute('cx', x); hits[i].setAttribute('cy', y);
+        names[i].setAttribute('x', x);
+        names[i].setAttribute('y', (n.y - 16).toFixed(2));
+      }
+
+      // The whole field draws itself in once, ties first, names after.
+      if (intro < 1) intro = Math.min(1, intro + dt / 1.9);
+
+      for (let k = 0; k < lines.length; k++) {
+        const l = lines[k], A = nodes[Number(l.dataset.a)], B = nodes[Number(l.dataset.b)];
+        l.setAttribute('x1', A.x.toFixed(2)); l.setAttribute('y1', A.y.toFixed(2));
+        l.setAttribute('x2', B.x.toFixed(2)); l.setAttribute('y2', B.y.toFixed(2));
+
+        const len = Math.hypot(B.x - A.x, B.y - A.y);
+        const d = draw[k];
+
+        if (intro < 1) {
+          // Staggered so the drawing spreads outward instead of appearing at once.
+          const seed = (k * 0.037) % 0.42;
+          const p = ease(clamp((intro - seed) / 0.5));
+          l.setAttribute('stroke-dasharray', len.toFixed(1));
+          l.setAttribute('stroke-dashoffset', (len * (1 - p)).toFixed(1));
+        } else if (d) {
+          d.t = Math.min(1, d.t + dt / 0.36);
+          const p = ease(d.t);
+          l.setAttribute('stroke-dasharray', len.toFixed(1));
+          l.setAttribute('stroke-dashoffset', (len * (1 - p) * d.from).toFixed(1));
+        } else {
+          l.removeAttribute('stroke-dasharray');
+          l.removeAttribute('stroke-dashoffset');
+        }
+      }
+
+      // Names fade up after the lines that reach them.
+      if (intro < 1) {
+        for (let i = 0; i < groups.length; i++) {
+          const seed = 0.3 + (i % 7) * 0.045;
+          groups[i].style.opacity = clamp((intro - seed) / 0.42).toFixed(3);
+        }
+      } else if (groups[0].style.opacity !== '') {
+        groups.forEach(g => { g.style.opacity = ''; });
+      }
+
+      // A quiet signal crossing one connection now and then, so the thing
+      // reads as thinking rather than sitting still.
+      if (held < 0 && intro >= 1) {
+        spark -= dt;
+        if (spark <= 0 && lines.length) {
+          spark = 1.5 + Math.random() * 2.6;
+          const k = Math.floor(Math.random() * lines.length);
+          const l = lines[k];
+          const A = nodes[Number(l.dataset.a)], B = nodes[Number(l.dataset.b)];
+          travellers.push({ ax: A, bx: B, t: 0, dur: 0.7 + Math.random() * 0.5,
+            el: travellers.spare.pop() || makeSpark() });
+        }
+      }
+
+      for (let i = travellers.length - 1; i >= 0; i--) {
+        const tr = travellers[i];
+        tr.t += dt / tr.dur;
+        if (tr.t >= 1) {
+          tr.el.setAttribute('opacity', '0');
+          travellers.spare.push(tr.el);
+          travellers.splice(i, 1);
+          continue;
+        }
+        const p = tr.t;
+        tr.el.setAttribute('cx', (tr.ax.x + (tr.bx.x - tr.ax.x) * p).toFixed(1));
+        tr.el.setAttribute('cy', (tr.ax.y + (tr.bx.y - tr.ax.y) * p).toFixed(1));
+        tr.el.setAttribute('opacity', (Math.sin(p * Math.PI) * 0.75).toFixed(3));
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+
 <style>
-  .folio {
-    max-width: 760px;
+  .self {
+    max-width: 780px;
     margin: 0 auto;
   }
 
-  /* ── Folio rule across the top of the page ─────────── */
+  /* ── Folio rule ────────────────────────────────────── */
   .folio-rule {
     display: flex;
     align-items: center;
@@ -129,11 +633,8 @@ const vitals = [
   .folio-mark {
     font-family: var(--font-serif);
     font-variant: small-caps;
-    font-style: normal;
     font-size: 0.92rem;
     letter-spacing: 0.09em;
-    text-transform: none;
-
     color: var(--color-text-muted);
     white-space: nowrap;
   }
@@ -144,20 +645,16 @@ const vitals = [
     background: var(--color-border);
   }
 
-  .folio-body {
+  /* ── Opening ───────────────────────────────────────── */
+  .opening {
     display: grid;
-    grid-template-columns: 208px 1fr;
+    grid-template-columns: 1fr 186px;
     gap: var(--space-2xl);
     align-items: start;
+    margin-bottom: var(--space-xl);
   }
 
-  /* ── Margin column ─────────────────────────────────── */
-  .margin {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-  }
-
+  /* ── The plate ─────────────────────────────────────── */
   .plate {
     margin: 0;
   }
@@ -173,10 +670,10 @@ const vitals = [
   .plate-frame::after {
     content: '';
     position: absolute;
-    width: 9px;
-    height: 9px;
+    width: 10px;
+    height: 10px;
     border: 1px solid var(--color-accent);
-    opacity: 0.55;
+    opacity: 0.6;
   }
 
   .plate-frame::before {
@@ -198,9 +695,8 @@ const vitals = [
     width: 100%;
     aspect-ratio: 4 / 5;
     object-fit: cover;
-    /* Push the photo toward a sepia study rather than a snapshot. */
-    filter: grayscale(1) sepia(0.42) contrast(1.06) brightness(1.02);
-    /* Not selectable, not draggable, no long-press save sheet. */
+    /* Same ink as the drawing below it, not a snapshot pasted on top. */
+    filter: grayscale(1) sepia(0.46) contrast(1.08) brightness(1.02);
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
@@ -208,7 +704,6 @@ const vitals = [
     pointer-events: none;
   }
 
-  /* Sits over the photo so a press lands here, never on the image. */
   .plate-guard {
     position: absolute;
     inset: 0;
@@ -226,64 +721,220 @@ const vitals = [
   }
 
   .fig-num {
-    font-family: var(--font-serif);
-    font-variant: small-caps;
-    font-style: normal;
-    font-size: 0.92rem;
-    letter-spacing: 0.09em;
-    text-transform: none;
-
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
     color: var(--color-accent);
   }
 
   .fig-desc {
     font-family: var(--font-serif);
     font-style: italic;
-    font-size: 1.0rem;
-    color: var(--color-text-muted);
+    font-size: 0.98rem;
     line-height: 1.4;
-  }
-
-  .vitals {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-    margin: 0;
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--color-border-light);
-  }
-
-  .vital dt {
-    font-family: var(--font-serif);
-    font-variant: small-caps;
-    font-style: normal;
-    font-size: 0.92rem;
-    letter-spacing: 0.09em;
-    text-transform: none;
-
     color: var(--color-text-muted);
-    margin-bottom: 1px;
   }
 
-  .vital dd {
+  .opening h1 {
+    font-size: 3rem;
+    line-height: 1.06;
+    margin: -0.12em 0 var(--space-md);
+  }
+
+  .opening p {
     font-family: var(--font-serif);
-    font-size: 1.05rem;
-    line-height: 1.35;
-    color: var(--color-text-secondary);
+    font-style: italic;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+    max-width: 52ch;
     margin: 0;
   }
 
-  .margin-label {
+  /* ── The field ─────────────────────────────────────── */
+  .field {
+    width: min(1240px, 96vw);
+    margin: 0 0 var(--space-lg);
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .field svg {
     display: block;
-    font-family: var(--font-serif);
-    font-variant: small-caps;
-    font-style: normal;
-    font-size: 0.92rem;
-    letter-spacing: 0.09em;
-    text-transform: none;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
 
+  .ties line {
+    stroke: var(--color-border);
+    stroke-width: 0.8;
+    transition: stroke 0.25s ease, stroke-opacity 0.25s ease;
+  }
+
+  .sparks circle {
+    fill: var(--color-accent);
+  }
+
+  /* The names settle up into place as the field draws itself. */
+  .facet {
+    transition: opacity 0.3s ease;
+  }
+
+  .facet {
+    cursor: pointer;
+    outline: none;
+  }
+
+  .facet .hit {
+    fill: transparent;
+  }
+
+  .facet .pip {
+    fill: var(--color-text-muted);
+    opacity: 0.8;
+    transition: fill 0.2s ease, opacity 0.2s ease;
+  }
+
+  .facet .name {
+    font-family: var(--font-serif);
+    font-size: 21px;
+    fill: var(--color-text-secondary);
+    transition: fill 0.2s ease, opacity 0.2s ease;
+    user-select: none;
+  }
+
+  /* Reaching for one part quietens the others without hiding them. */
+  #self-svg.lit .ties line {
+    stroke-opacity: 0.32;
+  }
+
+  #self-svg.lit .facet .name {
+    opacity: 0.3;
+  }
+
+  #self-svg.lit .facet .pip {
+    opacity: 0.22;
+  }
+
+  #self-svg .ties line.on {
+    stroke: var(--color-accent);
+    stroke-width: 1.2;
+    stroke-opacity: 1;
+  }
+
+  #self-svg .facet.kin .name {
+    opacity: 0.85;
+    fill: var(--color-text);
+  }
+
+  #self-svg .facet.kin .pip {
+    opacity: 0.9;
+    fill: var(--color-accent);
+  }
+
+  #self-svg .facet.on .name {
+    opacity: 1;
+    fill: var(--color-accent);
+    font-style: italic;
+  }
+
+  #self-svg .facet.on .pip {
+    opacity: 1;
+    fill: var(--color-accent);
+  }
+
+  .facet:focus-visible .name {
+    fill: var(--color-accent);
+  }
+
+  /* ── Readout ───────────────────────────────────────── */
+  .readout {
+    min-height: 12.5rem;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .ro-empty {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--color-text-muted);
-    margin-bottom: var(--space-sm);
+    opacity: 0.7;
+    margin: 0;
+  }
+
+  .ro-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin: 0 0 var(--space-sm);
+  }
+
+  .ro-label,
+  .ro-line,
+  .ro-ev {
+    animation: rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .ro-line { animation-delay: 0.04s; }
+  .ro-ev { animation-delay: 0.08s; }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(7px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ro-label, .ro-line, .ro-ev { animation: none; }
+  }
+
+  .ro-line {
+    font-family: var(--font-serif);
+    font-size: 1.42rem;
+    line-height: 1.6;
+    color: var(--color-text);
+    max-width: 54ch;
+    margin: 0 0 var(--space-md);
+  }
+
+  .ro-ev {
+    margin: 0;
+  }
+
+  .ro-ev :global(a) {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .ro-ev :global(a:hover) {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+  }
+
+  .ro-ev :global(.sep) {
+    color: var(--color-text-muted);
+    opacity: 0.5;
+    margin: 0 0.6rem;
+  }
+
+  /* ── Correspondence ────────────────────────────────── */
+  .rubric {
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-sm);
   }
 
   .correspondence {
@@ -295,188 +946,72 @@ const vitals = [
     list-style: none;
     padding: 0;
     margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-lg);
     counter-reset: corr;
   }
 
   .correspondence li {
     counter-increment: corr;
-    margin-bottom: 0.28rem;
     display: flex;
     align-items: baseline;
     gap: 0.5rem;
+    margin: 0;
   }
 
   .correspondence li::before {
-    content: counter(corr, upper-roman) '.';
+    content: counter(corr, decimal-leading-zero);
     font-family: var(--font-mono);
-    font-size: 0.6rem;
+    font-size: 0.58rem;
     color: var(--color-text-muted);
-    min-width: 1.6em;
-    text-align: right;
   }
 
   .correspondence a {
     font-family: var(--font-serif);
     font-size: 1.1rem;
     color: var(--color-text-secondary);
-    text-decoration: none;
     border-bottom: 1px solid transparent;
   }
 
   .correspondence a:hover {
     color: var(--color-accent);
     border-bottom-color: var(--color-accent);
-    text-decoration: none;
   }
 
-  /* ── The letter ────────────────────────────────────── */
-  .letter h1 {
-    font-size: 2.1rem;
-    margin: -0.15em 0 0.1em;
-  }
-
-  .standfirst {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 1.22rem;
-    letter-spacing: 0.02em;
-    text-transform: none;
-    color: var(--color-text-muted);
-    margin: 0 0 var(--space-lg);
-  }
-
-  .salutation {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 1.26rem;
-    color: var(--color-text-muted);
-    margin: 0 0 var(--space-lg);
-    padding-bottom: var(--space-md);
-    border-bottom: 1px solid var(--color-border-light);
-  }
-
-  /* Marginal paragraph numerals, the way notes get indexed. */
-  .prose {
-    counter-reset: para;
-  }
-
-  .prose p {
-    position: relative;
-    font-size: 1.17rem;
-    line-height: 1.85;
-    color: var(--color-text-secondary);
-    margin: 0 0 1.3em;
-  }
-
-  .prose p::before {
-    counter-increment: para;
-    content: counter(para);
-    position: absolute;
-    left: -2.4rem;
-    top: 0.45em;
+  .colophon {
     font-family: var(--font-mono);
     font-size: 0.6rem;
-    color: var(--color-text-muted);
-    opacity: 0.55;
-  }
-
-  .prose a {
-    color: var(--color-accent);
-    text-decoration: none;
-    border-bottom: 1px solid var(--color-accent-soft);
-  }
-
-  .prose a:hover {
-    border-bottom-color: var(--color-accent);
-    text-decoration: none;
-  }
-
-  .closing {
-    font-family: var(--font-serif);
-    font-style: italic;
-    color: var(--color-text-muted);
-    margin: var(--space-lg) 0 0;
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--color-border-light);
-  }
-
-  .signature {
-    display: block;
-    font-style: normal;
-    font-size: 1.5rem;
-    color: var(--color-text);
-    margin-top: 0.2em;
-  }
-
-  .site-note {
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
     letter-spacing: 0.08em;
     color: var(--color-text-muted);
     opacity: 0.7;
-    margin: var(--space-2xl) 0 0;
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--color-border-light);
+    margin: var(--space-xl) 0 0;
   }
 
-  @media (max-width: 700px) {
-    /* Flatten both columns into one reading order: who, then the plate,
-       then the index of vitals, then the letter, with the links last. */
-    .folio-body {
-      display: grid;
+  @media (max-width: 760px) {
+    .opening {
       grid-template-columns: 1fr;
-      row-gap: var(--space-lg);
+      gap: var(--space-lg);
     }
 
-    .margin,
-    .letter {
-      display: contents;
-    }
-
-    .letter h1 { order: 1; margin: 0; font-size: 1.75rem; }
-    .standfirst { order: 2; margin: 0; }
-    .plate { order: 3; }
-    .vitals { order: 4; border-top: none; padding-top: 0; }
-    .salutation { order: 5; margin: 0; padding-bottom: var(--space-md); }
-    .prose { order: 6; }
-    .closing { order: 7; margin: 0; }
-    .correspondence { order: 8; }
-
-    /* Centred and modest, so it reads as a plate on the page rather
-       than a thumbnail stranded beside empty space. */
     .plate-frame {
-      max-width: 164px;
-      margin: 0 auto;
+      max-width: 150px;
     }
 
-    .plate figcaption {
-      align-items: center;
-      text-align: center;
+    .opening h1 {
+      font-size: 2.1rem;
     }
 
-    /* Two up, so the index fills the width instead of running down a
-       narrow strip beside the plate. */
-    .vitals {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      column-gap: var(--space-lg);
-      row-gap: var(--space-md);
+    .facet .name {
+      font-size: 27px;
     }
 
-    .prose p::before {
-      display: none;
+    .readout {
+      min-height: 15rem;
     }
 
-    .site-note {
-      margin-top: var(--space-xl);
+    .ro-line {
+      font-size: 1.2rem;
     }
   }
-
-  @media (max-width: 400px) {
-    .vitals {
-      grid-template-columns: 1fr;
-      row-gap: var(--space-sm);
-    }
-  }
-
 </style>

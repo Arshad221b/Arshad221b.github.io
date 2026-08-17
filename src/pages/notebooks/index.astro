@@ -4,7 +4,7 @@ import { days as neuroscienceDays } from '../../data/neuroscience-days';
 import { days as emotionDays } from '../../data/emotion-days';
 import { days as modernNetsDays } from '../../data/modern-nets-days';
 import { days as vlmSearchDays } from '../../data/vlm-search-days';
-import { entries as slamEntries, months as slamMonths } from '../../data/slam-entries';
+import { entries as slamEntries } from '../../data/slam-entries';
 
 
 const title = "Notebooks — Arshad Kazi";
@@ -19,20 +19,18 @@ const longRunning = [
     startDate: "2026-05-13",
     description: "Building a full SLAM pipeline from scratch. Camera models, feature extraction, matching, motion estimation, mapping, loop closure, graph optimization. Theory and code, no shortcuts.",
     tags: ["computer vision", "robotics", "geometry"],
+    scope: [
+      "Camera models",
+      "Feature extraction",
+      "Matching",
+      "Motion estimation",
+      "Mapping",
+      "Loop closure",
+      "Graph optimization",
+    ],
     entryCount: slamEntries.length,
-    months: slamMonths,
-    entries: slamEntries,
   },
 ];
-
-function getEntriesForMonth(entries: typeof slamEntries, month: string) {
-  return entries.filter(e => e.date.startsWith(month));
-}
-
-function formatMonthShort(monthStr: string): string {
-  const date = new Date(monthStr + '-01T00:00:00');
-  return date.toLocaleDateString('en-US', { month: 'short' });
-}
 
 const experiments = [
   {
@@ -93,6 +91,55 @@ function formatDate(dateStr: string): string {
   const date = new Date(dateStr + 'T00:00:00');
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
+
+// Everything below is counted from the actual day data, so the figures on this
+// page can never drift from what is written inside the notebooks.
+type AnyDay = {
+  day: number;
+  curiosityTitle?: string;
+  summary?: string;
+  bullets?: string[];
+  sections?: { title: string; bullets?: string[] }[];
+};
+
+const dayData: Record<string, AnyDay[]> = {
+  neuroscience: neuroscienceDays,
+  emotion: emotionDays,
+  'modern-nets': modernNetsDays,
+  'vlm-search': vlmSearchDays,
+};
+
+function countNotes(days: AnyDay[]): number {
+  return days.reduce((total, d) => {
+    const own = d.bullets?.length ?? 0;
+    const inSections = (d.sections ?? []).reduce((n, s) => n + (s.bullets?.length ?? 0), 0);
+    return total + own + inSections;
+  }, 0);
+}
+
+function countSections(days: AnyDay[]): number {
+  return days.reduce((total, d) => total + (d.sections?.length ?? 0), 0);
+}
+
+const stats = Object.fromEntries(
+  Object.entries(dayData).map(([slug, days]) => {
+    const written = days.filter(d => d.curiosityTitle);
+    return [slug, {
+      questions: written.map(d => ({
+        day: d.day,
+        title: d.curiosityTitle as string,
+        // Day pages only get built when there is something written on them.
+        hasPage: (d.bullets?.length ?? 0) > 0,
+      })),
+      notes: countNotes(days),
+      sections: countSections(days),
+    }];
+  })
+);
+
+const totalDays = experiments.reduce((n, e) => n + e.completedDays, 0);
+const totalNotes = Object.values(stats).reduce((n, s) => n + s.notes, 0);
+const totalQuestions = Object.values(stats).reduce((n, s) => n + s.questions.length, 0);
 ---
 
 <Layout title={title} activeNav="/notebooks" description="Time-boxed deep dives into topics I'm curious about. Pick a question, spend a week on it, write what I learn." ogImage="/images/og-notebooks.jpg">
@@ -118,6 +165,26 @@ function formatDate(dateStr: string): string {
       </details>
     </header>
 
+    <!-- What is actually inside, in figures. -->
+    <dl class="figures">
+      <div>
+        <dt>Days written</dt>
+        <dd>{totalDays}</dd>
+      </div>
+      <div>
+        <dt>Questions chased</dt>
+        <dd>{totalQuestions}</dd>
+      </div>
+      <div>
+        <dt>Notes taken</dt>
+        <dd>{totalNotes}</dd>
+      </div>
+      <div>
+        <dt>Volumes</dt>
+        <dd>{longRunning.length + experiments.length}</dd>
+      </div>
+    </dl>
+
     <!-- ── Open ──────────────────────────────────────── -->
     <div class="ledger-head">
       <span class="ledger-title">Open</span>
@@ -126,18 +193,36 @@ function formatDate(dateStr: string): string {
 
     <div class="ledger">
       {longRunning.map((proj, i) => (
-        <a href={`/notebooks/${proj.slug}`} class="volume open">
-          <span class="vol-num">{String(i + 1).padStart(2, '0')}</span>
-          <div class="vol-main">
-            <h2>{proj.title}</h2>
-            <p>{proj.description}</p>
+        <div class="volume-wrap">
+          <a href={`/notebooks/${proj.slug}`} class="volume open">
+            <span class="vol-num">{String(i + 1).padStart(2, '0')}</span>
+            <div class="vol-main">
+              <h2>{proj.title}</h2>
+              <p>{proj.description}</p>
+            </div>
+            <div class="vol-meta">
+              <span class="meta-figure">{proj.entryCount}</span>
+              <span class="meta-unit">{proj.entryCount === 1 ? 'entry' : 'entries'}</span>
+              <span class="meta-date">from {formatDate(proj.startDate)}</span>
+            </div>
+          </a>
+
+          <div class="vol-body">
+            <p class="body-label">The pipeline, stage by stage</p>
+            <ol class="stages">
+              {proj.scope.map((stage, s) => (
+                <li>
+                  <span class="q-day">{String(s + 1).padStart(2, '0')}</span>
+                  <span class="q-text">{stage}</span>
+                </li>
+              ))}
+            </ol>
+            <p class="running-note">Running over {proj.duration}, {proj.commitment}. Entries land here as each stage gets built.</p>
+            <ul class="tags">
+              {proj.tags.map(tag => <li>{tag}</li>)}
+            </ul>
           </div>
-          <div class="vol-meta">
-            <span class="meta-figure">{proj.entryCount}</span>
-            <span class="meta-unit">{proj.entryCount === 1 ? 'entry' : 'entries'}</span>
-            <span class="meta-date">from {formatDate(proj.startDate)}</span>
-          </div>
-        </a>
+        </div>
       ))}
 
       {experiments.filter(e => e.status === 'active').map((exp, i) => (
@@ -169,8 +254,7 @@ function formatDate(dateStr: string): string {
 
     <div class="ledger">
       {experiments.filter(e => e.status === 'completed').map((exp, i) => {
-        const days = exp.slug === 'neuroscience' ? neuroscienceDays : exp.slug === 'emotion' ? emotionDays : exp.slug === 'modern-nets' ? modernNetsDays : exp.slug === 'vlm-search' ? vlmSearchDays : [];
-        const activeDays = days.filter(d => d.curiosityTitle);
+        const stat = stats[exp.slug];
         return (
         <div class="volume-wrap">
           <a href={`/notebooks/${exp.slug}`} class="volume">
@@ -186,19 +270,46 @@ function formatDate(dateStr: string): string {
             </div>
           </a>
 
-          {activeDays.length > 0 && (
-            <details class="contents">
-              <summary>Contents<span class="sum-count">{activeDays.length}</span></summary>
-              <ol class="questions">
-                {activeDays.map(d => (
-                  <li>
-                    <span class="q-day">{String(d.day).padStart(2, '0')}</span>
-                    <span class="q-text">{d.curiosityTitle}</span>
-                  </li>
-                ))}
-              </ol>
-            </details>
-          )}
+          <div class="vol-body">
+            {stat && stat.questions.length > 0 && (
+              <>
+                <p class="body-label">What I asked, day by day</p>
+                <ol class="questions">
+                  {stat.questions.map(q => (
+                    <li>
+                      {q.hasPage ? (
+                        <a href={`/notebooks/${exp.slug}/day-${q.day}`}>
+                          <span class="q-day">{String(q.day).padStart(2, '0')}</span>
+                          <span class="q-text">{q.title}</span>
+                        </a>
+                      ) : (
+                        <span class="q-row">
+                          <span class="q-day">{String(q.day).padStart(2, '0')}</span>
+                          <span class="q-text">{q.title}</span>
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </>
+            )}
+
+            <blockquote class="verdict">
+              <p class="body-label">Where it landed</p>
+              <p>{exp.conclusion}</p>
+            </blockquote>
+
+            <div class="vol-foot">
+              <ul class="tags">
+                {exp.tags.map(tag => <li>{tag}</li>)}
+              </ul>
+              {stat && (
+                <span class="counts">
+                  {stat.notes} notes{stat.sections > 0 ? `, ${stat.sections} sections` : ''}, {exp.commitment}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       );})}
     </div>
@@ -258,8 +369,7 @@ function formatDate(dateStr: string): string {
   }
 
   /* The long rationale stays folded until asked for. */
-  .why summary,
-  .contents summary {
+  .why summary {
     font-family: var(--font-serif);
     font-variant: small-caps;
     font-style: normal;
@@ -277,25 +387,21 @@ function formatDate(dateStr: string): string {
     user-select: none;
   }
 
-  .why summary::-webkit-details-marker,
-  .contents summary::-webkit-details-marker {
+  .why summary::-webkit-details-marker {
     display: none;
   }
 
-  .why summary::before,
-  .contents summary::before {
+  .why summary::before {
     content: '+';
     font-size: 0.85rem;
     line-height: 1;
   }
 
-  .why[open] summary::before,
-  .contents[open] summary::before {
+  .why[open] summary::before {
     content: '−';
   }
 
-  .why summary:hover,
-  .contents summary:hover {
+  .why summary:hover {
     color: var(--color-accent);
   }
 
@@ -313,6 +419,39 @@ function formatDate(dateStr: string): string {
 
   .why-body p:last-child {
     margin-bottom: 0;
+  }
+
+  /* ── Figures band ──────────────────────────────────── */
+  .figures {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-md) 0;
+    margin: 0 0 var(--space-2xl);
+  }
+
+  .figures div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.25rem;
+  }
+
+  .figures dt {
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .figures dd {
+    font-family: var(--font-serif);
+    font-size: 1.9rem;
+    line-height: 1;
+    color: var(--color-text);
+    margin: 0;
   }
 
   /* ── Ledger ────────────────────────────────────────── */
@@ -419,10 +558,6 @@ function formatDate(dateStr: string): string {
     color: var(--color-text-muted);
     margin: 0;
     max-width: 54ch;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
   }
 
   /* ── Figures column, right aligned like a ledger ───── */
@@ -481,28 +616,56 @@ function formatDate(dateStr: string): string {
     background: var(--color-accent);
   }
 
-  /* ── Contents disclosure ───────────────────────────── */
-  .contents {
-    padding: 0 0 var(--space-md) calc(2.4rem + var(--space-md));
+  /* ── Volume body: the contents, out in the open ────── */
+  .vol-body {
+    padding: 0 0 var(--space-lg) calc(2.4rem + var(--space-md));
   }
 
-  .sum-count {
-    font-size: 0.6rem;
-    opacity: 0.65;
+  .body-label {
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-xs);
   }
 
-  .questions {
+  .questions,
+  .stages {
     list-style: none;
-    padding: var(--space-sm) 0 0;
-    margin: 0;
+    padding: 0;
+    margin: 0 0 var(--space-md);
   }
 
-  .questions li {
-    display: flex;
-    gap: 0.7rem;
-    align-items: baseline;
-    padding: 0.12rem 0;
+  .questions li,
+  .stages li {
+    padding: 0;
     margin: 0;
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .questions li:first-child,
+  .stages li:first-child {
+    border-top: none;
+  }
+
+  .questions a,
+  .q-row,
+  .stages li {
+    display: flex;
+    gap: 0.8rem;
+    align-items: baseline;
+    padding: 0.4rem 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .questions a:hover {
+    text-decoration: none;
+  }
+
+  .questions a:hover .q-text {
+    color: var(--color-accent);
   }
 
   .q-day {
@@ -510,6 +673,7 @@ function formatDate(dateStr: string): string {
     font-size: 0.6rem;
     color: var(--color-accent);
     opacity: 0.8;
+    flex-shrink: 0;
   }
 
   .q-text {
@@ -517,6 +681,68 @@ function formatDate(dateStr: string): string {
     font-size: 1.08rem;
     line-height: 1.45;
     color: var(--color-text-secondary);
+    transition: color 0.15s ease;
+  }
+
+  /* ── Conclusion ────────────────────────────────────── */
+  .verdict {
+    border-left: 2px solid var(--color-border);
+    padding: 0 0 0 var(--space-md);
+    margin: 0 0 var(--space-md);
+  }
+
+  .verdict p:last-child {
+    font-family: var(--font-serif);
+    font-size: 1.08rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+    max-width: 66ch;
+    margin: 0;
+  }
+
+  .running-note {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-md);
+    max-width: 60ch;
+  }
+
+  /* ── Foot: tags and counts ─────────────────────────── */
+  .vol-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+  }
+
+  .tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 0;
+    margin: 0;
+  }
+
+  .tags li {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    padding: 0.15rem 0.45rem;
+    margin: 0;
+  }
+
+  .counts {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--color-text-muted);
+    opacity: 0.75;
   }
 
   @media (max-width: 640px) {
@@ -545,8 +771,17 @@ function formatDate(dateStr: string): string {
       font-size: 1.2rem;
     }
 
-    .contents {
+    .vol-body {
       padding-left: calc(1.9rem + var(--space-md));
+    }
+
+    .figures {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-sm) var(--space-md);
+    }
+
+    .figures dd {
+      font-size: 1.5rem;
     }
   }
 </style>
