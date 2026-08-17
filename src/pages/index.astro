@@ -311,8 +311,8 @@ const spanX = Math.max(...wideXs) - minX;
 const spanY = Math.max(...wideYs) - minY;
 
 const tall = facets.map(f => ({
-  x: 70 + ((f.x - minX) / spanX) * (TALL_W - 140),
-  y: 70 + ((f.y - minY) / spanY) * (TALL_H - 140),
+  x: 44 + ((f.x - minX) / spanX) * (TALL_W - 88),
+  y: 46 + ((f.y - minY) / spanY) * (TALL_H - 92),
 }));
 tall.forEach(t => { t.x0 = t.x; t.y0 = t.y; });
 
@@ -334,8 +334,8 @@ for (let pass = 0; pass < 700; pass++) {
   for (const t of tall) {
     t.x += (t.x0 - t.x) * 0.03;
     t.y += (t.y0 - t.y) * 0.03;
-    t.x = Math.max(60, Math.min(TALL_W - 60, t.x));
-    t.y = Math.max(60, Math.min(TALL_H - 60, t.y));
+    t.x = Math.max(38, Math.min(TALL_W - 38, t.x));
+    t.y = Math.max(40, Math.min(TALL_H - 40, t.y));
   }
 }
 
@@ -343,7 +343,7 @@ const tallLayout = {
   w: TALL_W, h: TALL_H,
   // Room on every side for a name to sit beside its cell without leaving
   // the box, so nothing is clipped and nothing pushes the page sideways.
-  vb: (-96) + ' ' + (-30) + ' ' + (TALL_W + 192) + ' ' + (TALL_H + 60),
+  vb: (-52) + ' ' + (-18) + ' ' + (TALL_W + 104) + ' ' + (TALL_H + 40),
   pos: tall.map(t => ({ x: Math.round(t.x), y: Math.round(t.y) })),
 };
 const wideLayout = {
@@ -849,6 +849,14 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   .self {
     max-width: 780px;
     margin: 0 auto;
+
+    /* The words get a fixed allowance and the plate takes everything else.
+       Locking the allowance is the point: facets run from nine words to
+       forty, and without it the whole page would shift under your finger
+       every time you read a different one. */
+    --nav-h: 47px;
+    --words: 13.5rem;
+    --gaps: 2.4rem;
   }
 
   /* ── Folio rule ────────────────────────────────────── */
@@ -877,10 +885,10 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   /* ── Opening ───────────────────────────────────────── */
   .opening {
     display: grid;
-    grid-template-columns: 1fr 186px;
-    gap: var(--space-2xl);
-    align-items: start;
-    margin-bottom: var(--space-xl);
+    grid-template-columns: 1fr 150px;
+    gap: var(--space-xl);
+    align-items: center;
+    margin-bottom: var(--space-md);
   }
 
   /* ── The plate ─────────────────────────────────────── */
@@ -966,16 +974,16 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   }
 
   .opening h1 {
-    font-size: 3rem;
+    font-size: clamp(1.9rem, 4.4vh, 2.9rem);
     line-height: 1.06;
-    margin: -0.12em 0 var(--space-md);
+    margin: -0.12em 0 var(--space-sm);
   }
 
   .opening p {
     font-family: var(--font-serif);
     font-style: italic;
-    font-size: 1.2rem;
-    line-height: 1.6;
+    font-size: clamp(0.98rem, 1.9vh, 1.16rem);
+    line-height: 1.5;
     color: var(--color-text-muted);
     max-width: 52ch;
     margin: 0;
@@ -992,10 +1000,11 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   .field svg {
     display: block;
     width: 100%;
-    /* Sized against the viewport so the plate and the words it produces
-       always share one screen. preserveAspectRatio letterboxes rather than
-       distorting, so the arrangement is never squashed. */
-    height: min(58vh, 620px);
+    /* Whatever is left of the screen once the bar and the words are paid
+       for. svh rather than vh so a phone's disappearing toolbar does not
+       resize the drawing while you are reading it. */
+    height: max(230px, calc(100vh - var(--nav-h) - var(--words) - var(--gaps)));
+    height: max(230px, calc(100svh - var(--nav-h) - var(--words) - var(--gaps)));
     overflow: visible;
   }
 
@@ -1100,10 +1109,14 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   /* ── Readout ───────────────────────────────────────── */
   .readout {
-    min-height: 11rem;
+    /* Fixed, not minimum. A short facet and a long one occupy exactly the
+       same space, so nothing below moves when you change what you are
+       reading. */
+    height: var(--words);
     padding-top: var(--space-md);
     border-top: 1px solid var(--color-border);
     margin-bottom: var(--space-2xl);
+    overflow: hidden;
   }
 
   .ro-empty {
@@ -1240,13 +1253,31 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   }
 
   @media (max-width: 760px) {
-    .opening {
-      grid-template-columns: 1fr;
-      gap: var(--space-lg);
+    .self {
+      /* Narrower column, so the same sentence runs to more lines. */
+      --words: 15rem;
+      --gaps: 1.6rem;
     }
 
-    .plate-frame {
-      max-width: 150px;
+    .opening {
+      grid-template-columns: 1fr 88px;
+      gap: var(--space-md);
+      align-items: center;
+      margin-bottom: var(--space-sm);
+    }
+
+    .plate figcaption {
+      display: none;
+    }
+
+    .folio-rule {
+      margin-bottom: var(--space-sm);
+    }
+
+    /* Claw back the page's top padding, so the centrepiece starts higher
+       up the screen rather than after a run of empty margin. */
+    .self {
+      margin-top: calc(var(--space-md) * -1);
     }
 
     .opening h1 {
@@ -1296,12 +1327,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
       margin-bottom: 0;
     }
 
-    .field svg {
-      height: min(44vh, 430px);
-    }
-
     .readout {
-      min-height: 10.5rem;
       border-top: none;
       padding-top: var(--space-sm);
       scroll-margin-top: 70px;
@@ -1323,12 +1349,9 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   /* Short viewports last, so it overrides the width based sizes above.
      When there is not enough screen, the plate is what gives way. */
   @media (max-height: 720px) {
-    .field svg {
-      height: min(36vh, 330px);
-    }
-
-    .readout {
-      min-height: 7rem;
+    .self {
+      --words: 13.5rem;
+      --gaps: 1rem;
     }
 
     .ro-line {
