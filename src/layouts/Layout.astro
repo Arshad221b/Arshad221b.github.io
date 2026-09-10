@@ -11,7 +11,7 @@ const siteUrl = 'https://arshad-kazi.com';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
 const defaultDescription = 'Arshad Kazi — CV/ML engineer building things to understand how they work. Computer vision, 3D geometry, representation learning.';
 const metaDescription = description || defaultDescription;
-const metaImage = ogImage ? `${siteUrl}${ogImage}` : `${siteUrl}/images/profile.png`;
+const metaImage = ogImage ? `${siteUrl}${ogImage}` : `${siteUrl}/images/profile.jpg`;
 
 const navItems = [
   { label: 'About', href: '/' },
