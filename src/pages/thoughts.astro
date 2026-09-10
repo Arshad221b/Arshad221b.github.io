@@ -778,8 +778,8 @@ const axons = mapEdges.map((e, i) => {
     border-top: none;
   }
 
-  /* The picture sits centred above its entry rather than off to one side,
-     so the seventy one posts without one do not read as missing something. */
+  /* The picture sits above its entry rather than off to one side, so the
+     seventy one posts without one do not read as missing something. */
   .thumb {
     display: block;
     /* Fills the entry on a phone, capped so it stays a picture rather than
@@ -789,7 +789,9 @@ const axons = mapEdges.map((e, i) => {
     aspect-ratio: 3 / 2;
     object-fit: cover;
     border-radius: 2px;
-    margin: 0 auto var(--space-sm);
+    /* Flush with the date, title and description below it. Centred, it sat
+       150px to the right of everything else in the entry. */
+    margin: 0 0 var(--space-sm);
     /* Toned to the page rather than sitting on it as a colour photograph. */
     filter: grayscale(1) sepia(0.38) contrast(1.04);
     background: var(--color-border-light);
