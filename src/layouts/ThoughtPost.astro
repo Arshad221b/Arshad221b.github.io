@@ -12,13 +12,29 @@ import Layout from './Layout.astro';
 const siteUrl = 'https://arshad-kazi.com';
 const articleUrl = new URL(Astro.url.pathname, siteUrl).href;
 
+/* Share the essay's own image rather than the site's card. Each post's
+   source is read at build time and its first Cloudinary image is asked for
+   at the size chat apps want, as a jpeg because some of them will not
+   render webp. Nothing is copied into this repository. */
+const sources = import.meta.glob('../pages/thoughts/*.astro', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+const slug = Astro.url.pathname.replace(/\/$/, '').split('/').pop();
+
+let shareImage = '/images/og-thoughts.jpg';
+for (const [path, raw] of Object.entries(sources)) {
+  if (path.split('/').pop()!.replace('.astro', '') !== slug) continue;
+  const found = raw.match(/https:\/\/res\.cloudinary\.com\/[^"']+/);
+  if (found) {
+    shareImage = found[0].replace('/upload/', '/upload/w_1200,h_630,c_fill,g_auto,q_auto,f_jpg/');
+  }
+}
+
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 ---
 
-<Layout title={`${title} — Arshad Kazi`} activeNav="/thoughts" description={description} ogImage="/images/og-thoughts.jpg">
+<Layout title={`${title} — Arshad Kazi`} activeNav="/thoughts" description={description} ogImage={shareImage}>
   <script type="application/ld+json" slot="head" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Article",

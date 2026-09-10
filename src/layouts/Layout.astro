@@ -11,7 +11,11 @@ const siteUrl = 'https://arshad-kazi.com';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
 const defaultDescription = 'Arshad Kazi — CV/ML engineer building things to understand how they work. Computer vision, 3D geometry, representation learning.';
 const metaDescription = description || defaultDescription;
-const metaImage = ogImage ? `${siteUrl}${ogImage}` : `${siteUrl}/images/profile.jpg`;
+/* An ogImage may be a path on this site or a full URL somewhere else, so
+   only the local ones get the site prefixed onto them. */
+const metaImage = ogImage
+  ? (ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`)
+  : `${siteUrl}/images/og-about.jpg`;
 
 const navItems = [
   { label: 'About', href: '/' },
@@ -45,6 +49,12 @@ const navItems = [
     <meta property="og:title" content={title} />
     <meta property="og:description" content={metaDescription} />
     <meta property="og:image" content={metaImage} />
+    <meta property="og:image:secure_url" content={metaImage} />
+    {/* Every card this site serves is 1200 by 630. Chat apps use these to
+        decide between a large preview and a small thumbnail. */}
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Arshad Kazi" />
