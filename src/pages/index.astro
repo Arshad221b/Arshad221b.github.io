@@ -11,7 +11,7 @@ const correspondence = [
   { label: "Email", href: "mailto:arshadkaziblog@gmail.com" },
 ];
 
-/* Thirty two facets, none of them the container for the others. Every one
+/* The parts of one person, none of them the container for the others. Every one
    carries the evidence for itself, because a claim about yourself is worth
    nothing without somewhere it actually shows. Placed by hand rather than
    by a layout solver, so nothing sits at a centre. */
@@ -37,13 +37,13 @@ const facets = [
     ev: [{ t: "the notebooks", h: "/notebooks" }, { t: "Becoming a self-learning ninja", h: "/thoughts/becoming-self-learning-ninja" }],
   },
   {
-    id: "moves", label: "moves to think", x: 980, y: 176,
-    line: "When a thought will not resolve, I go and move until it does. The body sorts out things the head has been failing at all week.",
+    id: "moves", label: "exercise", x: 980, y: 176,
+    line: "When a thought will not resolve, moving usually shifts it. Most of my essays got sorted out on a ride.",
     ev: [{ t: "A philosophy of exercise", h: "/thoughts/a-philosophy-of-exercise-which-transforms-body-and-soul" }],
   },
   {
     id: "reader", label: "reader", x: 800, y: 252,
-    line: "Grandin, Price, Murakami, Kalanithi. I read to borrow other people's eyes for a while, especially the ones who see nothing like I do.",
+    line: "Grandin, Price, Murakami, Kalanithi. Mostly people who see things nothing like I do.",
     ev: [{ t: "Reading Murakami", h: "/thoughts/what-i-learned-from-reading-haruki-murakami" }, { t: "When Breath Becomes Air", h: "/thoughts/when-breath-becomes-air" }],
   },
   {
@@ -57,7 +57,7 @@ const facets = [
     ev: [{ t: "the thoughts", h: "/thoughts" }, { t: "Why should I write about me", h: "/thoughts/why-should-i-write" }],
   },
   {
-    id: "smalltown", label: "from a small town", x: 300, y: 382,
+    id: "smalltown", label: "small town", x: 300, y: 382,
     line: "Less than a tenth of India lives in the metros. I came from the rest of it, and it takes far longer to finish leaving than anybody tells you.",
     ev: [{ t: "Before relocating", h: "/thoughts/why-you-should-think-really-hard-before-relocating-for-studyjob" }, { t: "Choosing a college", h: "/thoughts/heres-how-to-choose-a-good-college-after-12th-jeeneet" }],
   },
@@ -67,13 +67,13 @@ const facets = [
     ev: [{ t: "Good and bad music", h: "/thoughts/whats-the-difference-between-good-bad-music" }, { t: "Drive My Car", h: "/thoughts/drive-my-car-a-movie-about-love-and-disconnect" }],
   },
   {
-    id: "lonely", label: "often alone", x: 770, y: 476,
-    line: "The thing I understand least, which is exactly why it is the thing I keep writing about.",
+    id: "lonely", label: "loneliness", x: 770, y: 476,
+    line: "The thing I understand least, so it is the thing I keep writing about.",
     ev: [{ t: "A silent Diwali", h: "/thoughts/a-silent-diwali-dealing-with-loneliness-during-festivals" }, { t: "Living just to never feel lonely", h: "/thoughts/living-to-never-feel-lonely" }],
   },
   {
     id: "son", label: "son", x: 296, y: 500,
-    line: "My mother taught chemistry in the same school for thirty two years. I sat in one of those classes. She retired this year and it ended an era for both of us.",
+    line: "My mother taught chemistry in the same school for thirty two years. I sat in one of those classes. She retired this year.",
     ev: [{ t: "A mother and a retired chemistry teacher", h: "/thoughts/my-mother-after-thirty-two-years" }, { t: "Life's strains", h: "/thoughts/lifes-strains-pursuit-of-purpose-and-varicose" }],
   },
   {
@@ -83,11 +83,11 @@ const facets = [
   },
   {
     id: "anxious", label: "anxious", x: 540, y: 320,
-    line: "Anxious, hard to relax, unsatisfied more often than not. A stone age nervous system running in a world it was never issued for.",
+    line: "Anxious, hard to relax, unsatisfied more often than not. I have written about the mechanics of it more than once.",
     ev: [{ t: "Stone-age minds in a digital world", h: "/thoughts/stone-age-minds-in-a-digital-world-stress-anxiety" }, { t: "Thinking positive after trauma", h: "/thoughts/why-is-it-hard-to-think-positive-when-you-are-traumatized" }],
   },
   {
-    id: "inlove", label: "in love, often", x: 520, y: 670,
+    id: "inlove", label: "love", x: 520, y: 670,
     line: "You can love several people at once without meaning to, and without any of it cancelling out. Writing it down is how I survive knowing that.",
     ev: [{ t: "Women I Love(d)", h: "/thoughts/women-i-loved" }, { t: "Loving multiple people", h: "/thoughts/you-actually-love-multiple-people-without-even-realising-it" }],
   },
@@ -97,7 +97,7 @@ const facets = [
     ev: [{ t: "Letter from an introvert", h: "/thoughts/a-letter-to-the-social-media-world-from-an-introvert" }, { t: "Personal pictures on LinkedIn", h: "/thoughts/is-it-okay-to-post-personal-pictures-on-linkedin" }],
   },
   {
-    id: "doubter", label: "career doubter", x: 1010, y: 560,
+    id: "doubter", label: "career break", x: 1010, y: 560,
     line: "Financial security is the carrot they dangle in front of you after college. I took the break and asked what exactly the money was for.",
     ev: [{ t: "Career break", h: "/thoughts/career-break-do-you-really-know-why-you-are-making-money" }, { t: "The conformity trap", h: "/thoughts/indian-corporate-culture-gen-z-a-conformity-trap" }],
   },
@@ -107,13 +107,8 @@ const facets = [
     ev: [{ t: "I didn't decide to build this", h: "/thoughts/i-didnt-decide-to-build-this-yet-i-did" }],
   },
   {
-    id: "existential", label: "asks why he exists", x: 975, y: 496,
-    line: "Why should I exist, and why should I keep going. I have been carrying both of those for years and most of what I write circles them.",
-    ev: [{ t: "The moral reason not to die", h: "/thoughts/the-moral-reason-not-to-die" }, { t: "Where YOU really exist", h: "/thoughts/where-you-really-exist" }],
-  },
-  {
     id: "selftaught", label: "self-taught", x: 690, y: 200,
-    line: "Leonardo had no schooling past fourteen and taught himself anatomy and optics from whatever he could get hold of. It is the only method that has ever worked on me.",
+    line: "No formal training in any of this. Books, papers, and building the thing badly the first time.",
     ev: [{ t: "Becoming a self-learning ninja", h: "/thoughts/becoming-self-learning-ninja" }, { t: "the notebooks", h: "/notebooks" }],
   },
   {
@@ -123,7 +118,7 @@ const facets = [
   },
   {
     id: "impatient", label: "impatient", x: 330, y: 320,
-    line: "Telling me to have patience is like telling a bird not to fly. I am working on it slowly, which is the joke.",
+    line: "Telling me to have patience is like telling a bird not to fly. Working on it.",
     ev: [{ t: "Building patience takes patience", h: "/thoughts/building-patience-takes-patience" }],
   },
   {
@@ -137,42 +132,17 @@ const facets = [
     ev: [{ t: "Five levels of perfectionism", h: "/thoughts/five-levels-of-perfectionism-from-pressure-to-purpose" }],
   },
   {
-    id: "planner", label: "plans every year", x: 210, y: 810,
-    line: "At the end of every year I open the notebook and write down what the next one is for. Not things to own. Mostly things I want to stop being.",
-    ev: [{ t: "Dismantling the mountain", h: "/thoughts/dismantling-the-mountain-setting-goals-for-new-year" }],
-  },
-  {
-    id: "advocate", label: "advocate", x: 430, y: 580,
+    id: "advocate", label: "autism awareness", x: 430, y: 580,
     line: "Most Indian schools have no idea what a learning disability looks like. I write the explainers I needed at fifteen and nobody had written yet.",
     ev: [{ t: "Things Indian parents need to know", h: "/thoughts/autism-things-indian-parentsstudents-need-to-know" }, { t: "Five common questions", h: "/thoughts/autism-for-indians-5-common-questions" }],
   },
   {
-    id: "endures", label: "endures", x: 1010, y: 700,
-    line: "Endurance was never a virtue I picked. It is what is left over when the alternatives run out, and it turns out to be enough.",
-    ev: [{ t: "Life of endurance", h: "/thoughts/life-of-endurance" }, { t: "Learning to fight alone", h: "/thoughts/a-clarity-you-get-when-you-learn-to-fight-alone" }],
-  },
-  {
-    id: "stopthinking", label: "tries to stop thinking", x: 640, y: 830,
-    line: "More thought, faster and sharper, was supposed to make me wiser. Some days the answer is to stop entirely and just breathe.",
-    ev: [{ t: "Non-thoughts and mindlessness", h: "/thoughts/non-thoughts-mindlessness" }, { t: "Just to breathe", h: "/thoughts/once-in-a-while-we-should-livejust-to-breathe" }],
-  },
-  {
-    id: "library", label: "library kid", x: 140, y: 570,
-    line: "A century old library in southern Maharashtra raised about half of me. I still measure other rooms against that one.",
+    id: "library", label: "libraries", x: 140, y: 570,
+    line: "A century old library in southern Maharashtra. I spent most of my childhood in it and still compare other rooms to it.",
     ev: [{ t: "A book heaven I cherished", h: "/thoughts/library-a-book-heaven-i-cherished" }],
   },
   {
-    id: "unstylish", label: "unstylish", x: 900, y: 830,
-    line: "Trends decide most of what people wear and do. Opting out is cheaper, quieter, and a good deal more fun.",
-    ev: [{ t: "Why being unstylish can be fun", h: "/thoughts/why-being-unstylish-can-be-fun" }],
-  },
-  {
-    id: "wonder", label: "prefers wonder to hope", x: 350, y: 730,
-    line: "Hope needs the world to cooperate with you. Wonder does not, which makes it the more reliable of the two.",
-    ev: [{ t: "Wonder beats hope", h: "/thoughts/why-being-wonderful-beats-being-hopeful" }],
-  },
-  {
-    id: "ai", label: "watches AI closely", x: 1010, y: 300,
+    id: "ai", label: "AI", x: 1010, y: 300,
     line: "I think AI is turning into something like quantum physics. A field where the questions get stranger the closer you look at them.",
     ev: [{ t: "AI's growing complexity", h: "/thoughts/ais-growing-complexity-the-next-era-of-human-curiosity" }],
   },
@@ -239,7 +209,6 @@ const ties: [string, string][] = [
   ["anxious", "autistic"],
   ["anxious", "lonely"],
   ["anxious", "impatient"],
-  ["anxious", "existential"],
   ["inlove", "writer"],
   ["inlove", "lonely"],
   ["inlove", "arts"],
@@ -248,11 +217,8 @@ const ties: [string, string][] = [
   ["introvert", "autistic"],
   ["doubter", "engineer"],
   ["doubter", "smalltown"],
-  ["doubter", "existential"],
   ["housebuilder", "son"],
   ["housebuilder", "engineer"],
-  ["existential", "atheist"],
-  ["existential", "reader"],
   ["selftaught", "curious"],
   ["selftaught", "engineer"],
   ["selftaught", "reader"],
@@ -267,26 +233,12 @@ const ties: [string, string][] = [
   ["perfectionist", "anxious"],
   ["perfectionist", "autistic"],
   ["perfectionist", "impatient"],
-  ["planner", "writer"],
-  ["planner", "curious"],
-  ["planner", "selftaught"],
   ["advocate", "autistic"],
   ["advocate", "smalltown"],
   ["advocate", "writer"],
-  ["endures", "anxious"],
-  ["endures", "lonely"],
-  ["endures", "existential"],
-  ["stopthinking", "anxious"],
-  ["stopthinking", "moves"],
-  ["stopthinking", "existential"],
   ["library", "reader"],
   ["library", "smalltown"],
   ["library", "curious"],
-  ["unstylish", "introvert"],
-  ["unstylish", "doubter"],
-  ["wonder", "curious"],
-  ["wonder", "existential"],
-  ["wonder", "atheist"],
   ["ai", "engineer"],
   ["ai", "curious"],
   ["ai", "doubter"],
@@ -361,7 +313,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
     "@type": "Person",
     "name": "Arshad Kazi",
     "url": "https://arshad-kazi.com",
-    "image": "https://arshad-kazi.com/images/profile.png",
+    "image": "https://arshad-kazi.com/images/profile.jpg",
     "jobTitle": "CV/ML Engineer",
     "description": "CV/ML engineer building things to understand how they work. Computer vision, 3D geometry, representation learning.",
     "sameAs": [
@@ -374,26 +326,21 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
 
   <div class="self">
     <div class="folio-rule">
-      <span class="folio-mark">Arshad Kazi</span>
+      <span class="folio-mark">About</span>
       <span class="folio-line"></span>
-      <span class="folio-mark">All of it at once</span>
     </div>
 
     <header class="opening">
       <div class="opening-text">
-        <h1>I have never been<br />one thing.</h1>
-        <p>Every part below is load bearing, and none of them is the heading the others live under. Touch one and it will show you where it turns up.</p>
+        <h1>Arshad Kazi</h1>
+        <p>Computer vision engineer. Everything below links to something I actually wrote, so none of it has to be taken on trust.</p>
       </div>
 
       <figure class="plate">
         <div class="plate-frame">
-          <img src="/images/profile.png" alt="Arshad Kazi" draggable="false" oncontextmenu="return false" />
+          <img src="/images/profile.jpg" alt="Arshad Kazi" draggable="false" oncontextmenu="return false" />
           <span class="plate-guard" aria-hidden="true"></span>
         </div>
-        <figcaption>
-          <span class="fig-num">Fig. 1</span>
-          <span class="fig-desc">All of the above, in one body</span>
-        </figcaption>
       </figure>
     </header>
 
