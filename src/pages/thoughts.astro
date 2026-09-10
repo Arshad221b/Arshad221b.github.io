@@ -85,6 +85,20 @@ const posts = ([
   { title: 'Your Laziness has its reason and you can fix it', date: '2023-12-08', description: 'Every child is unique; we often hear this sentiment. Yet, despite celebrating individual differences, children are often funneled into a uniform educational structure, where they find themselves en...', tags: ['psychology', 'motivation'], slug: 'your-laziness-has-its-reason-and-you-can-fix-it' },
 ]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+/* Thumbnails are read out of each post's source at build time and pointed
+   straight at Cloudinary, with a resize in the URL so the browser fetches a
+   small one. Nothing is copied into this repository. */
+const sources = import.meta.glob('./thoughts/*.astro', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+
+const thumbs: Record<string, string> = {};
+for (const [path, raw] of Object.entries(sources)) {
+  const slug = path.split('/').pop()!.replace('.astro', '');
+  const found = raw.match(/https:\/\/res\.cloudinary\.com\/[^"']+/);
+  if (found) {
+    thumbs[slug] = found[0].replace('/upload/', '/upload/w_760,h_506,c_fill,g_auto,q_auto,f_auto/');
+  }
+}
+
 const allTags = [...new Set(posts.flatMap(p => p.tags))].sort();
 
 // The themes I return to most, ordered by how often I come back to them.
@@ -374,11 +388,16 @@ const axons = mapEdges.map((e, i) => {
           <ul class="entry-list">
             {group.items.map(post => (
               <li class="entry" data-title={post.title.toLowerCase()} data-description={post.description.toLowerCase()} data-tags={post.tags.join(',')}>
-                <a href={`/thoughts/${post.slug}`}>
-                  <time datetime={post.date}>{shortDate(post.date)}</time>
-                  <h3>{post.title}</h3>
-                  <p>{post.description}</p>
-                  <span class="entry-tags">{post.tags.join(' · ')}</span>
+                <a href={`/thoughts/${post.slug}`} class:list={['entry-link', { illustrated: thumbs[post.slug] }]}>
+                  {thumbs[post.slug] && (
+                    <img class="thumb" src={thumbs[post.slug]} alt="" loading="lazy" decoding="async" width="120" height="150" />
+                  )}
+                  <span class="entry-body">
+                    <time datetime={post.date}>{shortDate(post.date)}</time>
+                    <h3>{post.title}</h3>
+                    <p>{post.description}</p>
+                    <span class="entry-tags">{post.tags.join(' · ')}</span>
+                  </span>
                 </a>
               </li>
             ))}
@@ -759,6 +778,23 @@ const axons = mapEdges.map((e, i) => {
     border-top: none;
   }
 
+  /* The picture sits centred above its entry rather than off to one side,
+     so the seventy one posts without one do not read as missing something. */
+  .thumb {
+    display: block;
+    /* Fills the entry on a phone, capped so it stays a picture rather than
+       a banner on a wide screen. */
+    width: min(380px, 100%);
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: 2px;
+    margin: 0 auto var(--space-sm);
+    /* Toned to the page rather than sitting on it as a colour photograph. */
+    filter: grayscale(1) sepia(0.38) contrast(1.04);
+    background: var(--color-border-light);
+  }
+
   .entry a {
     display: block;
     padding: var(--space-md) 0;
@@ -840,6 +876,7 @@ const axons = mapEdges.map((e, i) => {
   }
 
   @media (max-width: 600px) {
+
     .year-group {
       grid-template-columns: 1fr;
       gap: var(--space-sm);
