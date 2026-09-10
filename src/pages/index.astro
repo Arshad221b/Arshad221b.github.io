@@ -3,311 +3,16 @@ import Layout from '../layouts/Layout.astro';
 
 const title = "Arshad Kazi";
 
-const correspondence = [
+const elsewhere = [
   { label: "GitHub", href: "https://github.com/Arshad221b" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/arshad221b/" },
   { label: "Substack", href: "https://substack.com/@arshadkazi" },
   { label: "Medium", href: "https://medium.com/@arshad_221b" },
   { label: "Email", href: "mailto:arshadkaziblog@gmail.com" },
 ];
-
-/* The parts of one person, none of them the container for the others. Every one
-   carries the evidence for itself, because a claim about yourself is worth
-   nothing without somewhere it actually shows. Placed by hand rather than
-   by a layout solver, so nothing sits at a centre. */
-const facets = [
-  {
-    id: "engineer", label: "engineer", x: 170, y: 108,
-    line: "I build things to find out how they work, not to make them work. Most of it is written from scratch, because I do not trust anything I have not taken apart.",
-    ev: [{ t: "the notebooks", h: "/notebooks" }, { t: "the code", h: "https://github.com/Arshad221b" }],
-  },
-  {
-    id: "cv", label: "computer vision", x: 300, y: 196,
-    line: "How a machine gets from flat pixels to a world with depth in it. Reconstruction, pose, representation. The closest thing I have to a discipline, and it pays for the rest of this.",
-    ev: [{ t: "the technical blogs", h: "/blog" }, { t: "Attention for 3D pose", h: "/blog/temporal-spatial-attention-3d-pose" }, { t: "SLAM from scratch", h: "/notebooks/slam" }],
-  },
-  {
-    id: "visual", label: "visual thinker", x: 404, y: 66,
-    line: "I think in pictures. Language is a translation layer on top of that, and it is slow, which is why I would rather write to you than talk to you.",
-    ev: [{ t: "Story of a kid with a different brain", h: "/thoughts/autism-story-of-a-kid-with-a-different-brain" }],
-  },
-  {
-    id: "curious", label: "curious", x: 730, y: 92,
-    line: "One question, one hour a day, for about a week. Then the next question. It is the only way anything has ever stayed in my head.",
-    ev: [{ t: "the notebooks", h: "/notebooks" }, { t: "Becoming a self-learning ninja", h: "/thoughts/becoming-self-learning-ninja" }],
-  },
-  {
-    id: "moves", label: "exercise", x: 980, y: 176,
-    line: "When a thought will not resolve, moving usually shifts it. Most of my essays got sorted out on a ride.",
-    ev: [{ t: "A philosophy of exercise", h: "/thoughts/a-philosophy-of-exercise-which-transforms-body-and-soul" }],
-  },
-  {
-    id: "reader", label: "reader", x: 800, y: 252,
-    line: "Grandin, Price, Murakami, Kalanithi. Mostly people who see things nothing like I do.",
-    ev: [{ t: "Reading Murakami", h: "/thoughts/what-i-learned-from-reading-haruki-murakami" }, { t: "When Breath Becomes Air", h: "/thoughts/when-breath-becomes-air" }],
-  },
-  {
-    id: "autistic", label: "autistic", x: 432, y: 222,
-    line: "Diagnosed in my late twenties. It explained about twenty years of being called clever and lazy in the same breath by the same people.",
-    ev: [{ t: "Never learning to ask for help", h: "/thoughts/why-high-functioning-autistic" }, { t: "For Indian parents and students", h: "/thoughts/autism-things-indian-parentsstudents-need-to-know" }],
-  },
-  {
-    id: "writer", label: "writer", x: 148, y: 262,
-    line: "I do not know what I think until I have written it down and read it back. That is the whole reason any of this exists.",
-    ev: [{ t: "the thoughts", h: "/thoughts" }, { t: "Why should I write about me", h: "/thoughts/why-should-i-write" }],
-  },
-  {
-    id: "smalltown", label: "small town", x: 300, y: 382,
-    line: "Less than a tenth of India lives in the metros. I came from the rest of it, and it takes far longer to finish leaving than anybody tells you.",
-    ev: [{ t: "Before relocating", h: "/thoughts/why-you-should-think-really-hard-before-relocating-for-studyjob" }, { t: "Choosing a college", h: "/thoughts/heres-how-to-choose-a-good-college-after-12th-jeeneet" }],
-  },
-  {
-    id: "arts", label: "film and music", x: 950, y: 352,
-    line: "Why does a minor key sound sad in every culture that has one? I have been chasing that for two years and I still cannot answer it.",
-    ev: [{ t: "Good and bad music", h: "/thoughts/whats-the-difference-between-good-bad-music" }, { t: "Drive My Car", h: "/thoughts/drive-my-car-a-movie-about-love-and-disconnect" }],
-  },
-  {
-    id: "lonely", label: "loneliness", x: 770, y: 476,
-    line: "The thing I understand least, so it is the thing I keep writing about.",
-    ev: [{ t: "A silent Diwali", h: "/thoughts/a-silent-diwali-dealing-with-loneliness-during-festivals" }, { t: "Living just to never feel lonely", h: "/thoughts/living-to-never-feel-lonely" }],
-  },
-  {
-    id: "son", label: "son", x: 296, y: 500,
-    line: "My mother taught chemistry in the same school for thirty two years. I sat in one of those classes. She retired this year.",
-    ev: [{ t: "A mother and a retired chemistry teacher", h: "/thoughts/my-mother-after-thirty-two-years" }, { t: "Life's strains", h: "/thoughts/lifes-strains-pursuit-of-purpose-and-varicose" }],
-  },
-  {
-    id: "atheist", label: "atheist", x: 110, y: 436,
-    line: "An atheist in a Muslim household. Eid is still sheer khurma and my mother in the kitchen, and that has never needed me to believe anything.",
-    ev: [{ t: "Eid, Sheer Khurma", h: "/thoughts/eid-sheer-khurma" }, { t: "Belief, as an atheist", h: "/thoughts/my-curious-look-on-belief-as-an-atheist" }],
-  },
-  {
-    id: "anxious", label: "anxious", x: 540, y: 320,
-    line: "Anxious, hard to relax, unsatisfied more often than not. I have written about the mechanics of it more than once.",
-    ev: [{ t: "Stone-age minds in a digital world", h: "/thoughts/stone-age-minds-in-a-digital-world-stress-anxiety" }, { t: "Thinking positive after trauma", h: "/thoughts/why-is-it-hard-to-think-positive-when-you-are-traumatized" }],
-  },
-  {
-    id: "inlove", label: "love", x: 520, y: 670,
-    line: "You can love several people at once without meaning to, and without any of it cancelling out. Writing it down is how I survive knowing that.",
-    ev: [{ t: "Women I Love(d)", h: "/thoughts/women-i-loved" }, { t: "Loving multiple people", h: "/thoughts/you-actually-love-multiple-people-without-even-realising-it" }],
-  },
-  {
-    id: "introvert", label: "introvert", x: 810, y: 440,
-    line: "I am bad at being visible and worse at performing it. At one point I wrote an actual letter to the extroverted internet about it.",
-    ev: [{ t: "Letter from an introvert", h: "/thoughts/a-letter-to-the-social-media-world-from-an-introvert" }, { t: "Personal pictures on LinkedIn", h: "/thoughts/is-it-okay-to-post-personal-pictures-on-linkedin" }],
-  },
-  {
-    id: "doubter", label: "career break", x: 1010, y: 560,
-    line: "Financial security is the carrot they dangle in front of you after college. I took the break and asked what exactly the money was for.",
-    ev: [{ t: "Career break", h: "/thoughts/career-break-do-you-really-know-why-you-are-making-money" }, { t: "The conformity trap", h: "/thoughts/indian-corporate-culture-gen-z-a-conformity-trap" }],
-  },
-  {
-    id: "housebuilder", label: "built a house", x: 260, y: 670,
-    line: "Seven months went into building a house for my parents, and somewhere in the middle of it the house got larger than the reason for it.",
-    ev: [{ t: "I didn't decide to build this", h: "/thoughts/i-didnt-decide-to-build-this-yet-i-did" }],
-  },
-  {
-    id: "selftaught", label: "self-taught", x: 690, y: 200,
-    line: "No formal training in any of this. Books, papers, and building the thing badly the first time.",
-    ev: [{ t: "Becoming a self-learning ninja", h: "/thoughts/becoming-self-learning-ninja" }, { t: "the notebooks", h: "/notebooks" }],
-  },
-  {
-    id: "observer", label: "observer", x: 150, y: 320,
-    line: "I watch people from a distance and take notes. My neighbour across the road taught me more about addiction than any book did.",
-    ev: [{ t: "Through my window", h: "/thoughts/through-my-window-my-neighbor-and-his-alcoholism" }, { t: "A nine year old's curiosity", h: "/thoughts/9-year-old-kids-curiosity-and-exploration-with-truth" }],
-  },
-  {
-    id: "impatient", label: "impatient", x: 330, y: 320,
-    line: "Telling me to have patience is like telling a bird not to fly. Working on it.",
-    ev: [{ t: "Building patience takes patience", h: "/thoughts/building-patience-takes-patience" }],
-  },
-  {
-    id: "food", label: "food", x: 560, y: 560,
-    line: "Sheer khurma once a year, and a running question about why sugar has that particular grip on all of us.",
-    ev: [{ t: "Eid, Sheer Khurma", h: "/thoughts/eid-sheer-khurma" }, { t: "Understanding Emotion", h: "/notebooks/emotion" }],
-  },
-  {
-    id: "perfectionist", label: "perfectionist", x: 800, y: 700,
-    line: "Perfectionism has levels, and the useful part is finding out you can move between them. Nobody told me that until well into my twenties.",
-    ev: [{ t: "Five levels of perfectionism", h: "/thoughts/five-levels-of-perfectionism-from-pressure-to-purpose" }],
-  },
-  {
-    id: "advocate", label: "autism awareness", x: 430, y: 580,
-    line: "Most Indian schools have no idea what a learning disability looks like. I write the explainers I needed at fifteen and nobody had written yet.",
-    ev: [{ t: "Things Indian parents need to know", h: "/thoughts/autism-things-indian-parentsstudents-need-to-know" }, { t: "Five common questions", h: "/thoughts/autism-for-indians-5-common-questions" }],
-  },
-  {
-    id: "library", label: "libraries", x: 140, y: 570,
-    line: "A century old library in southern Maharashtra. I spent most of my childhood in it and still compare other rooms to it.",
-    ev: [{ t: "A book heaven I cherished", h: "/thoughts/library-a-book-heaven-i-cherished" }],
-  },
-  {
-    id: "ai", label: "AI", x: 1010, y: 300,
-    line: "I think AI is turning into something like quantum physics. A field where the questions get stranger the closer you look at them.",
-    ev: [{ t: "AI's growing complexity", h: "/thoughts/ais-growing-complexity-the-next-era-of-human-curiosity" }],
-  },
-];
-
-/* Placed by intent, then relaxed so no two names sit on top of each other.
-   Each one is sprung back toward where it was put, so the arrangement is
-   still mine and not a solver's idea of a nice graph. */
-const box = (l: string) => l.length * 10.5 + 34;
-const LABEL_H = 46;
-const rel = facets.map(f => ({ x: f.x, y: f.y, x0: f.x, y0: f.y, w: box(f.label) }));
-
-for (let pass = 0; pass < 600; pass++) {
-  for (let i = 0; i < rel.length; i++) {
-    for (let j = i + 1; j < rel.length; j++) {
-      const A = rel[i], B = rel[j];
-      const overX = (A.w + B.w) / 2 - Math.abs(A.x - B.x);
-      const overY = LABEL_H - Math.abs(A.y - B.y);
-      if (overX > 0 && overY > 0) {
-        if (overX / (A.w + B.w) < overY / LABEL_H) {
-          const s = Math.min(overX, 7) / 2 * (A.x <= B.x ? -1 : 1);
-          A.x += s; B.x -= s;
-        } else {
-          const s = Math.min(overY, 7) / 2 * (A.y <= B.y ? -1 : 1);
-          A.y += s; B.y -= s;
-        }
-      }
-    }
-  }
-  for (const r of rel) {
-    r.x += (r.x0 - r.x) * 0.018;
-    r.y += (r.y0 - r.y) * 0.018;
-    r.x = Math.max(104, Math.min(996, r.x));
-    r.y = Math.max(74, Math.min(846, r.y));
-  }
-}
-facets.forEach((f, i) => { f.x = Math.round(rel[i].x); f.y = Math.round(rel[i].y); });
-
-// Where one part of a person is plainly tied to another.
-const ties: [string, string][] = [
-  ["cv", "engineer"],
-  ["cv", "visual"],
-  ["cv", "curious"],
-  ["cv", "ai"],
-  ["cv", "selftaught"],
-  ["engineer", "curious"],
-  ["engineer", "visual"],
-  ["visual", "autistic"],
-  ["autistic", "writer"],
-  ["autistic", "lonely"],
-  ["autistic", "smalltown"],
-  ["writer", "lonely"],
-  ["writer", "reader"],
-  ["writer", "atheist"],
-  ["writer", "son"],
-  ["reader", "curious"],
-  ["curious", "moves"],
-  ["moves", "lonely"],
-  ["arts", "reader"],
-  ["arts", "curious"],
-  ["son", "atheist"],
-  ["son", "smalltown"],
-  ["lonely", "son"],
-  ["anxious", "autistic"],
-  ["anxious", "lonely"],
-  ["anxious", "impatient"],
-  ["inlove", "writer"],
-  ["inlove", "lonely"],
-  ["inlove", "arts"],
-  ["introvert", "lonely"],
-  ["introvert", "writer"],
-  ["introvert", "autistic"],
-  ["doubter", "engineer"],
-  ["doubter", "smalltown"],
-  ["housebuilder", "son"],
-  ["housebuilder", "engineer"],
-  ["selftaught", "curious"],
-  ["selftaught", "engineer"],
-  ["selftaught", "reader"],
-  ["observer", "writer"],
-  ["observer", "visual"],
-  ["observer", "smalltown"],
-  ["impatient", "engineer"],
-  ["impatient", "curious"],
-  ["food", "son"],
-  ["food", "atheist"],
-  ["food", "curious"],
-  ["perfectionist", "anxious"],
-  ["perfectionist", "autistic"],
-  ["perfectionist", "impatient"],
-  ["advocate", "autistic"],
-  ["advocate", "smalltown"],
-  ["advocate", "writer"],
-  ["library", "reader"],
-  ["library", "smalltown"],
-  ["library", "curious"],
-  ["ai", "engineer"],
-  ["ai", "curious"],
-  ["ai", "doubter"],
-];
-
-const idx = Object.fromEntries(facets.map((f, i) => [f.id, i]));
-const edges = ties.map(([a, b]) => ({
-  a: idx[a], b: idx[b],
-  x1: facets[idx[a]].x, y1: facets[idx[a]].y,
-  x2: facets[idx[b]].x, y2: facets[idx[b]].y,
-}));
-
-/* A phone is not a small desktop, and it has no pointer to hover with.
-   On a narrow screen the drawing is still the interface, but it is operated
-   by tapping rather than pointing: cells are spaced for a thumb, names stay
-   out of the way until you touch something, and the words arrive from the
-   bottom of the screen where your hand already is. */
-const TALL_W = 800, TALL_H = 1180;
-const wideXs = facets.map(f => f.x), wideYs = facets.map(f => f.y);
-const minX = Math.min(...wideXs), minY = Math.min(...wideYs);
-const spanX = Math.max(...wideXs) - minX;
-const spanY = Math.max(...wideYs) - minY;
-
-const tall = facets.map(f => ({
-  x: 44 + ((f.x - minX) / spanX) * (TALL_W - 88),
-  y: 46 + ((f.y - minY) / spanY) * (TALL_H - 92),
-}));
-tall.forEach(t => { t.x0 = t.x; t.y0 = t.y; });
-
-const MIN_GAP = 92;   // a thumb needs room, so cells sit further apart
-for (let pass = 0; pass < 700; pass++) {
-  for (let i = 0; i < tall.length; i++) {
-    for (let j = i + 1; j < tall.length; j++) {
-      const A = tall[i], B = tall[j];
-      let vx = A.x - B.x, vy = A.y - B.y;
-      let d = Math.hypot(vx, vy);
-      if (d < 0.01) { vx = 1; vy = 0; d = 0.01; }
-      if (d < MIN_GAP) {
-        const push = (MIN_GAP - d) / 2;
-        A.x += (vx / d) * push; A.y += (vy / d) * push;
-        B.x -= (vx / d) * push; B.y -= (vy / d) * push;
-      }
-    }
-  }
-  for (const t of tall) {
-    t.x += (t.x0 - t.x) * 0.03;
-    t.y += (t.y0 - t.y) * 0.03;
-    t.x = Math.max(38, Math.min(TALL_W - 38, t.x));
-    t.y = Math.max(40, Math.min(TALL_H - 40, t.y));
-  }
-}
-
-const tallLayout = {
-  w: TALL_W, h: TALL_H,
-  // Room on every side for a name to sit beside its cell without leaving
-  // the box, so nothing is clipped and nothing pushes the page sideways.
-  vb: (-52) + ' ' + (-18) + ' ' + (TALL_W + 104) + ' ' + (TALL_H + 40),
-  pos: tall.map(t => ({ x: Math.round(t.x), y: Math.round(t.y) })),
-};
-const wideLayout = {
-  w: 1100, h: 900,
-  vb: '0 0 1100 900',
-  pos: facets.map(f => ({ x: f.x, y: f.y })),
-};
-
-const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle');
 ---
 
-<Layout title={title} activeNav="/" description="Arshad Kazi. Computer vision engineer, writer, reader, son, autistic, curious. A personal site about all of it rather than any one of them." ogImage="/images/og-about.jpg">
+<Layout title={title} activeNav="/" description="Arshad Kazi. Computer vision engineer. Notebooks, technical writing and personal essays." ogImage="/images/og-about.jpg">
   <script type="application/ld+json" slot="head" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Person",
@@ -315,7 +20,7 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
     "url": "https://arshad-kazi.com",
     "image": "https://arshad-kazi.com/images/profile.jpg",
     "jobTitle": "CV/ML Engineer",
-    "description": "CV/ML engineer building things to understand how they work. Computer vision, 3D geometry, representation learning.",
+    "description": "Computer vision engineer. Notebooks, technical writing and personal essays.",
     "sameAs": [
       "https://github.com/Arshad221b",
       "https://www.linkedin.com/in/arshad221b/",
@@ -324,503 +29,57 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
     ]
   })} />
 
-  <div class="self">
+  <div class="about">
     <div class="folio-rule">
       <span class="folio-mark">About</span>
       <span class="folio-line"></span>
     </div>
 
-    <header class="opening">
-      <div class="opening-text">
-        <h1>Arshad Kazi</h1>
-        <p>Computer vision engineer. Everything below links to something I actually wrote, so none of it has to be taken on trust.</p>
-      </div>
-
+    <div class="grid">
       <figure class="plate">
         <div class="plate-frame">
-          <img src="/images/profile.jpg" alt="Arshad Kazi" draggable="false" oncontextmenu="return false" />
+          <img src="/images/profile.jpg" alt="Arshad Kazi" width="640" height="800" draggable="false" oncontextmenu="return false" />
           <span class="plate-guard" aria-hidden="true"></span>
         </div>
       </figure>
-    </header>
 
-    <figure class="field">
-      <svg viewBox="0 0 1100 900" id="self-svg" role="img" aria-label="The parts of one person and how they connect">
-        <g id="self-field">
-          <g class="ties">
-            {edges.map(e => (
-              <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} data-a={e.a} data-b={e.b} />
-            ))}
-          </g>
+      <div class="text">
+        <h1>Arshad Kazi</h1>
 
-          <g class="facets">
-            {facets.map((f, i) => (
-              <g class="facet" data-i={i} tabindex="0" role="button" aria-label={f.label}>
-                <circle class="hit" cx={f.x} cy={f.y} r="34" />
-                <circle class="pip" cx={f.x} cy={f.y} r="4" />
-                <text class="name" x={f.x} y={f.y - 16} text-anchor={anchorFor(f.x)}>{f.label}</text>
-              </g>
-            ))}
-          </g>
+        <p>I work in computer vision, mostly 3D at the moment: reconstruction, pose, representation. I build things to understand how they work, not just to make them work.</p>
 
-          <!-- The glass. Only visible while a finger is on the plate. -->
-          <circle class="lens" id="lens" cx="0" cy="0" r="150" opacity="0" aria-hidden="true" />
-        </g>
-      </svg>
-    </figure>
+        <p><a href="/notebooks">Notebooks</a> while I am learning something. <a href="/blog">Longer pieces</a> once I can explain it. <a href="/thoughts">Essays</a> for everything that is not engineering.</p>
 
-    <!-- Whatever you are pointing at explains itself here. -->
-    <section class="readout" id="readout" aria-live="polite">
-      <p class="ro-empty" id="ro-empty"></p>
-      <div class="ro-body" id="ro-body" hidden>
-        <p class="ro-label" id="ro-label"></p>
-        <p class="ro-line" id="ro-line"></p>
-        <p class="ro-ev" id="ro-ev"></p>
+        <p class="elsewhere">
+          {elsewhere.map((l, i) => (
+            <>
+              {i > 0 && <span class="sep">·</span>}
+              <a href={l.href} target={l.href.startsWith('mailto') ? undefined : '_blank'} rel="noopener">{l.label}</a>
+            </>
+          ))}
+        </p>
       </div>
-    </section>
-
-    <section class="correspondence">
-      <p class="rubric">Correspondence</p>
-      <ol>
-        {correspondence.map(c => (
-          <li>
-            <a href={c.href} target={c.href.startsWith('mailto') ? undefined : '_blank'} rel="noopener">{c.label}</a>
-          </li>
-        ))}
-      </ol>
-    </section>
-
-    <p class="colophon">* This site is managed by AI, but the content written here is purely human.</p>
+    </div>
   </div>
 </Layout>
 
-<script is:inline define:vars={{ facets, wideLayout, tallLayout }}>
-(function () {
-  const svg = document.getElementById('self-svg');
-  if (!svg) return;
-
-  const field = document.getElementById('self-field');
-  const groups = Array.from(svg.querySelectorAll('.facet'));
-  const lines = Array.from(svg.querySelectorAll('.ties line'));
-  const pips = groups.map(g => g.querySelector('.pip'));
-  const hits = groups.map(g => g.querySelector('.hit'));
-  const names = groups.map(g => g.querySelector('.name'));
-
-  const empty = document.getElementById('ro-empty');
-  const body = document.getElementById('ro-body');
-  const elLabel = document.getElementById('ro-label');
-  const elLine = document.getElementById('ro-line');
-  const elEv = document.getElementById('ro-ev');
-
-  const neighbours = facets.map(() => []);
-  lines.forEach(l => {
-    const a = Number(l.dataset.a), b = Number(l.dataset.b);
-    neighbours[a].push(b);
-    neighbours[b].push(a);
-  });
-
-  const narrow = window.matchMedia('(max-width: 760px)');
-  let layout = narrow.matches ? tallLayout : wideLayout;
-  let labelOff = layout === tallLayout ? 30 : 16;
-
-  // Put every element where the chosen arrangement says, viewBox included.
-  function placeStatic(L) {
-    svg.setAttribute('viewBox', L.vb);
-    // ~44px of reach once the portrait canvas is scaled to a phone.
-    const reach = L === tallLayout ? 46 : 34;
-    hits.forEach(h => h.setAttribute('r', reach));
-    for (let i = 0; i < groups.length; i++) {
-      const q = L.pos[i];
-      pips[i].setAttribute('cx', q.x); pips[i].setAttribute('cy', q.y);
-      hits[i].setAttribute('cx', q.x); hits[i].setAttribute('cy', q.y);
-      names[i].setAttribute('x', q.x); names[i].setAttribute('y', q.y - labelOff);
-      names[i].setAttribute('text-anchor',
-        q.x < L.w * 0.24 ? 'start' : q.x > L.w * 0.76 ? 'end' : 'middle');
-    }
-    for (let k = 0; k < lines.length; k++) {
-      const l = lines[k], A = L.pos[Number(l.dataset.a)], B = L.pos[Number(l.dataset.b)];
-      l.setAttribute('x1', A.x); l.setAttribute('y1', A.y);
-      l.setAttribute('x2', B.x); l.setAttribute('y2', B.y);
-    }
-  }
-  placeStatic(layout);
-
-  let held = -1;
-  const draw = lines.map(() => null);   // per tie: how far the light has run
-  let intro = 0;                        // one time reveal on first sight
-
-  function show(i) {
-    held = i;
-    const f = facets[i];
-    svg.classList.add('lit');
-    const kin = neighbours[i];
-    groups.forEach((g, k) => {
-      g.classList.toggle('on', k === i);
-      g.classList.toggle('kin', kin.indexOf(k) !== -1);
-    });
-    lines.forEach((l, k) => {
-      const a = Number(l.dataset.a), b = Number(l.dataset.b);
-      const lit = a === i || b === i;
-      l.classList.toggle('on', lit);
-      // Draw outward from the part you are holding, never inward.
-      draw[k] = lit ? { t: 0, from: a === i ? 1 : -1 } : null;
-    });
-    elLabel.textContent = f.label;
-    elLine.textContent = f.line;
-    elEv.innerHTML = f.ev.map(function (e) {
-      const ext = e.h.indexOf('http') === 0 ? ' target="_blank" rel="noopener"' : '';
-      return '<a href="' + e.h + '"' + ext + '>' + e.t + '</a>';
-    }).join('<span class="sep">·</span>');
-    empty.hidden = true;
-    body.hidden = false;
-
-    // Restart the rise so every facet arrives, rather than only the first.
-    [elLabel, elLine, elEv].forEach(function (el) {
-      el.style.animation = 'none';
-      void el.offsetWidth;
-      el.style.animation = '';
-    });
-  }
-
-  function clear() {
-    held = -1;
-    for (let k = 0; k < draw.length; k++) draw[k] = null;
-    svg.classList.remove('lit');
-    groups.forEach(g => g.classList.remove('on', 'kin'));
-    lines.forEach(l => l.classList.remove('on'));
-  }
-
-  groups.forEach((g, i) => {
-    g.addEventListener('mouseenter', () => show(i));
-    g.addEventListener('focus', () => show(i));
-    g.addEventListener('click', () => show(i));
-  });
-  svg.addEventListener('mouseleave', function () { if (!narrow.matches) clear(); });
-
-  /* Touch. The drawing stays the interface: tap a cell and it names itself
-     along with whatever it is tied to, and the words come up from the
-     bottom edge rather than sitting a screenful away. */
-  /* Touch. Not a map, not a list, not a card.
-
-     Thirty two names will never fit legibly on a phone at once, and a field
-     of anonymous dots gives you no reason to tap any particular one. So the
-     names are there the whole time, under the surface, and you bring them up
-     by dragging a glass across the plate the way you would read a crowded
-     sheet with a magnifier. Whatever falls under the glass says its name.
-     Whatever is nearest its centre lights up with its threads and puts its
-     words below. Nothing is hidden behind a control, and nothing has to be
-     discovered, because the page performs the gesture for you once. */
-  const lens = document.getElementById('lens');
-  const LENS_R = 250;          // how far the glass reaches, in drawing units
-  let lensOn = false, lensX = 0, lensY = 0;
-
-  function toDrawing(clientX, clientY) {
-    const box = svg.getBoundingClientRect();
-    const vb = svg.viewBox.baseVal;
-    return {
-      x: vb.x + ((clientX - box.left) / box.width) * vb.width,
-      y: vb.y + ((clientY - box.top) / box.height) * vb.height
-    };
-  }
-
-  function moveLens(x, y) {
-    lensOn = true;
-    lensX = x; lensY = y;
-    lens.setAttribute('cx', x.toFixed(1));
-    lens.setAttribute('cy', y.toFixed(1));
-    lens.setAttribute('opacity', '0.5');
-
-    // Whatever sits closest to the centre of the glass is the one being read.
-    let best = -1, bestD = Infinity;
-    for (let i = 0; i < nodes.length; i++) {
-      const d = Math.hypot(nodes[i].x - x, nodes[i].y - y);
-      if (d < bestD) { bestD = d; best = i; }
-    }
-    if (best >= 0 && bestD < LENS_R && best !== held) show(best);
-  }
-
-  function liftLens() {
-    lensOn = false;
-    lens.setAttribute('opacity', '0');
-    for (let i = 0; i < names.length; i++) names[i].style.opacity = '';
-  }
-
-  svg.addEventListener('touchstart', function (e) {
-    if (!narrow.matches) return;
-    const t = e.touches[0];
-    const p = toDrawing(t.clientX, t.clientY);
-    moveLens(p.x, p.y);
-  }, { passive: true });
-
-  svg.addEventListener('touchmove', function (e) {
-    if (!narrow.matches) return;
-    const t = e.touches[0];
-    const p = toDrawing(t.clientX, t.clientY);
-    moveLens(p.x, p.y);
-    e.preventDefault();          // the glass moves, the page stays put
-  }, { passive: false });
-
-  svg.addEventListener('touchend', liftLens, { passive: true });
-  svg.addEventListener('touchcancel', liftLens, { passive: true });
-
-  // Pointer taps still work, for anyone who just prods at it.
-  groups.forEach((g, i) => {
-    g.addEventListener('touchstart', function () { show(i); }, { passive: true });
-  });
-
-
-  /* Tactility. Every part is sprung to where it sits and damped past
-     critical, so it moves when you reach for it and then stops dead.
-     What you are holding draws its own relations in a little closer. */
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const restatic = e => { layout = e.matches ? tallLayout : wideLayout; labelOff = layout === tallLayout ? 26 : 16; placeStatic(layout); };
-    narrow.addEventListener ? narrow.addEventListener('change', restatic) : narrow.addListener(restatic);
-    return;
-  }
-
-  const HOME = 40, DRAG = 26, PULL = 300;
-  const clamp = v => (v < 0 ? 0 : v > 1 ? 1 : v);
-  const ease = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-
-  const sparkLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  sparkLayer.setAttribute('class', 'sparks');
-  const cid = Array.prototype.slice.call(svg.attributes)
-    .filter(a => a.name.indexOf('data-astro-cid-') === 0)[0];
-  if (cid) sparkLayer.setAttribute(cid.name, '');
-  field.appendChild(sparkLayer);
-
-  function makeSpark() {
-    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    c.setAttribute('r', '2.6');
-    c.setAttribute('opacity', '0');
-    if (cid) c.setAttribute(cid.name, '');
-    sparkLayer.appendChild(c);
-    return c;
-  }
-  const travellers = []; travellers.spare = [];
-  let spark = 1.2;
-
-  // The demonstration picks whichever facet is tied to the most others,
-  // because that is the one that shows the most when it lights up.
-  let demoDone = false, demoState = 0, demoClock = 0, demoDrag = false;
-  let demoPick = 0;
-  for (let i = 1; i < neighbours.length; i++) {
-    if (neighbours[i].length > neighbours[demoPick].length) demoPick = i;
-  }
-  const nodes = layout.pos.map(q => ({ x0: q.x, y0: q.y, x: q.x, y: q.y, vx: 0, vy: 0 }));
-
-  // Turning the phone, or dragging a desktop window narrow, re-homes every
-  // facet and lets the springs carry it to the new arrangement.
-  function adopt(L) {
-    layout = L;
-    labelOff = L === tallLayout ? 30 : 16;
-    hits.forEach(h => h.setAttribute('r', L === tallLayout ? 46 : 34));
-    svg.setAttribute('viewBox', L.vb);
-    for (let i = 0; i < nodes.length; i++) {
-      nodes[i].x0 = L.pos[i].x;
-      nodes[i].y0 = L.pos[i].y;
-      names[i].setAttribute('text-anchor',
-        L.pos[i].x < L.w * 0.24 ? 'start' : L.pos[i].x > L.w * 0.76 ? 'end' : 'middle');
-    }
-  }
-  const onWidth = e => adopt(e.matches ? tallLayout : wideLayout);
-  narrow.addEventListener ? narrow.addEventListener('change', onWidth) : narrow.addListener(onWidth);
-  let clock = 0, last = performance.now(), onScreen = true;
-
-  if (window.IntersectionObserver) {
-    new IntersectionObserver(e => { onScreen = e[0].isIntersecting; }, { rootMargin: '140px' }).observe(svg);
-  }
-
-  function frame(now) {
-    const dt = Math.min((now - last) / 1000, 0.05);
-    last = now;
-
-    if (!document.hidden && onScreen) {
-      clock += dt;
-
-      // One uniform breath about the centre. Nothing shifts relative to
-      // anything else, so it cannot shimmer.
-      const cyc = (clock % 7) / 7;
-      let fill;
-      if (cyc < 0.34) fill = 0.5 - 0.5 * Math.cos(Math.PI * (cyc / 0.34));
-      else if (cyc < 0.46) fill = 1;
-      else if (cyc < 0.86) fill = 0.5 + 0.5 * Math.cos(Math.PI * ((cyc - 0.46) / 0.4));
-      else fill = 0;
-      const cx = layout.w / 2, cy = layout.h / 2;
-      field.setAttribute('transform', 'translate(' + cx + ',' + cy + ') scale(' +
-        (1 + fill * 0.012).toFixed(5) + ') translate(' + (-cx) + ',' + (-cy) + ')');
-
-      for (let i = 0; i < nodes.length; i++) {
-        const n = nodes[i];
-        let fx = (n.x0 - n.x) * HOME - n.vx * DRAG;
-        let fy = (n.y0 - n.y) * HOME - n.vy * DRAG;
-
-        if (held >= 0 && held !== i && neighbours[held].indexOf(i) !== -1) {
-          const h = nodes[held];
-          const vx = h.x - n.x, vy = h.y - n.y;
-          const d = Math.hypot(vx, vy) || 1;
-          fx += (vx / d) * PULL;
-          fy += (vy / d) * PULL;
-        }
-
-        n.vx += fx * dt; n.vy += fy * dt;
-        n.x += n.vx * dt; n.y += n.vy * dt;
-
-        const x = n.x.toFixed(2), y = n.y.toFixed(2);
-        pips[i].setAttribute('cx', x); pips[i].setAttribute('cy', y);
-        hits[i].setAttribute('cx', x); hits[i].setAttribute('cy', y);
-        names[i].setAttribute('x', x);
-        names[i].setAttribute('y', (n.y - labelOff).toFixed(2));
-      }
-
-      // The whole field draws itself in once, ties first, names after.
-      if (intro < 1) intro = Math.min(1, intro + dt / 1.9);
-
-      for (let k = 0; k < lines.length; k++) {
-        const l = lines[k], A = nodes[Number(l.dataset.a)], B = nodes[Number(l.dataset.b)];
-        l.setAttribute('x1', A.x.toFixed(2)); l.setAttribute('y1', A.y.toFixed(2));
-        l.setAttribute('x2', B.x.toFixed(2)); l.setAttribute('y2', B.y.toFixed(2));
-
-        const len = Math.hypot(B.x - A.x, B.y - A.y);
-        const d = draw[k];
-
-        if (intro < 1) {
-          // Staggered so the drawing spreads outward instead of appearing at once.
-          const seed = (k * 0.037) % 0.42;
-          const p = ease(clamp((intro - seed) / 0.5));
-          l.setAttribute('stroke-dasharray', len.toFixed(1));
-          l.setAttribute('stroke-dashoffset', (len * (1 - p)).toFixed(1));
-        } else if (d) {
-          d.t = Math.min(1, d.t + dt / 0.36);
-          const p = ease(d.t);
-          l.setAttribute('stroke-dasharray', len.toFixed(1));
-          l.setAttribute('stroke-dashoffset', (len * (1 - p) * d.from).toFixed(1));
-        } else {
-          l.removeAttribute('stroke-dasharray');
-          l.removeAttribute('stroke-dashoffset');
-        }
-      }
-
-      /* Under the glass, a name is as visible as it is close to the centre.
-         This is the whole interface on a phone, so it runs before the
-         intro fade below and wins while a finger is down. */
-      if (lensOn) {
-        for (let i = 0; i < names.length; i++) {
-          const d = Math.hypot(nodes[i].x - lensX, nodes[i].y - lensY);
-          const near = clamp(1 - d / LENS_R);
-          names[i].style.opacity = (near * near).toFixed(3);
-        }
-      }
-
-      // Names fade up after the lines that reach them.
-      if (intro < 1) {
-        for (let i = 0; i < groups.length; i++) {
-          const seed = 0.3 + (i % 7) * 0.045;
-          groups[i].style.opacity = clamp((intro - seed) / 0.42).toFixed(3);
-        }
-      } else if (groups[0].style.opacity !== '') {
-        groups.forEach(g => { g.style.opacity = ''; });
-      }
-
-      /* Nobody knows a drawing is interactive by looking at it. So once,
-         a moment after it finishes drawing itself, the page reaches out and
-         touches its own most connected part, holds it long enough to read,
-         and lets go. Any real interaction cancels it. */
-      /* The page shows you the gesture rather than describing it. On a
-         phone it drags the glass across the plate itself, once, and names
-         surface under it exactly as they will under your finger. On a
-         pointer it simply reaches out and touches its most connected part.
-         Any real interaction cancels it immediately. */
-      if (!demoDone && intro >= 1) {
-        if (held >= 0 && demoState === 0 && !demoDrag) { demoDone = true; }
-        else {
-          demoClock += dt;
-          if (narrow.matches) {
-            if (demoState === 0 && demoClock > 0.7) { demoState = 1; demoDrag = true; }
-            else if (demoState === 1) {
-              // A slow sweep from the top left down through the middle.
-              const p = clamp((demoClock - 0.7) / 2.6);
-              const e = ease(p);
-              const vb = svg.viewBox.baseVal;
-              const x = vb.x + vb.width * (0.24 + 0.52 * e);
-              const y = vb.y + vb.height * (0.18 + 0.5 * Math.sin(e * Math.PI * 0.85));
-              moveLens(x, y);
-              if (p >= 1) { demoState = 2; demoClock = 0; }
-            } else if (demoState === 2 && demoClock > 0.5) {
-              demoState = 3; demoDone = true; demoDrag = false;
-              liftLens();
-            }
-          } else {
-            if (demoState === 0 && demoClock > 0.9) { demoState = 1; show(demoPick); }
-            else if (demoState === 1 && demoClock > 3.4) { demoState = 3; demoDone = true; clear(); }
-          }
-        }
-      }
-
-      // A quiet signal crossing one connection now and then, so the thing
-      // reads as thinking rather than sitting still.
-      if (held < 0 && intro >= 1) {
-        spark -= dt;
-        if (spark <= 0 && lines.length) {
-          spark = 1.5 + Math.random() * 2.6;
-          const k = Math.floor(Math.random() * lines.length);
-          const l = lines[k];
-          const A = nodes[Number(l.dataset.a)], B = nodes[Number(l.dataset.b)];
-          travellers.push({ ax: A, bx: B, t: 0, dur: 0.7 + Math.random() * 0.5,
-            el: travellers.spare.pop() || makeSpark() });
-        }
-      }
-
-      for (let i = travellers.length - 1; i >= 0; i--) {
-        const tr = travellers[i];
-        tr.t += dt / tr.dur;
-        if (tr.t >= 1) {
-          tr.el.setAttribute('opacity', '0');
-          travellers.spare.push(tr.el);
-          travellers.splice(i, 1);
-          continue;
-        }
-        const p = tr.t;
-        tr.el.setAttribute('cx', (tr.ax.x + (tr.bx.x - tr.ax.x) * p).toFixed(1));
-        tr.el.setAttribute('cy', (tr.ax.y + (tr.bx.y - tr.ax.y) * p).toFixed(1));
-        tr.el.setAttribute('opacity', (Math.sin(p * Math.PI) * 0.75).toFixed(3));
-      }
-    }
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
-})();
-</script>
-
 <style>
-  .self {
-    max-width: 780px;
+  .about {
+    max-width: 760px;
     margin: 0 auto;
-
-    /* The words get a fixed allowance and the plate takes everything else.
-       Locking the allowance is the point: facets run from nine words to
-       forty, and without it the whole page would shift under your finger
-       every time you read a different one. */
-    --nav-h: 47px;
-    --words: 13.5rem;
-    --gaps: 2.4rem;
-
-    /* One type scale for the page. Each step is defined against the one
-       above it, so the order can never invert on a short screen: title,
-       then the sentence you are reading, then the lede, then the marks. */
-    --t-title: clamp(1.95rem, 4.2vh, 2.85rem);
-    --t-read: clamp(1.1rem, 0.55rem + 1.6vh, 1.34rem);
-    --t-lede: clamp(0.98rem, 0.5rem + 1.1vh, 1.14rem);
-    --t-link: 0.66rem;
-    --t-mark: 0.6rem;
+    /* Short page, so it sits as a composition in the middle of the screen
+       rather than clinging to the top with a void underneath. */
+    min-height: min(62vh, 520px);
+    display: flex;
+    flex-direction: column;
   }
 
-  /* ── Folio rule ────────────────────────────────────── */
+  /* ── Folio rule, as on the other pages ─────────────── */
   .folio-rule {
     display: flex;
     align-items: center;
     gap: var(--space-md);
-    margin-bottom: var(--space-xl);
+    margin-bottom: auto;
   }
 
   .folio-mark {
@@ -838,24 +97,28 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
     background: var(--color-border);
   }
 
-  /* ── Opening ───────────────────────────────────────── */
-  .opening {
-    display: grid;
-    grid-template-columns: 1fr 150px;
-    gap: var(--space-xl);
+  /* ── The composition ───────────────────────────────── */
+  /* One centred column at every width, so the page reads the same on a
+     phone as on a desktop and neither has a stranded half. */
+  .grid {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    margin-bottom: var(--space-md);
+    text-align: center;
+    gap: var(--space-lg);
+    padding: var(--space-2xl) 0;
+    margin-bottom: auto;
   }
 
-  /* ── The plate ─────────────────────────────────────── */
   .plate {
     margin: 0;
+    width: min(260px, 62%);
   }
 
-  /* Registration ticks at the corners, like a printed plate. */
+  /* Registration ticks at two corners, like a printed plate. */
   .plate-frame {
     position: relative;
-    padding: 7px;
+    padding: 8px;
     border: 1px solid var(--color-border);
   }
 
@@ -886,10 +149,10 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
   .plate-frame img {
     display: block;
     width: 100%;
+    height: auto;
     aspect-ratio: 4 / 5;
     object-fit: cover;
-    /* Same ink as the drawing below it, not a snapshot pasted on top. */
-    filter: grayscale(1) sepia(0.46) contrast(1.08) brightness(1.02);
+    filter: grayscale(1) sepia(0.44) contrast(1.06) brightness(1.02);
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
@@ -906,411 +169,107 @@ const anchorFor = (x: number) => (x < 220 ? 'start' : x > 780 ? 'end' : 'middle'
     -webkit-user-select: none;
   }
 
-  .plate figcaption {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin-top: var(--space-sm);
-  }
-
-  .fig-num {
-    font-family: var(--font-mono);
-    font-size: var(--t-mark);
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--color-accent);
-  }
-
-  .fig-desc {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 0.94rem;
-    line-height: 1.4;
-    color: var(--color-text-muted);
-  }
-
-  .opening h1 {
-    font-size: var(--t-title);
-    line-height: 1.06;
-    margin: -0.12em 0 var(--space-sm);
-  }
-
-  .opening p {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: var(--t-lede);
-    line-height: 1.55;
-    color: var(--color-text-muted);
-    max-width: 52ch;
-    margin: 0;
-  }
-
-  /* ── The field ─────────────────────────────────────── */
-  .field {
-    width: min(1240px, 96vw);
-    margin: 0 0 var(--space-lg);
-    margin-left: 50%;
-    transform: translateX(-50%);
-  }
-
-  .field svg {
-    display: block;
-    width: 100%;
-    /* Whatever is left of the screen once the bar and the words are paid
-       for. svh rather than vh so a phone's disappearing toolbar does not
-       resize the drawing while you are reading it. */
-    height: max(230px, calc(100vh - var(--nav-h) - var(--words) - var(--gaps)));
-    height: max(230px, calc(100svh - var(--nav-h) - var(--words) - var(--gaps)));
-    overflow: visible;
-  }
-
-  .ties line {
-    stroke: var(--color-border);
-    stroke-width: 0.8;
-    transition: stroke 0.25s ease, stroke-opacity 0.25s ease;
-  }
-
-  .sparks circle {
-    fill: var(--color-accent);
-  }
-
-  /* The names settle up into place as the field draws itself. */
-  .facet {
-    transition: opacity 0.3s ease;
-  }
-
-  .facet {
-    cursor: pointer;
-    outline: none;
-  }
-
-  .lens {
-    fill: none;
-    stroke: var(--color-accent);
-    stroke-width: 1.2;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-  }
-
-  /* The glass. Only ever visible while a finger is on the plate. */
-  .lens {
-    fill: none;
-    stroke: var(--color-accent);
-    stroke-width: 1.1;
-    pointer-events: none;
-    transition: opacity 0.25s ease;
-  }
-
-  .facet .hit {
-    fill: transparent;
-  }
-
-  .facet .pip {
-    fill: var(--color-text-muted);
-    opacity: 0.8;
-    transition: fill 0.2s ease, opacity 0.2s ease;
-  }
-
-  .facet .name {
-    font-family: var(--font-serif);
-    /* Drawing units, and the box is scaled up on a wide screen, so this
-       lands just under the sentence you are reading. The drawing is the
-       index; the sentence is the content. */
-    font-size: 18px;
-    fill: var(--color-text-secondary);
-    transition: fill 0.2s ease, opacity 0.2s ease;
-    user-select: none;
-  }
-
-  /* Reaching for one part quietens the others without hiding them. */
-  #self-svg.lit .ties line {
-    stroke-opacity: 0.32;
-  }
-
-  #self-svg.lit .facet .name {
-    opacity: 0.3;
-  }
-
-  #self-svg.lit .facet .pip {
-    opacity: 0.22;
-  }
-
-  #self-svg .ties line.on {
-    stroke: var(--color-accent);
-    stroke-width: 1.2;
-    stroke-opacity: 1;
-  }
-
-  #self-svg .facet.kin .name {
-    opacity: 0.85;
-    fill: var(--color-text);
-  }
-
-  #self-svg .facet.kin .pip {
-    opacity: 0.9;
-    fill: var(--color-accent);
-  }
-
-  #self-svg .facet.on .name {
-    opacity: 1;
-    fill: var(--color-accent);
-    font-style: italic;
-  }
-
-  #self-svg .facet.on .pip {
-    opacity: 1;
-    fill: var(--color-accent);
-  }
-
-  .facet:focus-visible .name {
-    fill: var(--color-accent);
-  }
-
-  /* ── Readout ───────────────────────────────────────── */
-  .readout {
-    /* Fixed, not minimum. A short facet and a long one occupy exactly the
-       same space, so nothing below moves when you change what you are
-       reading. */
-    height: var(--words);
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--color-border);
-    margin-bottom: var(--space-2xl);
-    overflow: hidden;
-  }
-
-  .ro-empty {
-    font-family: var(--font-mono);
-    font-size: var(--t-mark);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-    opacity: 0.7;
-    margin: 0;
-  }
-
-  .ro-label {
-    font-family: var(--font-mono);
-    font-size: var(--t-mark);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--color-accent);
-    margin: 0 0 var(--space-sm);
-  }
-
-  .ro-label,
-  .ro-line,
-  .ro-ev {
-    animation: rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  .ro-line { animation-delay: 0.04s; }
-  .ro-ev { animation-delay: 0.08s; }
-
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(7px); }
-    to { opacity: 1; transform: none; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .ro-label, .ro-line, .ro-ev { animation: none; }
-  }
-
-  .ro-line {
-    font-family: var(--font-serif);
-    font-size: var(--t-read);
-    line-height: 1.55;
-    color: var(--color-text);
-    max-width: 54ch;
+  h1 {
+    font-size: clamp(2rem, 3.4vw, 2.6rem);
+    line-height: 1.1;
     margin: 0 0 var(--space-md);
   }
 
-  .ro-ev {
-    margin: 0;
+  .text {
+    max-width: 48ch;
   }
 
-  .ro-ev :global(a) {
-    font-family: var(--font-mono);
-    font-size: var(--t-link);
-    letter-spacing: 0.04em;
-    color: var(--color-text-muted);
-    text-decoration: none;
-    border-bottom: 1px solid var(--color-border);
+  .text p {
+    font-size: clamp(1.06rem, 1.3vw, 1.18rem);
+    line-height: 1.75;
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--space-md);
   }
 
-  .ro-ev :global(a:hover) {
+  .text p:last-child {
+    margin-bottom: 0;
+  }
+
+  .text a {
     color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-accent-soft);
+  }
+
+  .text a:hover {
     border-bottom-color: var(--color-accent);
   }
 
-  .ro-ev :global(.sep) {
-    color: var(--color-text-muted);
-    opacity: 0.5;
-    margin: 0 0.6rem;
-  }
-
-  /* ── Correspondence ────────────────────────────────── */
-  .rubric {
-    font-family: var(--font-mono);
-    font-size: var(--t-mark);
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-    margin: 0 0 var(--space-sm);
-  }
-
-  .correspondence {
+  /* ── Elsewhere ─────────────────────────────────────── */
+  .elsewhere {
+    margin-top: var(--space-lg) !important;
     padding-top: var(--space-md);
     border-top: 1px solid var(--color-border-light);
   }
 
-  .correspondence ol {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0 var(--space-lg);
-    counter-reset: corr;
-  }
-
-  .correspondence li {
-    counter-increment: corr;
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-    margin: 0;
-  }
-
-  .correspondence li::before {
-    content: counter(corr, decimal-leading-zero);
+  .elsewhere a {
     font-family: var(--font-mono);
-    font-size: 0.58rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
     color: var(--color-text-muted);
+    border-bottom-color: transparent;
   }
 
-  .correspondence a {
-    font-family: var(--font-serif);
-    font-size: var(--t-lede);
-    color: var(--color-text-secondary);
-    border-bottom: 1px solid transparent;
-  }
-
-  .correspondence a:hover {
+  .elsewhere a:hover {
     color: var(--color-accent);
     border-bottom-color: var(--color-accent);
   }
 
-  .colophon {
-    font-family: var(--font-mono);
-    font-size: var(--t-mark);
-    letter-spacing: 0.08em;
+  .sep {
     color: var(--color-text-muted);
-    opacity: 0.7;
-    margin: var(--space-xl) 0 0;
+    opacity: 0.45;
+    margin: 0 0.5rem;
   }
 
-  @media (max-width: 760px) {
-    .self {
-      /* Narrower column, so the same sentence runs to more lines. */
-      --words: 15rem;
-      --gaps: 1.6rem;
+  @media (max-width: 720px) {
+    .about {
+      min-height: 0;
+    }
+  }
+
+  /* On a phone the plate carries the screen. A thumbnail with empty space
+     beside it is what made this look unfinished. */
+  @media (max-width: 620px) {
+    /* Centred on a phone: the plate sits square in the column and the text
+       hangs off its middle, which reads as composed rather than stranded. */
+    .grid {
+      gap: var(--space-lg);
+      padding: var(--space-lg) 0 var(--space-md);
     }
 
-    .opening {
-      grid-template-columns: 1fr 88px;
-      gap: var(--space-md);
-      align-items: center;
-      margin-bottom: var(--space-sm);
+    .plate {
+      width: 100%;
     }
 
-    .plate figcaption {
-      display: none;
+    .plate-frame img {
+      aspect-ratio: 5 / 4;
     }
 
-    .folio-rule {
-      margin-bottom: var(--space-sm);
-    }
-
-    /* Claw back the page's top padding, so the centrepiece starts higher
-       up the screen rather than after a run of empty margin. */
-    .self {
-      margin-top: calc(var(--space-md) * -1);
-    }
-
-    .opening h1 {
+    h1 {
       font-size: 2.1rem;
+      margin-bottom: var(--space-md);
     }
 
-    /* No pointer, so nothing is labelled until you touch it. Then the cell
-       you tapped and the ones it is tied to say their names, which is at
-       most six words on screen at a time and all of them legible. */
-    .facet .name {
-      /* Sized against the padded portrait box, so the rendered text lands
-         around 13px on a 320 wide phone and 17px on a large one. */
-      font-size: 44px;
-      opacity: 0;
-      pointer-events: none;
+    .text p {
+      font-size: 1.14rem;
+      line-height: 1.8;
     }
 
-    /* The desktop rule only dims the rest. On a phone they have to go
-       entirely, or all thirty two names are on screen again. */
-    #self-svg.lit .facet .name {
-      opacity: 0;
+    .elsewhere {
+      margin-top: var(--space-xl) !important;
     }
 
-    #self-svg.lit .facet.on .name {
-      opacity: 1;
+    .text {
+      max-width: 34ch;
     }
 
-    #self-svg.lit .facet.kin .name {
-      opacity: 0.7;
-    }
-
-    .facet .pip {
-      r: 6;
-    }
-
-    #self-svg .facet.on .pip {
-      r: 11;
-    }
-
-    /* The floating label belongs to a cursor; on touch the words live
-       in the page, immediately under the drawing. */
-    .hover-label {
-      display: none;
-    }
-
-    .field {
-      margin-bottom: 0;
-    }
-
-    .readout {
-      border-top: none;
-      padding-top: var(--space-sm);
-      scroll-margin-top: 70px;
-    }
-
-    .ro-line {
-      line-height: 1.5;
-    }
-
-    .ro-ev :global(a) {
-      display: inline-block;
-      padding: 0.14rem 0;
-      line-height: 1.35;
-    }
-  }
-
-  /* Short viewports last, so it overrides the width based sizes above.
-     When there is not enough screen, the plate is what gives way. */
-  @media (max-height: 720px) {
-    .self {
-      --words: 13.5rem;
-      --gaps: 1rem;
-    }
-
-    .ro-label {
-      margin-bottom: 0.35rem;
+    .elsewhere a {
+      font-size: 0.78rem;
     }
   }
 </style>
