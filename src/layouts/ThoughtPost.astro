@@ -8,6 +8,7 @@ interface Props {
 const { title, date, description } = Astro.props;
 
 import Layout from './Layout.astro';
+import { relatedTo } from '../lib/thoughts-data';
 
 const siteUrl = 'https://arshad-kazi.com';
 const articleUrl = new URL(Astro.url.pathname, siteUrl).href;
@@ -18,6 +19,7 @@ const articleUrl = new URL(Astro.url.pathname, siteUrl).href;
    render webp. Nothing is copied into this repository. */
 const sources = import.meta.glob('../pages/thoughts/*.astro', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
 const slug = Astro.url.pathname.replace(/\/$/, '').split('/').pop();
+const related = slug ? relatedTo(slug, 3) : [];
 
 let shareImage = '/images/og-thoughts.jpg';
 for (const [path, raw] of Object.entries(sources)) {
@@ -66,6 +68,29 @@ function formatDate(dateStr: string): string {
       <slot />
     </div>
 
+    {related.length > 0 && (
+      <aside class="kin">
+        <p class="kin-head">
+          <span class="kin-name">Read next</span>
+          <span class="kin-line"></span>
+        </p>
+        <ul class="kin-list">
+          {related.map(r => (
+            <li>
+              <a href={`/thoughts/${r.slug}`}>
+                <span class="kin-title">{r.title}</span>
+                {/* Labelled, because a bare percentage next to a title
+                    reads as how much of it you have read. */}
+                <span class="kin-sim" style={`--fill:${(r.sim * 100).toFixed(0)}%`}>
+                  {Math.round(r.sim * 100)}% match
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )}
+
     <div id="disqus_thread" class="disqus-section"></div>
 
     <footer class="blog-post-footer">
@@ -73,6 +98,121 @@ function formatDate(dateStr: string): string {
     </footer>
   </article>
 </Layout>
+
+<!-- This has to stay above the Disqus script below it. The compiler
+     drops the closing </noscript> tag down there, so anything after
+     that element is swallowed into it as dead text: with the styles
+     last, none of them applied at all. -->
+<style>
+  /* ── Closest to this one ───────────────────────────────────────
+     Not "related posts". These are the three nearest essays in the same
+     latent space the index is searched in, and each one says how close it
+     actually is, so a weak neighbour is visibly a weak neighbour. */
+  .kin {
+    margin: var(--space-3xl) 0 var(--space-xl);
+  }
+
+  .kin-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin: 0 0 var(--space-md);
+  }
+
+  .kin-name {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-size: 0.92rem;
+    letter-spacing: 0.1em;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
+
+  .kin-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  .kin-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .kin-list li {
+    margin: 0;
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .kin-list li:first-child {
+    border-top: none;
+  }
+
+  .kin-list a {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-md);
+    padding: 0.75rem 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .kin-title {
+    flex: 1;
+    font-family: var(--font-serif);
+    font-size: 1.18rem;
+    line-height: 1.35;
+    color: var(--color-text);
+    transition: color 0.15s ease;
+  }
+
+  .kin-list a:hover .kin-title {
+    color: var(--color-accent);
+  }
+
+  .kin-sim {
+    position: relative;
+    padding-left: 3.2rem;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-accent);
+    white-space: nowrap;
+  }
+
+  .kin-sim::before,
+  .kin-sim::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.42em;
+    height: 2px;
+    border-radius: 1px;
+  }
+
+  .kin-sim::before {
+    width: 2.7rem;
+    background: var(--color-border);
+  }
+
+  .kin-sim::after {
+    width: calc(2.7rem * var(--fill, 0%) / 100%);
+    background: var(--color-accent);
+  }
+
+  @media (max-width: 600px) {
+      .kin-title {
+      font-size: 1.06rem;
+    }
+  }
+
+  .disqus-section {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+  }
+</style>
 
 <script is:inline>
   var disqus_config = function () {
@@ -104,11 +244,3 @@ function formatDate(dateStr: string): string {
   observer.observe(document.documentElement, { attributes: true });
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-
-<style>
-  .disqus-section {
-    margin-top: var(--space-xl);
-    padding-top: var(--space-lg);
-    border-top: 1px solid var(--color-border);
-  }
-</style>

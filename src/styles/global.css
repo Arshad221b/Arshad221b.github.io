@@ -6,20 +6,22 @@
 }
 
 :root {
-  /* Iron-gall ink and sanguine chalk on aged laid paper. */
-  --color-bg: #f7f2e7;
-  --color-surface: #fbf8f0;
-  --color-text: #2e2619;
-  --color-text-secondary: #4f4432;
-  --color-text-muted: #857a62;
-  --color-accent: #9c5138;
-  --color-accent-hover: #7d3d28;
-  --color-accent-soft: rgba(156, 81, 56, 0.10);
-  --color-border: #ddd2ba;
-  --color-border-light: #e9e0cc;
-  --color-tag-bg: #efe8d8;
-  --color-tag-text: #6b5f47;
-  --color-code-bg: #f1ead9;
+  /* Iron-gall ink and sanguine chalk on aged laid paper. Warmer than a
+     cream: the ochre a rag-paper notebook actually goes after five hundred
+     years, with the ink browned to match. */
+  --color-bg: #f0e4ca;
+  --color-surface: #f6ecd8;
+  --color-text: #302617;
+  --color-text-secondary: #54462e;
+  --color-text-muted: #8a7a5c;
+  --color-accent: #a04e2c;
+  --color-accent-hover: #833c1f;
+  --color-accent-soft: rgba(160, 78, 44, 0.11);
+  --color-border: #d6c5a2;
+  --color-border-light: #e3d5b5;
+  --color-tag-bg: #e8dbbd;
+  --color-tag-text: #6b5c41;
+  --color-code-bg: #eadec1;
   --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   --font-sans: 'Libre Franklin', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
@@ -35,20 +37,20 @@
 }
 
 html.dark {
-  /* Silverpoint and chalk on toned paper. */
-  --color-bg: #16130e;
-  --color-surface: #1c1813;
-  --color-text: #e8e0cf;
-  --color-text-secondary: #c4b8a1;
-  --color-text-muted: #8d8168;
-  --color-accent: #c98060;
-  --color-accent-hover: #dd9878;
-  --color-accent-soft: rgba(201, 128, 96, 0.14);
-  --color-border: #322b21;
-  --color-border-light: #251f18;
-  --color-tag-bg: #251f18;
-  --color-tag-text: #9d9179;
-  --color-code-bg: #1e1a14;
+  /* Silverpoint and chalk on toned paper, warmed to match. */
+  --color-bg: #17130c;
+  --color-surface: #1e1910;
+  --color-text: #ece2cb;
+  --color-text-secondary: #c9bb9c;
+  --color-text-muted: #94866a;
+  --color-accent: #d18a63;
+  --color-accent-hover: #e5a37c;
+  --color-accent-soft: rgba(209, 138, 99, 0.15);
+  --color-border: #362d1f;
+  --color-border-light: #272015;
+  --color-tag-bg: #272015;
+  --color-tag-text: #a29372;
+  --color-code-bg: #201a11;
 }
 
 html {
