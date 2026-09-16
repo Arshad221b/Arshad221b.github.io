@@ -1,306 +1,83 @@
 ---
+/* The Thoughts index.
+
+   Nothing on this page is a list I maintain. The essays are read out of
+   src/pages/thoughts at build time, and the themes, the map and the search
+   all come from a model fitted over their full text in src/lib. Publishing
+   is dropping a file in that folder. */
+
 import Layout from '../layouts/Layout.astro';
+import { posts, pageModel } from '../lib/thoughts-data';
 
 const title = "Thoughts — Arshad Kazi";
+const { topics, theta, edges, stats, projection } = pageModel;
 
-const posts = ([
-{ title: '5 Honest Things I’ve Learned in the Last 5 Years', date: '2025-03-29', description: 'Some blogs just happen. I sit down, and the words come without trying too hard. There’s a rhythm to it…thoughts connect, and it all flows naturally…This one’s not like that!', tags: ['self-reflection', 'life lessons'], slug: '5-honest-things-ive-learned-in-the-last-5-years' },
-  { title: '9 Year old kid\'s Curiosity and Exploration with Truth', date: '2023-11-25', description: 'A 9yr old girl, told me about a YouTube video discussing S. Bose’s death in a helicopter crash and the associated conspiracy. She conveyed it as a belief. Upon my further (soft) inquiry, I discover...', tags: ['curiosity', 'observation'], slug: '9-year-old-kids-curiosity-and-exploration-with-truth' },
-  { title: 'A Clarity You Get When You Learn to Fight Alone', date: '2024-08-31', description: 'There comes a moment in life, a subtle shift, when the early excitement of your career begins to fade, no more honeymoon period. It\'s around the same time you notice that your friends are drifting ...', tags: ['loneliness', 'personal growth'], slug: 'a-clarity-you-get-when-you-learn-to-fight-alone' },
-  { title: 'A Letter to the Social Media World from an Introvert', date: '2024-10-12', description: 'Dear (Extroverted) Social Media World,', tags: ['social media', 'introversion'], slug: 'a-letter-to-the-social-media-world-from-an-introvert' },
-  { title: 'A Philosophy of Exercise Which Transforms Body and Soul', date: '2024-08-24', description: 'I’m few km into my bike ride. It’s a slight decline, around 2-4%, so my breathing rate is lower since I’m peddling easily. But now, I can’t listen anything around me because my heart rate is well a...', tags: ['health', 'philosophy'], slug: 'a-philosophy-of-exercise-which-transforms-body-and-soul' },
-  { title: 'A silent Diwali: Dealing with loneliness during festivals', date: '2024-11-03', description: 'A firecracker’s just a quick chemical trick...a pop, a crack, a flash of colour if you’re lucky. It all unfolds in an instant, just long enough to break the dark with noise and light, and then it’s...', tags: ['loneliness', 'culture'], slug: 'a-silent-diwali-dealing-with-loneliness-during-festivals' },
-  { title: 'Adult Children of Emotionally Immature Parents', date: '2025-11-25', description: 'Blaming your parents isn’t easy. Even if part of you knows that they have done something wrong with you (or have made little to no effort in accepting their wrong doings), it is really hard to put ...', tags: ['book review', 'psychology'], slug: 'adult-children-of-emotionally-immature-parents' },
-  { title: 'AI’s Growing Complexity: The Next Era of Human Curiosity', date: '2025-01-31', description: 'There are two tangents to this conversation: one, I feel like doing software engineering is a dead-end job (with arguments to support it), and two, I feel that “AI” will turn into a field like quan...', tags: ['technology', 'curiosity'], slug: 'ais-growing-complexity-the-next-era-of-human-curiosity' },
-  { title: 'Autism for Indians: 5 common questions', date: '2024-11-09', description: 'Here are five questions which I think are important to raise awareness about Autism in Indian adults:', tags: ['autism', 'india'], slug: 'autism-for-indians-5-common-questions' },
-  { title: 'Autism: Story of a kid with a different brain...', date: '2024-08-27', description: 'There are many blogs and books about understanding autism and neurodivergence in general. But most people I know aren\'t aware of these concepts because you never search for something unless you\'re ...', tags: ['autism', 'personal'], slug: 'autism-story-of-a-kid-with-a-different-brain' },
-  { title: 'Autism: Things Indian Parents/Students need to know...', date: '2024-05-22', description: 'I want to raise awareness about Autism Spectrum Disorder (ASD) among Indian students and, especially, adults. Many Indian schools and parents lack knowledge about learning disabilities, leading to ...', tags: ['autism', 'india'], slug: 'autism-things-indian-parentsstudents-need-to-know' },
-  { title: 'Basic process of finding happiness in work: Flow', date: '2024-09-14', description: 'We are among the 8 billion other slightly smarter monkeys living on a tiny planet. Earth is one of eight planets revolving around a star, the Sun, which is just an ordinary star. There are billions...', tags: ['book review', 'psychology'], slug: 'basic-process-of-finding-happiness-in-work-flow' },
-  { title: 'Becoming "Self-Learning" Ninja!', date: '2024-09-07', description: 'Leonardo did not invent the scientific method, nor did Aristotle or Alhazen or Galileo or any Bacon. But his uncanny abilities to engage in the dialogue between experience and theory made him a pri...', tags: ['self-learning', 'curiosity'], slug: 'becoming-self-learning-ninja' },
-  { title: 'Building Patience Takes Patience...', date: '2024-02-11', description: '"It takes time", that\'s what they all say, especially to a most impatient person like me. Telling me to "have patience" is like telling a bird not to fly. It\'s suffocating when things don\'t work ou...', tags: ['personal growth', 'self-reflection'], slug: 'building-patience-takes-patience' },
-  { title: 'Buying something with my first salary!', date: '2021-04-18', description: 'I remember getting my first salary after graduation. It was more money than I’d ever seen, and I wanted to spend it on something meaningful—something that would stick with me for a long time, somet...', tags: ['personal', 'nostalgia'], slug: 'buying-something-with-my-first-salary' },
-  { title: 'Career Break: Do you really know “why” you are making money?', date: '2024-10-19', description: 'Like any kid, I imagined life would open up beautifully, getting paid to do what you love, spending that hard-earned cash on whatever caught your eye, no more pinching pennies like back in the host...', tags: ['career', 'purpose'], slug: 'career-break-do-you-really-know-why-you-are-making-money' },
-  { title: 'Cybertruck: Witness the Genius, Grit, and Vision of Tesla', date: '2023-12-02', description: 'Revolutionary Features of the Cybertruck', tags: ['technology', 'review'], slug: 'cybertruck-witness-the-genius-grit-and-vision-of-tesla' },
-  { title: 'Dismantling the mountain: Setting goals for New Year', date: '2025-01-03', description: 'At the end of every year, I open my notebook and plan out the next year. I jot down the things I want to achieve and complete. These aren\'t just material possessions; there are also a few emotional...', tags: ['personal growth', 'goals'], slug: 'dismantling-the-mountain-setting-goals-for-new-year' },
-  { title: '"Drive My Car": A movie about love and disconnect', date: '2024-12-22', description: 'He walks into his apartment and sees his wife cheating on him with someone else. She’s physically engaged with the guy. He sees them in the reflection in the mirror. It’s not clear who he is; maybe...', tags: ['film', 'love'], slug: 'drive-my-car-a-movie-about-love-and-disconnect' },
-  { title: 'Educated: A life-story which turned into an inspirational memoir', date: '2021-07-06', description: 'Educated is a journey of a girl who fought with the her conservative circumstances and harsh realities to become a real life \' Educated \'.', tags: ['book review', 'resilience'], slug: 'educated-a-life-story-which-turned-into-an-inspirational-memoir' },
-  { title: 'Effective Altruism: Why do people like to help others?', date: '2023-12-11', description: 'We are among the first generations who are living in a world where every question has an answer at our fingertips. Day by day we are building smarter and smarter searching tools. "Google it!" is sy...', tags: ['philosophy', 'society'], slug: 'effective-altruism-why-do-people-like-to-help-others' },
-  { title: 'Eid, Sheer Khurma and Mother-Son Bond', date: '2026-03-28', description: 'I am an atheist in a Muslim household. But Eid evening, when my mum makes Sheer Khurma, is the one time the usual friction between us temporarily stops interfering.', tags: ['family', 'culture', 'personal'], slug: 'eid-sheer-khurma' },
-  { title: 'Father’s Day for those who don\'t have a father...', date: '2025-06-15', description: 'Most of the people I’m drawn to, without meaning to, have had some rupture in their relationship with their father. Either dead, distant, violent, or just emotionally hollow. Not all of them talk a...', tags: ['family', 'grief'], slug: 'fathers-day-for-those-who-dont-have-a-father' },
-  { title: 'Five Levels of Perfectionism, From Pressure to Purpose', date: '2024-12-15', description: 'Perfectionism, as explored in Dabrowski\'s studies, unfolds across five levels, each representing a progressive journey towards self-realization. Although his studies were conducted with gifted chil...', tags: ['psychology', 'personal growth'], slug: 'five-levels-of-perfectionism-from-pressure-to-purpose' },
-  { title: 'For those who feel like falling behind and still finding themselves...', date: '2024-12-29', description: 'I know how it feels to watch everyone else moving forward while you’re stuck in the same place. One friend is getting engaged, another is getting married, someone’s expecting a kid, someone else ju...', tags: ['self-reflection', 'personal growth'], slug: 'for-those-who-feel-like-falling-behind-and-still-finding-themselves' },
-  { title: 'Friendship, Grandpa\'s Contact List and His Life Journey', date: '2023-11-25', description: 'A few weeks ago, I was organizing my grandpa\'s contact list based on the surname/first name basis—it was quite messy, especially in Marathi. Both of my grandparents were preparing to leave for Hajj...', tags: ['family', 'nostalgia'], slug: 'friendship-grandpas-contact-list-and-his-life-journey' },
-  { title: 'Garden with a wilted flower', date: '2025-02-22', description: 'Maybe it’s just the weight of my nonzero years speaking, but my garden is nothing more than a graveyard of wilted flowers now. It wasn’t always this way. I remember when it thrived, when the colors...', tags: ['poetry', 'loss'], slug: 'garden-with-a-wilted-flower' },
-  { title: 'Here\'s how to choose a good college after 12th JEE/NEET...', date: '2024-05-12', description: 'This blog is intended towards those who are in pivotal moment in their lives, those are in the 10th standard, 12th standard (especially) or someone who is switching job or getting a job for the fir...', tags: ['education', 'india'], slug: 'heres-how-to-choose-a-good-college-after-12th-jeeneet' },
-  { title: 'I didn\'t decide to build this, yet I did...', date: '2026-01-08', description: 'This project started as love, empathy, and a certain sense of responsibility toward my parents. I wanted them to have a retirement home that would make them comfortable, but also allow them to live...', tags: ['personal', 'family'], slug: 'i-didnt-decide-to-build-this-yet-i-did' },
-  { title: 'Ikigai: The Japanese Secret for Happiness', date: '2021-05-03', description: 'In simple words, ikigai is your reason for being. It is the reason you flow. You dedicate your life to that thing and live an un-stressful, calm, and long life. This book is best for those who are ...', tags: ['book review', 'purpose'], slug: 'ikigai-the-japanese-secret-for-happiness' },
-  { title: 'Indian Corporate Culture, Gen Z & A Conformity Trap', date: '2024-10-26', description: 'Financial security is the carrot dangling after college, especially if you picked engineering. That stability becomes almost automatic, luring people down a path they don’t always love. For many, t...', tags: ['india', 'career', 'culture'], slug: 'indian-corporate-culture-gen-z-a-conformity-trap' },
-  { title: 'Indian "Hookup" Culture: Things we don\'t talk about...', date: '2024-06-24', description: 'Indian youth are changing. It’s more common now to have sexual relationships before marriage than ever before. People are meeting, interacting, and having fun. Add social media and dating apps to t...', tags: ['india', 'relationships', 'culture'], slug: 'indian-hookup-culture-things-we-dont-talk-about' },
-  { title: 'Is It Okay to Post Personal Pictures on LinkedIn?', date: '2024-06-01', description: '" Is it okay to post personal pictures on LinkedIn? " This question came from a friend who had just shared a picture of herself below a post about neuroscience and other intellectual pursuits . The...', tags: ['social media', 'opinion'], slug: 'is-it-okay-to-post-personal-pictures-on-linkedin' },
-  { title: 'Learned Helplessness: Study about Trauma', date: '2024-06-30', description: 'Martin Seligman was a psychologist who coined the term "learned helplessness". Basically, he did a bunch of experiments with dogs (and later with other animals) to understand how they respond to pa...', tags: ['psychology', 'trauma'], slug: 'learned-helplessness-study-about-trauma' },
-  { title: 'Learning to Accept the Noise Instead of Resenting It', date: '2025-02-07', description: 'This might resonate with those who are still finding themselves, who haven’t given up on the messy but important idea of understanding themselves . I’m trying to explain something peculiar, somethi...', tags: ['neurodivergence', 'self-reflection'], slug: 'learning-to-accept-the-noise-instead-of-resenting-it' },
-  { title: 'Library: A Book Heaven I Cherish(ed)', date: '2023-11-25', description: 'It stands as a venerable institution, boasting a legacy of over a century as one of the largest libraries in southern Maharashtra. This distinguished establishment, renowned for nurturing Field Med...', tags: ['books', 'nostalgia'], slug: 'library-a-book-heaven-i-cherished' },
-  { title: 'Life of Endurance', date: '2025-07-17', description: 'I’m gonna pretend like a Dalai Lama for a bit. Not because I’m enlightened. Just because I need to say something without watering it down. Also I\'m no master of living this way either: The way I li...', tags: ['resilience', 'philosophy'], slug: 'life-of-endurance' },
-  { title: 'Life\'s Strains, Pursuit of Purpose and Varicose', date: '2023-11-25', description: 'My mom is a teacher. She handles more than 120 students per class, teaching 4-5 classes a day, each lasting 45 minutes. She avoids using a speaker-microphone and never sits during classes, even sta...', tags: ['family', 'health'], slug: 'lifes-strains-pursuit-of-purpose-and-varicose' },
-  { title: 'Why you are living just to never feel lonely...', date: '2026-02-25', description: 'Strip away everything materialistic and emotional from your life, and you\'re left with just a body, a soul, and an almost empty mind. That feeling goes deeper than loneliness.', tags: ['loneliness', 'philosophy'], slug: 'living-to-never-feel-lonely' },
-  { title: 'Meet the Savarnas: Indian Millennials Whose Mediocrity Broke Everything', date: '2025-11-26', description: 'I will start with the same sentence author starts with this book , because it practically capsulates the exact reaction I feel readers will have, it also captures the tone and level of articutlatio...', tags: ['book review', 'india', 'society'], slug: 'meet-the-savarnas-indian-millennials-whose-mediocrity-broke-everything' },
-  { title: 'Most of you will not have most of the things in life (ever)', date: '2024-06-28', description: 'All of us dream. All of us aspire to be something. But let’s be realistic… the world doesn’t care about you or your dreams.', tags: ['self-reflection', 'philosophy'], slug: 'most-of-you-will-not-have-most-of-the-things-in-life-ever' },
-  { title: 'About a mother and a retired chemistry teacher', date: '2026-08-01', description: "It is a crucial time in my life as well as in my mother's. The retirement is about her leaving a school where she taught chemistry for 32 years, but it is also the end of an era for me.", tags: ['family', 'personal', 'education'], slug: 'my-mother-after-thirty-two-years' },
-  { title: 'Most people follow & desire, only few choose & wonder!', date: '2024-07-18', description: 'Consider a typical Indian scenario. A 15-year-old kid, clueless about his future, faces a significant decision. If he does not hate math and has good 10th board marks, he chooses the science stream...', tags: ['philosophy', 'india', 'conformity'], slug: 'most-people-follow-desire-only-few-choose-wonder' },
-  { title: 'My Curious look on Belief as an Atheist', date: '2022-07-24', description: 'I am an atheist , or should I say a rationalist, agnostic, whatever you want to call me. I don’t like to believe in anything and try to avoid  believing  in things without scientific evidence. God,...', tags: ['philosophy', 'belief'], slug: 'my-curious-look-on-belief-as-an-atheist' },
-  { title: 'Non-thoughts & Mindlessness', date: '2025-05-23', description: 'Somewhere along the way, we convinced ourselves that thought is a tool, that more of it, sharper, faster, better-focused thought, would make us wiser, more productive, more in control. But sometime...', tags: ['mindfulness', 'philosophy'], slug: 'non-thoughts-mindlessness' },
-  { title: 'Once in a while we should live—just to breathe.', date: '2024-07-15', description: 'Most of my waking time, I’m thinking about work or work-related stuff. It’s mostly non-human, transactional relationships. And obviously, I’m not the only one. People around me spend most of their ...', tags: ['mindfulness', 'self-reflection'], slug: 'once-in-a-while-we-should-livejust-to-breathe' },
-  { title: 'Paradoxes of Life (It\'s a sad story)', date: '2024-05-07', description: 'There\'s a peculiar paradox. On one side, you see people suffering extreme pain: financial stress, emotional turmoil, family drama, marital strife, parental pressure, health and mental issues, histo...', tags: ['philosophy', 'self-reflection'], slug: 'paradoxes-of-life-its-a-sad-story' },
-  { title: 'Radical Self-confrontation & Self-awareness Trigger', date: '2025-05-30', description: 'Don\'t read this if you are in a good mood. Because this is going to hurt.', tags: ['psychology', 'personal growth'], slug: 'radical-self-confrontation-self-awareness-trigger' },
-  { title: 'Self blame: How to Always See The Glass Half Full?', date: '2023-12-15', description: 'Let me share a simple analogy: think of your body as a bucket for energy. We absorb energy from our surroundings and fill our bucket. When it overflows, we share that energy with the world. This ap...', tags: ['psychology', 'self-reflection'], slug: 'self-blame-how-to-always-see-the-glass-half-full' },
-  { title: 'Steve Jobs by Walter Isaacson', date: '2020-12-01', description: 'Steve Jobs was a man with all the qualities you have to have to get out of rat race.', tags: ['book review', 'biography'], slug: 'steve-jobs-by-walter-isaacson' },
-  { title: 'Stone-Age Minds in a Digital World: Stress & Anxiety', date: '2025-12-08', description: 'Human evolution has progressed rapidly over the past few centuries. Just a few thousand years ago, we were grappling with basic needs like food and shelter, crafting tools from rocks, and wearing a...', tags: ['psychology', 'anxiety', 'technology'], slug: 'stone-age-minds-in-a-digital-world-stress-anxiety' },
-  { title: 'Stories We Tell to Survive Each Other...', date: '2026-03-20', description: 'A philosophical reflection on loneliness, meaning, and the human. Exploring Camus, absurdism, and the hidden depths of everyday life.', tags: ['philosophy', 'existentialism'], slug: 'stories-we-tell-to-survive' },
-  { title: 'Story of my Grandfather', date: '2020-12-25', description: 'This is the story of my grandfather, a man with curiosity. There is a lot to learn from him..', tags: ['family', 'personal'], slug: 'story-of-my-grandfather' },
-  { title: 'The Anxious Generation: How the Great Rewiring of Childhood Is Causing an Epidemic of Mental Illness', date: '2026-06-16', description: 'My distilled understanding of The Anxious Generation -- the arguments that made sense, the patterns that matched what I already observe, and the parts that helped me understand the current situation without emotional overreaction or moral panic.', tags: ['book review', 'social media', 'mental health'], slug: 'the-anxious-generation' },
-  { title: 'The Four Agreements', date: '2022-01-29', description: '“I’m the Smokey mirror, because I am looking at myself in all of you, but we don’t recognise each other because of the smoke in-between us. That smoke is the Dream, and the mirror is you, the dream...', tags: ['book review', 'philosophy'], slug: 'the-four-agreements' },
-  { title: 'The Moral Reason Not to Die', date: '2025-09-19', description: 'What\'s the meaning of my life? Why should I exist? Why shouldn’t I die? Why should I keep living? Philosophically and spiritually these questions have been getting in my head for so long now. They ...', tags: ['philosophy', 'existentialism'], slug: 'the-moral-reason-not-to-die' },
-  { title: 'The Poetry of Love: Why Your Brain is Basically a Dating AI', date: '2025-03-18', description: 'Most people romanticize love as this enigmatic, poetic force beyond explanation. But it\'s actually a beautifully intricate algorithm running inside your brain. A system built on patterns, probabili...', tags: ['love', 'neuroscience'], slug: 'the-poetry-of-love-why-your-brain-is-basically-a-dating-ai' },
-  { title: 'This Girl Escaped North Korea in order to live', date: '2023-06-16', description: 'I read this book when I was a little worried about the increasing intolerance in India (Especially, in recent times). Although I won\'t consider it is directly related, but, this book will help you ...', tags: ['book review', 'freedom'], slug: 'this-girl-escaped-north-korea-in-order-to-live' },
-  { title: 'Through my window: my neighbor and his alcoholism...', date: '2025-04-12', description: 'I was looking out of this window, from this exact spot. The view hasn’t changed much over the years, though everything inside it has. I was looking at that same house right across from me, the one ...', tags: ['personal', 'observation'], slug: 'through-my-window-my-neighbor-and-his-alcoholism' },
-  { title: 'Time: The Only Thing We Can Control When We Feel Stuck', date: '2024-08-10', description: 'There’s a young man, not quite new to adulthood but still adjusting to the peculiar rhythm of it. He finds himself in the thick of what they call a quarter-life crisis, that unsettling feeling that...', tags: ['personal growth', 'self-reflection'], slug: 'time-the-only-thing-we-can-control-when-we-feel-stuck' },
-  { title: 'What I learned from reading Haruki Murakami', date: '2024-09-21', description: 'There was a time in my life where I had very few connections of my own, but each one was too strange to explain. I remember the anxiety creeping in…was I the only one surrounded by such weird and d...', tags: ['book review', 'literature'], slug: 'what-i-learned-from-reading-haruki-murakami' },
-  { title: 'What is "Ambition" ?', date: '2024-11-15', description: 'You can cry all you want. Beg for someone to care, to understand, to throw you a lifeline. You can wear yourself out trying to make them happy, break yourself in half just to prove you’d do anythin...', tags: ['philosophy', 'personal growth'], slug: 'what-is-ambition' },
-  { title: 'What You See in a City Is What You Brought to It', date: '2026-05-10', description: 'I went to Bangalore to test an idea: that whatever you see in other people is just a reflection of you. Every encounter became a report on my own interior.', tags: ['travel', 'self-reflection'], slug: 'what-you-see-in-a-city' },
-  { title: 'What\'s the difference between good & bad music?', date: '2023-12-17', description: 'When I asked her if we could predict the next note in the music based on previous notes, my piano teacher said a hard “No!”. Although I agree (because she’s trustworthy), my mind can’t make sense o...', tags: ['music', 'neuroscience'], slug: 'whats-the-difference-between-good-bad-music' },
-  { title: 'When Breath Becomes Air', date: '2021-05-15', description: 'A neurosurgeon, at the peak of his career, finds that he has cancer. This book is about Paul Kalanithi, a doctor who chose the medical field (or neuroscience for that matter) to connect his interes...', tags: ['book review', 'meaning', 'death'], slug: 'when-breath-becomes-air' },
-  { title: 'Where YOU Really Exist', date: '2025-08-06', description: 'There’s only a finite amount of time and space in the universe, and in your life. Don’t take this too philosophically. But don’t ignore it either.', tags: ['philosophy', 'existentialism'], slug: 'where-you-really-exist' },
-  { title: 'Why Being Unstylish Can Be Fun...', date: '2024-05-28', description: 'We live in a world where trends dictate much of what we do and how we think. Everyone wants to be part of the latest craze, whether it’s the newest tech, style, or even job trends. But what if foll...', tags: ['culture', 'opinion'], slug: 'why-being-unstylish-can-be-fun' },
-  { title: 'Why being \'Wonder\'ful beats being \'Hope\'ful', date: '2025-01-18', description: 'There’s no guarantee your job will last the next few months. No guarantee the girl you’re dating will marry you. No guarantee you’ll ever be rich, or even keep a full head of hair a few years down ...', tags: ['philosophy', 'wonder'], slug: 'why-being-wonderful-beats-being-hopeful' },
-  { title: 'Why do I struggle to understand Emotions?', date: '2024-02-27', description: 'Consider this for a moment: everything around us, whether material or immaterial, is intricately connected to emotion in some form or another. Our beliefs give rise to religions and governments. Ou...', tags: ['emotions', 'neurodivergence'], slug: 'why-do-i-struggle-to-understand-emotions' },
-  { title: 'Why Do You Feel Like You Are Missing Something?', date: '2026-04-01', description: 'The scroll shows you lives you didn\'t live. But that feeling of missing out isn\'t insight. It\'s a trap built on a premise worth questioning.', tags: ['social media', 'psychology'], slug: 'why-do-you-feel-like-missing-something' },
-  { title: 'Why following intuition is actually "Scientific"', date: '2024-03-30', description: 'Thankfully/sadly, I’m an only child. I would have to take care of my parents and be the sole earner of the family (someday). If I get married, I will have to ensure my spouse’s security. If I have ...', tags: ['science', 'intuition'], slug: 'why-following-intuition-is-actually-scientific' },
-  { title: 'Why High-Functioning Autistic Never Learn to Ask for HELP!', date: '2026-04-15', description: 'High-functioning autism creates an invisible struggle. You\'re smart enough to act normal, but the cost of that performance is something nobody sees.', tags: ['autism', 'neurodivergence'], slug: 'why-high-functioning-autistic' },
-  { title: 'Why is it hard to think positive when you are traumatized?', date: '2024-09-28', description: '"I think human consciousness, is a tragic misstep in evolution. We became too self-aware, nature created an aspect of nature separate from itself, we are creatures that should not exist by natural ...', tags: ['trauma', 'psychology'], slug: 'why-is-it-hard-to-think-positive-when-you-are-traumatized' },
-  { title: 'Why should I write about me when nobody cares?', date: '2026-02-15', description: 'I\'m just another Indian guy from a small town. Statistically insignificant, emotionally immature, underdeveloped as a writer. Yet I continue because I exist.', tags: ['writing', 'personal'], slug: 'why-should-i-write' },
-  { title: 'Why you should think really hard before relocating for Study/Job', date: '2024-02-24', description: 'Less than 10% of the population actually lives in metro cities in India. For villagers like me, it\'s clear that we often need to leave home for education or a job. Depending on our life stage, we f...', tags: ['career', 'india'], slug: 'why-you-should-think-really-hard-before-relocating-for-studyjob' },
-  { title: 'Women I Love(d)', date: '2024-01-28', description: 'As I’m writing this down, there’s a certain sadness on one side and a relief on the other. It’s not just about recounting how my last few days went; it\'s more about capturing a feeling that needs t...', tags: ['love', 'relationships'], slug: 'women-i-loved' },
-  { title: 'You actually love multiple people without even realising it...', date: '2024-12-07', description: 'I’m fascinated by dating culture, love, relationships, and all the complicated things young people seem to do to each other (lol). Probably because, as a mildly older single guy, it’s exactly what ...', tags: ['love', 'relationships'], slug: 'you-actually-love-multiple-people-without-even-realising-it' },
-  { title: 'You Are Not Einstein. Neither Was He.', date: '2026-03-10', description: 'Einstein\'s genius wasn\'t about being smarter. It was about staring at the gap between expectation and reality until it revealed something new.', tags: ['curiosity', 'personal growth'], slug: 'you-are-not-einstein' },
-  { title: 'Your Laziness has its reason and you can fix it', date: '2023-12-08', description: 'Every child is unique; we often hear this sentiment. Yet, despite celebrating individual differences, children are often funneled into a uniform educational structure, where they find themselves en...', tags: ['psychology', 'motivation'], slug: 'your-laziness-has-its-reason-and-you-can-fix-it' },
-]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+// Every essay carries its number in the body of work, counted from the
+// oldest, so the figure is a tally of what has been written rather than a
+// position in a list.
+const numbered = posts.map((p, i) => ({ ...p, no: String(posts.length - i).padStart(2, '0') }));
 
-/* Thumbnails are read out of each post's source at build time and pointed
-   straight at Cloudinary, with a resize in the URL so the browser fetches a
-   small one. Nothing is copied into this repository. */
-const sources = import.meta.glob('./thoughts/*.astro', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
-
-const thumbs: Record<string, string> = {};
-for (const [path, raw] of Object.entries(sources)) {
-  const slug = path.split('/').pop()!.replace('.astro', '');
-  const found = raw.match(/https:\/\/res\.cloudinary\.com\/[^"']+/);
-  if (found) {
-    thumbs[slug] = found[0].replace('/upload/', '/upload/w_300,h_200,c_fill,g_center,q_auto,f_auto/');
-  }
-}
-
-const allTags = [...new Set(posts.flatMap(p => p.tags))].sort();
-
-// The themes I return to most, ordered by how often I come back to them.
-// Counts are used to order this list, never shown.
-const tagWeight = new Map<string, number>();
-posts.forEach(p => p.tags.forEach(t => tagWeight.set(t, (tagWeight.get(t) ?? 0) + 1)));
-const recurring = [...tagWeight.entries()]
-  .filter(([, n]) => n >= 3)
-  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-  .map(([tag]) => tag);
-const otherTags = allTags.filter(t => !recurring.includes(t));
-
-// Group posts by year so a long archive stays scannable.
 const years = [...new Set(posts.map(p => p.date.slice(0, 4)))];
 const grouped = years.map(year => ({
   year,
-  items: posts.filter(p => p.date.slice(0, 4) === year),
+  items: numbered.filter(p => p.date.slice(0, 4) === year),
 }));
+
+const firstYear = posts[posts.length - 1].date.slice(0, 4);
+const lastYear = posts[0].date.slice(0, 4);
+const totalWords = posts.reduce((sum, p) => sum + p.words, 0);
+/* The middle essay, not the average one: two or three long book pieces
+   pull a mean upwards and stop it describing anything. */
+const lengths = posts.map(p => p.words).sort((a, b) => a - b);
+const medianWords = lengths[Math.floor(lengths.length / 2)];
 
 function shortDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00');
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-/* ── The map ──────────────────────────────────────────────
-   Every essay is a node. Two essays are joined when they share
-   a theme, which means the clusters draw themselves: the things
-   I keep circling end up dense, the one-offs sit out on the edge.
-   The layout is solved here at build time, so the drawing is
-   identical on every visit and needs no JavaScript to appear. */
-
-const MAP_W = 1000;
-const MAP_H = 620;
-
-type MapNode = { i: number; title: string; slug: string; year: string; deg: number; x: number; y: number };
-
-const mapNodes: MapNode[] = posts.map((p, i) => ({
-  i,
-  title: p.title,
-  slug: p.slug,
-  year: p.date.slice(0, 4),
-  deg: 0,
-  x: 0,
-  y: 0,
-}));
-
-// Chain the essays inside each theme in the order they were written,
-// rather than joining every pair. A thread, not a mesh.
-const edges: { a: number; b: number }[] = [];
-allTags.forEach(tag => {
-  const members = posts
-    .map((p, i) => ({ p, i }))
-    .filter(({ p }) => p.tags.includes(tag))
-    .sort((m, n) => new Date(m.p.date).getTime() - new Date(n.p.date).getTime());
-  for (let k = 1; k < members.length; k++) {
-    edges.push({ a: members[k - 1].i, b: members[k].i });
-  }
+/* An essay is "about" a topic when that topic is one of its strongest two
+   and carries real mass. Everything on the page that filters or sorts by
+   theme uses these, and the probability behind them, rather than a label. */
+const MEMBERSHIP = 0.1;
+const membership = theta.map(row => {
+  const ranked = row.map((p, k) => ({ k, p })).sort((a, b) => b.p - a.p);
+  return ranked.slice(0, 2).filter(t => t.p >= MEMBERSHIP);
 });
-edges.forEach(e => { mapNodes[e.a].deg++; mapNodes[e.b].deg++; });
-
-// Deterministic pseudo-random start, so the drawing never shifts.
-function mulberry32(seed: number) {
-  return function () {
-    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-const rand = mulberry32(20260817);
-
-mapNodes.forEach((n, i) => {
-  const angle = (i / mapNodes.length) * Math.PI * 2;
-  const radius = 150 + rand() * 120;
-  n.x = MAP_W / 2 + Math.cos(angle) * radius;
-  n.y = MAP_H / 2 + Math.sin(angle) * radius * 0.62;
+const topTopic = theta.map(row => {
+  let best = 0;
+  row.forEach((p, k) => { if (p > row[best]) best = k; });
+  return { k: best, p: row[best] };
 });
+const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
-// Fruchterman-Reingold: edges pull, every node pushes, heat cools.
-const area = MAP_W * MAP_H;
-const kForce = Math.sqrt(area / mapNodes.length) * 1.15;
-// Repulsion is local. Without a cutoff an essay that shares a theme with
-// nothing gets pushed off the page by all 78 others at once.
-const REPEL_RANGE = kForce * 2.6;
-const ITER = 520;
-
-for (let step = 0; step < ITER; step++) {
-  const temp = (1 - step / ITER) ** 1.5 * (MAP_W / 9);
-  const dx = new Array(mapNodes.length).fill(0);
-  const dy = new Array(mapNodes.length).fill(0);
-
-  for (let a = 0; a < mapNodes.length; a++) {
-    for (let b = a + 1; b < mapNodes.length; b++) {
-      let vx = mapNodes[a].x - mapNodes[b].x;
-      let vy = mapNodes[a].y - mapNodes[b].y;
-      let dist = Math.hypot(vx, vy) || 0.01;
-      if (dist < 0.05) { vx = rand() - 0.5; vy = rand() - 0.5; dist = 0.05; }
-      if (dist > REPEL_RANGE) continue;
-      const push = (kForce * kForce) / dist;
-      dx[a] += (vx / dist) * push; dy[a] += (vy / dist) * push;
-      dx[b] -= (vx / dist) * push; dy[b] -= (vy / dist) * push;
-    }
-  }
-
-  edges.forEach(e => {
-    const vx = mapNodes[e.a].x - mapNodes[e.b].x;
-    const vy = mapNodes[e.a].y - mapNodes[e.b].y;
-    const dist = Math.hypot(vx, vy) || 0.01;
-    const pull = (dist * dist) / kForce;
-    dx[e.a] -= (vx / dist) * pull; dy[e.a] -= (vy / dist) * pull;
-    dx[e.b] += (vx / dist) * pull; dy[e.b] += (vy / dist) * pull;
-  });
-
-  mapNodes.forEach((n, i) => {
-    // A little gravity, so unconnected essays do not drift off the page.
-    dx[i] += (MAP_W / 2 - n.x) * 0.035;
-    dy[i] += (MAP_H / 2 - n.y) * 0.05;
-    const disp = Math.hypot(dx[i], dy[i]) || 0.01;
-    n.x += (dx[i] / disp) * Math.min(disp, temp);
-    n.y += (dy[i] / disp) * Math.min(disp, temp);
-  });
-}
-
-// Normalise into the viewBox with room for the theme labels.
-const pad = 46;
-const xs = mapNodes.map(n => n.x);
-const ys = mapNodes.map(n => n.y);
-const minX = Math.min(...xs), maxX = Math.max(...xs);
-const minY = Math.min(...ys), maxY = Math.max(...ys);
-const scaleX = (MAP_W - pad * 2) / (maxX - minX);
-const scaleY = (MAP_H - pad * 2) / (maxY - minY);
-mapNodes.forEach(n => {
-  n.x = pad + (n.x - minX) * scaleX;
-  n.y = pad + (n.y - minY) * scaleY;
-});
-
-const mapEdges = edges.map(e => ({
-  a: e.a,
-  b: e.b,
-  x1: mapNodes[e.a].x, y1: mapNodes[e.a].y,
-  x2: mapNodes[e.b].x, y2: mapNodes[e.b].y,
-}));
-
-// Name only the heaviest clusters, at the centre of mass of their essays,
-// then nudge the names apart so they stay readable where clusters overlap.
-const clusterLabels = recurring.slice(0, 7).map(tag => {
-  const members = posts
-    .map((p, i) => ({ p, i }))
-    .filter(({ p }) => p.tags.includes(tag));
-  const cx = members.reduce((s, m) => s + mapNodes[m.i].x, 0) / members.length;
-  const cy = members.reduce((s, m) => s + mapNodes[m.i].y, 0) / members.length;
-  return { tag, x: cx, y: cy, w: tag.length * 7 + 16 };
-});
-
-for (let pass = 0; pass < 240; pass++) {
-  for (let a = 0; a < clusterLabels.length; a++) {
-    for (let b = a + 1; b < clusterLabels.length; b++) {
-      const A = clusterLabels[a], B = clusterLabels[b];
-      const overlapX = (A.w + B.w) / 2 - Math.abs(A.x - B.x);
-      const overlapY = 21 - Math.abs(A.y - B.y);
-      if (overlapX > 0 && overlapY > 0) {
-        const shove = Math.min(overlapY, 4) / 2 + 0.6;
-        const dir = A.y <= B.y ? -1 : 1;
-        A.y += shove * dir;
-        B.y -= shove * dir;
-        A.x += (A.x <= B.x ? -1 : 1) * Math.min(overlapX, 3) * 0.35;
-        B.x += (A.x <= B.x ? 1 : -1) * Math.min(overlapX, 3) * 0.35;
-      }
-    }
-  }
-}
-
-const nodeRadius = (deg: number) => 2.6 + Math.min(deg, 9) * 0.42;
-
-// Axons bow rather than run straight. Nothing in a head is a ruled line.
-const axons = mapEdges.map((e, i) => {
-  const dx = e.x2 - e.x1, dy = e.y2 - e.y1;
-  const len = Math.hypot(dx, dy) || 1;
-  const bow = (i % 2 ? 1 : -1) * len * (0.07 + ((i * 37) % 11) / 190);
-  const cx = (e.x1 + e.x2) / 2 + (-dy / len) * bow;
-  const cy = (e.y1 + e.y2) / 2 + (dx / len) * bow;
-  return {
-    a: e.a, b: e.b,
-    cx, cy,
-    d: `M${e.x1.toFixed(1)} ${e.y1.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${e.x2.toFixed(1)} ${e.y2.toFixed(1)}`,
-  };
-});
 ---
 
 <Layout title={title} activeNav="/thoughts" description="Personal writing by Arshad Kazi. Things I am confused about, excited by, or trying to put into words. Published on Substack." ogImage="/images/og-thoughts.jpg">
   <div class="thoughts-page">
-    <div class="folio-rule">
-      <span class="folio-mark">Thoughts</span>
-      <span class="folio-line"></span>
-      <span class="folio-mark">Personal essays</span>
-    </div>
 
-    <div class="thoughts-intro">
-      <h1>Thoughts</h1>
-      <p>
+    <!-- ── Masthead ───────────────────────────────────────
+         Set like the front of a specimen sheet: the running head, the
+         title at full size, and the figures of the collection stated
+         plainly rather than hidden in prose. -->
+    <header class="mast">
+      <div class="folio-rule">
+        <span class="folio-mark">Thoughts</span>
+        <span class="folio-line"></span>
+        <span class="folio-mark">Personal essays</span>
+      </div>
+
+      <h1 class="mast-title">Thoughts<span class="mast-dot">.</span></h1>
+
+      <p class="mast-lede">
         Personal writing. Things I am confused about, excited by, or trying to put into words.
       </p>
+
+      <dl class="mast-figures">
+        <div><dt>Essays</dt><dd>{posts.length}</dd></div>
+        <div><dt>Years</dt><dd>{firstYear}–{lastYear}</dd></div>
+        <div><dt>Words</dt><dd>{Math.round(totalWords / 1000)}k</dd></div>
+        <div><dt>Median essay</dt><dd>{(medianWords / 1000).toFixed(1)}k</dd></div>
+      </dl>
 
       <details class="why">
         <summary>Why I write these</summary>
@@ -311,147 +88,107 @@ const axons = mapEdges.map((e, i) => {
           <p class="substack-line">These are also published on <a href="https://substack.com/@arshadkazi" target="_blank" rel="noopener">Substack</a>.</p>
         </div>
       </details>
-    </div>
+    </header>
 
-    <figure class="cortex">
-      <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} role="img" aria-label="Every essay, joined where it shares a theme with another" id="cortex-svg">
-        <g id="cortex-field">
-        <g class="axons">
-          {axons.map(ax => (
-            <path d={ax.d} data-a={ax.a} data-b={ax.b} />
-          ))}
-        </g>
-
-        <g class="cluster-names">
-          {clusterLabels.map(c => (
-            <text x={c.x.toFixed(1)} y={c.y.toFixed(1)}>{c.tag}</text>
-          ))}
-        </g>
-
-        <!-- Charge sits under the cell bodies, so a firing soma glows through. -->
-        <g class="charge">
-          {mapNodes.map(n => (
-            <circle cx={n.x.toFixed(1)} cy={n.y.toFixed(1)} r={nodeRadius(n.deg).toFixed(2)} opacity="0" />
-          ))}
-        </g>
-
-        <g class="somas">
-          {mapNodes.map(n => (
-            <a href={`/thoughts/${n.slug}`} data-i={n.i} data-title={n.title} data-year={n.year} data-x={n.x.toFixed(1)} data-y={n.y.toFixed(1)}>
-              <circle class="hit" cx={n.x.toFixed(1)} cy={n.y.toFixed(1)} r="12" />
-              <circle class="soma" cx={n.x.toFixed(1)} cy={n.y.toFixed(1)} r={nodeRadius(n.deg).toFixed(2)} />
-            </a>
-          ))}
-        </g>
-
-        <!-- Action potentials in flight. Filled in at runtime. -->
-        <g class="signals"></g>
-
-        <g class="hover-label" id="cortex-label" aria-hidden="true">
-          <text><tspan class="lab-year"></tspan><tspan class="lab-title" dx="8"></tspan></text>
-        </g>
-        </g>
-      </svg>
-    </figure>
-
-    <div class="filters">
-      <div class="search-bar">
-        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="search-input" placeholder="Search writing" autocomplete="off" />
+    <!-- ── The console ────────────────────────────────────
+         Searching and narrowing, kept on one strip so the index below
+         it never has to move over to make room. -->
+    <div class="console">
+      <div class="seek">
+        <input type="text" id="search-input" placeholder={`Search ${posts.length} essays by meaning`} autocomplete="off" />
+        <span class="seek-key" aria-hidden="true">/</span>
+        <button type="button" class="seek-clear" id="seek-clear" aria-label="Clear search">Clear</button>
       </div>
+
+      <p class="console-note" id="results-count"></p>
 
       <div class="themes">
-        <p class="theme-label">What I keep coming back to</p>
-        <div class="tag-filters">
-          {recurring.map(tag => (
-            <button class="tag-chip" data-tag={tag}>{tag}</button>
+        <span class="themes-name">Topics</span>
+        <div class="theme-strip" id="theme-strip">
+          {topics.map((t, k) => (
+            <button class="idx" data-topic={k} type="button" title={t.words.join(', ')}>
+              <span class="idx-name">{t.words.slice(0, 2).join(' · ')}</span><span class="idx-n"></span>
+            </button>
           ))}
         </div>
       </div>
-
-      <details class="topics">
-        <summary>Everything else I have written about</summary>
-        <div class="tag-filters">
-          {otherTags.map(tag => (
-            <button class="tag-chip" data-tag={tag}>{tag}</button>
-          ))}
-        </div>
-      </details>
     </div>
 
-    <p class="results-count" id="results-count"></p>
+    <!-- ── The ledger ─────────────────────────────────────
+         One line per essay, numbered, under a year that stays at the top
+         of the screen for as long as you are inside it. -->
+    <ol class="ledger" id="post-index">
+      {grouped.map(group => [
+        <li class="year-band" data-year={group.year}>
+          <span class="year-num">{group.year}</span>
+          <span class="year-line"></span>
+          <span class="year-count">{group.items.length} {group.items.length === 1 ? 'essay' : 'essays'}</span>
+        </li>,
+        ...group.items.map(post => {
+          const i = byIndex.get(post.slug)!;
+          return (
+            <li class="entry" data-year={group.year} data-i={i}
+                data-title={post.title.toLowerCase()}
+                data-description={post.description.toLowerCase()}
+                data-topics={membership[i].map(t => t.k).join(',')}
+                data-p={membership[i].map(t => t.p.toFixed(4)).join(',')}>
+              <a href={`/thoughts/${post.slug}`} class="entry-link" data-peek={post.plate ?? ''} data-no={post.no}>
+                {/* Every line opens with the mark of the essay: its picture
+                    if it has one, and otherwise its number. */}
+                <span class="entry-mark">
+                  {post.thumb
+                    ? <img src={post.thumb} alt="" loading="lazy" decoding="async" width="150" height="100" />
+                    : <span class="entry-no">{post.no}</span>}
+                </span>
 
-    <div class="post-index" id="post-index">
-      {grouped.map(group => (
-        <section class="year-group" data-year={group.year}>
-          <h2 class="year-label">{group.year}</h2>
-          <ul class="entry-list">
-            {group.items.map(post => (
-              <li class="entry" data-title={post.title.toLowerCase()} data-description={post.description.toLowerCase()} data-tags={post.tags.join(',')}>
-                <a href={`/thoughts/${post.slug}`} class:list={['entry-link', { illustrated: thumbs[post.slug] }]}>
-                  {thumbs[post.slug] && (
-                    <img class="thumb" src={thumbs[post.slug]} alt="" loading="lazy" decoding="async" width="120" height="150" />
-                  )}
-                  <span class="entry-body">
+                <span class="entry-body">
+                  <h3>{post.title}</h3>
+                  <p>{post.description}</p>
+                  <span class="entry-meta">
                     <time datetime={post.date}>{shortDate(post.date)}</time>
-                    <h3>{post.title}</h3>
-                    <p>{post.description}</p>
-                    <span class="entry-tags">{post.tags.join(' · ')}</span>
+                    <span class="entry-topic">{topics[topTopic[i].k].words.slice(0, 2).join(' · ')}</span>
+                    <span class="entry-score" hidden></span>
                   </span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
-    </div>
+                </span>
+              </a>
+            </li>
+          );
+        }),
+      ])}
+    </ol>
 
-    <p class="no-results" id="no-results">No writing matches that search.</p>
+    <p class="no-results" id="no-results">Nothing here matches that. Try a shorter word.</p>
+
+    <!-- The picture, lifted off the line you are pointing at. -->
+    <div class="peek" id="peek" aria-hidden="true"><img alt="" /><span class="peek-no"></span></div>
   </div>
 </Layout>
 
 <style>
+  /* The page takes a wider canvas than the reading column, because the map
+     and the ledger both want room. No transform is used to do it: a fixed
+     child (the picture that lifts off a line) has to stay fixed. */
   .thoughts-page {
-    display: flex;
-    flex-direction: column;
+    width: min(1060px, 92vw);
+    margin-left: calc(50% - min(530px, 46vw));
   }
 
-  /* ── Intro ─────────────────────────────────────────── */
-  .thoughts-intro {
-    margin-bottom: var(--space-2xl);
+  /* ── Masthead ──────────────────────────────────────── */
+  .mast {
+    margin-bottom: var(--space-3xl);
   }
 
-  .thoughts-intro h1 {
-    font-size: 2rem;
-    margin-bottom: var(--space-sm);
-  }
-
-  .thoughts-intro p {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 1.17rem;
-    line-height: 1.6;
-    color: var(--color-text-secondary);
-    max-width: 54ch;
-    margin: 0;
-  }
-
-  /* ── Folio rule ────────────────────────────────────── */
   .folio-rule {
     display: flex;
     align-items: center;
     gap: var(--space-md);
-    margin-bottom: var(--space-xl);
   }
 
   .folio-mark {
     font-family: var(--font-serif);
     font-variant: small-caps;
-    font-style: normal;
     font-size: 0.92rem;
     letter-spacing: 0.09em;
-    text-transform: none;
-
     color: var(--color-text-muted);
     white-space: nowrap;
   }
@@ -462,19 +199,71 @@ const axons = mapEdges.map((e, i) => {
     background: var(--color-border);
   }
 
+  /* The same heading Blogs and Notebooks use. This page is no more
+     important than those, so it is not set any larger than them. */
+  .mast-title {
+    font-size: 2rem;
+    margin: var(--space-lg) 0 var(--space-sm);
+  }
+
+  .mast-dot {
+    color: var(--color-accent);
+  }
+
+  .mast-lede {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.17rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    max-width: 54ch;
+    margin: 0;
+  }
+
+  /* The same figures band Blogs and Notebooks use: the number first, its
+     name under it, four across, no dividers. */
+  .mast-figures {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-md) 0;
+    margin: var(--space-xl) 0 0;
+  }
+
+  .mast-figures > div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.25rem;
+  }
+
+  .mast-figures dt {
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .mast-figures dd {
+    font-family: var(--font-serif);
+    font-size: 1.9rem;
+    line-height: 1;
+    color: var(--color-text);
+    margin: 0;
+  }
+
   /* The longer reasoning stays folded until asked for. */
   .why {
-    margin-top: var(--space-md);
+    margin-top: var(--space-lg);
   }
 
   .why summary {
     font-family: var(--font-serif);
     font-variant: small-caps;
-    font-style: normal;
     font-size: 0.92rem;
     letter-spacing: 0.09em;
-    text-transform: none;
-
     color: var(--color-text-muted);
     cursor: pointer;
     list-style: none;
@@ -491,7 +280,8 @@ const axons = mapEdges.map((e, i) => {
 
   .why summary::before {
     content: '+';
-    font-size: 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
     line-height: 1;
   }
 
@@ -506,6 +296,8 @@ const axons = mapEdges.map((e, i) => {
   .why-body {
     padding-top: var(--space-md);
     max-width: 66ch;
+    border-left: 1px solid var(--color-border-light);
+    padding-left: var(--space-md);
   }
 
   .why-body p {
@@ -523,250 +315,252 @@ const axons = mapEdges.map((e, i) => {
     margin-bottom: 0 !important;
   }
 
-  /* ── The map ───────────────────────────────────────── */
-  .cortex {
-    width: min(1140px, 94vw);
-    margin-left: 50%;
-    transform: translateX(-50%);
-    margin-bottom: var(--space-xl);
-    padding: 0;
+  /* ── The console ───────────────────────────────────
+     One line to type on and one index of themes. Nothing here is a
+     widget: it is a ruled line and a page of set words. */
+  .console {
+    margin: 0 0 var(--space-2xl);
   }
 
-  .cortex svg {
-    display: block;
-    width: 100%;
-    height: auto;
-    overflow: visible;
-  }
-
-  .axons path {
-    fill: none;
-    stroke: var(--color-border);
-    stroke-width: 0.7;
-    stroke-linecap: round;
-  }
-
-  .somas .soma {
-    fill: var(--color-text-muted);
-    opacity: 0.72;
-  }
-
-  .charge circle {
-    fill: var(--color-accent);
-  }
-
-  .somas .hit {
-    fill: transparent;
-  }
-
-  .somas a {
-    cursor: crosshair;
-  }
-
-  .signals circle {
-    fill: var(--color-accent);
-  }
-
-  .cluster-names text {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 16px;
-    fill: var(--color-text-muted);
-    opacity: 0.62;
-    text-anchor: middle;
-    pointer-events: none;
-    user-select: none;
-  }
-
-  /* Stimulating one cell quietens the rest of the tissue. */
-  .cortex svg.lit .axons path {
-    stroke-opacity: 0.3;
-  }
-
-  .cortex svg.lit .somas .soma {
-    opacity: 0.22;
-  }
-
-  .cortex svg.lit .cluster-names text {
-    opacity: 0.16;
-  }
-
-  /* The title rides on the node you are pointing at. */
-  .hover-label {
-    opacity: 0;
-    transition: opacity 0.16s ease;
-    pointer-events: none;
-  }
-
-  .hover-label.show {
-    opacity: 1;
-  }
-
-  .hover-label .lab-title {
-    font-family: var(--font-serif);
-    font-size: 17px;
-    fill: var(--color-text);
-  }
-
-  .hover-label .lab-year {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    fill: var(--color-accent);
-  }
-
-  .theme-label {
-    font-family: var(--font-serif);
-    font-variant: small-caps;
-    font-style: normal;
-    font-size: 0.92rem;
-    letter-spacing: 0.09em;
-    color: var(--color-text-muted);
-    margin: 0 0 var(--space-xs);
-  }
-
-  /* ── Filters ───────────────────────────────────────── */
-  .filters {
+  .seek {
     display: flex;
-    flex-direction: column;
+    align-items: baseline;
     gap: var(--space-md);
-    margin-bottom: var(--space-xl);
-  }
-
-  .themes .tag-filters {
-    padding-top: 0;
-  }
-
-  .search-bar {
-    position: relative;
-    max-width: 340px;
-  }
-
-  .search-icon {
-    position: absolute;
-    left: 11px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--color-text-muted);
-    pointer-events: none;
-  }
-
-  #search-input {
-    width: 100%;
-    padding: 0.5rem 0.75rem 0.5rem 2.1rem;
-    font-family: var(--font-mono);
-    font-size: 0.76rem;
-    color: var(--color-text);
-    background: transparent;
-    border: 1px solid var(--color-border);
-    border-radius: 2px;
-    outline: none;
+    border-bottom: 1px solid var(--color-text);
+    padding: 0.35rem 0 0.5rem;
     transition: border-color 0.2s ease;
   }
 
-  #search-input:focus {
+  .seek:focus-within {
     border-color: var(--color-accent);
+  }
+
+  #search-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: none;
+    outline: none;
+    font-family: var(--font-serif);
+    font-size: clamp(1.4rem, 3.4vw, 1.85rem);
+    font-weight: 400;
+    line-height: 1.25;
+    color: var(--color-text);
+    padding: 0;
   }
 
   #search-input::placeholder {
+    font-style: italic;
     color: var(--color-text-muted);
+    opacity: 0.75;
   }
 
-  /* Long topic list stays folded away until asked for. */
-  .topics summary {
+  /* The one control on the right is the slash key while the line is empty
+     and the way out of the search once it is not. */
+  .seek-key {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    padding: 0.05rem 0.4rem;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .seek-clear {
+    display: none;
+    border: none;
+    background: none;
+    cursor: pointer;
     font-family: var(--font-serif);
     font-variant: small-caps;
-    font-style: normal;
-    font-size: 0.92rem;
-    letter-spacing: 0.09em;
-    text-transform: none;
-
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
     color: var(--color-text-muted);
-    cursor: pointer;
-    list-style: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.2rem 0;
-    user-select: none;
+    padding: 0;
+    white-space: nowrap;
   }
 
-  .topics summary::-webkit-details-marker {
+  .seek-clear:hover {
+    color: var(--color-accent);
+  }
+
+  .seek.has-value .seek-key {
     display: none;
   }
 
-  .topics summary::before {
-    content: '+';
-    font-size: 0.85rem;
-    line-height: 1;
+  .seek.has-value .seek-clear {
+    display: block;
+  }
+
+  /* Say what is on screen in words. This page is not a dashboard. */
+  .console-note {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.05rem;
     color: var(--color-text-muted);
+    margin: var(--space-sm) 0 0;
+    min-height: 1.6em;
   }
 
-  .topics[open] summary::before {
-    content: '−';
+  /* One strip, on one or two lines, that recounts itself against what is
+     on screen. Nothing here is a list of everything that exists. */
+  .themes {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
   }
 
-  .topics summary:hover {
-    color: var(--color-accent);
+  .themes-name {
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    font-size: 0.92rem;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    padding-top: 0.1rem;
   }
 
-  .tag-filters {
+  .theme-strip {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
-    padding-top: var(--space-sm);
+    align-items: baseline;
+    gap: 0.35rem 1.3rem;
   }
 
-  .tag-chip {
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-    font-weight: 400;
-    background: transparent;
-    color: var(--color-text-muted);
-    padding: 0.2rem 0.5rem;
-    border-radius: 2px;
-    border: 1px solid var(--color-border);
+  .idx {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    background: none;
+    border: none;
+    padding: 0;
     cursor: pointer;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    font-family: var(--font-serif);
+    font-size: 1.04rem;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+    transition: color 0.14s ease, text-decoration-color 0.14s ease;
   }
 
-  .tag-chip:hover {
+  /* The figure rides above the word, the way a footnote mark does. It is
+     the live count, so it moves while you type. */
+  .idx-n {
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-muted);
+    opacity: 0.7;
+    transform: translateY(-0.5em);
+  }
+
+  .idx:hover,
+  .idx:focus-visible {
     color: var(--color-accent);
-    border-color: var(--color-accent);
+    text-decoration-color: var(--color-accent);
+    outline: none;
   }
 
-  .tag-chip.active {
-    background: var(--color-accent);
-    color: #fff;
-    border-color: var(--color-accent);
+  .idx:hover .idx-n,
+  .idx:focus-visible .idx-n {
+    color: var(--color-accent);
+    opacity: 1;
   }
 
-  /* ── Index ─────────────────────────────────────────── */
-  .post-index {
+  .idx.active {
+    color: var(--color-accent);
+    font-weight: 600;
+    text-decoration-color: var(--color-accent);
+    text-decoration-thickness: 2px;
+  }
+
+  .idx.active .idx-n {
+    color: var(--color-accent);
+    opacity: 1;
+  }
+
+  .idx.gone {
+    display: none;
+  }
+
+  .idx-more {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    transition: color 0.14s ease;
+  }
+
+  .idx-more:hover {
+    color: var(--color-accent);
+  }
+
+  .idx-more:empty {
+    display: none;
+  }
+
+  /* ── The ledger ────────────────────────────────────── */
+  /* One flat list rather than a section per year, so a ranking can put
+     any essay next to any other. The year headings are items in the same
+     list and step aside when the order is not chronological. */
+  .ledger {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xl);
-  }
-
-  .year-group {
-    display: grid;
-    grid-template-columns: 3.5rem 1fr;
-    gap: var(--space-md);
-  }
-
-  .year-label {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--color-text-muted);
-    letter-spacing: 0.08em;
-    margin: 0;
-    padding-top: 0.55rem;
-  }
-
-  .entry-list {
     list-style: none;
-    padding: 0;
     margin: 0;
+    padding: 0;
+  }
+
+  /* The year stays at the top of the screen for as long as you are
+     inside it, so you always know where in the run you are. */
+  .year-band {
+    list-style: none;
+    position: sticky;
+    top: var(--nav-h, 55px);
+    z-index: 4;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-md);
+    margin: 0;
+    padding: var(--space-md) 0 0.5rem;
+    background: var(--color-bg);
+  }
+
+  .year-num {
+    font-family: var(--font-serif);
+    font-size: 2.2rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+  }
+
+  .year-line {
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  .year-count {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    white-space: nowrap;
   }
 
   .entry {
@@ -774,132 +568,298 @@ const axons = mapEdges.map((e, i) => {
     border-top: 1px solid var(--color-border-light);
   }
 
-  .entry:first-child {
+  /* No rule directly under a year heading, or at the top of a ranking. */
+  .year-band + .entry,
+  .ledger.ranked .entry:first-of-type {
     border-top: none;
   }
 
-  /* Every entry is centred, with or without a picture, so the column reads
-     as one thing rather than two treatments interleaved. */
-  .entry a {
-    text-align: center;
+  /* A ranking is not in date order, so the year is not a heading over it. */
+  .ledger.ranked .year-band {
+    display: none;
   }
 
-  .entry a p,
-  .entry a h3 {
-    margin-left: auto;
-    margin-right: auto;
+  .entry-link {
+    position: relative;
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    gap: var(--space-lg);
+    align-items: start;
+    padding: 1rem 0.7rem;
+    margin: 0 -0.7rem;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.18s ease;
   }
 
-  .thumb {
+  .entry-link:hover,
+  .entry-link:focus-visible {
+    background: var(--color-accent-soft);
+    text-decoration: none;
+    outline: none;
+  }
+
+  /* A rule wipes across the line you are pointing at. */
+  .entry-link::after {
+    content: '';
+    position: absolute;
+    left: 0.7rem;
+    right: 0.7rem;
+    bottom: 0;
+    height: 1px;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.28s ease;
+  }
+
+  .entry-link:hover::after,
+  .entry-link:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  .entry-mark {
     display: block;
-    /* Kept small and plated like the in-essay images, so an illustrated
-       entry reads as a quiet accent next to a plain one rather than a
-       banner that throws off the rhythm of the list. */
-    width: min(150px, 40%);
-    height: auto;
-    aspect-ratio: 3 / 2;
+  }
+
+  /* Picture and number share their right edge, so the column reads as one
+     thing down the page whether a line is illustrated or not. */
+  .entry-mark img {
+    display: block;
+    width: 150px;
+    height: 100px;
     object-fit: cover;
     object-position: center;
     border: 1px solid var(--color-border);
-    border-radius: 0;
-    padding: 4px;
-    margin: 0 auto var(--space-sm);
+    padding: 3px;
     background: var(--color-bg);
+    transition: border-color 0.18s ease;
   }
 
-  .entry a {
+  .entry-link:hover .entry-mark img {
+    border-color: var(--color-accent);
+  }
+
+  .entry-no {
     display: block;
-    padding: var(--space-md) 0;
-    text-decoration: none;
-    color: inherit;
-  }
-
-  .entry a:hover {
-    text-decoration: none;
-  }
-
-  .entry time {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
+    text-align: right;
+    padding: 0.1rem 0.5rem 0 0;
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    font-weight: 300;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
     color: var(--color-text-muted);
-    margin-bottom: 0.35rem;
+    opacity: 0.42;
+    transition: color 0.15s ease, opacity 0.15s ease;
+  }
+
+  .entry-link:hover .entry-no {
+    color: var(--color-accent);
+    opacity: 1;
+  }
+
+  .entry-body {
+    display: block;
+    min-width: 0;
   }
 
   /* The title is the one thing that should catch the eye. */
   .entry h3 {
     font-family: var(--font-serif);
-    font-size: 1.35rem;
+    font-size: 1.42rem;
     font-weight: 600;
-    line-height: 1.35;
+    line-height: 1.3;
     color: var(--color-text);
-    margin: 0 0 0.35rem 0;
+    margin: 0 0 0.3rem;
+    max-width: 34ch;
     transition: color 0.15s ease;
   }
 
-  .entry a:hover h3 {
+  .entry-link:hover h3 {
     color: var(--color-accent);
   }
 
   .entry p {
     font-family: var(--font-serif);
     font-style: italic;
-    font-size: 1.12rem;
-    line-height: 1.55;
+    font-size: 1.08rem;
+    line-height: 1.5;
     color: var(--color-text-muted);
     margin: 0;
-    max-width: 62ch;
-    /* Three lines, not two. Enough for the voice to come through. */
+    max-width: 58ch;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  .entry-tags {
-    display: block;
+  .entry-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
     font-family: var(--font-mono);
     font-size: 0.6rem;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.07em;
     color: var(--color-text-muted);
-    opacity: 0.6;
-    margin-top: 0.5rem;
   }
 
-  .results-count {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 1.05rem;
-    color: var(--color-text-muted);
-    margin: 0 0 var(--space-md) 0;
+  .entry-meta time {
+    color: var(--color-text-secondary);
+    opacity: 0.7;
+    white-space: nowrap;
   }
 
-  .results-count:empty {
+  .entry-topic {
+    opacity: 0.75;
+  }
+
+  /* The bar is the number, drawn. It reads as relevance while searching
+     and as the share of the essay while a topic is chosen. */
+  .entry-score[hidden] {
     display: none;
   }
 
-  .no-results {
-    font-family: var(--font-sans);
-    font-size: 0.88rem;
+  .entry-score {
+    position: relative;
+    padding-left: 3.1rem;
+    color: var(--color-accent);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .entry-score::before,
+  .entry-score::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.42em;
+    height: 2px;
+    border-radius: 1px;
+  }
+
+  .entry-score::before {
+    width: 2.6rem;
+    background: var(--color-border);
+  }
+
+  .entry-score::after {
+    width: calc(2.6rem * var(--fill, 0%) / 100%);
+    background: var(--color-accent);
+    transition: width 0.22s ease;
+  }
+
+  /* ── The picture, lifted off the line ──────────────── */
+  .peek {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 40;
+    display: none;
+    width: 300px;
+    padding: 9px 9px 7px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 20px 44px rgba(46, 38, 25, 0.18);
+    pointer-events: none;
+    opacity: 0;
+    transform: rotate(-1.1deg);
+    transition: opacity 0.18s ease;
+    will-change: left, top;
+  }
+
+  html.dark .peek {
+    box-shadow: 0 20px 44px rgba(0, 0, 0, 0.5);
+  }
+
+  .peek.on {
+    opacity: 1;
+  }
+
+  .peek img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+  }
+
+  .peek-no {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.14em;
     color: var(--color-text-muted);
-    padding: var(--space-xl) 0;
+    padding-top: 6px;
+  }
+
+  .no-results {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    padding: var(--space-2xl) 0;
     margin: 0;
     display: none;
   }
 
-  @media (max-width: 600px) {
-
-    .year-group {
-      grid-template-columns: 1fr;
-      gap: var(--space-sm);
+  /* ── Narrower ──────────────────────────────────────── */
+  @media (max-width: 860px) {
+    .entry-link {
+      grid-template-columns: 112px minmax(0, 1fr);
+      gap: var(--space-md);
     }
 
-    .year-label {
-      padding-top: 0;
+    .entry-mark img {
+      width: 112px;
+      height: 75px;
+    }
+
+    .entry-no {
+      font-size: 1.7rem;
     }
 
     .entry h3 {
-      font-size: 1.2rem;
+      font-size: 1.28rem;
+    }
+
+  }
+
+
+  @media (max-width: 560px) {
+    .mast-figures {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md) var(--space-lg);
+    }
+
+    .entry-link {
+      grid-template-columns: 76px minmax(0, 1fr);
+      gap: var(--space-sm);
+    }
+
+    .entry-mark img {
+      width: 76px;
+      height: 51px;
+      padding: 2px;
+    }
+
+    .entry-no {
+      font-size: 1.3rem;
+      padding-right: 0.3rem;
+    }
+
+    .year-num {
+      font-size: 1.7rem;
+    }
+
+    .themes {
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .idx {
+      font-size: 0.98rem;
     }
   }
 </style>
@@ -913,309 +873,401 @@ const axons = mapEdges.map((e, i) => {
 
 <script is:inline>
 (function() {
-  /* ── The tissue ────────────────────────────────────────────────
-     This is not a diagram that moves. It is a small nervous system.
-     Aliveness comes from conduction, not from displacement: cells
-     fire, the charge runs down the axon, and whatever it reaches
-     fires in turn. Nothing is ever jostled out of position, which is
-     why there is no wobble to speak of. Brains do not wobble.
-     Pointing at a cell stimulates it. The cascade you see spreading
-     is the real shape of what that essay is tied to.            */
-
-  const svg = document.getElementById('cortex-svg');
-  if (svg) {
-    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const field = document.getElementById('cortex-field');
-    const label = document.getElementById('cortex-label');
-    const labelText = label.querySelector('text');
-    const labYear = label.querySelector('.lab-year');
-    const labTitle = label.querySelector('.lab-title');
-    const signalLayer = svg.querySelector('.signals');
-    const NS = 'http://www.w3.org/2000/svg';
-
-    const anchors = Array.from(svg.querySelectorAll('.somas a'));
-    const somas = Array.from(svg.querySelectorAll('.somas .soma'));
-    const charges = Array.from(svg.querySelectorAll('.charge circle'));
-    const paths = Array.from(svg.querySelectorAll('.axons path'));
-
-    const cells = anchors.map(function (a, i) {
-      return {
-        x: parseFloat(a.dataset.x),
-        y: parseFloat(a.dataset.y),
-        rest: parseFloat(somas[i].getAttribute('r')),
-        charge: 0,      // how lit the cell body is, 0 to 1
-        refractory: 0,  // a cell that just fired cannot fire again yet
-        out: []         // the axons leaving it
-      };
-    });
-
-    // Every axon knows its curve, so a signal can be placed anywhere along it.
-    const axons = paths.map(function (el) {
-      const a = Number(el.dataset.a), b = Number(el.dataset.b);
-      const d = el.getAttribute('d');
-      const nums = d.match(/-?\d+(\.\d+)?/g).map(Number);
-      const ax = { el: el, a: a, b: b,
-        x0: nums[0], y0: nums[1], cx: nums[2], cy: nums[3], x1: nums[4], y1: nums[5],
-        heat: 0 };
-      ax.len = Math.hypot(ax.x1 - ax.x0, ax.y1 - ax.y0) * 1.06;
-      cells[a].out.push(ax);
-      cells[b].out.push(ax);
-      return ax;
-    });
-
-    function pointOn(ax, t, fromA) {
-      const u = fromA ? t : 1 - t, v = 1 - u;
-      return {
-        x: v * v * ax.x0 + 2 * v * u * ax.cx + u * u * ax.x1,
-        y: v * v * ax.y0 + 2 * v * u * ax.cy + u * u * ax.y1
-      };
-    }
-
-    // A fixed pool of signal dots, so firing never allocates mid-flight.
-    const POOL = 140;
-    const pool = [];
-    for (let i = 0; i < POOL; i++) {
-      const c = document.createElementNS(NS, 'circle');
-      c.setAttribute('r', '2.1');
-      c.setAttribute('opacity', '0');
-      signalLayer.appendChild(c);
-      pool.push({ el: c, live: false, ax: null, fromA: true, t: 0, speed: 0, depth: 0, strength: 1 });
-    }
-
-    const SPEED = 235;        // how fast charge travels, units per second
-    const DECAY = 3.6;        // how fast a lit cell body fades
-    const REFRACTORY = 0.42;  // silence after firing, in seconds
-
-    function fire(i, depth, strength) {
-      const cell = cells[i];
-      if (cell.refractory > 0 || depth <= 0) return;
-      cell.charge = Math.min(1, cell.charge + strength);
-      cell.refractory = REFRACTORY;
-      for (let k = 0; k < cell.out.length; k++) {
-        const ax = cell.out[k];
-        const slot = pool.find(function (s) { return !s.live; });
-        if (!slot) return;
-        slot.live = true;
-        slot.ax = ax;
-        slot.fromA = ax.a === i;
-        slot.t = 0;
-        slot.speed = SPEED / ax.len;
-        slot.depth = depth - 1;
-        slot.strength = strength * 0.6;
-      }
-    }
-
-    /* ── Pointing at a cell stimulates it ─────────────────────── */
-    let hovered = -1;
-    let stimTimer = 0;
-
-    function placeLabel(x, y) {
-      labelText.setAttribute('text-anchor', x < 250 ? 'start' : x > 750 ? 'end' : 'middle');
-      labelText.setAttribute('x', x.toFixed(1));
-      labelText.setAttribute('y', (y - 18).toFixed(1));
-    }
-
-    function touch(anchor) {
-      hovered = Number(anchor.dataset.i);
-      svg.classList.add('lit');
-      labYear.textContent = anchor.dataset.year;
-      labTitle.textContent = anchor.dataset.title;
-      placeLabel(cells[hovered].x, cells[hovered].y);
-      label.classList.add('show');
-      cells[hovered].refractory = 0;
-      fire(hovered, 4, 1);
-      stimTimer = 0.95;
-    }
-
-    function release() {
-      hovered = -1;
-      svg.classList.remove('lit');
-      label.classList.remove('show');
-    }
-
-    anchors.forEach(function (a) {
-      a.addEventListener('mouseenter', function () { touch(a); });
-      a.addEventListener('focus', function () { touch(a); });
-      a.addEventListener('touchstart', function () { touch(a); }, { passive: true });
-    });
-    svg.addEventListener('mouseleave', release);
-
-    if (still) {
-      // No animation wanted: keep the stimulation readable, statically.
-      anchors.forEach(function (a, i) {
-        a.addEventListener('mouseenter', function () {
-          charges[i].setAttribute('opacity', '1');
-          cells[i].out.forEach(function (ax) { ax.el.style.stroke = 'var(--color-accent)'; });
-        });
-        a.addEventListener('mouseleave', function () {
-          charges[i].setAttribute('opacity', '0');
-          cells[i].out.forEach(function (ax) { ax.el.style.stroke = ''; });
-        });
-      });
-      return;
-    }
-
-    /* ── The loop ─────────────────────────────────────────────── */
-    const BREATH = 0.016;      // how far the tissue swells
-    const BREATH_PERIOD = 6.4; // one full breath, in seconds
-    const RESTING_RATE = 1.15; // spontaneous fires per second when left alone
-
-    let clock = 0;
-    let last = performance.now();
-    let onScreen = true;
-    if (window.IntersectionObserver) {
-      new IntersectionObserver(function (e) { onScreen = e[0].isIntersecting; },
-        { rootMargin: '140px' }).observe(svg);
-    }
-
-    function frame(now) {
-      const dt = Math.min((now - last) / 1000, 0.05);
-      last = now;
-
-      if (!document.hidden && onScreen) {
-        clock += dt;
-
-        /* The breath: one uniform scale about the centre. Every distance
-           changes by the same factor, so the drawing cannot shimmer. It
-           fills, holds, empties slower than it filled, and rests. */
-        const cycle = (clock % BREATH_PERIOD) / BREATH_PERIOD;
-        let fill;
-        if (cycle < 0.34) fill = 0.5 - 0.5 * Math.cos(Math.PI * (cycle / 0.34));
-        else if (cycle < 0.46) fill = 1;
-        else if (cycle < 0.86) fill = 0.5 + 0.5 * Math.cos(Math.PI * ((cycle - 0.46) / 0.40));
-        else fill = 0;
-        const swell = 1 + fill * BREATH;
-        field.setAttribute('transform',
-          'translate(500,310) scale(' + swell.toFixed(5) + ') translate(-500,-310)');
-
-        // Resting activity. A brain left alone is not a brain switched off.
-        if (hovered < 0 && Math.random() < RESTING_RATE * dt) {
-          fire(Math.floor(Math.random() * cells.length), 3, 0.85);
-        }
-
-        // Holding the pointer on a cell keeps stimulating it.
-        if (hovered >= 0) {
-          stimTimer -= dt;
-          if (stimTimer <= 0) {
-            cells[hovered].refractory = 0;
-            fire(hovered, 4, 1);
-            stimTimer = 0.95;
-          }
-          placeLabel(cells[hovered].x, cells[hovered].y);
-        }
-
-        for (let i = 0; i < cells.length; i++) {
-          const c = cells[i];
-          if (c.refractory > 0) c.refractory -= dt;
-          if (c.charge > 0.001) {
-            c.charge -= c.charge * DECAY * dt;
-            charges[i].setAttribute('opacity', c.charge.toFixed(3));
-            charges[i].setAttribute('r', (c.rest + c.charge * 5.5).toFixed(2));
-          } else if (c.charge !== 0) {
-            c.charge = 0;
-            charges[i].setAttribute('opacity', '0');
-          }
-        }
-
-        for (let s = 0; s < pool.length; s++) {
-          const sig = pool[s];
-          if (!sig.live) continue;
-          sig.t += sig.speed * dt;
-          if (sig.t >= 1) {
-            sig.live = false;
-            sig.el.setAttribute('opacity', '0');
-            const target = sig.fromA ? sig.ax.b : sig.ax.a;
-            sig.ax.heat = Math.max(sig.ax.heat, sig.strength);
-            if (sig.depth > 0 && sig.strength > 0.18) fire(target, sig.depth, sig.strength);
-            continue;
-          }
-          const p = pointOn(sig.ax, sig.t, sig.fromA);
-          sig.el.setAttribute('cx', p.x.toFixed(1));
-          sig.el.setAttribute('cy', p.y.toFixed(1));
-          sig.el.setAttribute('opacity', (0.35 + sig.strength * 0.65).toFixed(2));
-          sig.ax.heat = Math.max(sig.ax.heat, sig.strength * 0.85);
-        }
-
-        for (let k = 0; k < axons.length; k++) {
-          const ax = axons[k];
-          if (ax.heat > 0.004) {
-            ax.heat -= ax.heat * 2.6 * dt;
-            ax.el.style.stroke = 'var(--color-accent)';
-            ax.el.style.strokeOpacity = ax.heat.toFixed(3);
-            ax.el.style.strokeWidth = (0.7 + ax.heat * 0.9).toFixed(2);
-          } else if (ax.heat !== 0) {
-            ax.heat = 0;
-            ax.el.style.stroke = '';
-            ax.el.style.strokeOpacity = '';
-            ax.el.style.strokeWidth = '';
-          }
-        }
-      }
-      requestAnimationFrame(frame);
-    }
-    requestAnimationFrame(frame);
-  }
+  /* The site's bar is sticky and sits above everything, so the year has to
+     know how tall it is to come to rest just underneath it rather than
+     disappear behind it. Measured, because the bar changes height with the
+     screen. */
+  const bar = document.querySelector('nav');
+  if (!bar) return;
+  const measure = () => document.documentElement.style.setProperty(
+    '--nav-h', Math.round(bar.getBoundingClientRect().height) + 'px');
+  measure();
+  if (window.ResizeObserver) new ResizeObserver(measure).observe(bar);
+  else window.addEventListener('resize', measure);
 })();
 
 (function() {
+  /* ── Searching ────────────────────────────────────────────────
+     Typing here is not a string comparison. The query is tokenised and
+     stemmed the same way the corpus was, projected into the latent space
+     the model was fitted in, and scored by cosine against every essay, so
+     "burnout at work" reaches an essay that never uses either word. A
+     small exact-term boost sits on top, because a rare word someone
+     actually typed should still pull its own essay up.
+
+     The model is ~100KB over the wire and nobody who is only reading the
+     page needs it, so it is fetched the first time the box is touched.
+     Until it lands, the box falls back to matching letters.          */
+
   const input = document.getElementById('search-input');
+  const seek = input.closest('.seek');
+  const clearBtn = document.getElementById('seek-clear');
   const index = document.getElementById('post-index');
-  const entries = index.querySelectorAll('.entry');
-  const groups = index.querySelectorAll('.year-group');
-  const chips = document.querySelectorAll('.tag-chip');
+  const entries = Array.from(index.querySelectorAll('.entry'));
+  const bands = Array.from(index.querySelectorAll('.year-band'));
+  const chips = Array.from(document.querySelectorAll('.idx'));
   const counter = document.getElementById('results-count');
   const empty = document.getElementById('no-results');
-  let activeTag = null;
+  const strip = document.getElementById('theme-strip');
 
-  function filter() {
-    const q = input.value.toLowerCase().trim();
-    let visible = 0;
+  let activeTopic = null;
+  let model = null;
+  let loading = null;
 
-    entries.forEach(entry => {
-      const matchesText = !q
-        || entry.dataset.title.includes(q)
-        || entry.dataset.description.includes(q)
-        || entry.dataset.tags.includes(q);
-      const matchesTag = !activeTag || entry.dataset.tags.split(',').includes(activeTag);
-      const show = matchesText && matchesTag;
+  /* Every essay's topic memberships, as probabilities. */
+  const member = entries.map(e => {
+    const ks = e.dataset.topics ? e.dataset.topics.split(',').map(Number) : [];
+    const ps = e.dataset.p ? e.dataset.p.split(',').map(Number) : [];
+    return new Map(ks.map((k, i) => [k, ps[i] ?? 0]));
+  });
+
+  /* ── The same tokeniser the corpus was built with ─────────────────
+     If this drifts from src/lib/text.ts, a query stops landing on the
+     terms the model actually holds. */
+  const STOP = new Set(('a about above after again against all am an and any are as at be because been before being below ' +
+    'between both but by can cannot could did do does doing down during each few for from further had has have having he ' +
+    'her here hers herself him himself his how i if in into is it its itself me more most my myself no nor not of off on ' +
+    'once only or other ought our ours ourselves out over own same she should so some such than that the their theirs them ' +
+    'themselves then there these they this those through to too under until up very was we were what when where which while ' +
+    'who whom why with would you your yours yourself yourselves just like get got also even still much many really thing ' +
+    'things way ways lot lots maybe perhaps actually basically literally bit quite rather pretty another every something ' +
+    'someone anything nothing everything always never often sometimes around almost already instead however therefore ' +
+    'though although yet within without upon toward towards etc okay yeah thus hence per via able enough make makes made ' +
+    'making take takes took taking come comes came coming go goes going went put puts let lets doesn isn wasn aren couldn ' +
+    'wouldn shouldn didn don won hasn haven ain shan mustn').split(' '));
+
+  function undouble(base) {
+    if (base.length < 3) return base;
+    const a = base[base.length - 1], b = base[base.length - 2];
+    if (a === b && !'aeiou'.includes(a)) base = base.slice(0, -1);
+    if (base.length >= 3 && !/[aeiou]/.test(base.slice(-3))) return base + 'e';
+    return base;
+  }
+
+  function stem(w) {
+    if (w.length <= 4) return w;
+    if (w.endsWith('iness') && w.length >= 7) return w.slice(0, -5) + 'y';
+    if (w.endsWith('ies') && w.length >= 5) return w.slice(0, -3) + 'y';
+    if (w.endsWith('ness') && w.length >= 7) return w.slice(0, -4);
+    if (w.endsWith('ement') && w.length >= 8) return w.slice(0, -5);
+    if (w.endsWith('ing') && w.length >= 6) return undouble(w.slice(0, -3));
+    if (w.endsWith('ed') && w.length >= 5) return undouble(w.slice(0, -2));
+    if (w.endsWith('es') && w.length >= 5 && /(s|x|z|ch|sh)es$/.test(w)) return w.slice(0, -2);
+    if (w.endsWith('s') && !w.endsWith('ss') && !w.endsWith('us') && w.length >= 5) return w.slice(0, -1);
+    return w;
+  }
+
+  function tokenize(text) {
+    const norm = text.toLowerCase()
+      .replace(/[‘’ʼ′]/g, "'")
+      .replace(/[–—]/g, ' ')
+      .replace(/'(s|t|re|ve|ll|d|m)\b/g, '');
+    const out = [];
+    for (const raw of norm.match(/[a-z][a-z'-]{2,21}/g) || []) {
+      const w = raw.replace(/[^a-z]/g, '');
+      if (w.length < 3 || STOP.has(w)) continue;
+      const st = stem(w);
+      if (st.length < 3 || STOP.has(st)) continue;
+      out.push(st);
+    }
+    return out;
+  }
+
+  function loadModel() {
+    if (loading) return loading;
+    loading = fetch('/thoughts-search.json')
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
+      .then(m => {
+        const bin = atob(m.termVectors);
+        const bytes = new Int8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = (bin.charCodeAt(i) << 24) >> 24;
+        const words = m.vocab.split('\n');
+        model = {
+          dims: m.dims,
+          termId: new Map(words.map((w, i) => [w, i])),
+          U: bytes,
+          scale: m.termScale,
+          docs: m.docVectors,
+          postings: m.postings,
+          rareIdf: m.rareIdf,
+        };
+        seek.classList.add('is-semantic');
+        return model;
+      })
+      .catch(() => { model = null; return null; });
+    return loading;
+  }
+
+  /* Cosine against every essay, plus a nudge for exact rare terms and for
+     a literal hit in the title. Returns null when the query reached no
+     term the model holds, so the caller can fall back. */
+  function semanticScores(q) {
+    if (!model) return null;
+    const toks = tokenize(q);
+    const tf = new Map();
+    for (const t of toks) {
+      const i = model.termId.get(t);
+      if (i !== undefined) tf.set(i, (tf.get(i) || 0) + 1);
+    }
+    if (!tf.size) return null;
+
+    const K = model.dims;
+    const qv = new Float64Array(K);
+    tf.forEach((n, i) => {
+      const w = 1 + Math.log(n);
+      for (let j = 0; j < K; j++) qv[j] += w * model.U[i * K + j] * model.scale;
+    });
+    let norm = 0;
+    for (let j = 0; j < K; j++) norm += qv[j] * qv[j];
+    norm = Math.sqrt(norm);
+    if (norm < 1e-9) return null;
+    for (let j = 0; j < K; j++) qv[j] /= norm;
+
+    const lower = q.toLowerCase();
+    return entries.map(entry => {
+      const d = Number(entry.dataset.i);
+      const dv = model.docs[d];
+      let cos = 0;
+      for (let j = 0; j < K; j++) cos += qv[j] * dv[j];
+      let lex = 0;
+      tf.forEach((_, i) => {
+        const list = model.postings[i];
+        if (list && list.indexOf(d) !== -1) lex += model.rareIdf[i] || 1;
+      });
+      const literal = entry.dataset.title.indexOf(lower) !== -1 ? 1 : 0;
+      const sim = Math.max(0, Math.min(1, cos));
+      return { score: sim + 0.14 * Math.min(lex, 4) + 0.25 * literal, sim };
+    });
+  }
+
+  // Before the model lands, and for queries it cannot reach, match letters.
+  function literalScores(q) {
+    const lower = q.toLowerCase();
+    return entries.map(entry => {
+      const sim = entry.dataset.title.indexOf(lower) !== -1 ? 1
+        : entry.dataset.description.indexOf(lower) !== -1 ? 0.6 : 0;
+      return { score: sim, sim };
+    });
+  }
+
+  /* Where to cut a ranking off. A fixed threshold either buries a good
+     answer under forty weak ones or throws away a whole weak-but-real
+     result set, because the scores a query produces depend on the query.
+     So the cut is relative to the best hit it found, with a floor. */
+  const CUT_RATIO = 0.42;
+  const CUT_FLOOR = 0.14;
+  const MOST = 24;
+
+  function render() {
+    const q = input.value.trim();
+    const ranking = q ? (semanticScores(q) || literalScores(q)) : null;
+    const semantic = !!(q && model && semanticScores(q));
+    let top = 0;
+    if (ranking) {
+      entries.forEach((entry, idx) => {
+        if (activeTopic !== null && !member[idx].has(activeTopic)) return;
+        top = Math.max(top, ranking[idx].score);
+      });
+    }
+    const cut = Math.max(CUT_FLOOR, top * CUT_RATIO);
+
+    const order = [];
+    entries.forEach((entry, idx) => {
+      const inTopic = activeTopic === null || member[idx].has(activeTopic);
+      const score = ranking ? ranking[idx].score : 0;
+      const show = inTopic && (!ranking || score >= cut);
       entry.classList.toggle('hidden', !show);
-      if (show) visible++;
+      if (!show) return;
+      order.push({ idx, entry, score, sim: ranking ? ranking[idx].sim : 0,
+                   p: member[idx].get(activeTopic) || 0 });
     });
 
-    // Drop a year heading entirely when nothing under it survived.
-    groups.forEach(group => {
-      const anyVisible = group.querySelector('.entry:not(.hidden)');
-      group.classList.toggle('hidden', !anyVisible);
+    /* How the surviving essays are put in order. A query ranks by
+       relevance; a topic on its own ranks by how much of the essay that
+       topic actually accounts for; otherwise it is the archive, newest
+       first, under its years. */
+    const ranked = !!ranking || activeTopic !== null;
+    index.classList.toggle('ranked', ranked);
+    if (ranked) {
+      order.sort((a, b) => (ranking ? b.score - a.score : b.p - a.p));
+      // A long tail of weak answers is not a result, it is an apology.
+      if (ranking) {
+        order.splice(MOST).forEach(o => o.entry.classList.add('hidden'));
+      }
+      order.forEach((o, rank) => { o.entry.style.order = String(rank); });
+    } else {
+      entries.forEach(e => { e.style.order = ''; });
+    }
+    const visible = order.length;
+
+    // The bar on each line: relevance when searching, share of the essay
+    // when a topic is chosen. Hidden when neither applies.
+    order.forEach(o => {
+      const mark = o.entry.querySelector('.entry-score');
+      if (!ranked) { mark.hidden = true; return; }
+      const v = ranking ? o.sim : Math.min(o.p / 0.6, 1);
+      mark.hidden = false;
+      mark.style.setProperty('--fill', (v * 100).toFixed(1) + '%');
+      // Never a bare percentage: on its own it reads as how much of the
+      // essay you have read, which is not what this is.
+      mark.textContent = Math.round((ranking ? o.sim : o.p) * 100) + '% match';
     });
+
+    // Year headings belong to the archive. A ranking is not in year order,
+    // so they come out rather than lie about what follows them.
+    bands.forEach(band => {
+      if (ranked) { band.classList.add('hidden'); return; }
+      const year = band.dataset.year;
+      const any = entries.some(e => !e.classList.contains('hidden') && e.dataset.year === year);
+      band.classList.toggle('hidden', !any);
+      const count = band.querySelector('.year-count');
+      if (count && any) {
+        const n = entries.filter(e => !e.classList.contains('hidden') && e.dataset.year === year).length;
+        count.textContent = n + (n === 1 ? ' essay' : ' essays');
+      }
+    });
+
+    seek.classList.toggle('has-value', q.length > 0);
+    updateStrip(q, visible);
 
     // Say what is on screen in words. This page is not a dashboard.
-    if (activeTag && q) {
-      counter.textContent = 'Everything about ' + activeTag + ' that mentions "' + q + '".';
-    } else if (activeTag) {
-      counter.textContent = 'Everything I have written about ' + activeTag + '.';
+    const topicName = activeTopic !== null
+      ? chips[activeTopic].querySelector('.idx-name').textContent : '';
+    const n = visible + (visible === 1 ? ' essay' : ' essays');
+    if (activeTopic !== null && q) {
+      counter.textContent = n + ' on ' + topicName + ', closest to “' + q + '” first.';
+    } else if (activeTopic !== null) {
+      counter.textContent = n + ' on ' + topicName + ', the most about it first.';
     } else if (q) {
-      counter.textContent = 'Everything that mentions "' + q + '".';
+      counter.textContent = semantic
+        ? n + ' closest in meaning to “' + q + '”.'
+        : n + ' mentioning “' + q + '”.';
     } else {
       counter.textContent = '';
     }
     empty.style.display = visible === 0 ? 'block' : 'none';
   }
 
-  input.addEventListener('input', filter);
+  /* The strip recounts itself against what is on screen: a topic that
+     nothing visible is about drops out, so it only ever offers narrowings
+     that lead somewhere. */
+  function updateStrip(q, visible) {
+    const live = new Map();
+    entries.forEach((entry, idx) => {
+      if (entry.classList.contains('hidden')) return;
+      member[idx].forEach((_, k) => live.set(k, (live.get(k) || 0) + 1));
+    });
+    const ranked = [...live.entries()]
+      .filter(([k]) => k !== activeTopic)
+      .sort((a, b) => b[1] - a[1] || a[0] - b[0]);
+    const rank = new Map(ranked.map(([k], i) => [k, i]));
 
-  chips.forEach(chip => {
+    chips.forEach((chip, k) => {
+      if (k === activeTopic) {
+        chip.classList.remove('gone');
+        chip.style.order = '-1';
+        chip.querySelector('.idx-n').textContent = String(visible);
+        return;
+      }
+      const r = rank.get(k);
+      chip.classList.toggle('gone', r === undefined);
+      if (r !== undefined) {
+        chip.style.order = String(r);
+        chip.querySelector('.idx-n').textContent = String(live.get(k));
+      }
+    });
+  }
+
+  input.addEventListener('input', () => {
+    if (!model) loadModel().then(() => render());
+    render();
+  });
+  // Warm the model on the first sign of intent, so the first keystroke is
+  // usually already semantic.
+  ['focus', 'pointerenter'].forEach(ev => seek.addEventListener(ev, loadModel, { once: true }));
+
+  clearBtn.addEventListener('click', () => { input.value = ''; render(); input.focus(); });
+
+  document.addEventListener('keydown', e => {
+    const typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)
+      || document.activeElement.isContentEditable;
+    if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey) {
+      e.preventDefault();
+      loadModel();
+      input.focus();
+    } else if (e.key === 'Escape' && document.activeElement === input) {
+      input.value = '';
+      render();
+      input.blur();
+    }
+  });
+
+  chips.forEach((chip, k) => {
     chip.addEventListener('click', () => {
-      const tag = chip.dataset.tag;
-      if (activeTag === tag) {
-        activeTag = null;
+      if (activeTopic === k) {
+        activeTopic = null;
         chip.classList.remove('active');
       } else {
         chips.forEach(c => c.classList.remove('active'));
-        activeTag = tag;
+        activeTopic = k;
         chip.classList.add('active');
       }
-      filter();
+      render();
+    });
+  });
+
+  render();
+})();
+
+(function() {
+  /* ── The picture, lifted off the line ──────────────────────────
+     The ledger is a column of type. The photograph an essay carries
+     is not printed into that column at size, it is picked up off the
+     line you are pointing at and held next to the cursor, so the list
+     stays a list and the picture still gets to be a picture.
+     Pointer only: on a touch screen the thumbnail on the line is it. */
+
+  const peek = document.getElementById('peek');
+  if (!peek) return;
+  if (!window.matchMedia('(min-width: 1100px) and (hover: hover) and (pointer: fine)').matches) return;
+
+  const img = peek.querySelector('img');
+  const cap = peek.querySelector('.peek-no');
+  const PW = 300, PH = 240, GAP = 26;
+  let shown = false;
+  let x = 0, y = 0;
+
+  function place(ev) {
+    // Flip to the other side of the cursor rather than run off the screen.
+    const right = ev.clientX + GAP;
+    x = right + PW > window.innerWidth - 12 ? ev.clientX - GAP - PW : right;
+    y = Math.min(Math.max(ev.clientY - PH / 2, 12), window.innerHeight - PH - 12);
+    peek.style.left = x.toFixed(0) + 'px';
+    peek.style.top = y.toFixed(0) + 'px';
+  }
+
+  document.querySelectorAll('.entry-link').forEach(link => {
+    const src = link.dataset.peek;
+    if (!src) return;
+
+    link.addEventListener('mouseenter', ev => {
+      img.src = src;
+      cap.textContent = 'No. ' + link.dataset.no;
+      peek.style.display = 'block';
+      place(ev);
+      // One frame with it placed but transparent, so it fades in where it
+      // belongs instead of sliding over from wherever it was last.
+      requestAnimationFrame(() => { peek.classList.add('on'); shown = true; });
+    });
+
+    link.addEventListener('mousemove', ev => { if (shown) place(ev); });
+
+    link.addEventListener('mouseleave', () => {
+      shown = false;
+      peek.classList.remove('on');
+      setTimeout(() => { if (!shown) peek.style.display = 'none'; }, 200);
     });
   });
 })();
+
 </script>
