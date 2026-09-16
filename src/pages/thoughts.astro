@@ -95,7 +95,7 @@ for (const [path, raw] of Object.entries(sources)) {
   const slug = path.split('/').pop()!.replace('.astro', '');
   const found = raw.match(/https:\/\/res\.cloudinary\.com\/[^"']+/);
   if (found) {
-    thumbs[slug] = found[0].replace('/upload/', '/upload/w_760,h_506,c_fill,g_auto,q_auto,f_auto/');
+    thumbs[slug] = found[0].replace('/upload/', '/upload/w_760,h_506,c_fill,g_center,q_auto,f_auto/');
   }
 }
 
@@ -792,17 +792,19 @@ const axons = mapEdges.map((e, i) => {
 
   .thumb {
     display: block;
-    /* Fills the entry on a phone, capped so it stays a picture rather than
-       a banner on a wide screen. */
-    width: min(380px, 100%);
+    /* Kept small and plated like the in-essay images, so an illustrated
+       entry reads as a quiet accent next to a plain one rather than a
+       banner that throws off the rhythm of the list. */
+    width: min(150px, 40%);
     height: auto;
     aspect-ratio: 3 / 2;
     object-fit: cover;
-    border-radius: 2px;
+    object-position: center;
+    border: 1px solid var(--color-border);
+    border-radius: 0;
+    padding: 4px;
     margin: 0 auto var(--space-sm);
-    /* Toned to the page rather than sitting on it as a colour photograph. */
-    filter: grayscale(1) sepia(0.38) contrast(1.04);
-    background: var(--color-border-light);
+    background: var(--color-bg);
   }
 
   .entry a {
