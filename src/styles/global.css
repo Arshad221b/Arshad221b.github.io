@@ -22,6 +22,11 @@
   --color-tag-bg: #e8dbbd;
   --color-tag-text: #6b5c41;
   --color-code-bg: #eadec1;
+  /* The fibrous grain that stands in for a flat paper colour. Shared as a
+     variable so every opaque patch painted over the page (the nav bar, the
+     glow behind the masthead title) carries the same texture, rather than
+     sitting as a bare flat rectangle against a grained page. */
+  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch' result='t'/%3E%3CfeColorMatrix in='t' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   --font-sans: 'Libre Franklin', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
@@ -51,6 +56,9 @@ html.dark {
   --color-tag-bg: #272015;
   --color-tag-text: #a29372;
   --color-code-bg: #201a11;
+  /* Black grain vanishes on a near-black ground, so toned paper gets the
+     same fibre drawn in a light fleck instead. */
+  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch' result='t'/%3E%3CfeColorMatrix in='t' type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 html {
@@ -66,7 +74,7 @@ body {
   /* A flat fill reads as a colour swatch, not paper. This is a fine
      fibrous grain, tiled small enough to stay a texture rather than
      a pattern, sitting quietly behind the type. */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch' result='t'/%3E%3CfeColorMatrix in='t' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image: var(--paper-grain);
   background-repeat: repeat;
   line-height: 1.8;
   font-size: 1.3rem;
@@ -74,12 +82,6 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-html.dark body {
-  /* Black grain vanishes on a near-black ground, so toned paper gets
-     the same fibre drawn in a light fleck instead. */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch' result='t'/%3E%3CfeColorMatrix in='t' type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* ── Margin contents ─────────────────────────────────────
@@ -374,6 +376,8 @@ html.dark .masthead::before {
   inset: -22px -70px;
   z-index: -1;
   background-color: var(--color-bg);
+  background-image: var(--paper-grain);
+  background-repeat: repeat;
   -webkit-mask-image: radial-gradient(ellipse 58% 56% at 50% 50%, #000 62%, transparent 100%);
   mask-image: radial-gradient(ellipse 58% 56% at 50% 50%, #000 62%, transparent 100%);
   pointer-events: none;
@@ -389,8 +393,11 @@ nav {
   padding: 0.55rem var(--space-md);
   /* Opaque on purpose. A translucent bar read as solid over flat page
      background and see-through over the masthead art, which looked like
-     a bug rather than an effect. */
-  background: var(--color-bg);
+     a bug rather than an effect. Carries the same grain as the page so
+     the bar doesn't sit as a bare flat strip against it. */
+  background-color: var(--color-bg);
+  background-image: var(--paper-grain);
+  background-repeat: repeat;
   border-bottom: 1px solid var(--color-border-light);
 }
 
