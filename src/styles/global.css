@@ -42,21 +42,21 @@
 }
 
 html.dark {
-  /* Silverpoint and chalk on toned stone, matched to the lighter,
-     less-orange paper above. */
-  --color-bg: #1b1815;
-  --color-surface: #221e19;
+  /* Silverpoint and chalk on true black, for AMOLED screens rather than
+     a toned-paper simulation. */
+  --color-bg: #000000;
+  --color-surface: #0b0a08;
   --color-text: #ece6d8;
   --color-text-secondary: #c9c0ac;
-  --color-text-muted: #928971;
+  --color-text-muted: #948a71;
   --color-accent: #d3855f;
   --color-accent-hover: #e29b77;
-  --color-accent-soft: rgba(211, 133, 95, 0.14);
-  --color-border: #34302a;
-  --color-border-light: #262220;
-  --color-tag-bg: #262220;
+  --color-accent-soft: rgba(211, 133, 95, 0.16);
+  --color-border: #2c2822;
+  --color-border-light: #1a1714;
+  --color-tag-bg: #17140f;
   --color-tag-text: #a89b7f;
-  --color-code-bg: #201c17;
+  --color-code-bg: #0e0c09;
   /* Black grain vanishes on a near-black ground, so toned paper gets the
      same fibre drawn in a light fleck instead. */
   --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch' result='t'/%3E%3CfeColorMatrix in='t' type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.03 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
