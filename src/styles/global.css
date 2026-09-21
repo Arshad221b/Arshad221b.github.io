@@ -6,22 +6,22 @@
 }
 
 :root {
-  /* Iron-gall ink and sanguine chalk on aged laid paper. Warmer than a
-     cream: the ochre a rag-paper notebook actually goes after five hundred
-     years, with the ink browned to match. */
-  --color-bg: #f0e4ca;
-  --color-surface: #f6ecd8;
-  --color-text: #302617;
-  --color-text-secondary: #54462e;
-  --color-text-muted: #8a7a5c;
-  --color-accent: #a04e2c;
-  --color-accent-hover: #833c1f;
-  --color-accent-soft: rgba(160, 78, 44, 0.11);
-  --color-border: #d6c5a2;
-  --color-border-light: #e3d5b5;
-  --color-tag-bg: #e8dbbd;
-  --color-tag-text: #6b5c41;
-  --color-code-bg: #eadec1;
+  /* Iron-gall ink on stone-toned paper. Same manuscript idea as before,
+     desaturated off the mustard/ochre and lightened so it reads as
+     calm modern paper rather than an aged, yellowed page. */
+  --color-bg: #f7f4ee;
+  --color-surface: #fbf9f5;
+  --color-text: #2b2620;
+  --color-text-secondary: #56503f;
+  --color-text-muted: #8f8770;
+  --color-accent: #b5502f;
+  --color-accent-hover: #93401f;
+  --color-accent-soft: rgba(181, 80, 47, 0.10);
+  --color-border: #e2dccd;
+  --color-border-light: #ece7d9;
+  --color-tag-bg: #efe9db;
+  --color-tag-text: #6d6650;
+  --color-code-bg: #f1ece0;
   /* The fibrous grain that stands in for a flat paper colour. Shared as a
      variable so every opaque patch painted over the page (the nav bar, the
      glow behind the masthead title) carries the same texture, rather than
@@ -42,20 +42,21 @@
 }
 
 html.dark {
-  /* Silverpoint and chalk on toned paper, warmed to match. */
-  --color-bg: #17130c;
-  --color-surface: #1e1910;
-  --color-text: #ece2cb;
-  --color-text-secondary: #c9bb9c;
-  --color-text-muted: #94866a;
-  --color-accent: #d18a63;
-  --color-accent-hover: #e5a37c;
-  --color-accent-soft: rgba(209, 138, 99, 0.15);
-  --color-border: #362d1f;
-  --color-border-light: #272015;
-  --color-tag-bg: #272015;
-  --color-tag-text: #a29372;
-  --color-code-bg: #201a11;
+  /* Silverpoint and chalk on true black, for AMOLED screens rather than
+     a toned-paper simulation. */
+  --color-bg: #000000;
+  --color-surface: #0b0a08;
+  --color-text: #ece6d8;
+  --color-text-secondary: #c9c0ac;
+  --color-text-muted: #948a71;
+  --color-accent: #d3855f;
+  --color-accent-hover: #e29b77;
+  --color-accent-soft: rgba(211, 133, 95, 0.16);
+  --color-border: #2c2822;
+  --color-border-light: #1a1714;
+  --color-tag-bg: #17140f;
+  --color-tag-text: #a89b7f;
+  --color-code-bg: #0e0c09;
   /* Black grain vanishes on a near-black ground, so toned paper gets the
      same fibre drawn in a light fleck instead. */
   --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch' result='t'/%3E%3CfeColorMatrix in='t' type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.03 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
