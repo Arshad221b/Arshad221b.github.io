@@ -68,6 +68,26 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Theme toggle: the browser's default is a cross-fade of the whole page,
+   which reads as a glitch. Replace it with nothing here — the JS drives
+   an explicit clip-path circle on ::view-transition-new(root) instead,
+   expanding from wherever the toggle was pressed. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-old(root) {
+    z-index: 1;
+  }
+
+  ::view-transition-new(root) {
+    z-index: 2;
+  }
+}
+
 body {
   font-family: var(--font-serif);
   color: var(--color-text);
