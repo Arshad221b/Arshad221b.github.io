@@ -199,12 +199,47 @@ const navItems = [
     .then(d => { document.getElementById('visit-count').textContent = d.count.toLocaleString(); })
     .catch(() => { document.getElementById('visitor-counter').style.display = 'none'; });
 
-  document.getElementById('theme-toggle').addEventListener('click', function() {
+  document.getElementById('theme-toggle').addEventListener('click', function (event) {
     const html = document.documentElement;
-    const isDark = html.classList.toggle('dark');
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    const toDark = !html.classList.contains('dark');
+    const applyTheme = function () {
+      html.classList.toggle('dark', toDark);
+      localStorage.setItem('theme', toDark ? 'dark' : 'light');
+    };
 
+    // Ink spreading across the page from wherever the toggle was pressed,
+    // rather than the theme just snapping. Falls back to an instant swap
+    // where the View Transitions API or motion isn't available.
+    var reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!document.startViewTransition || reduceMotion) {
+      applyTheme();
+      return;
+    }
+
+    var x = event.clientX;
+    var y = event.clientY;
+    var endRadius = Math.hypot(
+      Math.max(x, innerWidth - x),
+      Math.max(y, innerHeight - y)
+    );
+
+    var transition = document.startViewTransition(applyTheme);
+    transition.ready.then(function () {
+      html.animate(
+        {
+          clipPath: [
+            'circle(0px at ' + x + 'px ' + y + 'px)',
+            'circle(' + endRadius + 'px at ' + x + 'px ' + y + 'px)',
+          ],
+        },
+        {
+          duration: 550,
+          easing: 'ease-in-out',
+          pseudoElement: '::view-transition-new(root)',
+        }
+      );
     });
+  });
 </script>
 
 <style is:global>
