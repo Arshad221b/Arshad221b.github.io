@@ -25,3 +25,6 @@ scripts/
 
 # jetbrains setting folder
 .idea/
+
+# Claude Code session worktrees
+.claude/worktrees/
