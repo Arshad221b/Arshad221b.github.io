@@ -12,6 +12,12 @@ export function GET(context: APIContext) {
     site: context.site!.toString(),
     items: ([
       {
+        title: 'Why should I write about me when nobody cares?',
+        pubDate: new Date('2026-06-24'),
+        description: 'I\'m just another Indian guy from a small town. Statistically insignificant, emotionally immature, underdeveloped as a writer. Yet I continue because I exist.',
+        link: '/thoughts/why-should-i-write/',
+      },
+      {
         title: 'What You See in a City Is What You Brought to It',
         pubDate: new Date('2026-05-10'),
         description: 'I went to Bangalore to test an idea: that whatever you see in other people is just a reflection of you. Every encounter became a report on my own interior.',
@@ -70,12 +76,6 @@ export function GET(context: APIContext) {
         pubDate: new Date('2026-02-22'),
         description: 'How temporal and spatial attention mechanisms enable accurate 2D-to-3D human pose estimation, with a deep dive into DSTformer.',
         link: '/blog/temporal-spatial-attention-3d-pose/',
-      },
-      {
-        title: 'Why should I write about me when nobody cares?',
-        pubDate: new Date('2026-02-15'),
-        description: 'I\'m just another Indian guy from a small town. Statistically insignificant, emotionally immature, underdeveloped as a writer. Yet I continue because I exist.',
-        link: '/thoughts/why-should-i-write/',
       },
       {
         title: 'ROC Curves and AUC: Picking the Right Threshold for Your Model',
