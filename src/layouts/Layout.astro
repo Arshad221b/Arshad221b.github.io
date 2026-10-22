@@ -266,6 +266,15 @@ const elsewhere = [
     }
     addEventListener('scroll', onScroll, { passive: true });
     onScroll();
+
+    // The header's real height, for anything that has to fill exactly the
+    // rest of the screen. It changes when the nav wraps on a phone.
+    function measureHead() {
+      document.documentElement.style.setProperty('--head-h', head.offsetHeight + 'px');
+    }
+    measureHead();
+    if (window.ResizeObserver) new ResizeObserver(measureHead).observe(head);
+    else addEventListener('resize', measureHead);
     if (matchMedia('(hover: hover)').matches) {
       addEventListener('pointermove', function (e) {
         xy.innerHTML = 'x <b>' + (e.clientX / innerWidth).toFixed(3) +
