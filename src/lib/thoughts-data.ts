@@ -13,7 +13,11 @@
 import { proseOf } from './text';
 import { buildThoughtModel, type Doc } from './thought-model';
 
-const sources = import.meta.glob('../pages/thoughts/*.astro', {
+/* A file whose name starts with an underscore is kept in the repository but
+   not published: Astro builds no page for it, and it is left out here too,
+   so it never reaches the ledger, the map, search or related reading.
+   Drop the underscore to bring an essay back. */
+const sources = import.meta.glob(['../pages/thoughts/*.astro', '!../pages/thoughts/_*.astro'], {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>;
 
