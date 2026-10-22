@@ -36,12 +36,17 @@ const elsewhere = [
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta name="theme-color" content="#f0e9de" />
     <script is:inline>
       (function() {
         const theme = localStorage.getItem('theme');
         if (theme === 'dark') {
           document.documentElement.classList.add('dark');
         }
+        // The phone browser's bar takes this colour; it has to match the
+        // paper, and the paper depends on the theme.
+        const bar = document.querySelector('meta[name="theme-color"]');
+        if (bar) bar.content = theme === 'dark' ? '#000000' : '#f0e9de';
       })();
     </script>
     <meta charset="UTF-8" />
@@ -288,6 +293,8 @@ const elsewhere = [
     const applyTheme = function () {
       html.classList.toggle('dark', toDark);
       localStorage.setItem('theme', toDark ? 'dark' : 'light');
+      var bar = document.querySelector('meta[name="theme-color"]');
+      if (bar) bar.content = getComputedStyle(html).getPropertyValue('--color-chrome').trim();
     };
 
     // Ink spreading across the page from wherever the toggle was pressed,
