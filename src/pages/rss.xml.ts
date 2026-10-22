@@ -1,12 +1,16 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
+import { posts } from '../lib/thoughts-data';
+
+// Essays hidden from the Thoughts page are left out of the feed too.
+const shown = new Set(posts.map(p => `/thoughts/${p.slug}/`));
 
 export function GET(context: APIContext) {
   return rss({
     title: 'Arshad Kazi',
     description: 'Technical blogs on computer vision, geometry, 3D understanding, and life.',
     site: context.site!.toString(),
-    items: [
+    items: ([
       {
         title: 'What You See in a City Is What You Brought to It',
         pubDate: new Date('2026-05-10'),
@@ -91,6 +95,6 @@ export function GET(context: APIContext) {
         description: 'Relearning probability from a machine learning perspective. What PMFs are, how to compute expectation and variance from first principles, and why any of this matters for ML.',
         link: '/blog/probability-mass-function/',
       },
-    ],
+    ]).filter(item => !item.link.startsWith('/thoughts/') || shown.has(item.link)),
   });
 }
