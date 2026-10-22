@@ -8,7 +8,7 @@ interface Props {
 const { title, date, description } = Astro.props;
 
 import Layout from './Layout.astro';
-import { relatedTo } from '../lib/thoughts-data';
+import { relatedTo, posts, topicsOf } from '../lib/thoughts-data';
 
 const siteUrl = 'https://arshad-kazi.com';
 const articleUrl = new URL(Astro.url.pathname, siteUrl).href;
@@ -20,6 +20,18 @@ const articleUrl = new URL(Astro.url.pathname, siteUrl).href;
 const sources = import.meta.glob('../pages/thoughts/*.astro', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
 const slug = Astro.url.pathname.replace(/\/$/, '').split('/').pop();
 const related = slug ? relatedTo(slug, 3) : [];
+
+/* The essay's own EXIF: what a camera would write into the file, but for
+   a piece of writing. Its number in the body of work counts from the
+   oldest, so it says how many came before it. */
+const at = posts.findIndex(p => p.slug === slug);
+const self = at >= 0 ? posts[at] : undefined;
+const exif = self ? [
+  { k: 'No.', v: `${String(posts.length - at).padStart(2, '0')} / ${posts.length}` },
+  { k: 'Words', v: self.words.toLocaleString('en-US') },
+  { k: 'Read', v: `${Math.max(1, Math.round(self.words / 230))} min` },
+  { k: 'Reads as', v: topicsOf(self.slug, 2).map(t => t.label).join(' / ') || '—' },
+] : [];
 
 let shareImage = '/images/og-thoughts.jpg';
 for (const [path, raw] of Object.entries(sources)) {
@@ -62,6 +74,16 @@ function formatDate(dateStr: string): string {
         <time>{formatDate(date)}</time>
       </div>
       <h1>{title}</h1>
+      {exif.length > 0 && (
+        <dl class="exif">
+          {exif.map(e => (
+            <div>
+              <dt>{e.k}</dt>
+              <dd>{e.v}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
     </header>
 
     <div class="blog-post-content">
@@ -108,6 +130,52 @@ function formatDate(dateStr: string): string {
      Not "related posts". These are the three nearest essays in the same
      latent space the index is searched in, and each one says how close it
      actually is, so a weak neighbour is visibly a weak neighbour. */
+  /* ── EXIF ────────────────────────────────────────────
+     Set like the information panel of a photo viewer: four fields in a
+     row, the name small above, the value in the instrument face. */
+  .exif {
+    display: grid;
+    grid-template-columns: auto auto auto 1fr;
+    gap: var(--space-md) var(--space-xl);
+    margin: 0;
+    padding: var(--space-md) 0;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .exif div {
+    min-width: 0;
+  }
+
+  .exif dt {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 0.2rem;
+  }
+
+  .exif dd {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .exif div:first-child dd {
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 560px) {
+    .exif {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
   .kin {
     margin: var(--space-3xl) 0 var(--space-xl);
   }
@@ -120,10 +188,10 @@ function formatDate(dateStr: string): string {
   }
 
   .kin-name {
-    font-family: var(--font-serif);
-    font-variant: small-caps;
-    font-size: 0.92rem;
-    letter-spacing: 0.1em;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--color-text-secondary);
     white-space: nowrap;
   }

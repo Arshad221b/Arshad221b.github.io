@@ -1,15 +1,73 @@
 ---
+/* The home page.
+
+   The centre of it is a figure, not a photograph: every essay on the site
+   as a point in space, placed by the same model that powers search on the
+   Thoughts page, laid out along the three directions in which the essays
+   differ most from one another. Points that sit together
+   share ideas. The fine dust around them is decoration, drawn densest where
+   the essays are, the way a reconstruction fills in around its keypoints. */
+
 import Layout from '../layouts/Layout.astro';
+import { posts, model } from '../lib/thoughts-data';
 
 const title = "Arshad Kazi";
 
-const elsewhere = [
-  { label: "GitHub", href: "https://github.com/Arshad221b" },
-  { label: "LinkedIn", href: "https://www.linkedin.com/in/arshad221b/" },
-  { label: "Substack", href: "https://substack.com/@arshadkazi" },
-  { label: "Medium", href: "https://medium.com/@arshad_221b" },
-  { label: "Email", href: "mailto:arshadkaziblog@gmail.com" },
+/* Positions are the first three principal components of the essays'
+   latent vectors: the three directions along which what I write about
+   varies most. Power iteration with deflation; the matrix is tiny. */
+const vecs = model.docVectors;
+const dims = vecs[0]?.length ?? 0;
+const mean = Array.from({ length: dims }, (_, j) => vecs.reduce((s, v) => s + v[j], 0) / vecs.length);
+const centred = vecs.map(v => v.map((x, j) => x - mean[j]));
+const cov = Array.from({ length: dims }, (_, a) =>
+  Array.from({ length: dims }, (_, b) => centred.reduce((s, v) => s + v[a] * v[b], 0)));
+const components: number[][] = [];
+for (let c = 0; c < 3; c++) {
+  let w = Array.from({ length: dims }, (_, j) => Math.sin(j * 1.7 + c * 3.1) + 1.3);
+  for (let it = 0; it < 200; it++) {
+    let next = cov.map(row => row.reduce((s, x, j) => s + x * w[j], 0));
+    for (const prev of components) {
+      const d = next.reduce((s, x, j) => s + x * prev[j], 0);
+      next = next.map((x, j) => x - d * prev[j]);
+    }
+    const n = Math.hypot(...next) || 1;
+    w = next.map(x => x / n);
+  }
+  components.push(w);
+}
+const coord = (c: number) => centred.map(v => v.reduce((s, x, j) => s + x * components[c][j], 0));
+const xs = coord(0), ys = coord(1), zs = coord(2);
+
+/* Each axis is centred and scaled by its spread, not by its extremes: one
+   essay far from the rest would otherwise squash every other point into a
+   line. Anything beyond the edge is pulled back onto it. */
+const span = (a: number[]) => {
+  const mean = a.reduce((s, v) => s + v, 0) / a.length;
+  const sd = Math.sqrt(a.reduce((s, v) => s + (v - mean) ** 2, 0) / a.length) || 1;
+  return (v: number) => Math.max(-1.1, Math.min(1.1, (v - mean) / (1.8 * sd)));
+};
+const nx = span(xs), ny = span(ys), nz = span(zs);
+
+const field = {
+  points: posts.map((p, i) => ({
+    x: +nx(xs[i]).toFixed(3),
+    y: +ny(ys[i]).toFixed(3),
+    z: +(nz(zs[i]) * 0.7).toFixed(3),
+    title: p.title,
+    href: `/thoughts/${p.slug}`,
+    year: p.date.slice(0, 4),
+  })),
+  edges: model.edges.map(e => [e.a, e.b]),
+};
+
+const links = [
+  { label: 'GitHub', href: 'https://github.com/Arshad221b' },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/arshad221b/' },
+  { label: 'Substack', href: 'https://substack.com/@arshadkazi' },
+  { label: 'Email', href: 'mailto:arshadkaziblog@gmail.com' },
 ];
+
 ---
 
 <Layout title={title} activeNav="/" description="Arshad Kazi. Computer vision engineer. Notebooks, technical writing and personal essays." ogImage="/images/og-about.jpg">
@@ -29,130 +87,350 @@ const elsewhere = [
     ]
   })} />
 
-  <div class="about">
-    <div class="folio-rule">
-      <span class="folio-mark">About</span>
-      <span class="folio-line"></span>
-    </div>
-
-    <div class="grid">
-      <figure class="plate">
-        <div class="plate-frame">
-          <img src="/images/profile.jpg" alt="Arshad Kazi" width="640" height="800" draggable="false" oncontextmenu="return false" />
-          <span class="plate-guard" aria-hidden="true"></span>
-        </div>
+  <div class="home wide">
+    <section class="hero">
+      <figure class="field" id="field">
+        <canvas id="field-canvas" aria-label={`A rotating map of ${posts.length} essays, placed by meaning`}></canvas>
+        <a class="field-tip" id="field-tip" href="#" hidden>
+          <span class="field-tip-year label"></span>
+          <span class="field-tip-title"></span>
+        </a>
       </figure>
 
-      <div class="text">
-        <h1>Arshad Kazi</h1>
-
-        <p>I work in computer vision, mostly 3D at the moment: reconstruction, pose, representation. I build things to understand how they work, not just to make them work.</p>
-
-        <p><a href="/notebooks">Notebooks</a> while I am learning something. <a href="/blog">Longer pieces</a> once I can explain it. <a href="/thoughts">Essays</a> for everything that is not engineering.</p>
-
-        <p class="elsewhere">
-          {elsewhere.map((l, i) => (
-            <>
-              {i > 0 && <span class="sep">·</span>}
-              <a href={l.href} target={l.href.startsWith('mailto') ? undefined : '_blank'} rel="noopener">{l.label}</a>
-            </>
+      <div class="hero-text">
+        <span class="portrait">
+          <img src="/images/profile.jpg" alt="Arshad Kazi" width="640" height="800" draggable="false" oncontextmenu="return false" />
+          <span class="portrait-guard" aria-hidden="true"></span>
+        </span>
+        <h1>Arshad <em>Kazi</em></h1>
+        <p class="hero-line">Computer vision engineer. Mostly 3D.</p>
+        <p class="hero-links">
+          {links.map(l => (
+            <a href={l.href} target={l.href.startsWith('mailto') ? undefined : '_blank'} rel="noopener">{l.label}</a>
           ))}
         </p>
       </div>
-    </div>
+
+      <p class="field-cap label" aria-hidden="true">{posts.length} essays, placed by meaning</p>
+    </section>
   </div>
+
+
+  <script is:inline type="application/json" id="field-data" set:html={JSON.stringify(field)} />
 </Layout>
 
+<script is:inline>
+  /* ── The field ─────────────────────────────────────────────
+     A small perspective renderer on a 2D canvas. No library: the scene is
+     a few hundred points, a handful of lines and five camera frustums. */
+  (function () {
+    var fig = document.getElementById('field');
+    var canvas = document.getElementById('field-canvas');
+    var tip = document.getElementById('field-tip');
+    if (!canvas || !fig) return;
+    var data = JSON.parse(document.getElementById('field-data').textContent);
+    var ctx = canvas.getContext('2d');
+    var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Seeded, so the dust is the same shape on every visit.
+    var seed = 7;
+    function rand() {
+      seed = (seed * 16807) % 2147483647;
+      return (seed - 1) / 2147483646;
+    }
+    function gauss() {
+      return Math.sqrt(-2 * Math.log(rand() + 1e-9)) * Math.cos(2 * Math.PI * rand());
+    }
+
+    var pts = data.points;
+    var dust = [];
+    pts.forEach(function (p) {
+      for (var k = 0; k < 34; k++) {
+        dust.push([p.x + gauss() * 0.16, p.y + gauss() * 0.16, p.z + gauss() * 0.16]);
+      }
+    });
+    for (var k = 0; k < 260; k++) {
+      // A loose shell around everything, the sparse edge of a scan.
+      var u = rand() * 2 - 1, t = rand() * Math.PI * 2, r = 1.15 + rand() * 0.35;
+      var s = Math.sqrt(1 - u * u);
+      dust.push([r * s * Math.cos(t), r * u * 0.7, r * s * Math.sin(t)]);
+    }
+
+    // Five cameras around the scene, all looking at the middle of it.
+    var cams = [];
+    for (var c = 0; c < 5; c++) {
+      var a = (c / 5) * Math.PI * 2 + 0.4;
+      cams.push({ x: Math.cos(a) * 1.75, y: -0.35 + (c % 2) * 0.5, z: Math.sin(a) * 1.75 });
+    }
+
+    var W = 0, H = 0, dpr = 1;
+    function resize() {
+      var rect = canvas.getBoundingClientRect();
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      W = rect.width; H = rect.height;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    var yaw = 0.6, pitch = -0.18, vel = reduce ? 0 : 0.0016;
+    var dragging = false, downX = 0, downY = 0, lastX = 0, lastY = 0, hover = -1;
+
+    function project(x, y, z) {
+      // Rotate about Y, then X, then a pinhole camera at distance 3.4.
+      var cy = Math.cos(yaw), sy = Math.sin(yaw);
+      var x1 = x * cy - z * sy, z1 = x * sy + z * cy;
+      var cp = Math.cos(pitch), sp = Math.sin(pitch);
+      var y1 = y * cp - z1 * sp, z2 = y * sp + z1 * cp;
+      var d = 3.4 + z2;
+      var f = Math.min(W, H) * 1.25;
+      var cx0 = W > 900 ? W * 0.62 : W / 2, cy0 = W > 900 ? H * 0.42 : H * 0.36;
+      return { x: cx0 + (x1 * f) / d, y: cy0 + (y1 * f) / d, depth: z2, s: 3.4 / d };
+    }
+
+    function colors() {
+      var cs = getComputedStyle(document.documentElement);
+      return {
+        ink: cs.getPropertyValue('--color-text').trim(),
+        muted: cs.getPropertyValue('--color-text-muted').trim(),
+        accent: cs.getPropertyValue('--color-accent').trim(),
+      };
+    }
+    var col = colors();
+    new MutationObserver(function () { col = colors(); if (reduce) projected = draw(); })
+      .observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Dust: smaller and fainter the further it is, like depth of field.
+      ctx.fillStyle = col.ink;
+      for (var i = 0; i < dust.length; i++) {
+        var q = project(dust[i][0], dust[i][1], dust[i][2]);
+        ctx.globalAlpha = Math.max(0.05, 0.42 - q.depth * 0.18) * 0.75;
+        var r = 0.55 + q.s * 0.45;
+        ctx.fillRect(q.x - r / 2, q.y - r / 2, r, r);
+      }
+
+      // Cameras as wire frustums.
+      ctx.strokeStyle = col.muted;
+      ctx.lineWidth = 0.8;
+      cams.forEach(function (cm) {
+        var o = project(cm.x, cm.y, cm.z);
+        // Four corners of a small image plane, a third of the way in.
+        var dx = -cm.x, dy = -cm.y, dz = -cm.z;
+        var len = Math.hypot(dx, dy, dz);
+        dx /= len; dy /= len; dz /= len;
+        var cx = cm.x + dx * 0.32, cyy = cm.y + dy * 0.32, cz = cm.z + dz * 0.32;
+        var rx = -dz, rz = dx; var rl = Math.hypot(rx, rz) || 1; rx /= rl; rz /= rl;
+        var w = 0.13, h = 0.09;
+        var corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(function (k) {
+          return project(cx + rx * w * k[0], cyy + h * k[1], cz + rz * w * k[0]);
+        });
+        ctx.globalAlpha = Math.max(0.12, 0.5 - o.depth * 0.2);
+        ctx.beginPath();
+        corners.forEach(function (p) { ctx.moveTo(o.x, o.y); ctx.lineTo(p.x, p.y); });
+        ctx.moveTo(corners[0].x, corners[0].y);
+        for (var j = 1; j <= 4; j++) ctx.lineTo(corners[j % 4].x, corners[j % 4].y);
+        ctx.stroke();
+      });
+
+      // The essays and the threads between nearest neighbours.
+      var P = pts.map(function (p) { return project(p.x, p.y, p.z); });
+      ctx.strokeStyle = col.accent;
+      ctx.lineWidth = 0.7;
+      data.edges.forEach(function (e) {
+        var a = P[e[0]], b = P[e[1]];
+        var lit = hover === e[0] || hover === e[1];
+        ctx.globalAlpha = lit ? 0.9 : 0.22;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      });
+
+      var order = P.map(function (p, i) { return i; }).sort(function (a, b) { return P[b].depth - P[a].depth; });
+      order.forEach(function (i) {
+        var p = P[i];
+        var on = i === hover;
+        var r = (on ? 5.5 : 3.2) * p.s;
+        ctx.globalAlpha = on ? 1 : Math.max(0.35, 1 - p.depth * 0.35);
+        ctx.fillStyle = col.accent;
+        ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
+        // A keypoint marker: a ring with a gap, as a detector draws it.
+        ctx.strokeStyle = col.accent;
+        ctx.lineWidth = on ? 1.2 : 0.8;
+        ctx.beginPath(); ctx.arc(p.x, p.y, r + (on ? 7 : 4.5) * p.s, 0.25, Math.PI * 2 - 0.25); ctx.stroke();
+        if (on) {
+          ctx.globalAlpha = 0.6;
+          ctx.beginPath();
+          ctx.moveTo(p.x - 22, p.y); ctx.lineTo(p.x - 10, p.y);
+          ctx.moveTo(p.x + 10, p.y); ctx.lineTo(p.x + 22, p.y);
+          ctx.moveTo(p.x, p.y - 22); ctx.lineTo(p.x, p.y - 10);
+          ctx.moveTo(p.x, p.y + 10); ctx.lineTo(p.x, p.y + 22);
+          ctx.stroke();
+        }
+      });
+      ctx.globalAlpha = 1;
+      return P;
+    }
+
+    var projected = [];
+    var visible = true;
+    function frame() {
+      if (!dragging && hover < 0) yaw += vel;
+      projected = draw();
+      if (hover >= 0) placeTip();
+      if (visible && !reduce) requestAnimationFrame(frame);
+    }
+
+    function placeTip() {
+      var p = projected[hover];
+      if (!p) return;
+      var left = Math.min(Math.max(p.x + 18, 8), W - 240);
+      tip.style.transform = 'translate(' + left + 'px,' + (p.y - 14) + 'px)';
+    }
+
+    function pick(mx, my) {
+      var best = -1, bd = 22 * 22;
+      projected.forEach(function (p, i) {
+        var d = (p.x - mx) * (p.x - mx) + (p.y - my) * (p.y - my);
+        if (d < bd) { bd = d; best = i; }
+      });
+      return best;
+    }
+
+    function setHover(i) {
+      if (i === hover) return;
+      hover = i;
+      if (i < 0) { tip.hidden = true; canvas.style.cursor = dragging ? 'grabbing' : 'grab'; }
+      else {
+        tip.hidden = false;
+        tip.href = pts[i].href;
+        tip.querySelector('.field-tip-title').textContent = pts[i].title;
+        tip.querySelector('.field-tip-year').textContent = 'Essay · ' + pts[i].year;
+        canvas.style.cursor = 'pointer';
+        placeTip();
+      }
+      if (reduce) projected = draw();
+    }
+
+    canvas.addEventListener('pointerdown', function (e) {
+      dragging = true;
+      downX = lastX = e.clientX; downY = lastY = e.clientY;
+      canvas.setPointerCapture(e.pointerId);
+      fig.classList.add('touched');
+    });
+    canvas.addEventListener('pointermove', function (e) {
+      var rect = canvas.getBoundingClientRect();
+      if (dragging) {
+        var dx = e.clientX - lastX, dy = e.clientY - lastY;
+        lastX = e.clientX; lastY = e.clientY;
+        yaw += dx * 0.008;
+        pitch = Math.max(-1, Math.min(1, pitch + dy * 0.006));
+        if (Math.abs(dx) > 1) vel = (reduce ? 0 : Math.sign(dx) * 0.0016);
+        if (reduce) projected = draw();
+      }
+      setHover(pick(e.clientX - rect.left, e.clientY - rect.top));
+    });
+    function release(e) {
+      var moved = Math.hypot(e.clientX - downX, e.clientY - downY);
+      dragging = false;
+      if (e.type === 'pointerup' && moved < 5) {
+        var rect = canvas.getBoundingClientRect();
+        var i = pick(e.clientX - rect.left, e.clientY - rect.top);
+        if (i >= 0) location.href = pts[i].href;
+      }
+    }
+    canvas.addEventListener('pointerup', release);
+    canvas.addEventListener('pointercancel', release);
+    canvas.addEventListener('pointerleave', function (e) {
+      if (!dragging && !(e.relatedTarget && tip.contains(e.relatedTarget))) setHover(-1);
+    });
+    tip.addEventListener('pointerleave', function (e) {
+      if (e.relatedTarget !== canvas) setHover(-1);
+    });
+
+    // Only spend frames while the figure is on screen.
+    new IntersectionObserver(function (entries) {
+      var was = visible;
+      visible = entries[0].isIntersecting;
+      if (visible && !was && !reduce) requestAnimationFrame(frame);
+    }).observe(fig);
+
+    resize();
+    addEventListener('resize', function () { resize(); projected = draw(); });
+    projected = draw();
+    if (!reduce) requestAnimationFrame(frame);
+  })();
+</script>
+
 <style>
-  .about {
-    max-width: 760px;
-    margin: 0 auto;
-    /* Short page, so it sits as a composition in the middle of the screen
-       rather than clinging to the top with a void underneath. */
-    min-height: min(62vh, 520px);
-    display: flex;
-    flex-direction: column;
+  .home {
+    max-width: none;
   }
 
-  /* ── Folio rule, as on the other pages ─────────────── */
-  .folio-rule {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    margin-bottom: auto;
-  }
-
-  .folio-mark {
-    font-family: var(--font-serif);
-    font-variant: small-caps;
-    font-size: 0.92rem;
-    letter-spacing: 0.09em;
-    color: var(--color-text-muted);
-    white-space: nowrap;
-  }
-
-  .folio-line {
-    flex: 1;
-    height: 1px;
-    background: var(--color-border);
-  }
-
-  /* ── The composition ───────────────────────────────── */
-  /* One centred column at every width, so the page reads the same on a
-     phone as on a desktop and neither has a stranded half. */
-  .grid {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: var(--space-lg);
-    padding: var(--space-2xl) 0;
-    margin-bottom: auto;
-  }
-
-  .plate {
-    margin: 0;
-    width: min(176px, 46%);
-  }
-
-  /* Registration ticks at two corners, like a printed plate. */
-  .plate-frame {
+  /* One screen and nothing else: the field fills it, the name sits in
+     the lower left corner of the frame. */
+  .hero {
     position: relative;
-    padding: 8px;
-    border: 1px solid var(--color-border);
+    height: calc(100svh - 9rem);
+    min-height: 520px;
+    margin: calc(var(--space-2xl) * -1) calc(var(--gutter) * -1) 0;
   }
 
-  .plate-frame::before,
-  .plate-frame::after {
-    content: '';
+  .field {
     position: absolute;
-    width: 10px;
-    height: 10px;
-    border: 1px solid var(--color-accent);
-    opacity: 0.6;
+    inset: 0;
+    margin: 0;
   }
 
-  .plate-frame::before {
-    top: -1px;
-    left: -1px;
-    border-right: none;
-    border-bottom: none;
-  }
-
-  .plate-frame::after {
-    bottom: -1px;
-    right: -1px;
-    border-left: none;
-    border-top: none;
-  }
-
-  .plate-frame img {
+  .field canvas {
     display: block;
     width: 100%;
-    height: auto;
+    height: 100%;
+    cursor: grab;
+    touch-action: pan-y;
+  }
+
+  .hero-text {
+    position: absolute;
+    left: var(--gutter);
+    bottom: var(--space-xl);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .hero-text a {
+    pointer-events: auto;
+  }
+
+  /* A small print of the author, pinned above the name: greyscale like
+     the rest of the sheet until you look at it. */
+  .portrait {
+    position: relative;
+    display: block;
+    width: clamp(96px, 9vw, 132px);
     aspect-ratio: 4 / 5;
+    margin-bottom: var(--space-lg);
+    padding: 5px;
+    background: var(--color-raised);
+    border: 1px solid var(--color-border-light);
+    border-radius: 2px;
+    box-shadow: var(--shadow-lift);
+    transform: rotate(-2deg);
+    pointer-events: auto;
+    transition: transform 0.6s var(--ease-out);
+  }
+
+  .portrait:hover {
+    transform: rotate(0deg) translateY(-3px);
+  }
+
+  .portrait img {
+    display: block;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    filter: grayscale(1) sepia(0.44) contrast(1.06) brightness(1.02);
+    border-radius: 1px;
+    filter: grayscale(1) contrast(1.08);
+    transition: filter 0.7s ease;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
@@ -160,112 +438,127 @@ const elsewhere = [
     pointer-events: none;
   }
 
-  .plate-guard {
-    position: absolute;
-    inset: 0;
-    display: block;
-    -webkit-touch-callout: none;
-    user-select: none;
-    -webkit-user-select: none;
+  .portrait:hover img {
+    filter: none;
   }
 
-  h1 {
-    font-size: clamp(2rem, 3.4vw, 2.6rem);
-    line-height: 1.1;
+  .portrait-guard {
+    position: absolute;
+    inset: 0;
+  }
+
+  .hero h1 {
+    font-size: clamp(3.6rem, 10vw, 8.5rem);
+    font-weight: 200;
+    line-height: 0.88;
+    letter-spacing: -0.05em;
     margin: 0 0 var(--space-md);
   }
 
-  .text {
-    max-width: 48ch;
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--color-accent);
   }
 
-  .text p {
-    font-size: clamp(1.06rem, 1.3vw, 1.18rem);
-    line-height: 1.75;
+  .hero-line {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--color-text-secondary);
     margin: 0 0 var(--space-md);
   }
 
-  .text p:last-child {
-    margin-bottom: 0;
+  .hero-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 1.2rem;
+    margin: 0;
   }
 
-  .text a {
-    color: var(--color-accent);
-    text-decoration: none;
-    border-bottom: 1px solid var(--color-accent-soft);
-  }
-
-  .text a:hover {
-    border-bottom-color: var(--color-accent);
-  }
-
-  /* ── Elsewhere ─────────────────────────────────────── */
-  .elsewhere {
-    margin-top: var(--space-lg) !important;
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--color-border-light);
-  }
-
-  .elsewhere a {
+  .hero-links a {
     font-family: var(--font-mono);
     font-size: 0.72rem;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     color: var(--color-text-muted);
-    border-bottom-color: transparent;
+    transition: color 0.2s ease;
   }
 
-  .elsewhere a:hover {
+  .hero-links a:hover {
     color: var(--color-accent);
-    border-bottom-color: var(--color-accent);
+    text-decoration: none;
   }
 
-  .sep {
-    color: var(--color-text-muted);
-    opacity: 0.45;
-    margin: 0 0.5rem;
+  .field-cap {
+    position: absolute;
+    right: var(--gutter);
+    bottom: var(--space-xl);
+    margin: 0;
+    pointer-events: none;
   }
 
-  @media (max-width: 720px) {
-    .about {
-      min-height: 0;
-    }
+  .field-tip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-width: 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.55rem 0.75rem 0.6rem;
+    background: color-mix(in srgb, var(--color-raised) 88%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--color-border);
+    border-left: 2px solid var(--color-accent);
+    box-shadow: var(--shadow-soft);
+    color: var(--color-text);
+    text-decoration: none;
+    z-index: 3;
   }
 
-  /* On a phone the plate carries the screen. A thumbnail with empty space
-     beside it is what made this look unfinished. */
-  @media (max-width: 620px) {
-    /* Centred on a phone: the plate sits square in the column and the text
-       hangs off its middle, which reads as composed rather than stranded. */
-    .grid {
-      gap: var(--space-lg);
-      padding: var(--space-lg) 0 var(--space-md);
+  .field-tip[hidden] {
+    display: none;
+  }
+
+  .field-tip:hover {
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  .field-tip-title {
+    font-family: var(--font-serif);
+    font-size: 1.02rem;
+    line-height: 1.25;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-text > * {
+      animation: arrive 1.1s var(--ease-out) backwards;
+    }
+    .hero-text > :nth-child(2) { animation-delay: 0.12s; }
+    .hero-text > :nth-child(3) { animation-delay: 0.22s; }
+    .field { animation: develop 1.8s var(--ease-out) backwards; }
+  }
+
+  @keyframes arrive {
+    from { opacity: 0; transform: translateY(18px); filter: blur(6px); }
+  }
+
+  /* The figure comes up the way a print does in the developer tray. */
+  @keyframes develop {
+    from { opacity: 0; filter: blur(10px) contrast(0.4); }
+  }
+
+  @media (max-width: 700px) {
+    .hero {
+      height: calc(100svh - 8rem);
+      min-height: 480px;
     }
 
-    .plate {
-      width: min(190px, 52%);
-    }
-
-    h1 {
-      font-size: 2.1rem;
-      margin-bottom: var(--space-md);
-    }
-
-    .text p {
-      font-size: 1.14rem;
-      line-height: 1.8;
-    }
-
-    .elsewhere {
-      margin-top: var(--space-xl) !important;
-    }
-
-    .text {
-      max-width: 34ch;
-    }
-
-    .elsewhere a {
-      font-size: 0.78rem;
+    .field-cap {
+      display: none;
     }
   }
 </style>
