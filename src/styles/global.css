@@ -24,6 +24,11 @@
   --color-bg: #f4eee3;
   --color-surface: #f8f3ea;
   --color-raised: #fcf9f3;
+  /* What the grained paper averages out to on screen. The browser's own
+     bar (theme-color) and the overscroll area use this, so the top of a
+     phone screen runs into the page without a seam. Re-measure it if the
+     paper or the grain changes. */
+  --color-chrome: #f0e9de;
   --color-text: #151412;
   --color-text-secondary: #46433e;
   --color-text-muted: #85817a;
@@ -75,6 +80,7 @@ html.dark {
   --color-bg: #000000;
   --color-surface: #0a0a0a;
   --color-raised: #101010;
+  --color-chrome: #000000;
   --color-text: #ecebe6;
   --color-text-secondary: #bdbab2;
   --color-text-muted: #7f7c75;
@@ -98,7 +104,7 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  background: var(--color-bg);
+  background: var(--color-chrome);
 }
 
 ::selection {
@@ -467,7 +473,7 @@ body > header {
 /* Once the page has moved, the header frosts over so text passes
    under it as a blur rather than colliding with the links. */
 body > header.scrolled {
-  background-color: color-mix(in srgb, var(--color-bg) 80%, transparent);
+  background-color: color-mix(in srgb, var(--color-chrome) 82%, transparent);
   -webkit-backdrop-filter: blur(14px) saturate(1.2);
   backdrop-filter: blur(14px) saturate(1.2);
   box-shadow: 0 1px 0 var(--color-border-light);
