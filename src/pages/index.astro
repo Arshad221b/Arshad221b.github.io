@@ -368,11 +368,20 @@ const links = [
 
   /* One screen and nothing else: the field fills it, the name sits in
      the lower left corner of the frame. */
+  /* Exactly one screen: the visible viewport (dvh follows the phone's
+     address bar as it shows and hides) less the header, whose real height
+     the layout measures into --head-h. */
+  :global(body:has(.home) main) {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
   .hero {
     position: relative;
-    height: calc(100svh - 9rem);
-    min-height: 520px;
-    margin: calc(var(--space-2xl) * -1) calc(var(--gutter) * -1) 0;
+    height: calc(100vh - var(--head-h, 4rem));
+    height: calc(100dvh - var(--head-h, 4rem));
+    min-height: 420px;
+    margin: 0 calc(var(--gutter) * -1);
   }
 
   .field {
@@ -552,11 +561,6 @@ const links = [
   }
 
   @media (max-width: 700px) {
-    .hero {
-      height: calc(100svh - 8rem);
-      min-height: 480px;
-    }
-
     .field-cap {
       display: none;
     }
