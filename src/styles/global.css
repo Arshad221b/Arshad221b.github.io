@@ -1,3 +1,17 @@
+/* ════════════════════════════════════════════════════════════════════
+   A visual field.
+
+   "I think in pictures." The site is built around that sentence. It is
+   set out like the instruments of seeing that I work with: a viewfinder
+   around the window, a calibration grid under the page, measurements and
+   figure numbers in a monospaced hand, and one signal colour used the
+   way a registration mark is, sparingly, where the eye should land.
+
+   Two voices and only two. The serif is the person: the writing, the
+   titles, anything said in the first person. The mono is the instrument:
+   labels, dates, counts, navigation, anything that measures.
+   ════════════════════════════════════════════════════════════════════ */
+
 /* ── Reset & Base ─────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -6,32 +20,43 @@
 }
 
 :root {
-  /* Iron-gall ink on stone-toned paper. Same manuscript idea as before,
-     desaturated off the mustard/ochre and lightened so it reads as
-     calm modern paper rather than an aged, yellowed page. */
-  --color-bg: #f7f4ee;
-  --color-surface: #fbf9f5;
-  --color-text: #2b2620;
-  --color-text-secondary: #56503f;
-  --color-text-muted: #8f8770;
-  --color-accent: #b5502f;
-  --color-accent-hover: #93401f;
-  --color-accent-soft: rgba(181, 80, 47, 0.10);
-  --color-border: #e2dccd;
-  --color-border-light: #ece7d9;
-  --color-tag-bg: #efe9db;
-  --color-tag-text: #6d6650;
-  --color-code-bg: #f1ece0;
-  /* The fibrous grain that stands in for a flat paper colour. Shared as a
-     variable so every opaque patch painted over the page (the nav bar, the
-     glow behind the masthead title) carries the same texture, rather than
-     sitting as a bare flat rectangle against a grained page. */
-  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch' result='t'/%3E%3CfeColorMatrix in='t' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Libre Franklin', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --max-width: 820px;
-  --column: calc(820px - 2 * 2rem);   /* main's inner width */
+  /* Matte photographic paper, graphite ink. */
+  --color-bg: #f2f0eb;
+  --color-surface: #f8f7f3;
+  --color-raised: #fdfcfa;
+  --color-text: #151412;
+  --color-text-secondary: #46433e;
+  --color-text-muted: #85817a;
+  /* The signal: a registration orange, the colour a calibration target
+     or a laser line is drawn in. */
+  --color-accent: #e5461c;
+  --color-accent-hover: #c13811;
+  --color-accent-soft: rgba(229, 70, 28, 0.10);
+  --color-border: #dcd8cf;
+  --color-border-light: #e7e4dd;
+  --color-tag-bg: #e9e6df;
+  --color-tag-text: #5d5951;
+  --color-code-bg: #ebe8e1;
+  --grid-dot: rgba(21, 20, 18, 0.13);
+  --shadow-soft: 0 1px 1px rgba(20, 18, 14, 0.04), 0 10px 28px -14px rgba(20, 18, 14, 0.18);
+  --shadow-lift: 0 1px 2px rgba(20, 18, 14, 0.06), 0 24px 48px -20px rgba(20, 18, 14, 0.30);
+  --radius: 4px;
+  --ease-out: cubic-bezier(0.22, 0.8, 0.24, 1);
+
+  /* Kept for anything that still paints a patch of page over the page. */
+  --paper-grain: none;
+
+  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-display: 'Newsreader', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
+  /* There is no third voice. Anything that asked for a sans gets the
+     instrument instead. */
+  --font-sans: var(--font-mono);
+
+  --max-width: 1080px;
+  --measure: 640px;
+  --column: calc(820px - 2 * 2rem);
+  --gutter: clamp(1rem, 4vw, 2.5rem);
   --space-xs: 0.3rem;
   --space-sm: 0.6rem;
   --space-md: 1.2rem;
@@ -42,82 +67,179 @@
 }
 
 html.dark {
-  /* Silverpoint and chalk on true black, for AMOLED screens rather than
-     a toned-paper simulation. */
-  --color-bg: #000000;
-  --color-surface: #0b0a08;
-  --color-text: #ece6d8;
-  --color-text-secondary: #c9c0ac;
-  --color-text-muted: #948a71;
-  --color-accent: #d3855f;
-  --color-accent-hover: #e29b77;
-  --color-accent-soft: rgba(211, 133, 95, 0.16);
-  --color-border: #2c2822;
-  --color-border-light: #1a1714;
-  --color-tag-bg: #17140f;
-  --color-tag-text: #a89b7f;
-  --color-code-bg: #0e0c09;
-  /* Black grain vanishes on a near-black ground, so toned paper gets the
-     same fibre drawn in a light fleck instead. */
-  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch' result='t'/%3E%3CfeColorMatrix in='t' type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.03 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* A darkroom, not a black hole: graphite, so the signal colour and the
+     photographs keep their weight. */
+  --color-bg: #0d0d0c;
+  --color-surface: #141412;
+  --color-raised: #1a1917;
+  --color-text: #ecebe6;
+  --color-text-secondary: #bdbab2;
+  --color-text-muted: #7f7c75;
+  --color-accent: #ff6838;
+  --color-accent-hover: #ff8a63;
+  --color-accent-soft: rgba(255, 104, 56, 0.13);
+  --color-border: #2a2926;
+  --color-border-light: #1f1e1c;
+  --color-tag-bg: #1d1c1a;
+  --color-tag-text: #a29e95;
+  --color-code-bg: #121210;
+  --grid-dot: rgba(236, 235, 230, 0.09);
+  --shadow-soft: 0 1px 1px rgba(0, 0, 0, 0.5), 0 10px 28px -14px rgba(0, 0, 0, 0.9);
+  --shadow-lift: 0 1px 2px rgba(0, 0, 0, 0.6), 0 24px 48px -20px rgba(0, 0, 0, 1), 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  background: var(--color-bg);
 }
 
-/* Theme toggle: the browser's default is a cross-fade of the whole page,
-   which reads as a glitch. Replace it with nothing here — the JS drives
-   an explicit clip-path circle on ::view-transition-new(root) instead,
-   expanding from wherever the toggle was pressed. */
+::selection {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* Moving between pages is a cut between frames: the old one fades, the
+   new one comes up into focus. The header holds still across the cut. */
+@view-transition {
+  navigation: auto;
+}
+
+body > header { view-transition-name: site-head; }
+
 @media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(root),
+  ::view-transition-old(root) {
+    animation: 160ms ease-in both vt-out;
+  }
   ::view-transition-new(root) {
+    animation: 420ms var(--ease-out) both vt-in;
+  }
+
+  /* The theme toggle runs its own reveal (a circle opening from the
+     button), so the cut above is switched off for it. */
+  html.theme-swap::view-transition-old(root),
+  html.theme-swap::view-transition-new(root) {
     animation: none;
     mix-blend-mode: normal;
   }
+  html.theme-swap::view-transition-old(root) { z-index: 1; }
+  html.theme-swap::view-transition-new(root) { z-index: 2; }
+}
 
-  ::view-transition-old(root) {
-    z-index: 1;
-  }
+@keyframes vt-out {
+  to { opacity: 0; }
+}
 
-  ::view-transition-new(root) {
-    z-index: 2;
-  }
+@keyframes vt-in {
+  from { opacity: 0; filter: blur(6px); }
 }
 
 body {
   font-family: var(--font-serif);
+  font-optical-sizing: auto;
   color: var(--color-text);
   background-color: var(--color-bg);
-  /* A flat fill reads as a colour swatch, not paper. This is a fine
-     fibrous grain, tiled small enough to stay a texture rather than
-     a pattern, sitting quietly behind the type. */
-  background-image: var(--paper-grain);
-  background-repeat: repeat;
-  line-height: 1.8;
-  font-size: 1.3rem;
-  font-weight: 500;
+  /* The calibration board: a dot every 24px, faint enough to be felt
+     rather than read. Fixed, so the page slides over it like a slide
+     over a light table. */
+  background-image: radial-gradient(circle at 1px 1px, var(--grid-dot) 1px, transparent 1.2px);
+  background-size: 24px 24px;
+  background-attachment: fixed;
+  line-height: 1.7;
+  font-size: 1.12rem;
+  font-weight: 400;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  main {
+    animation: focus-in 0.8s var(--ease-out) backwards;
+  }
+}
+
+@keyframes focus-in {
+  from { opacity: 0; filter: blur(4px); transform: translateY(8px); }
+}
+
+/* ── The viewfinder ───────────────────────────────────────
+   Corner brackets around the window, and a readout of where the pointer
+   is in normalised image coordinates. Decoration that is also a joke
+   about my job; it never takes a click. */
+.viewfinder {
+  position: fixed;
+  inset: 10px;
+  z-index: 150;
+  pointer-events: none;
+}
+
+.vf-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 0 solid var(--color-text);
+  opacity: 0.35;
+}
+
+.vf-corner.tl { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+.vf-corner.tr { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
+.vf-corner.bl { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
+.vf-corner.br { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+
+.vf-readout {
+  position: absolute;
+  left: 24px;
+  bottom: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  opacity: 0.8;
+}
+
+.vf-readout b {
+  font-weight: 400;
+  color: var(--color-accent);
+}
+
+.vf-depth {
+  left: auto;
+  right: 24px;
+}
+
+@media (max-width: 760px), (hover: none) {
+  .vf-readout { display: none; }
+}
+
+/* ── Reading progress ───────────────────────────────────── */
+.read-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 200;
+  pointer-events: none;
+  transform-origin: 0 50%;
+  transform: scaleX(var(--read, 0));
+  background: var(--color-accent);
+}
+
 /* ── Margin contents ─────────────────────────────────────
-   The sections of the piece, listed in the outer margin. Not a
-   proportional mini-map: just what is in the article, in order, with
-   the one you are reading marked. Real text, so it is legible and
-   clickable. Only appears when the gutter can hold it. */
+   The sections of the piece, listed in the outer margin, with the one
+   you are reading marked. Only appears when the gutter can hold it. */
 .margin-toc {
   position: fixed;
   top: 50%;
   left: 0;
   transform: translateY(-50%);
-  width: calc((100vw - var(--max-width)) / 2);
-  padding: 0 44px 0 22px;
-  box-sizing: border-box;
+  width: calc((100vw - 760px) / 2);
+  padding: 0 40px 0 34px;
   max-height: 76vh;
   overflow-y: auto;
   display: none;
@@ -129,28 +251,19 @@ body {
   display: none;
 }
 
-/* 1180px leaves a 180px gutter, still ~80px clear of the text column. */
-@media (min-width: 1180px) {
+@media (min-width: 1240px) {
   .margin-toc.ready {
     display: block;
   }
 }
 
-/* more room to breathe once the gutter is genuinely wide */
-@media (min-width: 1400px) {
-  .margin-toc {
-    padding: 0 60px 0 32px;
-  }
-}
-
 .toc-title {
   display: block;
-  font-family: var(--font-serif);
-  font-variant: small-caps;
-  font-size: 0.88rem;
-  letter-spacing: 0.1em;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--color-text-muted);
-  opacity: 0.75;
   margin-bottom: var(--space-sm);
   padding-left: 0.95rem;
 }
@@ -167,14 +280,13 @@ body {
   margin: 0;
 }
 
-/* the marked section: a thicker segment of the margin rule */
 .margin-toc li::before {
   content: '';
   position: absolute;
   left: -1px;
   top: 0;
   bottom: 0;
-  width: 2px;
+  width: 1px;
   background: var(--color-accent);
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -187,32 +299,32 @@ body {
 .margin-toc a {
   display: flex;
   gap: 0.55rem;
-  padding: 0.34rem 0 0.34rem 0.95rem;
+  padding: 0.32rem 0 0.32rem 0.95rem;
   text-decoration: none;
   color: var(--color-text-muted);
   transition: color 0.15s ease;
 }
 
 .margin-toc a:hover {
-  color: var(--color-accent);
+  color: var(--color-text);
   text-decoration: none;
 }
 
 .margin-toc li.active a {
-  color: var(--color-text-secondary);
+  color: var(--color-text);
 }
 
 .toc-num {
   flex-shrink: 0;
   font-family: var(--font-mono);
-  font-size: 0.58rem;
-  line-height: 1.9;
-  opacity: 0.6;
+  font-size: 0.6rem;
+  line-height: 2;
+  color: var(--color-accent);
 }
 
 .toc-text {
   font-family: var(--font-serif);
-  font-size: 1rem;
+  font-size: 0.92rem;
   line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -223,23 +335,29 @@ body {
 /* ── Typography ──────────────────────────────────────── */
 h1, h2, h3, h4 {
   font-family: var(--font-serif);
-  font-weight: 600;
-  line-height: 1.3;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
   color: var(--color-text);
+  text-wrap: balance;
 }
 
+/* Titles are set light and large: the display cut of the serif, where
+   the strokes go hairline thin. */
 h1 {
-  font-size: 2rem;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
   margin-bottom: var(--space-md);
-  letter-spacing: -0.02em;
 }
 
 h2 {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   margin-top: var(--space-2xl);
   margin-bottom: var(--space-md);
   position: relative;
-  padding-bottom: var(--space-sm);
 }
 
 h3 {
@@ -248,12 +366,9 @@ h3 {
   margin-bottom: var(--space-sm);
 }
 
-h2::after {
-  display: none;
-}
-
 p {
   margin-bottom: var(--space-md);
+  text-wrap: pretty;
 }
 
 a {
@@ -269,19 +384,20 @@ a:hover {
 
 code, pre {
   font-family: var(--font-mono);
-  font-size: 0.9em;
+  font-size: 0.86em;
 }
 
 code {
   background: var(--color-code-bg);
-  padding: 0.15em 0.4em;
-  border-radius: 4px;
+  padding: 0.12em 0.38em;
+  border-radius: 3px;
 }
 
 pre {
   background: var(--color-code-bg);
   padding: var(--space-lg);
-  border-radius: 2px;
+  border-radius: var(--radius);
+  line-height: 1.6;
   overflow-x: auto;
   margin: var(--space-lg) 0;
   border: 1px solid var(--color-border);
@@ -292,31 +408,19 @@ pre code {
   padding: 0;
 }
 
-/* A note set off in the margin, not a tinted box. */
 blockquote {
   border-left: 1px solid var(--color-accent);
   color: var(--color-text-secondary);
   font-style: italic;
   margin: var(--space-lg) 0;
   padding: 0 0 0 var(--space-lg);
-  background: none;
-  border-radius: 0;
 }
 
 hr {
   border: none;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--color-border) 15%,
-    var(--color-accent) 45%,
-    var(--color-accent) 55%,
-    var(--color-border) 85%,
-    transparent 100%
-  );
+  background: var(--color-border);
   margin: var(--space-2xl) 0;
-  opacity: 0.6;
 }
 
 ul, ol {
@@ -328,362 +432,311 @@ li {
   margin-bottom: var(--space-xs);
 }
 
-/* ── Navigation ──────────────────────────────────────── */
-/* The site masthead only. This used to match every <header> on the page,
-   including ones inside articles, which gave them the same stacking level
-   as the nav bar. Being later in the document, they painted over it, and
-   the bar looked half transparent wherever content crossed it. */
+/* ── Shared instrument labels ────────────────────────────
+   The small monospaced captions used everywhere a thing is measured or
+   named rather than said: "FIG. 3", "19 ESSAYS", "APR 2026". */
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.label .sig {
+  color: var(--color-accent);
+}
+
+/* ── Site header ─────────────────────────────────────── */
 body > header {
-  position: relative;
-  border: none;
-  z-index: 100;
-}
-
-/* ── Masthead: pattern lives here, in a band with a hard edge ── */
-.masthead {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
-  padding: var(--space-lg) var(--space-md);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.masthead::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url('/images/codex-band.svg');
-  background-size: auto 215px;
-  background-position: center center;
-  background-repeat: repeat-x;
-  /* Ease only the outer edges so drawings do not stop mid-stroke. */
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
-  pointer-events: none;
-}
-
-html.dark .masthead::before {
-  background-image: url('/images/codex-band-dark.svg');
-}
-
-/* A second hairline, the way a manuscript page is ruled. */
-.masthead::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 3px;
-  height: 1px;
-  background: var(--color-border);
-  opacity: 0.55;
-}
-
-/* A cleared area of the page for the mark, edges dissolving into
-   the drawings rather than cutting them off square. */
-.masthead .site-title {
-  position: relative;
-  z-index: 1;
-  padding: var(--space-sm) var(--space-3xl);
-  border: none;
-  background: none;
-}
-
-.masthead .site-title::before {
-  content: '';
-  position: absolute;
-  inset: -22px -70px;
-  z-index: -1;
-  background-color: var(--color-bg);
-  background-image: var(--paper-grain);
-  background-repeat: repeat;
-  -webkit-mask-image: radial-gradient(ellipse 58% 56% at 50% 50%, #000 62%, transparent 100%);
-  mask-image: radial-gradient(ellipse 58% 56% at 50% 50%, #000 62%, transparent 100%);
-  pointer-events: none;
-}
-
-/* ── Sticky nav bar ─────────────────────────────────── */
-nav {
   position: sticky;
   top: 0;
   z-index: 100;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Once the page has moved, the header frosts over so text passes
+   under it as a blur rather than colliding with the links. */
+body > header.scrolled {
+  background-color: color-mix(in srgb, var(--color-bg) 80%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow: 0 1px 0 var(--color-border-light);
+}
+
+.site-head {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 1.15rem var(--gutter);
   display: flex;
-  justify-content: center;
-  padding: 0.55rem var(--space-md);
-  /* Opaque on purpose. A translucent bar read as solid over flat page
-     background and see-through over the masthead art, which looked like
-     a bug rather than an effect. Carries the same grain as the page so
-     the bar doesn't sit as a bare flat strip against it. */
-  background-color: var(--color-bg);
-  background-image: var(--paper-grain);
-  background-repeat: repeat;
-  border-bottom: 1px solid var(--color-border-light);
-}
-
-.site-title {
-  text-decoration: none;
-  display: inline-block;
-}
-
-.sher-art {
-  font-family: 'Scheherazade New', serif;
-  font-size: 1.2rem;
-  font-weight: 400;
-  letter-spacing: -0.1em;
-  color: var(--color-text);
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color 0.3s ease, text-shadow 0.3s ease;
-  display: inline-flex;
-  flex-direction: column;
   align-items: center;
-  position: relative;
-  padding: 0.3em 0;
+  justify-content: space-between;
+  gap: var(--space-md);
 }
 
-
-.sher-decor {
-  display: block;
-  color: var(--color-accent);
-  opacity: 0.9;
-  margin: 0 0 0.35em 0;
-  transition: opacity 0.3s ease, color 0.3s ease;
-  text-align: center;
-}
-
-.sher-decor svg {
-  width: 34px;
-  height: 34px;
-  display: block;
-}
-
-@media (min-width: 601px) {
-  .sher-decor svg {
-    width: 42px;
-    height: 42px;
-  }
-}
-
-
-
-.sher-art:hover::before,
-.sher-art:hover::after {
-  opacity: 0.8;
-  transform: scale(1.1);
-}
-
-.site-title:hover {
-  color: var(--color-accent);
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--color-text);
   text-decoration: none;
 }
 
-.sher-art:hover {
-  color: var(--color-accent);
-  text-shadow: 0 0 30px var(--color-accent-soft);
-}
-
-.sher-quote {
-  display: flex;
-  flex-direction: column;
-}
-
-@media (min-width: 601px) {
-  .sher-quote {
-    flex-direction: row;
-    gap: 0;
-  }
-  .sher-art {
-    font-size: 1.25rem;
-    letter-spacing: -0.1em;
-  }
-}
-
-/* Humanist italic, the hand rather than the machine. */
-.site-tagline {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1.35rem;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  text-transform: none;
-  color: var(--color-accent);
-  line-height: 1.2;
-}
-
-/* A drawn rule with a small leaf, beneath the wordmark. */
-.sher-art::after {
-  content: '';
-  display: block;
-  width: 210px;
-  height: 20px;
-  margin: 0.45em auto 0;
-  background-image: url('/images/flourish.svg');
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0.75;
-  transition: opacity 0.3s ease;
-}
-
-html.dark .sher-art::after {
-  background-image: url('/images/flourish-dark.svg');
-}
-
-.sher-art:hover::after {
-  opacity: 1;
-}
-
-
-.sher-art:hover .sher-decor {
-  opacity: 1;
-}
-
-@media (max-width: 600px) {
-  .sher-art {
-    font-size: 1.1rem;
-    padding: 0.5em 1em;
-  }
-  .sher-art:hover .latin {
-    display: inline;
-  }
-  .sher-art:hover .english {
-    display: none;
-  }
-}
-
-.site-title[data-tooltip]:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: var(--color-surface);
+.brand:hover {
   color: var(--color-text);
-  padding: 0.4em 0;
-  font-family: 'Cinzel', serif;
-  font-size: 0.65rem;
-  text-align: center;
-  letter-spacing: 0.05em;
-  border-top: 1px solid var(--color-border);
-  margin-top: 0.25em;
+  text-decoration: none;
+}
+
+/* The mark is a calibration target: circle, square, crosshair. It turns
+   a quarter when you reach for it, the way a lens ring does. */
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  color: var(--color-accent);
+  transition: transform 0.7s var(--ease-out);
+}
+
+.brand:hover .brand-mark {
+  transform: rotate(90deg);
+}
+
+.brand-name {
+  font-family: var(--font-serif);
+  font-size: 1.22rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.brand-role {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding-left: 0.7rem;
+  border-left: 1px solid var(--color-border);
+  line-height: 1.4;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
+  gap: 0.15rem;
 }
 
 .nav-link {
-  font-family: var(--font-serif);
-  font-size: 1.08rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  text-transform: none;
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
   color: var(--color-text-secondary);
   text-decoration: none;
-  padding: 0.15rem 0.7rem;
-  position: relative;
+  padding: 0.45rem 0.7rem;
   white-space: nowrap;
-  border-radius: 0;
   transition: color 0.2s ease;
 }
 
 .nav-link:hover {
-  color: var(--color-accent);
-  background: none;
+  color: var(--color-text);
   text-decoration: none;
 }
 
+/* The page you are on is marked with a crosshair, not a box. */
 .nav-link.active {
-  color: var(--color-accent);
-  background: none;
+  color: var(--color-text);
 }
 
-/* Underscored in ink rather than boxed in a chip. */
-.nav-link.active::after {
+.nav-link.active::before {
   content: '';
   position: absolute;
-  left: 0.7rem;
-  right: 0.7rem;
-  bottom: 0.05rem;
-  height: 1px;
+  left: 50%;
+  bottom: 0.1rem;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  border-radius: 50%;
   background: var(--color-accent);
-  opacity: 0.75;
 }
 
 .nav-separator {
   width: 1px;
-  height: 1rem;
+  height: 0.9rem;
   background: var(--color-border);
-  margin: 0 var(--space-xs);
+  margin: 0 0.4rem;
 }
 
-/* ── Main Content ────────────────────────────────────── */
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  transition: color 0.2s ease, border-color 0.2s ease;
+  line-height: 1;
+}
+
+.theme-toggle:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.theme-toggle .icon-sun,
+.theme-toggle .icon-moon {
+  width: 14px;
+  height: 14px;
+}
+
+.theme-toggle .icon-sun { display: none; }
+html.dark .theme-toggle .icon-sun { display: block; }
+html.dark .theme-toggle .icon-moon { display: none; }
+
+@media (max-width: 720px) {
+  .brand-role { display: none; }
+}
+
+@media (max-width: 560px) {
+  .site-head {
+    flex-wrap: wrap;
+    row-gap: 0.4rem;
+    padding: 0.85rem var(--gutter) 0.6rem;
+  }
+
+  .site-head > nav {
+    width: 100%;
+  }
+
+  .nav-links {
+    justify-content: space-between;
+    margin: 0 -0.5rem;
+  }
+
+  .nav-link {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.72rem;
+  }
+
+  .nav-separator { display: none; }
+}
+
+/* ── Main ────────────────────────────────────────────── */
 main {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--space-3xl) var(--space-lg);
+  padding: var(--space-2xl) var(--gutter) var(--space-3xl);
   width: 100%;
   flex: 1;
 }
 
-/* ── Page Header ─────────────────────────────────────── */
+/* Pages that set their own width (everything but the home page) read in
+   a narrower frame centred in the wide one. */
+main > :not(.wide) {
+  max-width: 820px;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+/* ── Page heads ──────────────────────────────────────────
+   Every index page opens the same way: a running head in the instrument
+   voice, then the title large and light, then a line of what it is. */
+.folio-rule,
+.article-rule {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.folio-mark,
+.article-rule a,
+.article-rule span.kind {
+  font-family: var(--font-mono) !important;
+  font-variant: normal !important;
+  font-style: normal !important;
+  font-size: 0.66rem !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.folio-mark:first-child::before,
+.article-rule span.kind::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 0.6rem;
+  vertical-align: 0.05em;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.article-rule a:hover {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.folio-line,
+.article-rule .rule-line {
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
 .page-header {
-  text-align: center;
   margin-bottom: var(--space-lg);
 }
 
 .page-header h1 {
-  font-size: 1.8rem;
   margin-bottom: var(--space-sm);
-  background: linear-gradient(135deg, var(--color-text) 0%, var(--color-accent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .page-subtitle {
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-  line-height: 1.7;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
   max-width: 600px;
-  margin: 0 auto;
 }
 
-@media (max-width: 600px) {
-  .page-header h1 {
-    font-size: 1.6rem;
-  }
-}
-
-/* ── Project Cards ────────────────────────────────────── */
-.projects-list {
+/* ── Cards ───────────────────────────────────────────── */
+.projects-list,
+.post-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
-  margin-top: var(--space-md);
+  gap: var(--space-md);
 }
 
-.project-card {
+.project-card,
+.post-card {
   display: flex;
   gap: var(--space-lg);
   padding: var(--space-lg);
   background: var(--color-surface);
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: linear-gradient(var(--color-surface), var(--color-surface)) padding-box, linear-gradient(135deg, var(--color-border-light), var(--color-surface)) border-box;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius);
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.25s ease, box-shadow 0.35s var(--ease-out), transform 0.35s var(--ease-out);
 }
 
-.project-card:hover {
+.post-card {
+  display: block;
+}
+
+.project-card:hover,
+.post-card:hover {
   border-color: var(--color-border);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  box-shadow: var(--shadow-lift);
+  transform: translateY(-2px);
   text-decoration: none;
 }
 
@@ -691,7 +744,7 @@ main {
   flex-shrink: 0;
   width: 160px;
   height: 100px;
-  border-radius: 6px;
+  border-radius: 2px;
   overflow: hidden;
   background: var(--color-code-bg);
 }
@@ -702,61 +755,26 @@ main {
   object-fit: cover;
 }
 
-.project-info h3 {
-  font-size: 1rem;
-  font-weight: 600;
+.project-info h3,
+.post-card h3 {
+  font-size: 1.2rem;
   margin: 0 0 var(--space-xs) 0;
   color: var(--color-text);
 }
 
-.project-info p {
-  font-size: 0.95rem;
+.project-info p,
+.post-card p {
+  font-size: 0.98rem;
   color: var(--color-text-secondary);
   margin: 0;
   line-height: 1.55;
 }
 
-@media (max-width: 600px) {
-  .project-card {
-    flex-direction: column;
-  }
-
-  .project-image {
-    width: 100%;
-    height: 140px;
-  }
-}
-
-/* ── Blog / Post Cards ───────────────────────────────── */
-.post-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-lg);
-}
-
-.post-card {
-  display: block;
-  padding: var(--space-lg);
-  border-radius: 2px 2px 8px 8px;
-  background: var(--color-surface);
-  border: 1px solid transparent;
-  background: linear-gradient(var(--color-surface), var(--color-surface)) padding-box, linear-gradient(135deg, var(--color-border-light), var(--color-surface)) border-box;
-  border-top: 2px solid var(--color-accent);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  text-decoration: none;
-  color: inherit;
-}
-
-.post-card:hover {
-  border-color: var(--color-border);
-  border-top-color: var(--color-accent-hover);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-  text-decoration: none;
-}
-
 .post-card-meta {
-  font-family: var(--font-sans);
-  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--color-text-muted);
   margin-bottom: var(--space-xs);
   display: flex;
@@ -764,19 +782,9 @@ main {
   gap: var(--space-sm);
 }
 
-.post-card h3 {
-  font-size: 1.15rem;
-  font-weight: 600;
-  margin: 0 0 var(--space-xs) 0;
-  color: var(--color-text);
-  line-height: 1.4;
-}
-
-.post-card p {
-  font-size: 0.95rem;
-  color: var(--color-text-secondary);
-  margin: 0;
-  line-height: 1.6;
+@media (max-width: 600px) {
+  .project-card { flex-direction: column; }
+  .project-image { width: 100%; height: 140px; }
 }
 
 .post-tags {
@@ -787,178 +795,143 @@ main {
 }
 
 .tag {
-  font-family: var(--font-sans);
-  font-size: 0.75rem;
-  font-weight: 500;
-  background: var(--color-tag-bg);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  background: none;
   color: var(--color-tag-text);
-  padding: 0.15em 0.6em;
-  border-radius: 4px;
+  padding: 0.15em 0.55em;
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
 }
 
-/* ── Blog Post Article ───────────────────────────────── */
-/* Folio rule across the top of an article, matching the index pages. */
+/* ── Articles ─────────────────────────────────────────────
+   An article is a frame with a caption strip: the measurements across
+   the top, the title very large, then the text in a single measure. */
+main > .blog-post {
+  max-width: var(--measure);
+  margin-inline: auto;
+}
+
 .article-rule {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  margin-bottom: var(--space-xl);
-}
-
-.article-rule a,
-.article-rule span.kind {
-  font-family: var(--font-serif);
-  font-variant: small-caps;
-  font-size: 0.95rem;
-  letter-spacing: 0.09em;
-  text-transform: none;
-  color: var(--color-text-muted);
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.article-rule a:hover {
-  color: var(--color-accent);
-  text-decoration: none;
-}
-
-.article-rule .rule-line {
-  flex: 1;
-  height: 1px;
-  background: var(--color-border);
+  margin-bottom: var(--space-2xl);
 }
 
 .blog-post-header {
-  margin-bottom: var(--space-xl);
-  padding-bottom: var(--space-lg);
-  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-2xl);
 }
 
 .blog-post-header h1 {
-  font-size: 2.3rem;
-  line-height: 1.2;
-  margin-bottom: var(--space-md);
+  font-size: clamp(2.5rem, 6.2vw, 4.2rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  margin: 0 0 var(--space-lg);
 }
 
+/* Measured off like the caption under a figure: a tick, the date, and
+   whatever else the page knows about itself. */
 .blog-post-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
   font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.14em;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-text-muted);
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.blog-post-meta::before {
+  content: '';
+  width: 2rem;
+  height: 1px;
+  background: var(--color-accent);
 }
 
 .blog-post-description {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 1.26rem;
+  font-weight: 300;
+  font-size: 1.32rem;
   color: var(--color-text-secondary);
-  line-height: 1.6;
+  line-height: 1.5;
   margin-bottom: var(--space-md);
-  max-width: 60ch;
 }
 
-/* Tags read as a keyed line, not chips. */
 .blog-post-header .post-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0;
-}
-
-.blog-post-header .post-tags .tag {
-  background: none;
-  padding: 0;
-  border-radius: 0;
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1rem;
-  letter-spacing: 0.01em;
-  text-transform: none;
-  color: var(--color-text-muted);
-}
-
-.blog-post-header .post-tags .tag + .tag::before {
-  content: '·';
-  margin-right: 0.5rem;
-  opacity: 0.6;
+  gap: 0.35rem;
+  margin-top: var(--space-md);
 }
 
 .blog-post-content {
-  line-height: 1.85;
+  line-height: 1.75;
 }
 
-/* An opening capital, the way a manuscript starts a page. */
-.blog-post-content > p:first-of-type::first-letter {
-  float: left;
-  font-family: var(--font-serif);
-  font-size: 3.6rem;
-  line-height: 0.82;
-  padding: 0.08em 0.1em 0 0;
-  color: var(--color-accent);
+/* The first paragraph is set a size up, the way a standfirst leads. */
+.blog-post-content > p:first-of-type {
+  font-size: 1.32rem !important;
+  line-height: 1.6;
+  color: var(--color-text);
 }
 
 .blog-post-content h2 {
   position: relative;
-  font-size: 1.6rem;
-  margin-top: var(--space-2xl);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.9rem;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin-top: var(--space-3xl);
   margin-bottom: var(--space-md);
-  padding-top: var(--space-md);
-  border-top: 1px solid var(--color-border-light);
+  padding-top: var(--space-lg);
 }
 
-/* Short sanguine tick marking each new section. */
+/* Each section is numbered in the margin like a figure. */
+.blog-post-content {
+  counter-reset: section;
+}
+
 .blog-post-content h2::before {
-  content: '';
+  counter-increment: section;
+  content: '§ ' counter(section, decimal-leading-zero);
   position: absolute;
-  top: -1px;
+  top: 0;
   left: 0;
-  width: 42px;
-  height: 1px;
-  background: var(--color-accent);
-}
-
-.blog-post-content h2:first-child {
-  border-top: none;
-  padding-top: 0;
-}
-
-.blog-post-content h2:first-child::before {
-  display: none;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  color: var(--color-accent);
 }
 
 .blog-post-content h3 {
-  font-size: 1.3rem;
+  font-size: 1.32rem;
+  font-weight: 500;
   margin-top: var(--space-xl);
   margin-bottom: var(--space-sm);
 }
 
-/* The article column is the measure itself, centred in the page, so
-   headings, prose and rules all share one right edge. Wide blocks
-   below break back out to the full column width. */
-.blog-post {
-  max-width: 66ch;
-  margin-inline: auto;
+.blog-post .blog-post-content pre,
+.blog-post .blog-post-content table,
+.blog-post .blog-post-content .mini-diagram {
+  max-width: 100%;
 }
 
-/* Code, tables and diagrams are figures, not prose: they may run wider
-   than the measure, centred on it. */
+/* Figures may run wider than the measure, centred on it. */
 @media (min-width: 900px) {
-  /* .blog-post prefix so these beat per-post scoped margins */
   .blog-post .blog-post-content pre,
   .blog-post .blog-post-content table,
   .blog-post .blog-post-content .mini-diagram {
-    width: var(--column);
-    max-width: var(--column);
-    margin-left: calc((100% - var(--column)) / 2);
-    margin-right: calc((100% - var(--column)) / 2);
+    width: min(820px, 92vw);
+    max-width: min(820px, 92vw);
+    margin-left: calc((100% - min(820px, 92vw)) / 2);
+    margin-right: calc((100% - min(820px, 92vw)) / 2);
   }
 }
 
 .blog-post-content p {
-  font-size: 1.2rem;
-  margin-bottom: var(--space-md);
+  font-size: 1.16rem;
+  margin-bottom: 1.3rem;
 }
 
 .blog-post-content ul,
@@ -968,31 +941,54 @@ main {
 
 .blog-post-content li {
   margin-bottom: var(--space-xs);
-  line-height: 1.75;
-  font-size: 1.16rem;
+  line-height: 1.7;
+  font-size: 1.12rem;
+}
+
+.blog-post-content li::marker {
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
 }
 
 .blog-post-content a {
-  text-decoration: none;
-  border-bottom: 1px solid var(--color-accent-soft);
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  transition: color 0.15s ease;
 }
 
 .blog-post-content a:hover {
-  border-bottom-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.blog-post-content blockquote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 1.55rem;
+  line-height: 1.38;
+  color: var(--color-text);
+  border-left: 1px solid var(--color-accent);
+  padding-left: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.blog-post-content blockquote p {
+  font-size: inherit;
+  margin-bottom: var(--space-sm);
 }
 
 .blog-post-content .katex {
   font-size: 1em;
 }
 
-/* Left to the wrapper to decorate; bare math stays plain. */
 .blog-post-content .katex-display {
   margin: var(--space-lg) 0;
   overflow-x: auto;
   padding: var(--space-sm) 0;
-  background: none;
-  border-radius: 0;
-  border-left: none;
 }
 
 .blog-post-content .katex-display .katex {
@@ -1003,18 +999,19 @@ main {
   font-weight: 600;
 }
 
-/* Images sit as plates: thin rule, no rounding. */
+/* Photographs are printed edge to edge on the page with a hairline and a
+   lifted shadow, and allowed wider than the text, like a plate. */
 .blog-post-content img {
   max-width: 100%;
-  max-height: 500px;
+  max-height: 560px;
   width: auto;
   height: auto;
   object-fit: contain;
-  border: 1px solid var(--color-border);
-  border-radius: 0;
-  padding: 6px;
-  background: var(--color-bg);
-  margin: var(--space-lg) auto;
+  border: none;
+  border-radius: 2px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lift);
+  margin: var(--space-2xl) auto;
   display: block;
 }
 
@@ -1025,10 +1022,10 @@ main {
 }
 
 .back-link {
-  font-family: var(--font-serif);
-  font-variant: small-caps;
-  font-size: 1rem;
-  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   text-decoration: none;
 }
 
@@ -1038,172 +1035,110 @@ main {
 }
 
 @media (max-width: 600px) {
-  .blog-post-header h1 {
-    font-size: 1.65rem;
+  .blog-post-content > p:first-of-type {
+    font-size: 1.2rem !important;
   }
-
   .blog-post-description {
-    font-size: 1.02rem;
-  }
-
-  .blog-post-content > p:first-of-type::first-letter {
-    font-size: 2.9rem;
+    font-size: 1.14rem;
   }
 }
 
 /* ── Footer ──────────────────────────────────────────── */
-footer {
-  border-top: 1px solid var(--color-border);
+body > footer {
   margin-top: auto;
-  position: relative;
+  border-top: 1px solid var(--color-border);
 }
 
-footer::before {
-  content: '◇  ◆  ◇';
-  position: absolute;
-  top: -0.6em;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--color-bg);
-  background-image: var(--paper-grain);
-  background-repeat: repeat;
-  padding: 0 var(--space-md);
-  font-size: 0.5rem;
-  color: var(--color-accent);
-  letter-spacing: 0.3em;
-  opacity: 0.7;
-}
-
-.footer-content {
+.foot {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--space-md) var(--space-md);
-  text-align: center;
+  padding: var(--space-3xl) var(--gutter) var(--space-xl);
 }
 
-footer p {
-  font-family: var(--font-sans);
-  font-size: 0.82rem;
-  color: var(--color-text-muted);
+.foot-line {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+  margin: 0 0 var(--space-2xl);
+  max-width: 16ch;
+}
+
+.foot-line em {
+  color: var(--color-accent);
+}
+
+.foot-cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.foot-col p {
+  margin: 0 0 0.7rem;
+}
+
+.foot-col ul {
+  list-style: none;
+  padding: 0;
   margin: 0;
 }
 
-/* ── Dark Mode ───────────────────────────────────────── */
-.visitor-counter {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  color: var(--color-text-muted);
-  opacity: 0.7;
+.foot-col li {
+  margin: 0 0 0.25rem;
 }
 
-.theme-toggle {
-  background: none;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  padding: 0.35rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.foot-col a {
+  font-family: var(--font-serif);
+  font-size: 1rem;
   color: var(--color-text-secondary);
-  transition: color 0.2s ease, background-color 0.2s ease;
-  line-height: 1;
+  text-decoration: none;
 }
 
-.theme-toggle:hover {
-  color: var(--color-text);
-  background-color: var(--color-tag-bg);
+.foot-col a:hover {
+  color: var(--color-accent);
+  text-decoration: none;
 }
 
-.theme-toggle .icon-sun,
-.theme-toggle .icon-moon {
-  width: 16px;
-  height: 16px;
+.foot-col .colophon {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
 }
 
-.theme-toggle .icon-sun {
-  display: none;
+.foot-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-top: var(--space-2xl);
 }
 
-html.dark .theme-toggle .icon-sun {
-  display: block;
-}
-
-html.dark .theme-toggle .icon-moon {
-  display: none;
-}
-
-/* ── Dark mode shadow overrides ──────────────────────── */
-html.dark .project-card:hover {
-  box-shadow: 0 2px 12px rgba(255, 255, 255, 0.03);
-}
-
-html.dark .post-card:hover {
-  box-shadow: 0 2px 12px rgba(255, 255, 255, 0.03);
+@media (max-width: 640px) {
+  .foot-cols {
+    grid-template-columns: 1fr 1fr;
+  }
+  .foot-col:last-child {
+    grid-column: 1 / -1;
+  }
+  .foot-meta {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
 }
 
 /* ── Responsive ──────────────────────────────────────── */
 @media (max-width: 600px) {
   body {
-  font-size: 1.1rem;
-  }
-
-  h1 {
-    font-size: 1.6rem;
-  }
-
-  .site-title {
-    font-size: 0.75rem;
-  }
-
-  nav {
-    padding: 0.45rem var(--space-xs);
-  }
-
-  .nav-links {
-    gap: 0;
-  }
-
-  .nav-link {
-    font-size: 0.95rem;
-    padding: 0.1rem 0.42rem;
-  }
-
-  .nav-link.active::after {
-    left: 0.42rem;
-    right: 0.42rem;
-  }
-
-  .masthead {
-    min-height: 132px;
-    padding: var(--space-md) var(--space-sm);
-  }
-
-  .masthead::before {
-    background-size: auto 150px;
-  }
-
-  .masthead .site-title {
-    padding: var(--space-xs) var(--space-md);
-  }
-
-  .nav-links {
-    gap: var(--space-xs);
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .nav-separator {
-    display: none;
+    font-size: 1.06rem;
   }
 
   main {
-    padding: var(--space-xl) var(--space-md);
+    padding: var(--space-xl) var(--gutter) var(--space-2xl);
   }
-
 }
 
 /* ── Notebook Experiment Shared ─────────────────────── */
@@ -1704,4 +1639,9 @@ html.dark .post-card:hover {
     align-items: flex-start;
     gap: var(--space-sm);
   }
+}
+
+/* The theme reveal is one circle over the whole page, header included. */
+html.theme-swap body > header {
+  view-transition-name: none;
 }

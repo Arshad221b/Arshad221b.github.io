@@ -233,8 +233,10 @@ function shortDate(dateStr: string): string {
   }
 
   .blog-intro h1 {
-    font-size: 2rem;
-    margin-bottom: var(--space-sm);
+    font-size: clamp(3.2rem, 8vw, 4.8rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin: var(--space-md) 0 var(--space-md);
   }
 
   .blog-intro p {
@@ -342,8 +344,10 @@ function shortDate(dateStr: string): string {
 
   .year-label {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 0.72rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    color: var(--color-accent) !important;
     color: var(--color-text-muted);
     letter-spacing: 0.08em;
     margin: 0;
@@ -397,10 +401,10 @@ function shortDate(dateStr: string): string {
 
   /* The title is the one thing that should catch the eye. */
   .entry h3 {
-    font-family: var(--font-serif);
-    font-size: 1.35rem;
-    font-weight: 600;
-    line-height: 1.35;
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 400;
+    line-height: 1.15;
     color: var(--color-text);
     margin: 0 0 0.35rem 0;
     transition: color 0.15s ease;
@@ -506,7 +510,7 @@ function shortDate(dateStr: string): string {
     }
 
     .entry h3 {
-      font-size: 1.2rem;
+      font-size: 1.5rem;
     }
 
     .figures {
