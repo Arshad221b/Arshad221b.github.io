@@ -173,6 +173,12 @@ function formatDate(dateStr: string): string {
   @media (max-width: 560px) {
     .exif {
       grid-template-columns: 1fr 1fr;
+      gap: var(--space-sm) var(--space-md);
+    }
+
+    .exif dd {
+      white-space: normal;
+      line-height: 1.4;
     }
   }
 

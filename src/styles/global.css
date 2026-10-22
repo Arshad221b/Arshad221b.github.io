@@ -49,9 +49,9 @@
   --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
   --font-display: 'Newsreader', Georgia, serif;
   --font-mono: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
-  /* There is no third voice. Anything that asked for a sans gets the
-     instrument instead. */
-  --font-sans: var(--font-mono);
+  /* A plain sans for the small readable text inside figures and callouts;
+     labels and measurements stay in the mono. */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   --max-width: 1080px;
   --measure: 640px;
@@ -214,6 +214,12 @@ body {
 
 @media (max-width: 760px), (hover: none) {
   .vf-readout { display: none; }
+}
+
+/* On a phone the frame would sit on top of the content; the screen's own
+   edge is frame enough. */
+@media (max-width: 760px) {
+  .viewfinder { display: none; }
 }
 
 /* ── Reading progress ───────────────────────────────────── */
@@ -491,22 +497,71 @@ body > header.scrolled {
 /* The mark is a calibration target: circle, square, crosshair. It turns
    a quarter when you reach for it, the way a lens ring does. */
 .brand-mark {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 41px;
   color: var(--color-accent);
-  transition: transform 0.7s var(--ease-out);
+  overflow: visible;
 }
 
-.brand:hover .brand-mark {
-  transform: rotate(90deg);
+/* The pot is filled with the page colour, so the curl of ink reads as
+   rising out of it rather than through it. */
+.brand-mark .pot {
+  fill: var(--color-bg);
 }
+
+/* Every so often the ink rises out of the pot, hangs in the air for a
+   while, then drifts off the top like smoke, and rises again. */
+.brand-mark .ink {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .brand-mark .ink {
+    animation: ink-cycle 9s var(--ease-out) 0.2s infinite;
+  }
+
+  .brand-mark .pot {
+    transform-origin: 50% 94%;
+    animation: pot-breathe 9s ease-in-out 0.2s infinite;
+  }
+}
+
+@keyframes ink-cycle {
+  0%     { stroke-dashoffset: 120; opacity: 1; }
+  14%    { stroke-dashoffset: 0; }
+  80%    { stroke-dashoffset: 0; opacity: 1; }
+  92%    { stroke-dashoffset: -120; opacity: 0.2; }
+  92.01% { stroke-dashoffset: 120; opacity: 1; }
+  100%   { stroke-dashoffset: 120; }
+}
+
+/* A small lift of the pot as the ink leaves it. */
+@keyframes pot-breathe {
+  0%, 100% { transform: none; }
+  3%       { transform: scale(1.04, 0.96); }
+  7%       { transform: none; }
+}
+
+
 
 .brand-name {
-  font-family: var(--font-serif);
-  font-size: 1.22rem;
+  font-family: 'Great Vibes', var(--font-serif);
+  font-style: normal;
   font-weight: 400;
-  letter-spacing: -0.01em;
+  font-synthesis: none;
+  font-size: 2.05rem;
+  letter-spacing: 0;
   line-height: 1;
+  white-space: nowrap;
+  /* A script sits low on its baseline; nudge it up to centre on the mark. */
+  position: relative;
+  top: -0.06em;
+}
+
+.brand-name em {
+  font-style: normal;
+  color: var(--color-accent);
 }
 
 .brand-role {
@@ -602,10 +657,28 @@ html.dark .theme-toggle .icon-moon { display: none; }
 }
 
 @media (max-width: 560px) {
+  /* Two slim rows: the mark and its name centred, and beneath them the
+     links as a small instrument-style row, also centred. */
   .site-head {
     flex-wrap: wrap;
-    row-gap: 0.4rem;
-    padding: 0.85rem var(--gutter) 0.6rem;
+    justify-content: center;
+    row-gap: 0;
+    padding: 0.5rem var(--gutter) 0.3rem;
+  }
+
+  .brand {
+    width: 100%;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+
+  .brand-name {
+    font-size: 1.42rem;
+  }
+
+  .brand-mark {
+    width: 14px;
+    height: 25px;
   }
 
   .site-head > nav {
@@ -613,16 +686,40 @@ html.dark .theme-toggle .icon-moon { display: none; }
   }
 
   .nav-links {
-    justify-content: space-between;
-    margin: 0 -0.5rem;
+    justify-content: center;
+    gap: 0.15rem;
   }
 
   .nav-link {
-    padding: 0.4rem 0.5rem;
-    font-size: 0.72rem;
+    padding: 0.4rem 0.55rem 0.45rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
 
-  .nav-separator { display: none; }
+  .nav-link.active::before {
+    bottom: 0.05rem;
+    width: 4px;
+    height: 4px;
+    margin-left: -2px;
+  }
+
+  .nav-separator {
+    display: block;
+    height: 0.75rem;
+    margin: 0 0.25rem;
+  }
+
+  .theme-toggle {
+    width: 24px;
+    height: 24px;
+  }
+
+  .theme-toggle .icon-sun,
+  .theme-toggle .icon-moon {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 /* ── Main ────────────────────────────────────────────── */
@@ -1222,11 +1319,11 @@ body > footer {
 }
 
 .experiment-intro h3 {
-  font-family: var(--font-serif);
-  font-variant: small-caps;
-  font-size: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+    text-transform: uppercase;
   font-weight: 600;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.14em;
   color: var(--color-accent);
   margin: 0 0 0.5rem;
 }
@@ -1437,11 +1534,11 @@ body > footer {
 
 .day-card-link {
   grid-column: 2;
-  font-family: var(--font-serif);
-  font-variant: small-caps;
-  font-size: 0.95rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+    text-transform: uppercase;
   font-weight: 400;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.14em;
   color: var(--color-accent);
   text-decoration: none;
 }
@@ -1542,10 +1639,10 @@ body > footer {
 }
 
 .experiment-status {
-  font-family: var(--font-serif);
-  font-variant: small-caps;
-  font-size: 1rem;
-  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+    text-transform: uppercase;
+  letter-spacing: 0.14em;
   color: var(--color-text-muted);
   white-space: nowrap;
   padding-bottom: 0.15rem;
@@ -1716,4 +1813,13 @@ body > footer {
 /* The theme reveal is one circle over the whole page, header included. */
 html.theme-swap body > header {
   view-transition-name: none;
+}
+
+@media (max-width: 560px) {
+  /* The second running head ("6 essays, 42 minutes") crowds the first on a
+     narrow line; the page says it again below. */
+  .folio-rule .folio-mark:last-child:not(:first-child) {
+    display: none;
+  }
+
 }

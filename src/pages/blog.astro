@@ -210,12 +210,10 @@ function shortDate(dateStr: string): string {
   }
 
   .folio-mark {
-    font-family: var(--font-serif);
-    font-variant: small-caps;
-    font-style: normal;
-    font-size: 0.92rem;
-    letter-spacing: 0.09em;
-    text-transform: none;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
 
     color: var(--color-text-muted);
     white-space: nowrap;
@@ -454,8 +452,8 @@ function shortDate(dateStr: string): string {
   }
 
   .sec-text {
-    font-family: var(--font-sans);
-    font-size: 0.86rem;
+    font-family: var(--font-serif);
+    font-size: 1rem;
     line-height: 1.45;
     color: var(--color-text-secondary);
   }
@@ -520,6 +518,27 @@ function shortDate(dateStr: string): string {
 
     .figures dd {
       font-size: 1.5rem;
+    }
+  }
+
+  /* On a phone the topics are one row you swipe, not a wall of chips. */
+  @media (max-width: 600px) {
+    .tag-filters {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin: 0 calc(var(--gutter) * -1);
+      padding: 0 var(--gutter) 0.3rem;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--gutter), #000 calc(100% - var(--gutter)), transparent 100%);
+      mask-image: linear-gradient(90deg, transparent 0, #000 var(--gutter), #000 calc(100% - var(--gutter)), transparent 100%);
+    }
+
+    .tag-filters::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tag-chip {
+      flex-shrink: 0;
     }
   }
 </style>

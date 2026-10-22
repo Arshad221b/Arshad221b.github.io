@@ -50,7 +50,7 @@ const elsewhere = [
     <link rel="alternate" type="application/rss+xml" title="Arshad Kazi" href="/rss.xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..700;1,6..72,200..700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..700;1,6..72,200..700&family=IBM+Plex+Mono:wght@400;500&family=Great+Vibes&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="canonical" href={canonicalUrl} />
     <title>{title}</title>
     <meta name="description" content={metaDescription} />
@@ -83,18 +83,17 @@ const elsewhere = [
     <header>
       <div class="site-head">
         <a href="/" class="brand" aria-label="Arshad Kazi, home">
-          <svg class="brand-mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="24" cy="24" r="21" stroke-width="1.6"/>
-            <rect x="9" y="9" width="30" height="30" stroke-width="1.3"/>
-            <circle cx="24" cy="24" r="10.5" stroke-width="1.1" opacity="0.7"/>
-            <line x1="24" y1="1.5" x2="24" y2="46.5" stroke-width="0.9" opacity="0.55"/>
-            <line x1="1.5" y1="24" x2="46.5" y2="24" stroke-width="0.9" opacity="0.55"/>
-            <circle cx="24" cy="24" r="2" fill="currentColor" stroke="none"/>
+          <svg class="brand-mark" viewBox="22 2 56 96" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path class="ink" d="M50 52 C46 40 60 36 56 26 C52 16 40 20 44 30 C47 37 58 32 60 22 C62 12 54 6 48 8" stroke-width="3.4"/>
+            <path class="pot" d="M39.2 94 C29.6 94 28.4 79.6 36.8 72.4 C40.4 69.4 41.6 67.6 41.6 64 L58.4 64 C58.4 67.6 59.6 69.4 63.2 72.4 C71.6 79.6 70.4 94 60.8 94 Z" stroke-width="3"/>
+            <path d="M42.8 64 L42.8 59.2 L57.2 59.2 L57.2 64 Z" fill="currentColor" stroke-width="1.5"/>
+            <path d="M33.2 82 C40.4 78.4 59.6 78.4 66.8 82" stroke-width="1.6"/>
+            <g fill="currentColor" stroke="none"><ellipse cx="38.0" cy="88" rx="1.5" ry="2.4"/><ellipse cx="42.8" cy="88" rx="1.5" ry="2.4"/><ellipse cx="47.6" cy="88" rx="1.5" ry="2.4"/><ellipse cx="52.4" cy="88" rx="1.5" ry="2.4"/><ellipse cx="57.2" cy="88" rx="1.5" ry="2.4"/><ellipse cx="62.0" cy="88" rx="1.5" ry="2.4"/></g>
           </svg>
-          <span class="brand-name">Arshad Kazi</span>
-          <span class="brand-role">Computer vision · essays</span>
+          <span class="brand-name">Journey of <em>Curiosity</em></span>
+          <span class="brand-role">Arshad Kazi</span>
         </a>
-        <nav aria-label="Site">
+        <nav aria-label="Site" id="site-nav">
           <div class="nav-links">
             {navItems.map(item => (
               <a

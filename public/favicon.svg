@@ -1,19 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="18 0 64 100">
   <style>
-    .star { fill: none; stroke: #c4743f; stroke-width: 3; stroke-linejoin: round; }
-    .inner { fill: none; stroke: #c4743f; stroke-width: 2; stroke-linejoin: round; }
-    .dot { fill: #c4743f; }
+    .m { fill: none; stroke: #e5461c; stroke-linecap: round; stroke-linejoin: round; }
+    .f { fill: #e5461c; }
     @media (prefers-color-scheme: dark) {
-      .star { stroke: #e8944a; }
-      .inner { stroke: #e8944a; }
-      .dot { fill: #e8944a; }
+      .m { stroke: #ff6838; }
+      .f { fill: #ff6838; }
     }
   </style>
-  <!-- Outer 8-pointed star: two overlapping squares -->
-  <polygon class="star" points="64,14 114,64 64,114 14,64"/>
-  <polygon class="star" points="99.4,28.6 99.4,99.4 28.6,99.4 28.6,28.6"/>
-  <!-- Inner octagon -->
-  <polygon class="inner" points="64,30 83.6,38.4 92,58 83.6,77.6 64,86 44.4,77.6 36,58 44.4,38.4"/>
-  <!-- Center dot -->
-  <circle class="dot" cx="64" cy="58" r="4"/>
+  <!-- A dawat (inkpot) with a curl of ink rising from it. -->
+  <path class="m" d="M50 52 C46 40 60 36 56 26 C52 16 40 20 44 30 C47 37 58 32 60 22 C62 12 54 6 48 8" stroke-width="5.5"/>
+  <path class="m" d="M39.2 94 C29.6 94 28.4 79.6 36.8 72.4 C40.4 69.4 41.6 67.6 41.6 64 L58.4 64 C58.4 67.6 59.6 69.4 63.2 72.4 C71.6 79.6 70.4 94 60.8 94 Z" stroke-width="5"/>
+  <path class="f" d="M42.8 64 L42.8 59.2 L57.2 59.2 L57.2 64 Z"/>
+  <path class="m" d="M33.2 82 C40.4 78.4 59.6 78.4 66.8 82" stroke-width="2.6"/>
 </svg>
