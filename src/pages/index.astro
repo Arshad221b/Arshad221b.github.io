@@ -1439,9 +1439,14 @@ const links = [
     content: '\00a0';
   }
 
+  /* Safari cuts a filtered or animated letter off at its own box, and
+     italic and script letters reach past theirs. Each letter gets room
+     to spare, given back by the margin so the setting is unchanged. */
   .ink-page .l {
     display: inline-block;
     opacity: 0;
+    padding: 0.25em 0.18em 0.3em;
+    margin: -0.25em -0.18em -0.3em;
   }
 
   /* Arriving, by default: rising out of a soft blur. */
@@ -1614,8 +1619,8 @@ const links = [
   .ink-slot .vw-honesty .l.cur::after {
     content: '';
     position: absolute;
-    left: calc(100% - 0.12em);
-    bottom: 0.05em;
+    left: calc(100% - 0.3em);
+    bottom: 0.35em;
     width: 0.1em;
     height: 1em;
     background: var(--color-accent);
@@ -1763,9 +1768,9 @@ const links = [
   }
 
   @keyframes breathe {
-    0%   { transform: none; filter: drop-shadow(0 0 0 transparent); }
-    35%  { transform: scale(1.045); filter: drop-shadow(0 0 22px var(--color-accent-soft)); }
-    100% { transform: none; filter: drop-shadow(0 0 0 transparent); }
+    0%   { transform: none; }
+    35%  { transform: scale(1.045); }
+    100% { transform: none; }
   }
 
   /* And a flourish is drawn beneath it, as under a signature. */
@@ -1845,6 +1850,12 @@ const links = [
       left: 0;
       right: 0;
       text-align: center;
+    }
+
+    .ink-page {
+      width: 100%;
+      padding: 0 16px;
+      box-sizing: border-box;
     }
 
     .ink-name-line {
