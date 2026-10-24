@@ -489,7 +489,7 @@ const links = [
     var replay = document.getElementById('replay');
     if (!stage || !smark || !hmark) return;
     var timers = [];
-    var later = function (ms, fn) { timers.push(setTimeout(fn, ms)); };
+    var later = function (ms, fn) { timers.push(setTimeout(fn, ms * TEMPO)); };
     var ACTS = ['intro-run', 'landed', 'r1', 'r2', 'r3'];
 
     // The header's own ink restarts already drawn, so the hand-off from
@@ -584,16 +584,30 @@ const links = [
       })(prev);
     }
 
+    // Every pause and stagger is scaled by the tempo. Patience alone is
+    // never hurried.
+    var TEMPO = 0.82, tempo = TEMPO;
+
+    // The styles' own animations keep the same tempo, patience excepted.
+    function quicken(e) {
+      if (e.target.closest && e.target.closest('.vw-patience')) return;
+      e.target.getAnimations().forEach(function (a) {
+        if (a.playbackRate === 1 && (a instanceof CSSAnimation || a instanceof CSSTransition)) a.playbackRate = 1 / TEMPO;
+      });
+    }
+    stage.addEventListener('animationstart', quicken);
+    stage.addEventListener('transitionrun', quicken);
+
     function wait(ms, t) {
       return new Promise(function (res, rej) {
-        timers.push(setTimeout(function () { t === token ? res() : rej('stale'); }, ms));
+        timers.push(setTimeout(function () { t === token ? res() : rej('stale'); }, ms * tempo));
       });
     }
 
     // One letter after another; resolves when the last has had its turn.
     function each(list, gap, fn, t) {
       list.forEach(function (l, i) {
-        timers.push(setTimeout(function () { if (t === token) fn(l, i); }, i * gap));
+        timers.push(setTimeout(function () { if (t === token) fn(l, i); }, i * gap * tempo));
       });
       return wait(Math.max(0, list.length - 1) * gap, t);
     }
@@ -638,6 +652,7 @@ const links = [
     async function word(w, t) {
       var name = w.className.match(/vw-(\w+)/)[1];
       var how = ways[name];
+      tempo = name === 'patience' ? 1 : TEMPO;
       var L = all(w, '.l:not(.tail)'), T = all(w, '.tail');
       setMood(name);
       await wait(how.before, t);
@@ -671,6 +686,7 @@ const links = [
         await wait(how.out * 0.6, t);
       }
       // Hand over now; the last of this word clears itself shortly after.
+      tempo = TEMPO;
       setMood('calm');
       timers.push(setTimeout(function () {
         if (t !== token) return;
@@ -781,7 +797,7 @@ const links = [
       var flight = el.animate([
         { transform: 'none' },
         { transform: 'translate(' + dx.toFixed(1) + 'px, ' + dy.toFixed(1) + 'px) scale(' + k.toFixed(4) + ')' }
-      ], { duration: 1400, easing: 'cubic-bezier(0.76, 0, 0.18, 1)', fill: 'forwards' });
+      ], { duration: 1400 * TEMPO, easing: 'cubic-bezier(0.76, 0, 0.18, 1)', fill: 'forwards' });
       flight.onfinish = function () {
         brand.style.opacity = '1';
         el.style.visibility = 'hidden';
@@ -806,7 +822,7 @@ const links = [
       var flight = smark.animate([
         { transform: 'translate(0, 0) scale(1)' },
         { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(' + k + ')' }
-      ], { duration: 1400, easing: 'cubic-bezier(0.76, 0, 0.18, 1)', fill: 'forwards' });
+      ], { duration: 1400 * TEMPO, easing: 'cubic-bezier(0.76, 0, 0.18, 1)', fill: 'forwards' });
       flight.onfinish = function () {
         settleHeaderInk();
         html.classList.add('landed');
