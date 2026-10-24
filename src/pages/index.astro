@@ -74,7 +74,6 @@ const virtues = [
   { text: 'imperfection', tail: '', cls: 'imperfection' },
   { text: 'honesty', tail: '.', cls: 'honesty' },
   { text: 'acceptance', tail: '', cls: 'acceptance' },
-  { text: 'curiosity', tail: '', cls: 'curiosity' },
 ].map(v => {
   const letters = [...v.text].map((c, j) => ({
     c, j, tail: false,
@@ -199,6 +198,10 @@ const links = [
             </span>
           ))}
         </span>
+      </p>
+      <p class="ink-name-line" id="ink-name-line" aria-hidden="true">
+        <span class="ink-pre">This is the</span>
+        <span class="ink-name" id="ink-name"><span class="nm">Journey of</span> <em class="nm">Curiosity</em><svg class="ink-flourish" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M4 22 C 70 30, 130 6, 196 13 S 276 24, 296 6" /></svg></span>
       </p>
     </div>
     <button class="intro-skip" id="intro-skip" type="button">Skip <span aria-hidden="true">&rarr;</span></button>
@@ -509,6 +512,9 @@ const links = [
     var inkLine = document.getElementById('ink-line');
     var inkSlot = document.getElementById('ink-slot');
     var brand = document.querySelector('.brand-name');
+    var nameLine = document.getElementById('ink-name-line');
+    var inkName = document.getElementById('ink-name');
+    var pre = nameLine.querySelector('.ink-pre');
     var token = 0;
     var narrow = matchMedia('(max-width: 600px)');
     var all = function (root, sel) { return [].slice.call(root.querySelectorAll(sel)); };
@@ -677,9 +683,14 @@ const links = [
       all(stage, '.ink-page .l').forEach(function (l) { l.classList.remove('in', 'go', 'cur', 'set'); });
       all(inkSlot, '.vw').forEach(function (w) { w.classList.remove('on', 'written', 'writing'); });
       inkLine.className = 'ink-line';
-      inkLine.style.transform = '';
-      inkLine.getAnimations().forEach(function (a) { a.cancel(); });
-      inkLine.style.transformOrigin = '';
+      lead.forEach(function (l) { l.classList.remove('swapped', 'gone'); });
+      nameLine.classList.remove('on');
+      pre.classList.remove('leave');
+      pre.style.transition = pre.style.transform = '';
+      inkName.classList.remove('shine', 'fly');
+      inkName.style.visibility = inkName.style.transformOrigin = '';
+      inkName.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
+      all(inkName, '.nm').forEach(function (n) { n.classList.remove('writing', 'written'); });
       brand.style.clipPath = brand.style.opacity = brand.style.transition = '';
       smark.classList.remove('drink');
     }
@@ -706,7 +717,6 @@ const links = [
       resetInk();
       measureSlot();
       var words = all(inkSlot, '.vw');
-      var last = words.pop();
 
       // "This is the journey of", once, and then it never quite sits still.
       await wait(2300, t);
@@ -718,50 +728,64 @@ const links = [
 
       for (var i = 0; i < words.length; i++) await word(words[i], t);
 
-      // curiosity, last: what is left once the rest has been accepted,
-      // written in one stroke. The sentence is whole for a moment.
-      var C = all(last, '.l');
-      last.classList.add('on');
-      setMood('curiosity');
-      await wait(500, t);
-      C.forEach(add('in'));
-      last.classList.add('writing');
-      await wait(4600, t);
-
-      // Then "This is the" lets go, the line goes still, and what is left,
-      // "journey of curiosity", flies up into the header and becomes the
-      // site's name, landing with the mark.
+      // And last, what is left once the rest has been accepted: the name.
+      // The opening line goes still; its "This is the" glides to make room
+      // (handed to an identical copy, so nothing jumps), "journey of"
+      // lifts away, and "Journey of Curiosity" is written in the header's
+      // own hand.
       setMood('still');
-      await each(lead.slice(0, 12).reverse(), 40, add('gone'), t);
-      await wait(1100, t);
-      fly(lead.slice(12, 22).concat(C));
+      await wait(500, t);
+      var was = lead.slice(0, 11).map(function (l) { return l.getBoundingClientRect(); });
+      nameLine.classList.add('on');
+      var now = pre.getBoundingClientRect();
+      pre.style.transition = 'none';
+      pre.style.transform = 'translate(' + (was[0].left - now.left).toFixed(1) + 'px, ' + (was[0].bottom - now.bottom).toFixed(1) + 'px)';
+      lead.slice(0, 11).forEach(add('swapped'));
+      void pre.offsetWidth;
+      pre.style.transition = 'transform 1.4s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.7s ease, filter 0.7s ease';
+      pre.style.transform = '';
+      each(lead.slice(11, 22), 40, add('gone'), t).catch(function () {});
+      await wait(650, t);
+
+      var halves = all(inkName, '.nm');
+      halves[0].classList.add('writing');
+      await wait(1150, t);
+      halves[1].classList.add('writing');
+      await wait(1750, t);
+      halves.forEach(function (n) { n.classList.replace('writing', 'written'); });
+
+      // It catches the light, draws a breath, and is underlined.
+      inkName.classList.add('shine');
+      await wait(2400, t);
+
+      // Then it flies home, and lands as the header's name with the mark.
+      pre.classList.add('leave');
+      inkName.classList.add('fly');
+      await wait(200, t);
+      fly(inkName);
       swoop();
     }
 
-    // The flight of the name: from where it was written to the header's
-    // name, shrinking as it goes, and handing over to the real one just
-    // before it lands.
-    function fly(letters) {
-      var rs = letters.map(function (l) { return l.getBoundingClientRect(); });
-      var gl = Math.min.apply(null, rs.map(function (r) { return r.left; }));
-      var gr = Math.max.apply(null, rs.map(function (r) { return r.right; }));
-      var gt = Math.min.apply(null, rs.map(function (r) { return r.top; }));
-      var gb = Math.max.apply(null, rs.map(function (r) { return r.bottom; }));
-      var line = inkLine.getBoundingClientRect(), b = brand.getBoundingClientRect();
-      var k = b.width / (gr - gl);
-      var dx = (b.left + b.width / 2) - (gl + gr) / 2;
-      var dy = (b.top + b.height / 2) - (gt + gb) / 2;
-      inkLine.style.transformOrigin = ((gl + gr) / 2 - line.left) + 'px ' + ((gt + gb) / 2 - line.top) + 'px';
-      inkLine.animate([
-        { transform: 'none', opacity: 1, filter: 'blur(0)' },
-        { offset: 0.45, filter: 'blur(1.2px)' },
-        { offset: 0.72, opacity: 1, filter: 'blur(0)' },
-        { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(' + k + ')', opacity: 0, filter: 'blur(0)' }
-      ], { duration: 1400, easing: 'cubic-bezier(0.76, 0, 0.18, 1)', fill: 'forwards' });
+    // The flight of the name. It is set in the header's own hand, so it
+    // only has to move and shrink; the real name takes over the moment it
+    // lands.
+    function fly(el) {
+      var a = el.getBoundingClientRect(), b = brand.getBoundingClientRect();
+      var k = b.width / a.width;
+      var dx = (b.left + b.width / 2) - (a.left + a.width / 2);
+      var dy = (b.top + b.height / 2) - (a.top + a.height / 2);
+      el.style.transformOrigin = '50% 50%';
+      brand.style.transition = 'none';
       brand.style.clipPath = 'none';
       brand.style.opacity = '0';
-      brand.style.transition = 'opacity 0.5s ease';
-      later(1000, function () { brand.style.opacity = '1'; });
+      var flight = el.animate([
+        { transform: 'none' },
+        { transform: 'translate(' + dx.toFixed(1) + 'px, ' + dy.toFixed(1) + 'px) scale(' + k.toFixed(4) + ')' }
+      ], { duration: 1400, easing: 'cubic-bezier(0.76, 0, 0.18, 1)', fill: 'forwards' });
+      flight.onfinish = function () {
+        brand.style.opacity = '1';
+        el.style.visibility = 'hidden';
+      };
     }
 
     function finish() {
@@ -1177,7 +1201,10 @@ const links = [
     align-items: center;
     justify-content: center;
     gap: 1.6rem;
-    pointer-events: none;
+    /* While it plays, the stage takes every touch and hover, so nothing
+       underneath it reacts. */
+    pointer-events: auto;
+    cursor: default;
   }
 
   .intro-stage[hidden] {
@@ -1626,32 +1653,85 @@ const links = [
     to   { opacity: 1; filter: blur(0); }
   }
 
-  /* curiosity? last, in the hand of the site's own name, written in one
-     stroke as a pen would. */
-  .ink-slot .vw-curiosity {
-    font-family: 'Great Vibes', var(--font-display);
-    font-size: 1.55em;
+  /* ── The name ──────────────────────────────────────────────
+     The sentence's last word is the site's name, so it is set in the
+     header's own hand at a larger size: "Journey of Curiosity", written by
+     the pen, Curiosity catching the light, a flourish drawn beneath, and
+     then it flies up and becomes the header's name. */
+  .ink-name-line {
+    grid-area: 1 / 1;
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    white-space: nowrap;
+    visibility: hidden;
+  }
+
+  .ink-name-line.on {
+    visibility: visible;
+  }
+
+  .ink-pre {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(1rem, 3vw, 2.4rem);
+    letter-spacing: 0.005em;
+    color: var(--color-text-secondary);
+    margin-right: 0.3em;
+    transition: opacity 0.7s ease, filter 0.7s ease;
+  }
+
+  .ink-pre.leave {
+    opacity: 0;
+    filter: blur(5px);
+  }
+
+  .ink-name {
+    position: relative;
+    font-family: 'Great Vibes', var(--font-serif);
+    font-style: normal;
+    font-weight: 400;
+    font-synthesis: none;
+    font-size: clamp(3rem, 6.4vw, 5.6rem);
     letter-spacing: 0;
+    line-height: 1;
+    color: var(--color-text);
+  }
+
+  .ink-name em {
+    font-style: normal;
     color: var(--color-accent);
-    padding: 0.35em 0.4em 0.4em 0.3em;
-    margin: -0.35em -0.4em -0.4em -0.3em;
-    /* The script's deep descenders lift its baseline; set it back on the
-       line. */
-    bottom: -0.22em;
   }
 
-  .ink-slot .vw-curiosity .l.in {
-    animation: none;
-  }
-
-  .ink-slot .vw-curiosity.writing {
+  /* Each half is written by the pen. The padding gives the script's
+     swashes room inside the mask; the margin takes it back. */
+  .ink-name .nm {
+    display: inline-block;
+    padding: 0.3em 0.35em 0.35em 0.25em;
+    margin: -0.3em -0.35em -0.35em -0.25em;
     -webkit-mask-image: linear-gradient(90deg, #000 40%, transparent 60%);
     mask-image: linear-gradient(90deg, #000 40%, transparent 60%);
     -webkit-mask-size: 260% 100%;
     mask-size: 260% 100%;
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
-    animation: pen 2.8s cubic-bezier(0.45, 0.05, 0.35, 1) both;
+    -webkit-mask-position: 100% 0;
+    mask-position: 100% 0;
+  }
+
+  .ink-name .nm.writing {
+    animation: pen 1.3s cubic-bezier(0.45, 0.05, 0.35, 1) both;
+  }
+
+  .ink-name em.nm.writing {
+    animation-duration: 1.7s;
+  }
+
+  .ink-name .nm.written {
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 
   @keyframes pen {
@@ -1659,25 +1739,76 @@ const links = [
     to   { -webkit-mask-position: 0 0; mask-position: 0 0; }
   }
 
-  .ink-slot .vw-curiosity .tail.in {
-    transform-origin: 50% 90%;
-    animation: query 0.9s cubic-bezier(0.34, 1.6, 0.5, 1) both;
+  /* Curiosity catches the light once. */
+  .ink-name em.nm {
+    background: linear-gradient(105deg, var(--color-accent) 38%, color-mix(in srgb, var(--color-accent) 30%, #fff) 50%, var(--color-accent) 62%);
+    background-size: 300% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
-  .ink-slot .vw-curiosity .tail.in.go {
-    animation: exhale 1.2s ease both;
+  .ink-name.shine em.nm {
+    animation: shine 1.5s cubic-bezier(0.45, 0.05, 0.35, 1) both;
   }
 
-  @keyframes query {
-    from { opacity: 0; transform: translateY(0.3em) rotate(-30deg); }
-    to   { opacity: 1; transform: rotate(10deg); }
+  @keyframes shine {
+    to { background-position: 0 0; }
   }
 
-  /* Before the name flies, everything that is not the name lets go. */
+  /* The whole name draws a breath as it is finished. */
+  .ink-name.shine {
+    animation: breathe 1.9s cubic-bezier(0.34, 1.4, 0.5, 1) both;
+  }
+
+  @keyframes breathe {
+    0%   { transform: none; filter: drop-shadow(0 0 0 transparent); }
+    35%  { transform: scale(1.045); filter: drop-shadow(0 0 22px var(--color-accent-soft)); }
+    100% { transform: none; filter: drop-shadow(0 0 0 transparent); }
+  }
+
+  /* And a flourish is drawn beneath it, as under a signature. */
+  .ink-flourish {
+    position: absolute;
+    left: 6%;
+    width: 96%;
+    bottom: -0.2em;
+    height: 0.34em;
+    overflow: visible;
+    color: var(--color-accent);
+    clip-path: inset(-50% 102% -50% -2%);
+    transition: opacity 0.35s ease;
+  }
+
+  .ink-flourish path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .ink-name.shine .ink-flourish {
+    clip-path: inset(-50% -2% -50% -2%);
+    transition: clip-path 1.4s cubic-bezier(0.65, 0, 0.35, 1) 0.2s, opacity 0.35s ease;
+  }
+
+  .ink-name.fly .ink-flourish {
+    opacity: 0;
+  }
+
+  /* As the name arrives, everything else in the line lets go. */
+  .ink-line .ink-lead .l.in.swapped {
+    opacity: 0;
+    transition: none;
+  }
+
   .ink-line .ink-lead .l.in.gone {
     opacity: 0;
-    filter: blur(5px);
-    transition: opacity 0.9s ease, filter 0.9s ease;
+    filter: blur(6px);
+    transform: translateY(-0.3em);
+    transition: opacity 0.8s ease, filter 0.8s ease, transform 0.8s ease;
   }
 
   .intro-mark.drink .vessel {
@@ -1714,6 +1845,22 @@ const links = [
       left: 0;
       right: 0;
       text-align: center;
+    }
+
+    .ink-name-line {
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15em;
+    }
+
+    .ink-pre {
+      font-size: 5.6vw;
+      margin-right: 0;
+    }
+
+    .ink-name {
+      font-size: 11.5vw;
     }
   }
 
