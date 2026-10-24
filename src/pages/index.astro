@@ -74,7 +74,7 @@ const virtues = [
   { text: 'imperfection', tail: '', cls: 'imperfection' },
   { text: 'honesty', tail: '.', cls: 'honesty' },
   { text: 'acceptance', tail: '', cls: 'acceptance' },
-  { text: 'curiosity', tail: '?', cls: 'curiosity' },
+  { text: 'curiosity', tail: '', cls: 'curiosity' },
 ].map(v => {
   const letters = [...v.text].map((c, j) => ({
     c, j, tail: false,
@@ -199,9 +199,6 @@ const links = [
             </span>
           ))}
         </span>
-      </p>
-      <p class="ink-final" id="ink-final">
-        {chars('You are ').map(c => <span class="l">{c}</span>)}<em>{chars('welcome').map(c => <span class="l">{c}</span>)}</em>{chars(' here').map(c => <span class="l">{c}</span>)}<span class="l dot">.</span>
       </p>
     </div>
     <button class="intro-skip" id="intro-skip" type="button">Skip <span aria-hidden="true">&rarr;</span></button>
@@ -511,7 +508,7 @@ const links = [
        from an old run quietly stops. */
     var inkLine = document.getElementById('ink-line');
     var inkSlot = document.getElementById('ink-slot');
-    var inkFinal = document.getElementById('ink-final');
+    var brand = document.querySelector('.brand-name');
     var token = 0;
     var narrow = matchMedia('(max-width: 600px)');
     var all = function (root, sel) { return [].slice.call(root.querySelectorAll(sel)); };
@@ -529,6 +526,7 @@ const links = [
       honesty:      { amp: 0, speed: 1.7, sway: 0 },
       acceptance:   { amp: 0.06, speed: 1.4, sway: 0 },
       curiosity:    { amp: 0.08, speed: 1.1, sway: 0.6 },
+      still:        { amp: 0, speed: 1.1, sway: 0 },
     };
     var lean = lead.map(function (l, i) { return (i * 37 % 17) - 8; });
     var motion;
@@ -680,7 +678,9 @@ const links = [
       all(inkSlot, '.vw').forEach(function (w) { w.classList.remove('on', 'written', 'writing'); });
       inkLine.className = 'ink-line';
       inkLine.style.transform = '';
-      inkFinal.className = 'ink-final';
+      inkLine.getAnimations().forEach(function (a) { a.cancel(); });
+      inkLine.style.transformOrigin = '';
+      brand.style.clipPath = brand.style.opacity = brand.style.transition = '';
       smark.classList.remove('drink');
     }
 
@@ -718,30 +718,57 @@ const links = [
 
       for (var i = 0; i < words.length; i++) await word(words[i], t);
 
-      // curiosity, last: what is left once the rest has been accepted. It
-      // is written in one stroke, and asked.
-      var C = all(last, '.l:not(.tail)'), q = last.querySelector('.tail');
+      // curiosity, last: what is left once the rest has been accepted,
+      // written in one stroke. The sentence is whole for a moment.
+      var C = all(last, '.l');
       last.classList.add('on');
       setMood('curiosity');
       await wait(500, t);
       C.forEach(add('in'));
       last.classList.add('writing');
-      await wait(3000, t);
-      q.classList.add('in');
-      await wait(2600, t);
-      inkLine.classList.add('leave');
-      await wait(1400, t);
+      await wait(4600, t);
 
-      // And the welcome, in one motion.
-      await each(all(inkFinal, '.l'), 40, add('in'), t);
-      await wait(3200, t);
-      inkFinal.classList.add('leave');
-      smark.classList.add('drink');
-      await wait(900, t);
+      // Then "This is the" lets go, the line goes still, and what is left,
+      // "journey of curiosity", flies up into the header and becomes the
+      // site's name, landing with the mark.
+      setMood('still');
+      await each(lead.slice(0, 12).reverse(), 40, add('gone'), t);
+      await wait(1100, t);
+      fly(lead.slice(12, 22).concat(C));
       swoop();
     }
 
+    // The flight of the name: from where it was written to the header's
+    // name, shrinking as it goes, and handing over to the real one just
+    // before it lands.
+    function fly(letters) {
+      var rs = letters.map(function (l) { return l.getBoundingClientRect(); });
+      var gl = Math.min.apply(null, rs.map(function (r) { return r.left; }));
+      var gr = Math.max.apply(null, rs.map(function (r) { return r.right; }));
+      var gt = Math.min.apply(null, rs.map(function (r) { return r.top; }));
+      var gb = Math.max.apply(null, rs.map(function (r) { return r.bottom; }));
+      var line = inkLine.getBoundingClientRect(), b = brand.getBoundingClientRect();
+      var k = b.width / (gr - gl);
+      var dx = (b.left + b.width / 2) - (gl + gr) / 2;
+      var dy = (b.top + b.height / 2) - (gt + gb) / 2;
+      inkLine.style.transformOrigin = ((gl + gr) / 2 - line.left) + 'px ' + ((gt + gb) / 2 - line.top) + 'px';
+      inkLine.animate([
+        { transform: 'none', opacity: 1, filter: 'blur(0)' },
+        { offset: 0.45, filter: 'blur(1.2px)' },
+        { offset: 0.72, opacity: 1, filter: 'blur(0)' },
+        { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(' + k + ')', opacity: 0, filter: 'blur(0)' }
+      ], { duration: 1400, easing: 'cubic-bezier(0.76, 0, 0.18, 1)', fill: 'forwards' });
+      brand.style.clipPath = 'none';
+      brand.style.opacity = '0';
+      brand.style.transition = 'opacity 0.5s ease';
+      later(1000, function () { brand.style.opacity = '1'; });
+    }
+
     function finish() {
+      brand.style.clipPath = brand.style.opacity = brand.style.transition = '';
+      // The page has already been revealed; its own fade-in must not
+      // replay when the intro lets go of it.
+      document.querySelector('main').style.animation = 'none';
       html.classList.remove('intro');
       ACTS.forEach(function (c) { html.classList.remove(c); });
       stage.hidden = true;
@@ -1336,8 +1363,7 @@ const links = [
     min-height: 7rem;
   }
 
-  .ink-line,
-  .ink-final {
+  .ink-line {
     grid-area: 1 / 1;
     margin: 0;
     display: flex;
@@ -1347,13 +1373,6 @@ const links = [
     font-family: var(--font-display);
     color: var(--color-text);
     transition: transform 1.8s cubic-bezier(0.65, 0, 0.35, 1), opacity 1.2s ease, filter 1.2s ease, translate 1.2s ease;
-  }
-
-  .ink-line.leave,
-  .ink-final.leave {
-    opacity: 0;
-    filter: blur(8px);
-    translate: 0 -0.2em;
   }
 
   .ink-lead {
@@ -1391,21 +1410,6 @@ const links = [
   /* A strut gives the slot its baseline. */
   .ink-slot::after {
     content: '\00a0';
-  }
-
-  .ink-final {
-    font-weight: 300;
-    font-size: clamp(2.2rem, 5vw, 3.9rem);
-    letter-spacing: -0.03em;
-  }
-
-  .ink-final em {
-    font-family: 'Great Vibes', var(--font-display);
-    font-style: normal;
-    font-size: 1.3em;
-    letter-spacing: 0;
-    color: var(--color-accent);
-    padding: 0 0.08em 0 0.12em;
   }
 
   .ink-page .l {
@@ -1669,9 +1673,11 @@ const links = [
     to   { opacity: 1; transform: rotate(10deg); }
   }
 
-  /* The welcome's full stop. */
-  .ink-final .dot {
-    color: var(--color-accent);
+  /* Before the name flies, everything that is not the name lets go. */
+  .ink-line .ink-lead .l.in.gone {
+    opacity: 0;
+    filter: blur(5px);
+    transition: opacity 0.9s ease, filter 0.9s ease;
   }
 
   .intro-mark.drink .vessel {
@@ -1708,10 +1714,6 @@ const links = [
       left: 0;
       right: 0;
       text-align: center;
-    }
-
-    .ink-final {
-      font-size: 8.6vw;
     }
   }
 
