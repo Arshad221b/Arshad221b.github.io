@@ -513,6 +513,7 @@ const links = [
     var inkSlot = document.getElementById('ink-slot');
     var inkFinal = document.getElementById('ink-final');
     var token = 0;
+    var narrow = matchMedia('(max-width: 600px)');
     var all = function (root, sel) { return [].slice.call(root.querySelectorAll(sel)); };
     var lead = all(inkLine, '.ink-lead .l');
 
@@ -612,13 +613,17 @@ const links = [
     var add = function (c) { return function (l) { l.classList.add(c); }; };
 
     // How each word comes and goes. Times in ms.
+    // "before" is the silence a word is given before it arrives: wonder
+    // takes a breath, enthusiasm cannot wait, patience makes you wait,
+    // honesty comes straight out. The next word starts while the last is
+    // still leaving, so there is no dead air between them.
     var ways = {
-      wonder:       { gap: 140, order: 'middle', settle: 1500, hold: 2400, outGap: 55, out: 1200 },
-      enthusiasm:   { gap: 45, tailAfter: 250, tailGap: 150, hold: 1700, outGap: 28, out: 500 },
-      patience:     { gap: 230, tailAfter: 800, tailGap: 750, hold: 2000, outGap: 0, out: 1800 },
-      imperfection: { gap: 75, settle: 900, hold: 2000, outGap: 45, out: 900 },
-      honesty:      { gap: 125, typed: true, tailAfter: 300, tailGap: 0, hold: 2200, outGap: 65 },
-      acceptance:   { gap: 70, order: 'scatter', settle: 700, hold: 2400, outGap: 30, out: 700 },
+      wonder:       { before: 450, gap: 130, order: 'middle', settle: 1300, hold: 2000, outGap: 50, out: 1100 },
+      enthusiasm:   { before: 60, gap: 40, tailAfter: 180, tailGap: 130, hold: 1200, outGap: 25, out: 450 },
+      patience:     { before: 1100, gap: 210, tailAfter: 700, tailGap: 650, hold: 1900, outGap: 0, out: 1600 },
+      imperfection: { before: 300, gap: 70, settle: 700, hold: 1600, outGap: 40, out: 850 },
+      honesty:      { before: 150, gap: 110, typed: true, tailAfter: 250, tailGap: 0, hold: 1700, outGap: 55, out: 0 },
+      acceptance:   { before: 500, gap: 65, order: 'scatter', settle: 600, hold: 2000, outGap: 30, out: 650 },
     };
 
     function cursorOn(w, l) {
@@ -630,9 +635,9 @@ const links = [
       var name = w.className.match(/vw-(\w+)/)[1];
       var how = ways[name];
       var L = all(w, '.l:not(.tail)'), T = all(w, '.tail');
-      w.classList.add('on');
       setMood(name);
-      await wait(650, t);
+      await wait(how.before, t);
+      w.classList.add('on');
 
       await each(inOrder(L, how.order), how.gap, function (l) {
         l.classList.add('in');
@@ -657,15 +662,17 @@ const links = [
           l.classList.remove('in');
           cursorOn(w, typed[i + 1]);
         }, t);
-        await wait(300, t);
       } else {
         await each(inOrder(all(w, '.l.in'), how.order), how.outGap, add('go'), t);
-        await wait(how.out, t);
+        await wait(how.out * 0.6, t);
       }
+      // Hand over now; the last of this word clears itself shortly after.
       setMood('calm');
-      w.classList.remove('on', 'written');
-      all(w, '.l').forEach(function (l) { l.classList.remove('in', 'go', 'cur'); });
-      await wait(350, t);
+      timers.push(setTimeout(function () {
+        if (t !== token) return;
+        w.classList.remove('on', 'written');
+        all(w, '.l').forEach(function (l) { l.classList.remove('in', 'go', 'cur'); });
+      }, how.out * 0.4 + 50));
     }
 
     function resetInk() {
@@ -681,6 +688,7 @@ const links = [
     // middle; a longer word runs on to the right, never off the screen.
     // Either way the opening line keeps still.
     function measureSlot() {
+      if (narrow.matches) return;
       var widths = all(inkSlot, '.vw').map(function (w) {
         w.classList.add('on', 'written');
         var width = w.getBoundingClientRect().width;
@@ -1621,7 +1629,11 @@ const links = [
     font-size: 1.55em;
     letter-spacing: 0;
     color: var(--color-accent);
-    padding: 0 0.15em 0 0.1em;
+    padding: 0.35em 0.4em 0.4em 0.3em;
+    margin: -0.35em -0.4em -0.4em -0.3em;
+    /* The script's deep descenders lift its baseline; set it back on the
+       line. */
+    bottom: -0.22em;
   }
 
   .ink-slot .vw-curiosity .l.in {
@@ -1672,14 +1684,30 @@ const links = [
     100% { transform: none; }
   }
 
-  /* On a phone it stays one sentence on one line, scaled to fit. */
+  /* On a phone it is two lines: the opening line quiet above, the word
+     large beneath it, both on the centre line. */
   @media (max-width: 600px) {
+    .ink-line {
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2em;
+    }
+
     .ink-lead {
-      font-size: 4.3vw;
+      font-size: 5.6vw;
     }
 
     .ink-slot {
-      font-size: 7.4vw;
+      width: 100% !important;
+      margin-left: 0;
+      font-size: 11.5vw;
+    }
+
+    .ink-slot .vw {
+      left: 0;
+      right: 0;
+      text-align: center;
     }
 
     .ink-final {
