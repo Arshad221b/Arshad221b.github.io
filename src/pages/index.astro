@@ -61,6 +61,35 @@ const field = {
   edges: model.edges.map(e => [e.a, e.b]),
 };
 
+/* "This is the journey of" ... and then one word after another, each with
+   its own type and its own way of arriving and leaving. The order is the
+   journey itself: it starts in wonder and rushes in with enthusiasm, needs
+   patience when it slows, meets its own imperfection, owns it with
+   honesty, and makes peace with it in acceptance. What is left after all
+   of that is curiosity, which the journey is named for. */
+const virtues = [
+  { text: 'wonder', tail: '', cls: 'wonder' },
+  { text: 'enthusiasm', tail: '!!', cls: 'enthusiasm' },
+  { text: 'patience', tail: '...', cls: 'patience' },
+  { text: 'imperfection', tail: '', cls: 'imperfection' },
+  { text: 'honesty', tail: '.', cls: 'honesty' },
+  { text: 'acceptance', tail: '', cls: 'acceptance' },
+  { text: 'curiosity', tail: '?', cls: 'curiosity' },
+].map(v => {
+  const letters = [...v.text].map((c, j) => ({
+    c, j, tail: false,
+    // Fixed scatter for the letters acceptance gathers in, so it is the
+    // same on every visit.
+    y: (((j * 37) % 11) - 5) * 0.11,
+    r: (((j * 53) % 13) - 6) * 3.2,
+    face: j % 5,
+  }));
+  [...v.tail].forEach((c, k) => letters.push({ c, j: v.text.length + k, tail: true, y: 0, r: 0, face: 0 }));
+  return { ...v, letters };
+});
+
+const chars = (t: string) => [...t].map(c => (c === ' ' ? ' ' : c));
+
 const links = [
   { label: 'GitHub', href: 'https://github.com/Arshad221b' },
   { label: 'LinkedIn', href: 'https://www.linkedin.com/in/arshad221b/' },
@@ -70,7 +99,23 @@ const links = [
 
 ---
 
-<Layout title={title} activeNav="/" description="Arshad Kazi. Computer vision engineer. Notebooks, technical writing and personal essays." ogImage="/images/og-about.jpg">
+<Layout title={title} activeNav="/" description="Arshad Kazi. Notebooks, technical writing and personal essays." ogImage="/images/og-about.jpg">
+  <script is:inline slot="head">
+    /* The intro plays once. After that it waits two weeks before it will
+       welcome the same browser back, and it never plays for anyone who has
+       asked for less motion. Decided here, before the first paint, so the
+       page never flashes in and then hides itself. */
+    (function () {
+      try {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var last = +localStorage.getItem('intro-seen') || 0;
+        if (Date.now() - last > 14 * 864e5) {
+          document.documentElement.classList.add('intro');
+          localStorage.setItem('intro-seen', String(Date.now()));
+        }
+      } catch (e) {}
+    })();
+  </script>
   <script type="application/ld+json" slot="head" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Person",
@@ -78,7 +123,7 @@ const links = [
     "url": "https://arshad-kazi.com",
     "image": "https://arshad-kazi.com/images/profile.jpg",
     "jobTitle": "CV/ML Engineer",
-    "description": "Computer vision engineer. Notebooks, technical writing and personal essays.",
+    "description": "Notebooks, technical writing and personal essays.",
     "sameAs": [
       "https://github.com/Arshad221b",
       "https://www.linkedin.com/in/arshad221b/",
@@ -102,21 +147,65 @@ const links = [
           <img src="/images/profile.jpg" alt="Arshad Kazi" width="640" height="800" draggable="false" oncontextmenu="return false" />
           <span class="portrait-guard" aria-hidden="true"></span>
         </span>
-        <h1>Arshad <em>Kazi</em></h1>
-        <p class="hero-line">Computer vision engineer. Mostly 3D.</p>
+        <h1><span class="w"><span>Arshad</span></span> <span class="w"><em>Kazi</em></span></h1>
         <p class="hero-links">
-          {links.map(l => (
-            <a href={l.href} target={l.href.startsWith('mailto') ? undefined : '_blank'} rel="noopener">{l.label}</a>
-          ))}
+          {links.map(l => {
+            const mail = l.href.startsWith('mailto');
+            return (
+              <a href={l.href} target={mail ? undefined : '_blank'} rel="noopener">
+                <span class="hl-text">{l.label}</span><span class="hl-arrow" aria-hidden="true">{mail ? '→' : '↗'}</span>
+              </a>
+            );
+          })}
         </p>
       </div>
 
-      <p class="field-cap label" aria-hidden="true">{posts.length} essays, placed by meaning</p>
+      <button class="replay" id="replay" type="button" aria-label="Replay intro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.2 3.8v3.4h3.4"/></svg>
+      </button>
+
+      <p class="field-cap label" aria-hidden="true"><span class="sig">&#9679;</span>&nbsp; {posts.length} essays, placed by meaning <span class="field-cap-hint">&middot; drag to turn</span></p>
     </section>
   </div>
 
 
   <script is:inline type="application/json" id="field-data" set:html={JSON.stringify(field)} />
+
+  <!-- The stage for the opening: the mark alone, before anything else. -->
+  <div class="intro-stage" id="intro-stage" aria-hidden="true">
+    <svg class="intro-mark" viewBox="22 2 56 96" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path class="ink" d="M50 52 C46 40 60 36 56 26 C52 16 40 20 44 30 C47 37 58 32 60 22 C62 12 54 6 48 8" stroke-width="3.4"/>
+      <g class="vessel">
+        <path class="pot" d="M39.2 94 C29.6 94 28.4 79.6 36.8 72.4 C40.4 69.4 41.6 67.6 41.6 64 L58.4 64 C58.4 67.6 59.6 69.4 63.2 72.4 C71.6 79.6 70.4 94 60.8 94 Z" stroke-width="3"/>
+        <path d="M42.8 64 L42.8 59.2 L57.2 59.2 L57.2 64 Z" fill="currentColor" stroke-width="1.5"/>
+        <path d="M33.2 82 C40.4 78.4 59.6 78.4 66.8 82" stroke-width="1.6"/>
+        <g fill="currentColor" stroke="none"><ellipse cx="38.0" cy="88" rx="1.5" ry="2.4"/><ellipse cx="42.8" cy="88" rx="1.5" ry="2.4"/><ellipse cx="47.6" cy="88" rx="1.5" ry="2.4"/><ellipse cx="52.4" cy="88" rx="1.5" ry="2.4"/><ellipse cx="57.2" cy="88" rx="1.5" ry="2.4"/><ellipse cx="62.0" cy="88" rx="1.5" ry="2.4"/></g>
+      </g>
+    </svg>
+    <!-- What is written. The opening line is set once and stays; the
+         slot after it holds the word of the moment. -->
+    <div class="ink-page">
+      <p class="ink-line" id="ink-line">
+        <span class="ink-lead">{chars('This is the journey of ').map(c => <span class="l">{c}</span>)}</span>
+        <span class="ink-slot" id="ink-slot">
+          {virtues.map(w => (
+            <span class={`vw vw-${w.cls}`}>
+              {w.letters.map(l => (
+                <span
+                  class:list={['l', l.tail ? 'tail' : `f${l.face}`, w.cls === 'imperfection' && l.j === 5 && 'odd']}
+                  style={`--y:${l.y.toFixed(2)}em;--r:${l.r.toFixed(1)}deg`}
+                >{l.c}</span>
+              ))}
+            </span>
+          ))}
+        </span>
+      </p>
+      <p class="ink-final" id="ink-final">
+        {chars('You are ').map(c => <span class="l">{c}</span>)}<em>{chars('welcome').map(c => <span class="l">{c}</span>)}</em>{chars(' here').map(c => <span class="l">{c}</span>)}<span class="l dot">.</span>
+      </p>
+    </div>
+    <button class="intro-skip" id="intro-skip" type="button">Skip <span aria-hidden="true">&rarr;</span></button>
+  </div>
 </Layout>
 
 <script is:inline>
@@ -197,6 +286,21 @@ const links = [
       };
     }
     var col = colors();
+
+    /* During the intro the field assembles itself: essays appear one at a
+       time, the threads between them draw, then the dust and the cameras
+       fade in, like a reconstruction converging. Outside the intro every
+       progress value is simply 1. */
+    var introStart = document.documentElement.classList.contains('intro') ? Infinity : null;
+    window.fieldHold = function () { introStart = Infinity; };
+    window.fieldIntro = function () { introStart = performance.now(); };
+    window.fieldDone = function () { introStart = null; };
+    function prog(delay, dur) {
+      if (introStart === null) return 1;
+      var t = (performance.now() - introStart - delay) / dur;
+      t = t < 0 ? 0 : t > 1 ? 1 : t;
+      return 1 - Math.pow(1 - t, 3);
+    }
     new MutationObserver(function () { col = colors(); if (reduce) projected = draw(); })
       .observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
@@ -205,9 +309,10 @@ const links = [
 
       // Dust: smaller and fainter the further it is, like depth of field.
       ctx.fillStyle = col.ink;
-      for (var i = 0; i < dust.length; i++) {
+      var dustP = prog(1000, 2000);
+      for (var i = 0; dustP > 0 && i < dust.length; i++) {
         var q = project(dust[i][0], dust[i][1], dust[i][2]);
-        ctx.globalAlpha = Math.max(0.05, 0.42 - q.depth * 0.18) * 0.75;
+        ctx.globalAlpha = Math.max(0.05, 0.42 - q.depth * 0.18) * 0.75 * dustP;
         var r = 0.55 + q.s * 0.45;
         ctx.fillRect(q.x - r / 2, q.y - r / 2, r, r);
       }
@@ -215,7 +320,9 @@ const links = [
       // Cameras as wire frustums.
       ctx.strokeStyle = col.muted;
       ctx.lineWidth = 0.8;
+      var camP = prog(1800, 1500);
       cams.forEach(function (cm) {
+        if (camP <= 0) return;
         var o = project(cm.x, cm.y, cm.z);
         // Four corners of a small image plane, a third of the way in.
         var dx = -cm.x, dy = -cm.y, dz = -cm.z;
@@ -227,7 +334,7 @@ const links = [
         var corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(function (k) {
           return project(cx + rx * w * k[0], cyy + h * k[1], cz + rz * w * k[0]);
         });
-        ctx.globalAlpha = Math.max(0.12, 0.5 - o.depth * 0.2);
+        ctx.globalAlpha = Math.max(0.12, 0.5 - o.depth * 0.2) * camP;
         ctx.beginPath();
         corners.forEach(function (p) { ctx.moveTo(o.x, o.y); ctx.lineTo(p.x, p.y); });
         ctx.moveTo(corners[0].x, corners[0].y);
@@ -239,25 +346,30 @@ const links = [
       var P = pts.map(function (p) { return project(p.x, p.y, p.z); });
       ctx.strokeStyle = col.accent;
       ctx.lineWidth = 0.7;
-      data.edges.forEach(function (e) {
+      data.edges.forEach(function (e, k) {
         var a = P[e[0]], b = P[e[1]];
+        var ep = prog(650 + k * 30, 950);
+        if (ep <= 0) return;
         var lit = hover === e[0] || hover === e[1];
         ctx.globalAlpha = lit ? 0.9 : 0.22;
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(a.x + (b.x - a.x) * ep, a.y + (b.y - a.y) * ep); ctx.stroke();
       });
 
       var order = P.map(function (p, i) { return i; }).sort(function (a, b) { return P[b].depth - P[a].depth; });
       order.forEach(function (i) {
         var p = P[i];
+        var pp = prog(i * 75, 900);
+        if (pp <= 0) return;
         var on = i === hover;
-        var r = (on ? 5.5 : 3.2) * p.s;
-        ctx.globalAlpha = on ? 1 : Math.max(0.35, 1 - p.depth * 0.35);
+        var r = (on ? 5.5 : 3.2) * p.s * pp;
+        ctx.globalAlpha = (on ? 1 : Math.max(0.35, 1 - p.depth * 0.35)) * pp;
         ctx.fillStyle = col.accent;
         ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
-        // A keypoint marker: a ring with a gap, as a detector draws it.
+        // A keypoint marker: a ring with a gap, as a detector draws it. In
+        // the intro it closes in on its point, like a detection locking on.
         ctx.strokeStyle = col.accent;
         ctx.lineWidth = on ? 1.2 : 0.8;
-        ctx.beginPath(); ctx.arc(p.x, p.y, r + (on ? 7 : 4.5) * p.s, 0.25, Math.PI * 2 - 0.25); ctx.stroke();
+        ctx.beginPath(); ctx.arc(p.x, p.y, r + (on ? 7 : 4.5) * p.s + (1 - pp) * 16, 0.25, Math.PI * 2 - 0.25); ctx.stroke();
         if (on) {
           ctx.globalAlpha = 0.6;
           ctx.beginPath();
@@ -362,6 +474,336 @@ const links = [
   })();
 </script>
 
+<script is:inline>
+  /* ── The intro ─────────────────────────────────────────────────
+     Act one, the mark alone: the pot settles and its ink rises.
+     Act two, it swoops into its place in the header, and the name of the
+     site writes itself in behind it. Act three, the field assembles, the
+     portrait is set down, the name rises, and the links arrive last.
+     Each act is a class on <html>; the styles below do the moving. */
+  (function () {
+    var html = document.documentElement;
+    var stage = document.getElementById('intro-stage');
+    var smark = stage && stage.querySelector('.intro-mark');
+    var hmark = document.querySelector('.brand-mark');
+    var replay = document.getElementById('replay');
+    if (!stage || !smark || !hmark) return;
+    var timers = [];
+    var later = function (ms, fn) { timers.push(setTimeout(fn, ms)); };
+    var ACTS = ['intro-run', 'landed', 'r1', 'r2', 'r3'];
+
+    // The header's own ink restarts already drawn, so the hand-off from
+    // the stage mark is seamless.
+    function settleHeaderInk() {
+      var ink = hmark.querySelector('.ink');
+      if (!ink) return;
+      ink.style.animation = 'none';
+      void ink.getBoundingClientRect();
+      ink.style.animation = '';
+      ink.style.animationDelay = '-1.3s';
+    }
+
+    /* ── The words ───────────────────────────────────────────────
+       The opening line is set once and stays alive; the word after it
+       changes, each one arriving and leaving in its own manner, until the
+       last, curiosity, which the journey is named for. Each run gets a
+       token; skipping or replaying bumps it, and anything still waiting
+       from an old run quietly stops. */
+    var inkLine = document.getElementById('ink-line');
+    var inkSlot = document.getElementById('ink-slot');
+    var inkFinal = document.getElementById('ink-final');
+    var token = 0;
+    var all = function (root, sel) { return [].slice.call(root.querySelectorAll(sel)); };
+    var lead = all(inkLine, '.ink-lead .l');
+
+    /* The opening line's motion. "journey" (letters 12 to 18) carries a
+       slow wave; every word sets a mood, and the wave's height, speed and
+       sway, and each letter's tilt, ease toward it, so nothing jumps. */
+    var moods = {
+      calm:         { amp: 0.06, speed: 1.7, sway: 0 },
+      wonder:       { amp: 0.13, speed: 1.2, sway: 1.2 },
+      enthusiasm:   { amp: 0.07, speed: 2.6, sway: 0 },
+      patience:     { amp: 0.05, speed: 0.6, sway: 0 },
+      imperfection: { amp: 0.06, speed: 1.7, sway: 0 },
+      honesty:      { amp: 0, speed: 1.7, sway: 0 },
+      acceptance:   { amp: 0.06, speed: 1.4, sway: 0 },
+      curiosity:    { amp: 0.08, speed: 1.1, sway: 0.6 },
+    };
+    var lean = lead.map(function (l, i) { return (i * 37 % 17) - 8; });
+    var motion;
+
+    function setMood(name) {
+      if (!motion) return;
+      motion.goal = moods[name] || moods.calm;
+      motion.tiltGoal = lead.map(function (l, i) {
+        return name === 'imperfection' && i === 12 ? -10 : name === 'acceptance' ? lean[i] : 0;
+      });
+      if (name === 'enthusiasm') motion.hopAt = motion.clock + 0.2;
+    }
+
+    function straighten() {
+      if (motion) motion.tiltGoal = lead.map(function () { return 0; });
+    }
+
+    function move(t) {
+      motion = { amp: 0, speed: 1.7, sway: 0, goal: moods.calm, phase: 0, clock: 0, hopAt: -9,
+                 tilt: lead.map(function () { return 0; }), tiltGoal: lead.map(function () { return 0; }) };
+      var prev = performance.now();
+      (function frame(ts) {
+        if (t !== token) {
+          lead.forEach(function (l) { l.style.translate = l.style.rotate = ''; });
+          return;
+        }
+        var dt = Math.min(0.05, (ts - prev) / 1000);
+        prev = ts;
+        var m = motion, k = 1 - Math.exp(-dt * 1.6), kt = 1 - Math.exp(-dt * 5);
+        m.amp += (m.goal.amp - m.amp) * k;
+        m.speed += (m.goal.speed - m.speed) * k;
+        m.sway += (m.goal.sway - m.sway) * k;
+        m.phase += dt * m.speed;
+        m.clock += dt;
+        lead.forEach(function (l, i) {
+          var y = 0, r = 0;
+          if (i >= 12 && i < 19) {
+            var a = m.phase - (i - 12) * 0.5;
+            y = -m.amp * (0.5 + 0.5 * Math.sin(a));
+            r = m.sway * Math.sin(a + 1.2);
+          }
+          var h = (m.clock - m.hopAt - i * 0.026) / 0.7;
+          if (h > 0 && h < 1) y -= 0.22 * Math.sin(Math.PI * h) * (1 - h * 0.4);
+          m.tilt[i] += (m.tiltGoal[i] - m.tilt[i]) * kt;
+          l.style.translate = '0 ' + y.toFixed(4) + 'em';
+          l.style.rotate = (r + m.tilt[i]).toFixed(3) + 'deg';
+        });
+        requestAnimationFrame(frame);
+      })(prev);
+    }
+
+    function wait(ms, t) {
+      return new Promise(function (res, rej) {
+        timers.push(setTimeout(function () { t === token ? res() : rej('stale'); }, ms));
+      });
+    }
+
+    // One letter after another; resolves when the last has had its turn.
+    function each(list, gap, fn, t) {
+      list.forEach(function (l, i) {
+        timers.push(setTimeout(function () { if (t === token) fn(l, i); }, i * gap));
+      });
+      return wait(Math.max(0, list.length - 1) * gap, t);
+    }
+
+    function inOrder(list, how) {
+      list = list.slice();
+      if (how === 'middle') {
+        var mid = (list.length - 1) / 2;
+        return list.map(function (l, i) { return [l, Math.abs(i - mid)]; })
+          .sort(function (a, b) { return a[1] - b[1]; })
+          .map(function (p) { return p[0]; });
+      }
+      if (how === 'scatter') {
+        return list.map(function (l, i) { return [l, (i * 7 + 3) % list.length]; })
+          .sort(function (a, b) { return a[1] - b[1]; })
+          .map(function (p) { return p[0]; });
+      }
+      return list;
+    }
+
+    var add = function (c) { return function (l) { l.classList.add(c); }; };
+
+    // How each word comes and goes. Times in ms.
+    var ways = {
+      wonder:       { gap: 140, order: 'middle', settle: 1500, hold: 2400, outGap: 55, out: 1200 },
+      enthusiasm:   { gap: 45, tailAfter: 250, tailGap: 150, hold: 1700, outGap: 28, out: 500 },
+      patience:     { gap: 230, tailAfter: 800, tailGap: 750, hold: 2000, outGap: 0, out: 1800 },
+      imperfection: { gap: 75, settle: 900, hold: 2000, outGap: 45, out: 900 },
+      honesty:      { gap: 125, typed: true, tailAfter: 300, tailGap: 0, hold: 2200, outGap: 65 },
+      acceptance:   { gap: 70, order: 'scatter', settle: 700, hold: 2400, outGap: 30, out: 700 },
+    };
+
+    function cursorOn(w, l) {
+      all(w, '.cur').forEach(function (c) { c.classList.remove('cur'); });
+      if (l) l.classList.add('cur');
+    }
+
+    async function word(w, t) {
+      var name = w.className.match(/vw-(\w+)/)[1];
+      var how = ways[name];
+      var L = all(w, '.l:not(.tail)'), T = all(w, '.tail');
+      w.classList.add('on');
+      setMood(name);
+      await wait(650, t);
+
+      await each(inOrder(L, how.order), how.gap, function (l) {
+        l.classList.add('in');
+        if (how.typed) cursorOn(w, l);
+      }, t);
+      if (T.length) {
+        await wait(how.tailAfter, t);
+        await each(T, how.tailGap, function (l) {
+          l.classList.add('in');
+          if (how.typed) cursorOn(w, l);
+        }, t);
+      }
+      if (how.settle) await wait(how.settle, t);
+      w.classList.add('written');
+      straighten();
+      await wait(how.hold, t);
+
+      if (how.typed) {
+        // Deleted the way it was typed, one key at a time from the end.
+        var typed = L.concat(T).reverse();
+        await each(typed, how.outGap, function (l, i) {
+          l.classList.remove('in');
+          cursorOn(w, typed[i + 1]);
+        }, t);
+        await wait(300, t);
+      } else {
+        await each(inOrder(all(w, '.l.in'), how.order), how.outGap, add('go'), t);
+        await wait(how.out, t);
+      }
+      setMood('calm');
+      w.classList.remove('on', 'written');
+      all(w, '.l').forEach(function (l) { l.classList.remove('in', 'go', 'cur'); });
+      await wait(350, t);
+    }
+
+    function resetInk() {
+      all(stage, '.ink-page .l').forEach(function (l) { l.classList.remove('in', 'go', 'cur', 'set'); });
+      all(inkSlot, '.vw').forEach(function (w) { w.classList.remove('on', 'written', 'writing'); });
+      inkLine.className = 'ink-line';
+      inkLine.style.transform = '';
+      inkFinal.className = 'ink-final';
+      smark.classList.remove('drink');
+    }
+
+    // The slot is as wide as the widest word at its widest, so the
+    // opening line never moves while the word after it changes.
+    function measureSlot() {
+      var widest = 0;
+      all(inkSlot, '.vw').forEach(function (w) {
+        w.classList.add('on', 'written');
+        widest = Math.max(widest, w.getBoundingClientRect().width);
+        w.classList.remove('on', 'written');
+      });
+      inkSlot.style.width = Math.ceil(widest + 4) + 'px';
+    }
+
+    async function play(t) {
+      resetInk();
+      measureSlot();
+      var words = all(inkSlot, '.vw');
+      var last = words.pop();
+
+      // "This is the journey of", once, and then it never quite sits still.
+      await wait(2300, t);
+      move(t);
+      await each(lead, 55, add('in'), t);
+      await wait(1100, t);
+      lead.forEach(add('set'));
+      await wait(700, t);
+
+      for (var i = 0; i < words.length; i++) await word(words[i], t);
+
+      // curiosity, last: what is left once the rest has been accepted. It
+      // is written in one stroke, and asked.
+      var C = all(last, '.l:not(.tail)'), q = last.querySelector('.tail');
+      last.classList.add('on');
+      setMood('curiosity');
+      await wait(500, t);
+      C.forEach(add('in'));
+      last.classList.add('writing');
+      await wait(3000, t);
+      q.classList.add('in');
+      await wait(2600, t);
+      inkLine.classList.add('leave');
+      await wait(1400, t);
+
+      // And the welcome, in one motion.
+      await each(all(inkFinal, '.l'), 40, add('in'), t);
+      await wait(3200, t);
+      inkFinal.classList.add('leave');
+      smark.classList.add('drink');
+      await wait(900, t);
+      swoop();
+    }
+
+    function finish() {
+      html.classList.remove('intro');
+      ACTS.forEach(function (c) { html.classList.remove(c); });
+      stage.hidden = true;
+    }
+
+    function swoop() {
+      var a = smark.getBoundingClientRect(), b = hmark.getBoundingClientRect();
+      var dx = (b.left + b.width / 2) - (a.left + a.width / 2);
+      var dy = (b.top + b.height / 2) - (a.top + a.height / 2);
+      var k = b.height / a.height;
+      var flight = smark.animate([
+        { transform: 'translate(0, 0) scale(1)' },
+        { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(' + k + ')' }
+      ], { duration: 1400, easing: 'cubic-bezier(0.76, 0, 0.18, 1)', fill: 'forwards' });
+      flight.onfinish = function () {
+        settleHeaderInk();
+        html.classList.add('landed');
+        // The mark is now the header's; the stage stays up only for Skip.
+        smark.style.visibility = 'hidden';
+        flight.cancel();
+      };
+      later(950, function () { html.classList.add('r1'); });
+      later(1300, function () { if (window.fieldIntro) window.fieldIntro(); });
+      later(2500, function () { html.classList.add('r2'); });
+      later(3600, function () { html.classList.add('r3'); });
+      later(6600, finish);
+    }
+
+    // Straight to the finished page, from wherever the intro had got to.
+    function skip() {
+      if (!html.classList.contains('intro')) return;
+      timers.forEach(clearTimeout);
+      timers = [];
+      token++;
+      smark.getAnimations().forEach(function (a) { a.cancel(); });
+      if (window.fieldDone) window.fieldDone();
+      settleHeaderInk();
+      finish();
+    }
+    var skipBtn = document.getElementById('intro-skip');
+    if (skipBtn) skipBtn.addEventListener('click', skip);
+    addEventListener('keydown', function (e) { if (e.key === 'Escape') skip(); });
+
+    function run() {
+      timers.forEach(clearTimeout);
+      timers = [];
+      token++;
+      ACTS.forEach(function (c) { html.classList.remove(c); });
+      smark.getAnimations().forEach(function (a) { a.cancel(); });
+      html.classList.add('intro');
+      if (window.fieldHold) window.fieldHold();
+      scrollTo(0, 0);
+      stage.hidden = false;
+      smark.style.visibility = '';
+      void stage.getBoundingClientRect();
+      html.classList.add('intro-run');
+      play(token).catch(function () {});
+    }
+
+    if (html.classList.contains('intro')) {
+      // Fonts first, so the name is written in its own hand, not a stand-in.
+      var go = function () { requestAnimationFrame(run); };
+      if (document.fonts && document.fonts.ready) Promise.race([document.fonts.ready, new Promise(function (r) { setTimeout(r, 1200); })]).then(go);
+      else go();
+    } else {
+      stage.hidden = true;
+    }
+
+    if (replay) replay.addEventListener('click', function () {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      run();
+    });
+  })();
+</script>
+
 <style>
   .home {
     max-width: none;
@@ -397,6 +839,10 @@ const links = [
     height: 100%;
     cursor: grab;
     touch-action: pan-y;
+    /* The field fades out toward the edges instead of being cut off by
+       the screen, as if seen through a lens. */
+    -webkit-mask-image: radial-gradient(ellipse 82% 90% at 60% 45%, #000 64%, transparent 100%);
+    mask-image: radial-gradient(ellipse 82% 90% at 60% 45%, #000 64%, transparent 100%);
   }
 
   .hero-text {
@@ -416,15 +862,15 @@ const links = [
   .portrait {
     position: relative;
     display: block;
-    width: clamp(96px, 9vw, 132px);
+    width: clamp(104px, 10vw, 140px);
     aspect-ratio: 4 / 5;
-    margin-bottom: var(--space-lg);
-    padding: 5px;
+    margin: 0 0 var(--space-xl) 0.3rem;
+    padding: 6px 6px 18px;
     background: var(--color-raised);
     border: 1px solid var(--color-border-light);
     border-radius: 2px;
     box-shadow: var(--shadow-lift);
-    transform: rotate(-2deg);
+    transform: rotate(-2.5deg);
     pointer-events: auto;
     transition: transform 0.6s var(--ease-out);
   }
@@ -437,6 +883,7 @@ const links = [
     display: block;
     width: 100%;
     height: 100%;
+    aspect-ratio: 4 / 5;
     object-fit: cover;
     border-radius: 1px;
     filter: grayscale(1) contrast(1.08);
@@ -462,7 +909,7 @@ const links = [
     font-weight: 200;
     line-height: 0.88;
     letter-spacing: -0.05em;
-    margin: 0 0 var(--space-md);
+    margin: 0 0 var(--space-lg);
   }
 
   .hero h1 em {
@@ -471,33 +918,66 @@ const links = [
     color: var(--color-accent);
   }
 
-  .hero-line {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-text-secondary);
-    margin: 0 0 var(--space-md);
-  }
-
+  /* The links sit on a hairline, each with a small arrow; an underline
+     draws itself under the one you reach for. */
   .hero-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.2rem 1.2rem;
+    gap: 0.4rem 1.5rem;
     margin: 0;
+    padding-top: var(--space-md);
+    width: fit-content;
+    min-width: min(100%, 22rem);
+    position: relative;
+  }
+
+  .hero-links::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--color-border);
+    transform-origin: 0 50%;
   }
 
   .hero-links a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
     font-family: var(--font-mono);
     font-size: 0.72rem;
-    letter-spacing: 0.06em;
-    color: var(--color-text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    padding: 0.35rem 0;
     transition: color 0.2s ease;
   }
 
-  .hero-links a:hover {
+  .hl-text {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0% 1px no-repeat;
+    padding-bottom: 2px;
+    transition: background-size 0.4s var(--ease-out);
+  }
+
+  .hl-arrow {
+    font-size: 0.68rem;
     color: var(--color-accent);
+    transition: transform 0.4s var(--ease-out);
+  }
+
+  .hero-links a:hover {
+    color: var(--color-text);
     text-decoration: none;
+  }
+
+  .hero-links a:hover .hl-text {
+    background-size: 100% 1px;
+  }
+
+  .hero-links a:hover .hl-arrow {
+    transform: translate(2px, -2px);
   }
 
   .field-cap {
@@ -565,5 +1045,668 @@ const links = [
     .field-cap {
       display: none;
     }
+
+    .field canvas {
+      -webkit-mask-image: radial-gradient(ellipse 85% 62% at 50% 36%, #000 55%, transparent 100%);
+      mask-image: radial-gradient(ellipse 85% 62% at 50% 36%, #000 55%, transparent 100%);
+    }
+
+    .hero-links {
+      gap: 0.2rem 1.2rem;
+    }
+  }
+  /* ── The name, word by word ────────────────────────────── */
+  /* Each word sits in its own box so it can rise from behind a baseline.
+     The box is generous on every side (the italic overhangs, the tall
+     ascenders, the descenders) and it only clips while the word is rising;
+     outside the intro nothing is ever cut. */
+  .hero h1 .w {
+    display: inline-block;
+    vertical-align: bottom;
+    padding: 0.25em 0.2em 0.22em;
+    margin: -0.25em -0.2em -0.22em;
+  }
+
+  :global(html.intro) .hero h1 .w {
+    overflow: hidden;
+  }
+
+  .hero h1 .w > * {
+    display: inline-block;
+  }
+
+  /* ── The quiet replay control ──────────────────────────── */
+  .replay {
+    position: absolute;
+    right: var(--gutter);
+    bottom: calc(var(--space-xl) - 0.55rem);
+    z-index: 3;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: color 0.3s ease, border-color 0.3s ease, opacity 0.9s ease;
+  }
+
+  .replay svg {
+    width: 15px;
+    height: 15px;
+    transition: transform 0.7s var(--ease-out);
+  }
+
+  .replay:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .replay:hover svg {
+    transform: rotate(-200deg);
+  }
+
+  .replay::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+  }
+
+  .field-cap {
+    right: calc(var(--gutter) + 50px) !important;
+  }
+
+  @media (max-width: 700px) {
+    .replay {
+      top: 0.9rem;
+      bottom: auto;
+    }
+  }
+
+  /* ── The stage ─────────────────────────────────────────── */
+  .intro-stage {
+    position: fixed;
+    inset: 0;
+    max-width: none !important;
+    margin: 0 !important;
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.6rem;
+    pointer-events: none;
+  }
+
+  .intro-stage[hidden] {
+    display: none;
+  }
+
+  .intro-mark {
+    width: 64px;
+    height: 110px;
+    color: var(--color-accent);
+    overflow: visible;
+    will-change: transform;
+  }
+
+  .intro-mark .pot {
+    fill: var(--color-bg);
+  }
+
+  .intro-mark .vessel {
+    transform-origin: 50% 94%;
+    opacity: 0;
+  }
+
+  .intro-mark .ink {
+    stroke-dasharray: 120;
+    stroke-dashoffset: 120;
+  }
+
+  :global(html.intro-run) .intro-mark .vessel {
+    animation: vessel-in 1.3s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+  }
+
+  :global(html.intro-run) .intro-mark .ink {
+    animation: ink-in 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.7s forwards;
+  }
+
+  @keyframes vessel-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.86); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @keyframes ink-in {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* ── What waits for its cue ────────────────────────────── */
+  :global(html.intro main) {
+    animation: none;
+  }
+
+  :global(html.intro .viewfinder),
+  :global(html.intro .brand-mark),
+  :global(html.intro .brand-role) {
+    opacity: 0;
+  }
+
+  :global(html.intro .brand-name) {
+    clip-path: inset(-60% 112% -60% -12%);
+  }
+
+  :global(html.intro .nav-links > *) {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  :global(html.intro) .portrait {
+    opacity: 0;
+    transform: translateY(28px) rotate(-11deg) scale(0.94);
+  }
+
+  :global(html.intro) .hero h1 .w > * {
+    transform: translateY(150%);
+  }
+
+  :global(html.intro) .hero-links::before {
+    transform: scaleX(0);
+  }
+
+  :global(html.intro) .hero-links a,
+  :global(html.intro) .field-cap,
+  :global(html.intro) .replay {
+    opacity: 0;
+  }
+
+  :global(html.intro) .hero-links a {
+    transform: translateY(8px);
+  }
+
+  /* Act two: the mark lands, and the name of the site writes itself in. */
+  :global(html.intro.landed .brand-mark) {
+    opacity: 1;
+  }
+
+  :global(html.intro.r1 .brand-name) {
+    clip-path: inset(-60% -12% -60% -12%);
+    transition: clip-path 1.8s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  :global(html.intro.r1 .brand-role) {
+    opacity: 1;
+    transition: opacity 0.9s ease 0.9s;
+  }
+
+  :global(html.intro.r1 .nav-links > *) {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.8s ease, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  :global(html.intro.r1 .nav-links > :nth-child(1)) { transition-delay: 0.45s; }
+  :global(html.intro.r1 .nav-links > :nth-child(2)) { transition-delay: 0.53s; }
+  :global(html.intro.r1 .nav-links > :nth-child(3)) { transition-delay: 0.61s; }
+  :global(html.intro.r1 .nav-links > :nth-child(4)) { transition-delay: 0.69s; }
+  :global(html.intro.r1 .nav-links > :nth-child(5)) { transition-delay: 0.77s; }
+  :global(html.intro.r1 .nav-links > :nth-child(6)) { transition-delay: 0.85s; }
+
+  /* Act three: the print is set down, the name rises, the links arrive. */
+  :global(html.intro.r2) .portrait {
+    opacity: 1;
+    transform: rotate(-2.5deg);
+    transition: opacity 1s ease, transform 1.9s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  :global(html.intro.r2) .hero h1 .w > * {
+    transform: none;
+    transition: transform 1.7s cubic-bezier(0.16, 1, 0.3, 1) 0.4s;
+  }
+
+  :global(html.intro.r2) .hero h1 .w + .w > * {
+    transition-delay: 0.65s;
+  }
+
+  :global(html.intro.r3) .hero-links::before {
+    transform: none;
+    transition: transform 1.5s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  :global(html.intro.r3) .hero-links a {
+    opacity: 1;
+    transform: none;
+    transition: opacity 1s ease, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  :global(html.intro.r3) .hero-links a:nth-child(1) { transition-delay: 0.5s; }
+  :global(html.intro.r3) .hero-links a:nth-child(2) { transition-delay: 0.62s; }
+  :global(html.intro.r3) .hero-links a:nth-child(3) { transition-delay: 0.74s; }
+  :global(html.intro.r3) .hero-links a:nth-child(4) { transition-delay: 0.86s; }
+
+  :global(html.intro.r3) .field-cap {
+    opacity: 1;
+    transition: opacity 1.3s ease 1.2s;
+  }
+
+  :global(html.intro.r3 .viewfinder) {
+    opacity: 1;
+    transition: opacity 1.2s ease 0.6s;
+  }
+  /* ── What is written ───────────────────────────────────────
+     The opening line is set once and stays alive; the word after it
+     changes, each one arriving and leaving in its own manner. The script
+     says when; these say how. */
+  .ink-page {
+    display: grid;
+    place-items: center;
+    width: min(94vw, 60rem);
+    min-height: 7rem;
+  }
+
+  .ink-line,
+  .ink-final {
+    grid-area: 1 / 1;
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    white-space: nowrap;
+    font-family: var(--font-display);
+    color: var(--color-text);
+    transition: transform 1.8s cubic-bezier(0.65, 0, 0.35, 1), opacity 1.2s ease, filter 1.2s ease, translate 1.2s ease;
+  }
+
+  .ink-line.leave,
+  .ink-final.leave {
+    opacity: 0;
+    filter: blur(8px);
+    translate: 0 -0.2em;
+  }
+
+  .ink-lead {
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(1.5rem, 3vw, 2.4rem);
+    letter-spacing: 0.005em;
+    color: var(--color-text-secondary);
+  }
+
+  /* The slot keeps the width of the widest word, so the opening line
+     never shifts as the word after it changes. */
+  .ink-slot {
+    position: relative;
+    display: inline-block;
+    text-align: left;
+    font-size: clamp(2rem, 4.4vw, 3.6rem);
+    font-weight: 300;
+    letter-spacing: -0.025em;
+    margin-left: 0.18em;
+  }
+
+  .ink-slot .vw {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    display: none;
+    white-space: nowrap;
+  }
+
+  .ink-slot .vw.on {
+    display: inline-block;
+  }
+
+  /* A strut gives the slot its baseline. */
+  .ink-slot::after {
+    content: '\00a0';
+  }
+
+  .ink-final {
+    font-weight: 300;
+    font-size: clamp(2.2rem, 5vw, 3.9rem);
+    letter-spacing: -0.03em;
+  }
+
+  .ink-final em {
+    font-family: 'Great Vibes', var(--font-display);
+    font-style: normal;
+    font-size: 1.3em;
+    letter-spacing: 0;
+    color: var(--color-accent);
+    padding: 0 0.08em 0 0.12em;
+  }
+
+  .ink-page .l {
+    display: inline-block;
+    opacity: 0;
+  }
+
+  /* Arriving, by default: rising out of a soft blur. */
+  .ink-page .l.in {
+    opacity: 1;
+    animation: rise 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; filter: blur(6px); transform: translateY(0.35em); }
+    to   { opacity: 1; filter: blur(0); transform: none; }
+  }
+
+  /* Leaving, by default: a quiet fade. */
+  .ink-slot .vw .l.in.go {
+    animation: fade-out 0.7s ease both;
+  }
+
+  @keyframes fade-out {
+    to { opacity: 0; filter: blur(3px); }
+  }
+
+  /* ── The opening line, alive ───────────────────────────────
+     Once it has risen it stays, but it is never still. Its motion is one
+     continuous loop in the script, so it can answer each word without
+     ever jumping. */
+  .ink-page .ink-lead .l.in.set {
+    opacity: 1;
+    animation: none;
+  }
+
+  /* ── Each word ─────────────────────────────────────────── */
+
+  /* wonder: blooms out of a haze, larger than itself, and then its
+     letters drift apart; it leaves as a breath. */
+  .ink-slot .vw-wonder {
+    font-weight: 200;
+    transition: letter-spacing 2.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .ink-slot .vw-wonder.written {
+    letter-spacing: 0.2em;
+  }
+
+  .ink-slot .vw-wonder .l.in {
+    animation: bloom 1.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .ink-slot .vw-wonder .l.in.go {
+    animation: exhale 1.2s ease both;
+  }
+
+  @keyframes bloom {
+    from { opacity: 0; filter: blur(12px); transform: scale(1.7); }
+    to   { opacity: 1; filter: blur(0); transform: none; }
+  }
+
+  @keyframes exhale {
+    to { opacity: 0; filter: blur(10px); transform: translateY(-0.4em) scale(1.15); }
+  }
+
+  /* enthusiasm!! heavy, bright, every letter springing up, and gone in a
+     leap. */
+  .ink-slot .vw-enthusiasm {
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: -0.04em;
+    color: var(--color-accent);
+  }
+
+  .ink-slot .vw-enthusiasm .l.in {
+    animation: spring 0.6s cubic-bezier(0.34, 1.8, 0.5, 1) both;
+  }
+
+  .ink-slot .vw-enthusiasm .tail.in {
+    font-size: 1.1em;
+    animation: bang 0.55s cubic-bezier(0.34, 2, 0.5, 1) both;
+  }
+
+  .ink-slot .vw-enthusiasm .l.in.go {
+    animation: leap 0.5s cubic-bezier(0.5, 0, 0.75, 0) both;
+  }
+
+  @keyframes spring {
+    from { opacity: 0; transform: translateY(0.6em) scale(0.5); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @keyframes bang {
+    from { opacity: 0; transform: translateY(0.4em) scale(0.2) rotate(-25deg); }
+    to   { opacity: 1; transform: rotate(10deg); }
+  }
+
+  @keyframes leap {
+    from { opacity: 1; transform: none; }
+    to   { opacity: 0; transform: translateY(-0.9em) rotate(10deg); }
+  }
+
+  /* patience... each letter takes its time, the dots longer still. */
+  .ink-slot .vw-patience {
+    font-style: italic;
+  }
+
+  .ink-slot .vw-patience .l.in {
+    animation: settle-slow 1.8s ease both;
+  }
+
+  .ink-slot .vw-patience .tail {
+    color: var(--color-accent);
+  }
+
+  .ink-slot .vw-patience .l.in.go {
+    animation: fade-out 1.8s ease both;
+  }
+
+  @keyframes settle-slow {
+    from { opacity: 0; filter: blur(4px); transform: translateY(0.12em); }
+    to   { opacity: 1; filter: blur(0); transform: none; }
+  }
+
+  /* imperfection: the letters drop into place; one lands wrong and stays
+     wrong. They leave by falling, each at its own angle. */
+  .ink-slot .vw-imperfection .l.in {
+    animation: drop 0.8s cubic-bezier(0.34, 1.5, 0.5, 1) both;
+  }
+
+  .ink-slot .vw-imperfection .odd.in {
+    color: var(--color-accent);
+    transform: translateY(0.06em) rotate(9deg);
+    animation: misstep 1.1s cubic-bezier(0.34, 1.5, 0.5, 1) both;
+  }
+
+  .ink-slot .vw-imperfection .l.in.go {
+    animation: tumble 0.9s cubic-bezier(0.5, 0, 0.75, 0) both;
+  }
+
+  @keyframes drop {
+    from { opacity: 0; transform: translateY(-0.5em); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @keyframes misstep {
+    0%   { opacity: 0; transform: translateY(-0.6em) rotate(-20deg); }
+    60%  { opacity: 1; transform: translateY(0.14em) rotate(15deg); }
+    100% { opacity: 1; transform: translateY(0.06em) rotate(9deg); }
+  }
+
+  @keyframes tumble {
+    to { opacity: 0; transform: translateY(0.6em) rotate(calc(var(--r) * 3)); }
+  }
+
+  /* HONESTY. typed, key by key, with nothing to soften it, and deleted
+     the same way. */
+  .ink-slot .vw-honesty {
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 0.6em;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+  }
+
+  .ink-slot .vw-honesty .l {
+    position: relative;
+  }
+
+  .ink-slot .vw-honesty .l.in {
+    animation: none;
+  }
+
+  .ink-slot .vw-honesty .l.cur::after {
+    content: '';
+    position: absolute;
+    left: calc(100% - 0.12em);
+    bottom: 0.05em;
+    width: 0.1em;
+    height: 1em;
+    background: var(--color-accent);
+    opacity: 1;
+    animation: caret 0.9s steps(1) infinite;
+  }
+
+  @keyframes caret {
+    0%, 49%   { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  /* acceptance: every letter in a different hand, arriving scattered,
+     and settling into one line together. */
+  .ink-slot .vw-acceptance .f1 { font-style: italic; }
+  .ink-slot .vw-acceptance .f2 { font-family: var(--font-mono); font-size: 0.72em; }
+  .ink-slot .vw-acceptance .f3 { font-weight: 600; }
+  .ink-slot .vw-acceptance .f4 { font-family: 'Great Vibes', var(--font-display); font-size: 1.15em; color: var(--color-accent); }
+
+  .ink-slot .vw-acceptance .l {
+    transform: translateY(var(--y)) rotate(var(--r));
+    transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .ink-slot .vw-acceptance .l.in {
+    animation: ink-fade 0.9s ease both;
+  }
+
+  .ink-slot .vw-acceptance.written .l {
+    transform: none;
+  }
+
+  @keyframes ink-fade {
+    from { opacity: 0; filter: blur(4px); }
+    to   { opacity: 1; filter: blur(0); }
+  }
+
+  /* curiosity? last, in the hand of the site's own name, written in one
+     stroke as a pen would. */
+  .ink-slot .vw-curiosity {
+    font-family: 'Great Vibes', var(--font-display);
+    font-size: 1.55em;
+    letter-spacing: 0;
+    color: var(--color-accent);
+    padding: 0 0.15em 0 0.1em;
+  }
+
+  .ink-slot .vw-curiosity .l.in {
+    animation: none;
+  }
+
+  .ink-slot .vw-curiosity.writing {
+    -webkit-mask-image: linear-gradient(90deg, #000 40%, transparent 60%);
+    mask-image: linear-gradient(90deg, #000 40%, transparent 60%);
+    -webkit-mask-size: 260% 100%;
+    mask-size: 260% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    animation: pen 2.8s cubic-bezier(0.45, 0.05, 0.35, 1) both;
+  }
+
+  @keyframes pen {
+    from { -webkit-mask-position: 100% 0; mask-position: 100% 0; }
+    to   { -webkit-mask-position: 0 0; mask-position: 0 0; }
+  }
+
+  .ink-slot .vw-curiosity .tail.in {
+    transform-origin: 50% 90%;
+    animation: query 0.9s cubic-bezier(0.34, 1.6, 0.5, 1) both;
+  }
+
+  .ink-slot .vw-curiosity .tail.in.go {
+    animation: exhale 1.2s ease both;
+  }
+
+  @keyframes query {
+    from { opacity: 0; transform: translateY(0.3em) rotate(-30deg); }
+    to   { opacity: 1; transform: rotate(10deg); }
+  }
+
+  /* The welcome's full stop. */
+  .ink-final .dot {
+    color: var(--color-accent);
+  }
+
+  .intro-mark.drink .vessel {
+    animation: drink 0.7s cubic-bezier(0.34, 1.6, 0.5, 1) both;
+  }
+
+  @keyframes drink {
+    0%   { transform: none; }
+    35%  { transform: scale(1.06, 0.94); }
+    100% { transform: none; }
+  }
+
+  /* On a phone it stays one sentence on one line, scaled to fit. */
+  @media (max-width: 600px) {
+    .ink-lead {
+      font-size: 4.3vw;
+    }
+
+    .ink-slot {
+      font-size: 7.4vw;
+    }
+
+    .ink-final {
+      font-size: 8.6vw;
+    }
+  }
+
+  /* ── Skip, while the intro runs ────────────────────────── */
+  .intro-skip {
+    position: fixed;
+    right: var(--gutter);
+    bottom: max(var(--gutter), env(safe-area-inset-bottom));
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 40px;
+    padding: 0 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    cursor: pointer;
+    opacity: 0;
+    animation: skip-in 0.8s ease 1s forwards;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .intro-skip span {
+    color: var(--color-accent);
+    transition: transform 0.4s var(--ease-out);
+  }
+
+  .intro-skip:hover {
+    color: var(--color-text);
+    border-color: var(--color-accent);
+  }
+
+  .intro-skip:hover span {
+    transform: translateX(3px);
+  }
+
+  @keyframes skip-in {
+    to { opacity: 1; }
   }
 </style>
