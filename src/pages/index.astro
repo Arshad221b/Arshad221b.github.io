@@ -201,7 +201,7 @@ const links = [
       </p>
       <p class="ink-name-line" id="ink-name-line" aria-hidden="true">
         <span class="ink-pre">This is the</span>
-        <span class="ink-name" id="ink-name"><span class="nm">Journey of</span> <em class="nm">Curiosity</em><svg class="ink-flourish" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M4 22 C 70 30, 130 6, 196 13 S 276 24, 296 6" /></svg></span>
+        <span class="ink-name" id="ink-name"><span class="nm">Journey of <em>Curiosity</em></span><svg class="ink-flourish" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M4 22 C 70 30, 130 6, 196 13 S 276 24, 296 6" /></svg></span>
       </p>
     </div>
     <button class="intro-skip" id="intro-skip" type="button">Skip <span aria-hidden="true">&rarr;</span></button>
@@ -586,7 +586,7 @@ const links = [
 
     // Every pause and stagger is scaled by the tempo. Patience alone is
     // never hurried.
-    var TEMPO = 0.82, tempo = TEMPO;
+    var TEMPO = 0.7, tempo = TEMPO;
 
     // The styles' own animations keep the same tempo, patience excepted.
     function quicken(e) {
@@ -760,15 +760,15 @@ const links = [
       void pre.offsetWidth;
       pre.style.transition = 'transform 1.4s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.7s ease, filter 0.7s ease';
       pre.style.transform = '';
-      each(lead.slice(11, 22), 40, add('gone'), t).catch(function () {});
-      await wait(650, t);
+      each(lead.slice(11, 22), 30, add('gone'), t).catch(function () {});
 
-      var halves = all(inkName, '.nm');
-      halves[0].classList.add('writing');
-      await wait(1150, t);
-      halves[1].classList.add('writing');
-      await wait(1750, t);
-      halves.forEach(function (n) { n.classList.replace('writing', 'written'); });
+      // All in one movement: as "This is the" glides and "journey of" lifts
+      // away, a single stroke of the pen writes the whole name.
+      var stroke = inkName.querySelector('.nm');
+      await wait(120, t);
+      stroke.classList.add('writing');
+      await wait(2300, t);
+      stroke.classList.replace('writing', 'written');
 
       // It catches the light, draws a breath, and is underlined.
       inkName.classList.add('shine');
@@ -1726,7 +1726,7 @@ const links = [
     color: var(--color-accent);
   }
 
-  /* Each half is written by the pen. The padding gives the script's
+  /* The name is written in one stroke of the pen. The padding gives the script's
      swashes room inside the mask; the margin takes it back. */
   .ink-name .nm {
     display: inline-block;
@@ -1743,11 +1743,7 @@ const links = [
   }
 
   .ink-name .nm.writing {
-    animation: pen 1.3s cubic-bezier(0.45, 0.05, 0.35, 1) both;
-  }
-
-  .ink-name em.nm.writing {
-    animation-duration: 1.7s;
+    animation: pen 2.3s cubic-bezier(0.45, 0.05, 0.35, 1) both;
   }
 
   .ink-name .nm.written {
@@ -1761,7 +1757,7 @@ const links = [
   }
 
   /* Curiosity catches the light once. */
-  .ink-name em.nm {
+  .ink-name em {
     background: linear-gradient(105deg, var(--color-accent) 38%, color-mix(in srgb, var(--color-accent) 30%, #fff) 50%, var(--color-accent) 62%);
     background-size: 300% 100%;
     background-position: 100% 0;
@@ -1770,7 +1766,7 @@ const links = [
     color: transparent;
   }
 
-  .ink-name.shine em.nm {
+  .ink-name.shine em {
     animation: shine 1.5s cubic-bezier(0.45, 0.05, 0.35, 1) both;
   }
 
