@@ -677,16 +677,21 @@ const links = [
       smark.classList.remove('drink');
     }
 
-    // The slot is as wide as the widest word at its widest, so the
-    // opening line never moves while the word after it changes.
+    // The slot is as wide as a typical word, so the sentence sits in the
+    // middle; a longer word runs on to the right, never off the screen.
+    // Either way the opening line keeps still.
     function measureSlot() {
-      var widest = 0;
-      all(inkSlot, '.vw').forEach(function (w) {
+      var widths = all(inkSlot, '.vw').map(function (w) {
         w.classList.add('on', 'written');
-        widest = Math.max(widest, w.getBoundingClientRect().width);
+        var width = w.getBoundingClientRect().width;
         w.classList.remove('on', 'written');
+        return width;
       });
-      inkSlot.style.width = Math.ceil(widest + 4) + 'px';
+      var opening = inkLine.querySelector('.ink-lead').getBoundingClientRect().width;
+      var avg = widths.reduce(function (a, b) { return a + b; }, 0) / widths.length;
+      var widest = Math.max.apply(null, widths);
+      var room = opening + 2 * widest + 48 - innerWidth;
+      inkSlot.style.width = Math.ceil(Math.min(widest, Math.max(avg, room))) + 'px';
     }
 
     async function play(t) {
@@ -1186,6 +1191,23 @@ const links = [
   /* ── What waits for its cue ────────────────────────────── */
   :global(html.intro main) {
     animation: none;
+  }
+
+  /* While it plays there is only the stage: nothing to scroll to, and no
+     footer peeking in below. */
+  :global(html.intro),
+  :global(html.intro body) {
+    overflow: hidden;
+  }
+
+  :global(html.intro footer),
+  :global(html.intro .read-progress) {
+    visibility: hidden;
+  }
+
+  /* The sign-off belongs to the essays, not this page. */
+  :global(.foot-line) {
+    display: none;
   }
 
   :global(html.intro .viewfinder),
