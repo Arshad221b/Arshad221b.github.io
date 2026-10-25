@@ -128,28 +128,31 @@ body > header { view-transition-name: site-head; }
   ::view-transition-new(root) {
     animation: 420ms var(--ease-out) both vt-in;
   }
+
+  /* The theme toggle runs its own reveal (a circle opening from the
+     button), so the cut above is switched off for it. */
+  html.theme-swap::view-transition-old(root),
+  html.theme-swap::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+  html.theme-swap::view-transition-old(root) { z-index: 1; }
+  html.theme-swap::view-transition-new(root) { z-index: 2; }
 }
 
-/* The theme swap: the new theme's paper, spreading from the toggle as a
-   layer over the page. While it runs, nothing runs its own colour
-   transition, so the page is settled in its new theme when the layer
-   lifts. */
-.theme-sheet {
-  position: fixed;
+/* While the theme swaps, nothing runs its own colour transition, so the
+   new theme is already settled wherever the circle reaches. */
+/* Grain, not a grid: the page reads as printed paper, and nothing in the
+   background competes with the type. */
+body::before {
+  content: '';
+  position: absolute;
   inset: 0;
-  z-index: 2147483000;
-  pointer-events: none;
-  clip-path: circle(0 at 50% 50%);
-}
-
-.theme-sheet.to-light {
-  background-color: #f4eee3;
-  background-image: var(--grain-paper);
+  z-index: -1;
+  background-color: var(--color-bg);
+  background-image: var(--grain);
   background-size: 200px 200px;
-}
-
-.theme-sheet.to-dark {
-  background-color: #000000;
+  pointer-events: none;
 }
 
 html.theme-swap *,
@@ -171,10 +174,11 @@ body {
   font-optical-sizing: auto;
   color: var(--color-text);
   background-color: var(--color-bg);
-  /* Grain, not a grid: the page reads as printed paper, and nothing in
-     the background competes with the type. */
-  background-image: var(--grain);
-  background-size: 200px 200px;
+  /* The paper itself is painted on a layer just inside the body (below),
+     so the theme can change it without changing the body's own
+     background, which a phone's browser bars take their colour from. */
+  position: relative;
+  z-index: 0;
   line-height: 1.7;
   font-size: 1.12rem;
   font-weight: 400;
