@@ -733,7 +733,8 @@ const links = [
       inkName.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       all(inkName, '.nm').forEach(function (n) { n.classList.remove('writing', 'written'); });
       pre.classList.remove('shown');
-      stage.classList.remove('washed', 'lit');
+      stage.classList.remove('lit');
+      stage.querySelector('.ink-wash').getAnimations().forEach(function (a) { a.cancel(); });
       all(stage, '.ink-wash .twin').forEach(function (n) { n.remove(); });
       inkCurl.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       inkCurl.style.strokeDasharray = '';
@@ -793,8 +794,11 @@ const links = [
       inkCurl.style.strokeDasharray = curl;
       // The pot's ink pours out of its mouth and fills the page.
       var mk = smark.getBoundingClientRect();
-      stage.style.setProperty('--wx', (mk.left + mk.width * 28 / 56).toFixed(1) + 'px');
-      stage.style.setProperty('--wy', (mk.top + mk.height * 57 / 96).toFixed(1) + 'px');
+      var wx = mk.left + mk.width * 28 / 56, wy = mk.top + mk.height * 57 / 96;
+      var reach = Math.hypot(Math.max(wx, innerWidth - wx), Math.max(wy, innerHeight - wy)) + 4;
+      var at = ' at ' + wx.toFixed(1) + 'px ' + wy.toFixed(1) + 'px)';
+      var shut = 'circle(0px' + at, open = 'circle(' + reach.toFixed(1) + 'px' + at;
+      var POUR = { duration: 1500 * TEMPO, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards' };
       var twin = smark.cloneNode(true);
       twin.removeAttribute('id');
       twin.setAttribute('class', 'twin');
@@ -818,7 +822,8 @@ const links = [
         requestAnimationFrame(mirror);
       })();
       nameLine.classList.add('on');
-      stage.classList.add('washed');
+      var wash = stage.querySelector('.ink-wash');
+      wash.animate([{ clipPath: shut }, { clipPath: open }], POUR);
       await wait(300, t);
       stage.classList.add('lit');
       await wait(500, t);
@@ -844,7 +849,8 @@ const links = [
 
       // The ink flows back into the pot before the name leaves for the
       // header; each thing takes its colour back as the ink leaves it.
-      stage.classList.remove('washed');
+      wash.getAnimations().forEach(function (a) { a.cancel(); });
+      wash.animate([{ clipPath: open }, { clipPath: shut }], POUR);
       await wait(1050, t);
       stage.classList.remove('lit');
       await wait(450, t);
@@ -1486,7 +1492,6 @@ const links = [
     display: grid;
     place-items: center;
     width: min(94vw, 60rem);
-    min-height: 7rem;
   }
 
   .ink-line {
@@ -1805,7 +1810,12 @@ const links = [
   /* Two lines: "This is the" quiet above, the name large beneath it,
      both on the centre line. */
   .ink-name-line {
-    grid-area: 1 / 1;
+    /* Out of the flow, so its size never pushes the other lines away
+       from the pot; it hangs from the top of the page area. */
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
@@ -1958,13 +1968,8 @@ const links = [
     inset: 0;
     z-index: 1;
     background: var(--color-accent);
-    clip-path: circle(0 at var(--wx, 50%) var(--wy, 50%));
-    transition: clip-path 1.5s cubic-bezier(0.65, 0, 0.35, 1);
+    clip-path: circle(0 at 50% 50%);
     pointer-events: none;
-  }
-
-  .intro-stage.washed .ink-wash {
-    clip-path: circle(150% at var(--wx, 50%) var(--wy, 50%));
   }
 
   .intro-stage.lit .ink-pre {
