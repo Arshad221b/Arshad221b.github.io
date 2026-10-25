@@ -793,12 +793,21 @@ const links = [
       var curl = inkCurl.getTotalLength();
       inkCurl.style.strokeDasharray = curl;
       // The pot's ink pours out of its mouth and fills the page.
+      // It starts as the pot's own body: the pot fills, then overflows.
       var mk = smark.getBoundingClientRect();
-      var wx = mk.left + mk.width * 28 / 56, wy = mk.top + mk.height * 57 / 96;
+      var vb = smark.querySelector('.vessel').getBoundingClientRect();
+      var wx = vb.left + vb.width / 2, wy = vb.top + vb.height / 2;
+      var body = Math.max(vb.width, vb.height) / 2;
       var reach = Math.hypot(Math.max(wx, innerWidth - wx), Math.max(wy, innerHeight - wy)) + 4;
       var at = ' at ' + wx.toFixed(1) + 'px ' + wy.toFixed(1) + 'px)';
-      var shut = 'circle(0px' + at, open = 'circle(' + reach.toFixed(1) + 'px' + at;
-      var POUR = { duration: 1500 * TEMPO, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards' };
+      var full = 'circle(' + body.toFixed(1) + 'px' + at, open = 'circle(' + reach.toFixed(1) + 'px' + at;
+      var FILL = [
+        { clipPath: full, opacity: 0, offset: 0 },
+        { clipPath: full, opacity: 1, offset: 0.3 },
+        { clipPath: full, opacity: 1, offset: 0.42, easing: 'cubic-bezier(0.6, 0, 0.3, 1)' },
+        { clipPath: open, opacity: 1, offset: 1 }
+      ];
+      var POUR = { duration: 2200 * TEMPO, fill: 'forwards' };
       var twin = smark.cloneNode(true);
       twin.removeAttribute('id');
       twin.setAttribute('class', 'twin');
@@ -823,11 +832,22 @@ const links = [
       })();
       nameLine.classList.add('on');
       var wash = stage.querySelector('.ink-wash');
-      wash.animate([{ clipPath: shut }, { clipPath: open }], POUR);
-      await wait(300, t);
+      wash.animate(FILL, POUR);
+      // Each line takes its colours the moment the ink reaches it.
+      var far = function (el) {
+        var r = el.getBoundingClientRect();
+        return Math.hypot(Math.max(Math.abs(r.left - wx), Math.abs(r.right - wx)),
+                          Math.max(Math.abs(r.top - wy), Math.abs(r.bottom - wy)));
+      };
+      var near = function (el) {
+        var r = el.getBoundingClientRect();
+        var dx = Math.max(r.left - wx, 0, wx - r.right), dy = Math.max(r.top - wy, 0, wy - r.bottom);
+        return Math.hypot(dx, dy);
+      };
+      await edgeAt(wash, far(pre), true, t);
       stage.classList.add('lit');
-      await wait(500, t);
       pre.classList.add('shown');
+      await edgeAt(wash, far(stroke), true, t);
       await wait(1000, t);
       stroke.classList.add('writing');
       inkCurl.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: curl }], {
@@ -850,10 +870,15 @@ const links = [
       // The ink flows back into the pot before the name leaves for the
       // header; each thing takes its colour back as the ink leaves it.
       wash.getAnimations().forEach(function (a) { a.cancel(); });
-      wash.animate([{ clipPath: open }, { clipPath: shut }], POUR);
-      await wait(1050, t);
+      wash.animate(FILL.slice().reverse().map(function (k) {
+        return { clipPath: k.clipPath, opacity: k.opacity, offset: 1 - k.offset, easing: 'cubic-bezier(0.6, 0, 0.3, 1)' };
+      }), POUR);
+      // The name changes back as the edge crosses its middle, and fades
+      // the rest of the way across.
+      await edgeAt(wash, (near(stroke) + far(stroke)) / 2, false, t);
       stage.classList.remove('lit');
-      await wait(450, t);
+      await edgeAt(wash, body + 1, false, t);
+      await wait(700, t);
       twin.remove();
       smark.classList.remove('drink');
       void smark.offsetWidth;
@@ -866,6 +891,20 @@ const links = [
       await wait(200, t);
       fly(inkName);
       swoop();
+    }
+
+    // Resolves the moment the ink's edge, growing or shrinking, has
+    // crossed the given distance from where it pours.
+    function edgeAt(wash, d, growing, t) {
+      return new Promise(function (res, rej) {
+        (function check() {
+          if (t !== token) return rej('stale');
+          var m = /circle\(([\d.]+)px/.exec(getComputedStyle(wash).clipPath);
+          var r = m ? +m[1] : 0;
+          if (growing ? r >= d : r <= d) return res();
+          requestAnimationFrame(check);
+        })();
+      });
     }
 
     // The flight of the name. It is set in the header's own hand, so it
