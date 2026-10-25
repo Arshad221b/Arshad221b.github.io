@@ -735,6 +735,9 @@ const links = [
       pre.classList.remove('shown');
       stage.classList.remove('lit');
       stage.querySelector('.ink-wash').getAnimations().forEach(function (a) { a.cancel(); });
+      all(stage, '.ink-wash > *').forEach(function (n) { n.remove(); });
+      stage.querySelector('.ink-page').style.zIndex = '';
+      [inkName, pre, inkName.querySelector('em')].forEach(function (n) { n.style.transition = ''; });
       all(stage, '.ink-wash .twin').forEach(function (n) { n.remove(); });
       inkCurl.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       inkCurl.style.strokeDasharray = '';
@@ -786,36 +789,26 @@ const links = [
       smark.classList.add('drink');
       await wait(1300, t);
 
-      // Then "This is the", quietly, and the name is written beneath it,
-      // large, in one slow stroke of the pen; as it is written the ink
-      // above the pot runs down into it. The pot spends its ink on the name.
+      // Then the pot's ink wells up from inside it and floods the page.
+      // Everything inside the ink is drawn by a paper twin that lives in
+      // the ink layer and is cut by the same circle, so colours change
+      // exactly at the ink's edge, pixel for pixel, at any size.
+      var wash = stage.querySelector('.ink-wash');
       var stroke = inkName.querySelector('.nm');
+      var em = inkName.querySelector('em');
       var curl = inkCurl.getTotalLength();
-      inkCurl.style.strokeDasharray = curl;
-      // The pot's ink pours out of its mouth and fills the page.
-      // It starts as the pot's own body: the pot fills, then overflows.
       var mk = smark.getBoundingClientRect();
       var vb = smark.querySelector('.vessel').getBoundingClientRect();
       var wx = vb.left + vb.width / 2, wy = vb.top + vb.height / 2;
-      var body = Math.max(vb.width, vb.height) / 2;
-      var reach = Math.hypot(Math.max(wx, innerWidth - wx), Math.max(wy, innerHeight - wy)) + 4;
-      var at = ' at ' + wx.toFixed(1) + 'px ' + wy.toFixed(1) + 'px)';
-      var full = 'circle(' + body.toFixed(1) + 'px' + at, open = 'circle(' + reach.toFixed(1) + 'px' + at;
-      var FILL = [
-        { clipPath: full, opacity: 0, offset: 0 },
-        { clipPath: full, opacity: 1, offset: 0.3 },
-        { clipPath: full, opacity: 1, offset: 0.42, easing: 'cubic-bezier(0.6, 0, 0.3, 1)' },
-        { clipPath: open, opacity: 1, offset: 1 }
-      ];
-      var POUR = { duration: 2200 * TEMPO, fill: 'forwards' };
+      var reach = Math.hypot(Math.max(wx, innerWidth - wx), Math.max(wy, innerHeight - wy)) + 2;
+      var at = ' at ' + wx.toFixed(2) + 'px ' + wy.toFixed(2) + 'px)';
+      var shut = 'circle(0px' + at, open = 'circle(' + reach.toFixed(2) + 'px' + at;
+
       var twin = smark.cloneNode(true);
       twin.removeAttribute('id');
       twin.setAttribute('class', 'twin');
-      twin.style.left = mk.left + 'px';
-      twin.style.top = mk.top + 'px';
-      twin.style.width = mk.width + 'px';
-      twin.style.height = mk.height + 'px';
-      stage.querySelector('.ink-wash').appendChild(twin);
+      twin.style.cssText = 'left:' + mk.left + 'px;top:' + mk.top + 'px;width:' + mk.width + 'px;height:' + mk.height + 'px';
+      wash.appendChild(twin);
       // The twin follows the pot as its ink drains and fills, frame by
       // frame, so the two are always the same pot.
       var tInk = twin.querySelector('.ink'), tVessel = twin.querySelector('.vessel');
@@ -830,25 +823,19 @@ const links = [
         tVessel.style.transformBox = b.transformBox;
         requestAnimationFrame(mirror);
       })();
-      nameLine.classList.add('on');
-      var wash = stage.querySelector('.ink-wash');
-      wash.animate(FILL, POUR);
-      // Each line takes its colours the moment the ink reaches it.
-      var far = function (el) {
-        var r = el.getBoundingClientRect();
-        return Math.hypot(Math.max(Math.abs(r.left - wx), Math.abs(r.right - wx)),
-                          Math.max(Math.abs(r.top - wy), Math.abs(r.bottom - wy)));
-      };
-      var near = function (el) {
-        var r = el.getBoundingClientRect();
-        var dx = Math.max(r.left - wx, 0, wx - r.right), dy = Math.max(r.top - wy, 0, wy - r.bottom);
-        return Math.hypot(dx, dy);
-      };
-      await edgeAt(wash, far(pre), true, t);
+
+      await done(wash.animate([{ clipPath: shut }, { clipPath: open }], {
+        duration: 1800 * TEMPO, easing: 'cubic-bezier(0.55, 0, 0.3, 1)', fill: 'forwards'
+      }), t);
+
+      // On the ink: "This is the", quietly, and the name written beneath
+      // it in one slow stroke, while the ink above the pot runs down into
+      // it. The pot spends its ink on the name.
       stage.classList.add('lit');
+      nameLine.classList.add('on');
       pre.classList.add('shown');
-      await edgeAt(wash, far(stroke), true, t);
       await wait(1000, t);
+      inkCurl.style.strokeDasharray = curl;
       stroke.classList.add('writing');
       inkCurl.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: curl }], {
         duration: 2800 * TEMPO, easing: 'cubic-bezier(0.4, 0.05, 0.3, 1)', fill: 'forwards'
@@ -856,9 +843,8 @@ const links = [
       await wait(2800, t);
       stroke.classList.replace('writing', 'written');
 
-      // The name is underlined, Curiosity catches the light, and the pot
-      // fills again.
-      var em = inkName.querySelector('em');
+      // It is underlined, Curiosity catches the light, and the pot fills
+      // again.
       inkName.classList.add('shine');
       em.classList.add('glint');
       inkCurl.animate([{ strokeDashoffset: curl }, { strokeDashoffset: 0 }], {
@@ -867,23 +853,33 @@ const links = [
       await wait(2300, t);
       em.classList.remove('glint');
 
-      // The ink flows back into the pot before the name leaves for the
-      // header; each thing takes its colour back as the ink leaves it.
-      wash.getAnimations().forEach(function (a) { a.cancel(); });
-      wash.animate(FILL.slice().reverse().map(function (k) {
-        return { clipPath: k.clipPath, opacity: k.opacity, offset: 1 - k.offset, easing: 'cubic-bezier(0.6, 0, 0.3, 1)' };
-      }), POUR);
-      // The name changes back as the edge crosses its middle, and fades
-      // the rest of the way across.
-      await edgeAt(wash, (near(stroke) + far(stroke)) / 2, false, t);
+      // Then the ink drains back into the pot. The name on the ink becomes
+      // a paper twin inside the ink layer, and the real one, beneath it,
+      // takes its everyday colours; as the ink draws back, the page shows
+      // the real one exactly where the ink has left.
+      var nr = nameLine.getBoundingClientRect();
+      var ghost = nameLine.cloneNode(true);
+      ghost.removeAttribute('id');
+      ghost.querySelectorAll('[id]').forEach(function (n) { n.removeAttribute('id'); });
+      ghost.classList.add('ghost');
+      ghost.style.cssText = 'position:fixed;left:' + nr.left + 'px;top:' + nr.top + 'px;width:' + nr.width + 'px;right:auto;margin:0';
+      ghost.querySelector('.ink-name').classList.remove('shine', 'fly');
+      wash.appendChild(ghost);
+      [inkName, pre, em].forEach(function (n) { n.style.transition = 'none'; });
       stage.classList.remove('lit');
-      await edgeAt(wash, body + 1, false, t);
-      await wait(700, t);
+      stage.querySelector('.ink-page').style.zIndex = '0';
+      void inkName.offsetWidth;
+      await done(wash.animate([{ clipPath: open }, { clipPath: shut }], {
+        duration: 1600 * TEMPO, easing: 'cubic-bezier(0.6, 0, 0.45, 1)', fill: 'forwards'
+      }), t);
+      ghost.remove();
       twin.remove();
+      stage.querySelector('.ink-page').style.zIndex = '';
+      [inkName, pre, em].forEach(function (n) { n.style.transition = ''; });
       smark.classList.remove('drink');
       void smark.offsetWidth;
       smark.classList.add('drink');
-      await wait(400, t);
+      await wait(500, t);
 
       // Then it flies home, and lands as the header's name with the mark.
       pre.classList.add('leave');
@@ -893,18 +889,10 @@ const links = [
       swoop();
     }
 
-    // Resolves the moment the ink's edge, growing or shrinking, has
-    // crossed the given distance from where it pours.
-    function edgeAt(wash, d, growing, t) {
-      return new Promise(function (res, rej) {
-        (function check() {
-          if (t !== token) return rej('stale');
-          var m = /circle\(([\d.]+)px/.exec(getComputedStyle(wash).clipPath);
-          var r = m ? +m[1] : 0;
-          if (growing ? r >= d : r <= d) return res();
-          requestAnimationFrame(check);
-        })();
-      });
+    // Resolves when an animation has run its course (or rejects if the
+    // intro was skipped or replayed meanwhile).
+    function done(anim, t) {
+      return anim.finished.then(function () { if (t !== token) throw 'stale'; });
     }
 
     // The flight of the name. It is set in the header's own hand, so it
@@ -2009,6 +1997,32 @@ const links = [
     background: var(--color-accent);
     clip-path: circle(0 at 50% 50%);
     pointer-events: none;
+  }
+
+  .ink-wash .ghost {
+    visibility: visible;
+  }
+
+  .ink-wash .ghost .ink-pre {
+    opacity: 1;
+    filter: none;
+    color: rgba(28, 22, 18, 0.72);
+    transition: none;
+  }
+
+  .ink-wash .ghost .ink-name {
+    color: #1c1612;
+    --ink: #fbf6ee;
+    transition: none;
+  }
+
+  .ink-wash .ghost .ink-name em {
+    transition: none;
+  }
+
+  .ink-wash .ghost .ink-flourish {
+    clip-path: inset(-50% -2% -50% -2%);
+    transition: none;
   }
 
   .intro-stage.lit .ink-pre {
