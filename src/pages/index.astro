@@ -733,7 +733,7 @@ const links = [
       inkName.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       all(inkName, '.nm').forEach(function (n) { n.classList.remove('writing', 'written'); });
       pre.classList.remove('shown');
-      stage.classList.remove('washed');
+      stage.classList.remove('washed', 'lit', 'tinted');
       inkCurl.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       inkCurl.style.strokeDasharray = '';
       brand.style.clipPath = brand.style.opacity = brand.style.transition = '';
@@ -790,8 +790,14 @@ const links = [
       var stroke = inkName.querySelector('.nm');
       var curl = inkCurl.getTotalLength();
       inkCurl.style.strokeDasharray = curl;
+      // The pot's ink pours out of its mouth and fills the page.
+      var mk = smark.getBoundingClientRect();
+      stage.style.setProperty('--wx', (mk.left + mk.width * 28 / 56).toFixed(1) + 'px');
+      stage.style.setProperty('--wy', (mk.top + mk.height * 57 / 96).toFixed(1) + 'px');
       nameLine.classList.add('on');
       stage.classList.add('washed');
+      await wait(300, t);
+      stage.classList.add('lit', 'tinted');
       await wait(500, t);
       pre.classList.add('shown');
       await wait(1000, t);
@@ -813,9 +819,17 @@ const links = [
       await wait(2300, t);
       em.classList.remove('glint');
 
-      // The page comes back before the name leaves for the header.
+      // The ink flows back into the pot before the name leaves for the
+      // header; each thing takes its colour back as the ink leaves it.
       stage.classList.remove('washed');
-      await wait(900, t);
+      await wait(1050, t);
+      stage.classList.remove('lit');
+      await wait(450, t);
+      stage.classList.remove('tinted');
+      smark.classList.remove('drink');
+      void smark.offsetWidth;
+      smark.classList.add('drink');
+      await wait(400, t);
 
       // Then it flies home, and lands as the header's name with the mark.
       pre.classList.add('leave');
@@ -1912,28 +1926,33 @@ const links = [
     opacity: 0;
   }
 
-  /* For the name the page goes dark, like the inside of the pot, and the
-     words are written on it in paper. */
+  /* For the name, the pot's ink pours out of its mouth and fills the
+     page; the name is written on it. Afterwards it flows back in. */
   .ink-wash {
     position: fixed;
     inset: 0;
     z-index: -1;
-    background: color-mix(in srgb, var(--color-accent) 14%, #0e0b09);
-    opacity: 0;
-    transition: opacity 1.4s ease;
+    background: var(--color-accent);
+    clip-path: circle(0 at var(--wx, 50%) var(--wy, 50%));
+    transition: clip-path 1.5s cubic-bezier(0.65, 0, 0.35, 1);
     pointer-events: none;
   }
 
   .intro-stage.washed .ink-wash {
-    opacity: 1;
+    clip-path: circle(150% at var(--wx, 50%) var(--wy, 50%));
   }
 
-  .intro-stage.washed .ink-pre {
-    color: rgba(243, 237, 226, 0.7);
+  .intro-stage.lit .ink-pre {
+    color: rgba(28, 22, 18, 0.72);
   }
 
-  .intro-stage.washed .ink-name {
-    color: #f3ede2;
+  .intro-stage.lit .ink-name {
+    color: #1c1612;
+    --ink: #fbf6ee;
+  }
+
+  .intro-stage.tinted .intro-mark {
+    color: #fbf6ee;
   }
 
   /* Before the name, the line lets go. */
