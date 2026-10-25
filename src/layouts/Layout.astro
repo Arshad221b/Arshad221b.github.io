@@ -51,7 +51,10 @@ const elsewhere = [
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="alternate" type="application/rss+xml" title="Arshad Kazi" href="/rss.xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -327,8 +330,8 @@ const elsewhere = [
           ],
         },
         {
-          duration: 550,
-          easing: 'ease-in-out',
+          duration: 700,
+          easing: 'cubic-bezier(0.65, 0, 0.35, 1)',
           pseudoElement: '::view-transition-new(root)',
         }
       );

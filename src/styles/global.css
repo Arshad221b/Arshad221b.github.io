@@ -139,6 +139,18 @@ body > header { view-transition-name: site-head; }
   html.theme-swap::view-transition-new(root) { z-index: 2; }
 }
 
+/* While the theme swaps, the whole page is one picture under the circle:
+   the header gives up its own transition group, and nothing runs its own
+   colour transition, so the new theme is already settled wherever the
+   circle reaches. */
+html.theme-swap body > header { view-transition-name: none; }
+
+html.theme-swap *,
+html.theme-swap *::before,
+html.theme-swap *::after {
+  transition: none !important;
+}
+
 @keyframes vt-out {
   to { opacity: 0; }
 }
