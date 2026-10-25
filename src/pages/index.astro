@@ -63,19 +63,19 @@ const field = {
 
 /* "This is the journey of" ... and then one word after another, each with
    its own type and its own way of arriving and leaving. The order is the
-   journey itself: it starts in wonder and rushes in with enthusiasm, needs
-   patience when it slows, meets its own imperfection, owns it with
-   honesty, makes peace with it in acceptance, and looks ahead in hope.
-   What is left after all of that is curiosity, which the journey is named
-   for. */
+   journey itself: it starts in wonder and rushes in with enthusiasm,
+   meets its own imperfection, owns it with honesty, makes peace with it
+   in acceptance, looks ahead in hope, and then waits, with patience. What
+   is left after all of that is curiosity, which the journey is named for:
+   patience's wait is the pause before the name. */
 const virtues = [
   { text: 'wonder', tail: '', cls: 'wonder' },
   { text: 'enthusiasm', tail: '!!', cls: 'enthusiasm' },
-  { text: 'patience', tail: '...', cls: 'patience' },
   { text: 'imperfection', tail: '', cls: 'imperfection' },
   { text: 'honesty', tail: '.', cls: 'honesty' },
   { text: 'acceptance', tail: '', cls: 'acceptance' },
   { text: 'hope', tail: '', cls: 'hope' },
+  { text: 'patience', tail: '...', cls: 'patience' },
 ].map(v => {
   const letters = [...v.text].map((c, j) => ({
     c, j, tail: false,
@@ -785,15 +785,14 @@ const links = [
 
       for (var i = 0; i < words.length; i++) await word(words[i], t);
 
-      // And last, the name, revealed once, at its own slower tempo. First everything stops, and
+      // And last, the name, revealed once, at its own slower tempo. Patience
+      // has just made the wait, so the line lets go at once, leaving only
+      // the pot on an empty page, and the name follows on its breath.
       tempo = NAME_TEMPO;
-      // the whole line lets go, until there is only the pot on an empty
-      // page, and a moment of silence.
       setMood('still');
-      await wait(500, t);
-      await each(lead.slice(0, 22), 28, add('gone'), t);
+      await each(lead.slice(0, 22), 22, add('gone'), t);
       smark.classList.add('drink');
-      await wait(1300, t);
+      await wait(450, t);
 
       // Then "This is the", and the name written beneath it in one slow
       // stroke, while the pot's ink is drawn out of it into the pen. The
