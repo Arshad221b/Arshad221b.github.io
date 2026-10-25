@@ -181,7 +181,6 @@ const links = [
 
   <!-- The stage for the opening: the mark alone, before anything else. -->
   <div class="intro-stage" id="intro-stage" aria-hidden="true">
-    <div class="ink-flood" aria-hidden="true"></div>
     <svg class="intro-mark" viewBox="22 2 56 96" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
       <path class="ink" d="M50 52 C46 40 60 36 56 26 C52 16 40 20 44 30 C47 37 58 32 60 22 C62 12 54 6 48 8" stroke-width="3.4"/>
       <g class="vessel">
@@ -215,12 +214,12 @@ const links = [
       </p>
     </div>
     <!-- Just before the name: every word of the journey comes back for a
-         moment, from all around, and is drawn into it. -->
+         moment, from all around, and is stirred into one drop of ink. -->
     <div class="ink-echoes" aria-hidden="true">
       {virtues.map(w => (
-        <span class={`echo echo-${w.cls}`} style={`--x:${echoAt[w.cls][0]}%;--y:${echoAt[w.cls][1]}%`}>{w.text + w.tail}</span>
+        <span class={`echo echo-${w.cls}`} style={`--x:${echoAt[w.cls][0]}%;--y:${echoAt[w.cls][1]}%`}>{[...(w.text + w.tail)].map(c => <span class="el">{c}</span>)}</span>
       ))}
-      <span class="ink-ripple"></span>
+      <span class="ink-drop"></span>
     </div>
     <button class="intro-skip" id="intro-skip" type="button">Skip <span aria-hidden="true">&rarr;</span></button>
   </div>
@@ -533,8 +532,7 @@ const links = [
     var nameLine = document.getElementById('ink-name-line');
     var inkName = document.getElementById('ink-name');
     var pre = nameLine.querySelector('.ink-pre');
-    var ripple = stage.querySelector('.ink-ripple');
-    var flood = stage.querySelector('.ink-flood');
+    var drop = stage.querySelector('.ink-drop');
     var token = 0;
     var narrow = matchMedia('(max-width: 600px)');
     var all = function (root, sel) { return [].slice.call(root.querySelectorAll(sel)); };
@@ -725,16 +723,16 @@ const links = [
       nameLine.classList.remove('on');
       pre.classList.remove('leave');
       pre.style.transition = pre.style.transform = '';
-      inkName.classList.remove('shine', 'fly', 'burst');
+      inkName.classList.remove('shine', 'fly');
       inkName.style.visibility = inkName.style.transformOrigin = '';
       inkName.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       all(inkName, '.nm').forEach(function (n) { n.classList.remove('writing', 'written'); });
       brand.style.clipPath = brand.style.opacity = brand.style.transition = '';
       smark.classList.remove('drink');
-      all(stage, '.echo').forEach(function (e) { e.classList.remove('in', 'gather'); e.style.removeProperty('--dx'); e.style.removeProperty('--dy'); });
-      ripple.classList.remove('go');
-      flood.classList.remove('fill', 'drain');
-      stage.classList.remove('flooded', 'inked');
+      all(stage, '.echo').forEach(function (e) { e.classList.remove('in'); });
+      all(stage, '.echo .el').concat([drop]).forEach(function (l) {
+        l.getAnimations().forEach(function (a) { a.cancel(); });
+      });
       inkName.querySelector('em').classList.remove('glint');
     }
 
@@ -785,28 +783,49 @@ const links = [
       await each(echoes, 110, add('in'), t);
       await wait(700, t);
 
-      // ...and is drawn into the middle, all at once.
-      var page = stage.querySelector('.ink-page').getBoundingClientRect();
-      var cx = page.left + page.width / 2, cy = page.top + page.height / 2;
-      ripple.style.left = cx + 'px';
-      ripple.style.top = cy + 'px';
-      echoes.forEach(function (e) {
-        var r = e.getBoundingClientRect();
-        e.style.setProperty('--dx', (cx - (r.left + r.width / 2)).toFixed(1) + 'px');
-        e.style.setProperty('--dy', (cy - (r.top + r.height / 2)).toFixed(1) + 'px');
-        e.classList.add('gather');
+      // ...and then each comes apart, letter by letter, and is drawn in a
+      // slow spiral into one drop of ink where the name will be, the way
+      // ink goes when it is stirred into water.
+      var stroke = inkName.querySelector('.nm');
+      var nb = stroke.getBoundingClientRect();
+      var cx = nb.left + nb.width / 2, cy = nb.top + nb.height * 0.55;
+      var SPIN = 1700, lag = 0;
+      echoes.forEach(function (e, wi) {
+        all(e, '.el').forEach(function (l, li) {
+          var r = l.getBoundingClientRect();
+          var x0 = r.left + r.width / 2, y0 = r.top + r.height / 2;
+          var r0 = Math.hypot(x0 - cx, y0 - cy), a0 = Math.atan2(y0 - cy, x0 - cx);
+          var frames = [];
+          for (var k = 0; k <= 24; k++) {
+            var q = k / 24, ease = q * q * (3 - 2 * q);
+            var rad = r0 * (1 - ease), ang = a0 + 1.5 * Math.PI * q;
+            frames.push({
+              offset: q,
+              opacity: q < 0.8 ? 1 : (1 - q) * 5,
+              transform: 'translate(' + (cx + rad * Math.cos(ang) - x0).toFixed(1) + 'px, ' +
+                (cy + rad * Math.sin(ang) - y0).toFixed(1) + 'px) rotate(' + (270 * q).toFixed(0) + 'deg) scale(' + (1 - 0.9 * q).toFixed(3) + ')'
+            });
+          }
+          var d = wi * 90 + li * 28;
+          lag = Math.max(lag, d);
+          l.animate(frames, { duration: SPIN * TEMPO, delay: d * TEMPO, easing: 'linear', fill: 'forwards' });
+        });
       });
-      await wait(560, t);
+      // The drop gathers as they arrive.
+      drop.style.left = cx + 'px';
+      drop.style.top = cy + 'px';
+      drop.animate([
+        { opacity: 0, transform: 'scale(0)' },
+        { opacity: 1, transform: 'scale(0.35)', offset: 0.25 },
+        { opacity: 1, transform: 'scale(1.2)', offset: 0.88 },
+        { opacity: 1, transform: 'scale(1)' }
+      ], { duration: (SPIN * 0.6 + lag) * TEMPO, delay: SPIN * 0.4 * TEMPO, easing: 'ease-in-out', fill: 'forwards' });
+      await wait(SPIN + lag + 250, t);
 
-      // Where they meet, the ink breaks like a drop on water, and the name
-      // is written out of it in one stroke, as "This is the" glides to
-      // make room for it (handed to an identical copy, so nothing jumps).
-      // A drop of ink lands where they met and floods the screen.
-      flood.style.setProperty('--fx', cx + 'px');
-      flood.style.setProperty('--fy', cy + 'px');
-      flood.classList.add('fill');
-      stage.classList.add('flooded', 'inked');
-      ripple.classList.add('go');
+      // That drop is the ink the name is written with. "This is the" glides
+      // up to its own line (handed to an identical copy, so nothing jumps),
+      // the drop touches down where the name begins, and runs along it as
+      // the pen writes, spending itself.
       var was = lead.slice(0, 11).map(function (l) { return l.getBoundingClientRect(); });
       nameLine.classList.add('on');
       var now = pre.getBoundingClientRect();
@@ -814,38 +833,36 @@ const links = [
       pre.style.transform = 'translate(' + (was[0].left - now.left).toFixed(1) + 'px, ' + (was[0].bottom - now.bottom).toFixed(1) + 'px)';
       lead.slice(0, 11).forEach(add('swapped'));
       void pre.offsetWidth;
-      pre.style.transition = 'transform 1.2s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.7s ease, filter 0.7s ease, color 0.7s ease';
+      pre.style.transition = 'transform 1.2s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.7s ease, filter 0.7s ease';
       pre.style.transform = '';
-      var stroke = inkName.querySelector('.nm');
-      inkName.classList.add('burst');
+
+      var sr = stroke.getBoundingClientRect(), sc = getComputedStyle(stroke);
+      var x1 = sr.left + parseFloat(sc.paddingLeft), x2 = sr.right - parseFloat(sc.paddingRight);
+      var yb = sr.top + sr.height * 0.6;
+      drop.getAnimations().forEach(function (a) { a.commitStyles(); a.cancel(); });
+      var at = function (x, y, k, op) {
+        return { transform: 'translate(' + (x - cx).toFixed(1) + 'px, ' + (y - cy).toFixed(1) + 'px) scale(' + k + ')', opacity: op };
+      };
+      drop.animate([at(cx, cy, 1, 1), at(x1, yb, 0.8, 1)], { duration: 420 * TEMPO, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards' });
+      await wait(420, t);
+      // The pen's mask shows nothing until 19% of the way and everything by
+      // 81%; the drop keeps to its edge.
+      drop.animate([
+        Object.assign({ offset: 0 }, at(x1, yb, 0.8, 1)),
+        Object.assign({ offset: 0.19 }, at(x1, yb, 0.8, 1)),
+        Object.assign({ offset: 0.81 }, at(x2, yb, 0.35, 1)),
+        Object.assign({ offset: 1 }, at(x2 + 20, yb, 0, 0))
+      ], { duration: 1900 * TEMPO, easing: 'cubic-bezier(0.3, 0.1, 0.25, 1)', fill: 'forwards' });
       stroke.classList.add('writing');
       await wait(1900, t);
       stroke.classList.replace('writing', 'written');
 
-      // In the ink it catches the light, draws a breath, and is
-      // underlined.
+      // It catches the light, draws a breath, and is underlined.
       var em = inkName.querySelector('em');
       inkName.classList.add('shine');
       em.classList.add('glint');
-      await wait(1900, t);
+      await wait(2200, t);
       em.classList.remove('glint');
-
-      // Then the ink drains back into the pot, and leaves the name on the
-      // page.
-      var mk = smark.getBoundingClientRect();
-      flood.style.setProperty('--gx', (mk.left + mk.width / 2) + 'px');
-      flood.style.setProperty('--gy', (mk.top + mk.height * 0.6) + 'px');
-      flood.classList.add('drain');
-      // Each thing takes its own colour back as the ink leaves it: the name
-      // first, the pot last.
-      await wait(450, t);
-      stage.classList.remove('flooded');
-      await wait(550, t);
-      stage.classList.remove('inked');
-      smark.classList.remove('drink');
-      void smark.offsetWidth;
-      smark.classList.add('drink');
-      await wait(700, t);
 
       // Then it flies home, and lands as the header's name with the mark.
       pre.classList.add('leave');
@@ -1786,12 +1803,15 @@ const links = [
      header's own hand at a larger size: "Journey of Curiosity", written by
      the pen, Curiosity catching the light, a flourish drawn beneath, and
      then it flies up and becomes the header's name. */
+  /* Two lines: "This is the" quiet above, the name large beneath it,
+     both on the centre line. */
   .ink-name-line {
     grid-area: 1 / 1;
     margin: 0;
     display: flex;
-    align-items: baseline;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15em;
     white-space: nowrap;
     visibility: hidden;
   }
@@ -1807,7 +1827,6 @@ const links = [
     font-size: clamp(1rem, 3vw, 2.4rem);
     letter-spacing: 0.005em;
     color: var(--color-text-secondary);
-    margin-right: 0.3em;
     transition: opacity 0.7s ease, filter 0.7s ease;
   }
 
@@ -1822,7 +1841,7 @@ const links = [
     font-style: normal;
     font-weight: 400;
     font-synthesis: none;
-    font-size: clamp(3rem, 6.4vw, 5.6rem);
+    font-size: clamp(3.4rem, 8.4vw, 8rem);
     letter-spacing: 0;
     line-height: 1;
     color: var(--color-text);
@@ -1854,17 +1873,6 @@ const links = [
 
   .ink-name .nm.writing {
     animation: pen 1.9s cubic-bezier(0.3, 0.1, 0.25, 1) both;
-  }
-
-  /* The name lands with weight: it comes out of the ripple a touch large
-     and settles. */
-  .ink-name.burst {
-    animation: burst 1.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  @keyframes burst {
-    from { transform: scale(1.18); }
-    to   { transform: none; }
   }
 
   .ink-name .nm.written {
@@ -1946,38 +1954,6 @@ const links = [
     transition: opacity 0.8s ease, filter 0.8s ease, transform 0.8s ease;
   }
 
-  /* The flood: where the words meet, a drop of ink lands and fills the
-     screen; the name is written out of it in paper, and then the ink
-     drains back into the pot. */
-  .ink-flood {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    background: var(--color-accent);
-    clip-path: circle(0 at var(--fx, 50%) var(--fy, 50%));
-    pointer-events: none;
-  }
-
-  .ink-flood.fill {
-    clip-path: circle(150% at var(--fx, 50%) var(--fy, 50%));
-    transition: clip-path 1s cubic-bezier(0.7, 0, 0.2, 1);
-  }
-
-  .ink-flood.drain {
-    clip-path: circle(0 at var(--gx, 50%) var(--gy, 50%));
-    transition: clip-path 1.1s cubic-bezier(0.7, 0, 0.3, 1);
-  }
-
-  .intro-stage.inked .intro-mark,
-  .intro-stage.flooded .ink-pre,
-  .intro-stage.flooded .ink-name {
-    color: var(--color-bg);
-  }
-
-  .intro-stage.flooded .ink-name {
-    --ink: var(--color-bg);
-  }
-
   /* The echoes: every word of the journey, back for a moment around the
      name, each in its own hand, then drawn into it. */
   .ink-echoes {
@@ -2002,49 +1978,37 @@ const links = [
     transition: opacity 0.6s ease, filter 0.6s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .echo.in {
-    opacity: 0.9;
-    filter: blur(0);
-    transform: translate(-50%, -50%);
+  .echo .el {
+    display: inline-block;
+    white-space: pre;
   }
 
-  .echo.gather {
-    opacity: 0;
-    filter: blur(2px);
-    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.12);
-    transition: transform 0.6s cubic-bezier(0.6, 0, 0.85, 0.3), opacity 0.6s cubic-bezier(0.7, 0, 1, 0.5), filter 0.6s ease;
+  .echo.in {
+    opacity: 0.9;
+    filter: none;
+    transform: translate(-50%, -50%);
   }
 
   .echo-wonder { font-weight: 200; letter-spacing: 0.18em; }
   .echo-enthusiasm { font-weight: 600; font-style: italic; color: var(--color-accent); }
   .echo-patience { font-style: italic; }
-  .echo-imperfection { rotate: -6deg; }
   .echo-honesty { font-family: var(--font-mono); font-size: 0.8em; letter-spacing: 0.22em; text-transform: uppercase; }
   .echo-acceptance { font-family: 'Great Vibes', var(--font-display); font-size: 1.3em; }
   .echo-hope { font-style: italic; text-shadow: 0 0 0.5em var(--color-accent-soft); }
 
-  /* Where they meet, the ink breaks like a drop on water. */
-  .ink-ripple {
+  /* The drop they are stirred into, which then writes the name. */
+  .ink-drop {
     position: fixed;
-    left: 50%;
-    top: 50%;
-    width: 46vmin;
-    height: 46vmin;
-    margin: -23vmin 0 0 -23vmin;
+    left: 0;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
     border-radius: 50%;
-    border: 1px solid var(--color-accent);
-    box-shadow: 0 0 40px var(--color-accent-soft), inset 0 0 40px var(--color-accent-soft);
+    background: var(--color-accent);
+    box-shadow: 0 0 22px 2px var(--color-accent-soft);
     opacity: 0;
     pointer-events: none;
-  }
-
-  .ink-ripple.go {
-    animation: ripple 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  @keyframes ripple {
-    0%   { opacity: 0.9; transform: scale(0.04); }
-    100% { opacity: 0; transform: scale(2.6); }
   }
 
   .intro-mark.drink .vessel {
@@ -2091,14 +2055,10 @@ const links = [
 
     .ink-name-line {
       width: 100%;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.15em;
     }
 
     .ink-pre {
       font-size: 5.6vw;
-      margin-right: 0;
     }
 
     .ink-name {
