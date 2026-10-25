@@ -316,10 +316,18 @@ const elsewhere = [
       Math.max(y, innerHeight - y)
     );
 
-    html.classList.add('theme-swap');
-    var transition = document.startViewTransition(applyTheme);
+    // The header leaves its own transition group so the whole page is one
+    // picture under the circle; the theme and the freeze on transitions go
+    // in together, in one style pass.
+    var header = document.querySelector('body > header');
+    if (header) header.style.viewTransitionName = 'none';
+    var transition = document.startViewTransition(function () {
+      html.classList.add('theme-swap');
+      applyTheme();
+    });
     transition.finished.finally(function () {
       html.classList.remove('theme-swap');
+      if (header) header.style.viewTransitionName = '';
     });
     transition.ready.then(function () {
       html.animate(

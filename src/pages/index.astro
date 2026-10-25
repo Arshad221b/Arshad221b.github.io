@@ -390,9 +390,13 @@ const links = [
     var projected = [];
     var visible = true;
     function frame() {
-      if (!dragging && hover < 0) yaw += vel;
-      projected = draw();
-      if (hover >= 0) placeTip();
+      // While the theme swaps, the field holds still, so the reveal has the
+      // frame to itself.
+      if (!document.documentElement.classList.contains('theme-swap')) {
+        if (!dragging && hover < 0) yaw += vel;
+        projected = draw();
+        if (hover >= 0) placeTip();
+      }
       if (visible && !reduce) requestAnimationFrame(frame);
     }
 
