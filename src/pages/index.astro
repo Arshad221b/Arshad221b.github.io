@@ -177,7 +177,7 @@ const links = [
 
   <!-- The stage for the opening: the mark alone, before anything else. -->
   <div class="intro-stage" id="intro-stage" aria-hidden="true">
-    <div class="ink-wash" aria-hidden="true"></div>
+    <canvas class="ink-ripples" aria-hidden="true"></canvas>
     <svg class="intro-mark" viewBox="22 2 56 96" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
       <path class="ink" d="M50 52 C46 40 60 36 56 26 C52 16 40 20 44 30 C47 37 58 32 60 22 C62 12 54 6 48 8" stroke-width="3.4"/>
       <g class="vessel">
@@ -740,12 +740,7 @@ const links = [
       inkName.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       all(inkName, '.nm').forEach(function (n) { n.classList.remove('writing', 'written'); });
       pre.classList.remove('shown');
-      stage.classList.remove('lit');
-      stage.querySelector('.ink-wash').removeAttribute('style');
-      all(stage, '.ink-wash > *').forEach(function (n) { n.remove(); });
-      stage.querySelector('.ink-page').style.zIndex = '';
-      [inkName, pre, inkName.querySelector('em')].forEach(function (n) { n.style.transition = ''; });
-      all(stage, '.ink-wash .twin').forEach(function (n) { n.remove(); });
+      rings.length = 0;
       inkCurl.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       inkCurl.style.strokeDasharray = '';
       brand.style.clipPath = brand.style.opacity = brand.style.transition = '';
@@ -796,128 +791,41 @@ const links = [
       smark.classList.add('drink');
       await wait(1300, t);
 
-      // Then the pot's ink wells up from inside it and floods the page.
-      // Everything inside the ink is drawn by a paper twin that lives in
-      // the ink layer and is cut by the same circle, so colours change
-      // exactly at the ink's edge, pixel for pixel, at any size.
-      var wash = stage.querySelector('.ink-wash');
+      // Then "This is the", and the name written beneath it in one slow
+      // stroke, while the pot's ink is drawn out of it into the pen. The
+      // ink is wet: small ripples spread from the pot's mouth as it gives
+      // up its ink, and from the point of the pen as it lays the ink down.
       var stroke = inkName.querySelector('.nm');
       var em = inkName.querySelector('em');
       var curl = inkCurl.getTotalLength();
-      // The ink has the pot's own shape: a mask of its body and neck, laid
-      // exactly over the pot (the mark's viewBox is 22 2 56 96). It grows
-      // about the middle of the body, by a scale that leaves the whole
-      // screen inside it: the body holds a circle of about 10 units round
-      // that point, so that is the radius that must reach the far corner.
-      var mk = smark.getBoundingClientRect();
-      var u = mk.width / 56;
-      var cx = mk.left + (50 - 22) * u, cy = mk.top + (79 - 2) * u;
-      var reach = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy));
-      var SMAX = reach / (10 * u) * 1.05;
-      // The ink's own box is only as big as the ink (within the screen), so
-      // it meets the edges of the screen only when the ink does. A phone's
-      // browser bars take their colour from a layer at the edges, and
-      // would otherwise turn orange the moment the ink began.
-      var shape = function (k) {
-        var w = mk.width * k, h = mk.height * k;
-        var x = cx - (cx - mk.left) * k, y = cy - (cy - mk.top) * k;
-        var l = Math.max(0, x), tp = Math.max(0, y);
-        var r = Math.min(innerWidth, x + w), b = Math.min(innerHeight, y + h);
-        wash.style.left = l.toFixed(2) + 'px';
-        wash.style.top = tp.toFixed(2) + 'px';
-        wash.style.width = Math.max(0, r - l).toFixed(2) + 'px';
-        wash.style.height = Math.max(0, b - tp).toFixed(2) + 'px';
-        wash.style.webkitMaskSize = wash.style.maskSize = w.toFixed(2) + 'px ' + h.toFixed(2) + 'px';
-        wash.style.webkitMaskPosition = wash.style.maskPosition = (x - l).toFixed(2) + 'px ' + (y - tp).toFixed(2) + 'px';
-      };
-      var easeIO = function (k) { return k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
-      var easeOut = function (k) { return 1 - Math.pow(1 - k, 3); };
-      var POT = 'url("data:image/svg+xml,' + encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="22 2 56 96"><g fill="#000" stroke="#000" stroke-width="3" stroke-linejoin="round">' +
-        '<path d="M39.2 94 C29.6 94 28.4 79.6 36.8 72.4 C40.4 69.4 41.6 67.6 41.6 64 L58.4 64 C58.4 67.6 59.6 69.4 63.2 72.4 C71.6 79.6 70.4 94 60.8 94 Z"/>' +
-        '<path d="M42.8 64 L42.8 59.2 L57.2 59.2 L57.2 64 Z"/></g></svg>') + '")';
-      wash.style.webkitMaskImage = wash.style.maskImage = POT;
-
-      var twin = smark.cloneNode(true);
-      twin.removeAttribute('id');
-      twin.setAttribute('class', 'twin');
-      twin.style.cssText = 'left:' + mk.left + 'px;top:' + mk.top + 'px;width:' + mk.width + 'px;height:' + mk.height + 'px';
-      wash.appendChild(twin);
-      // The twin follows the pot as its ink drains and fills, frame by
-      // frame, so the two are always the same pot.
-      var tInk = twin.querySelector('.ink'), tVessel = twin.querySelector('.vessel');
-      var oVessel = smark.querySelector('.vessel');
-      (function mirror() {
-        if (!twin.isConnected) return;
-        var a = getComputedStyle(inkCurl), b = getComputedStyle(oVessel);
-        tInk.style.strokeDasharray = a.strokeDasharray;
-        tInk.style.strokeDashoffset = a.strokeDashoffset;
-        tVessel.style.transform = b.transform;
-        tVessel.style.transformOrigin = b.transformOrigin;
-        tVessel.style.transformBox = b.transformBox;
-        requestAnimationFrame(mirror);
-      })();
-
-      // The pot fills: the ink, in the pot's exact shape, comes up in it...
-      shape(1);
-      await frames(800, function (k) { wash.style.opacity = easeOut(k).toFixed(4); }, t);
-      // ...and overflows, the pot-shaped ink growing from the pot until it
-      // holds the whole screen. It grows by equal ratios, not equal steps,
-      // so it reads as one steady swell.
-      await frames(1700, function (k) { shape(Math.pow(SMAX, easeIO(k))); }, t);
-
-      // On the ink: "This is the", quietly, and the name written beneath
-      // it in one slow stroke, while the ink above the pot runs down into
-      // it. The pot spends its ink on the name.
-      stage.classList.add('lit');
+      var mk = smark.getBoundingClientRect(), u = mk.width / 56;
+      var mouthX = mk.left + (50 - 22) * u, mouthY = mk.top + (59 - 2) * u;
       nameLine.classList.add('on');
       pre.classList.add('shown');
       await wait(1000, t);
+
       inkCurl.style.strokeDasharray = curl;
       stroke.classList.add('writing');
       inkCurl.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: curl }], {
         duration: 2800 * TEMPO, easing: 'cubic-bezier(0.4, 0.05, 0.3, 1)', fill: 'forwards'
       });
+      [0, 900, 1800].forEach(function (d) {
+        timers.push(setTimeout(function () { ripple(mouthX, mouthY, 34, 0.7); }, d * TEMPO));
+      });
+      followPen(stroke, t);
       await wait(2800, t);
       stroke.classList.replace('writing', 'written');
 
       // It is underlined, Curiosity catches the light, and the pot fills
-      // again.
+      // again, with a ripple as the ink settles back into it.
       inkName.classList.add('shine');
       em.classList.add('glint');
       inkCurl.animate([{ strokeDashoffset: curl }, { strokeDashoffset: 0 }], {
         duration: 1600 * TEMPO, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards'
       });
+      timers.push(setTimeout(function () { ripple(mouthX, mouthY, 40, 0.8); }, 1500 * TEMPO));
       await wait(2300, t);
       em.classList.remove('glint');
-
-      // Then the ink drains back into the pot. The name on the ink becomes
-      // a paper twin inside the ink layer, and the real one, beneath it,
-      // takes its everyday colours; as the ink draws back, the page shows
-      // the real one exactly where the ink has left.
-      var nr = nameLine.getBoundingClientRect();
-      var ghost = nameLine.cloneNode(true);
-      ghost.removeAttribute('id');
-      ghost.querySelectorAll('[id]').forEach(function (n) { n.removeAttribute('id'); });
-      ghost.classList.add('ghost');
-      ghost.style.cssText = 'position:fixed;left:' + nr.left + 'px;top:' + nr.top + 'px;width:' + nr.width + 'px;right:auto;margin:0';
-      ghost.querySelector('.ink-name').classList.remove('shine', 'fly');
-      wash.appendChild(ghost);
-      [inkName, pre, em].forEach(function (n) { n.style.transition = 'none'; });
-      stage.classList.remove('lit');
-      stage.querySelector('.ink-page').style.zIndex = '0';
-      void inkName.offsetWidth;
-      await frames(1600, function (k) { shape(Math.pow(SMAX, 1 - easeIO(k))); }, t);
-      // Back to the size of the pot, and the pot empties.
-      await frames(700, function (k) { wash.style.opacity = (1 - easeIO(k)).toFixed(4); }, t);
-      ghost.remove();
-      twin.remove();
-      stage.querySelector('.ink-page').style.zIndex = '';
-      [inkName, pre, em].forEach(function (n) { n.style.transition = ''; });
-      smark.classList.remove('drink');
-      void smark.offsetWidth;
-      smark.classList.add('drink');
-      await wait(500, t);
 
       // Then it flies home, and lands as the header's name with the mark.
       pre.classList.add('leave');
@@ -927,18 +835,79 @@ const links = [
       swoop();
     }
 
-    // Runs fn(k) every frame for k from 0 to 1 over ms (on the intro's
-    // tempo), then resolves.
-    function frames(ms, fn, t) {
-      return new Promise(function (res, rej) {
-        var t0 = performance.now(), dur = ms * TEMPO;
-        (function step(now) {
-          if (t !== token) return rej('stale');
-          var k = Math.min(1, Math.max(0, (now - t0) / dur));
-          fn(k);
-          if (k < 1) requestAnimationFrame(step); else res();
-        })(t0);
+    /* Ripples of wet ink, small and local. Drawn on a canvas beneath the
+       words: each ring is a soft band of the accent with a fine line at
+       its crest, opening from where the ink is and fading to nothing. */
+    var rippleCanvas = stage.querySelector('.ink-ripples');
+    var rctx = rippleCanvas.getContext('2d');
+    var rings = [], rippling = false;
+
+    function ripple(x, y, size, strength) {
+      for (var i = 0; i < 2; i++) {
+        rings.push({
+          x: x, y: y, to: size * (1 - i * 0.35),
+          t0: performance.now() + i * 140 * TEMPO,
+          life: (1100 + i * 150) * TEMPO,
+          a: strength * (1 - i * 0.4)
+        });
+      }
+      if (!rippling) { rippling = true; requestAnimationFrame(drawRipples); }
+    }
+
+    function drawRipples(now) {
+      var dpr = Math.min(devicePixelRatio || 1, 2);
+      var W = innerWidth, H = innerHeight;
+      if (rippleCanvas.width !== Math.round(W * dpr) || rippleCanvas.height !== Math.round(H * dpr)) {
+        rippleCanvas.width = Math.round(W * dpr);
+        rippleCanvas.height = Math.round(H * dpr);
+      }
+      rctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      rctx.clearRect(0, 0, W, H);
+      rctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim();
+      rings = rings.filter(function (g) { return now - g.t0 < g.life; });
+      rings.forEach(function (g) {
+        var k = (now - g.t0) / g.life;
+        if (k < 0) return;
+        var e = 1 - Math.pow(1 - k, 3);
+        var r = 2 + (g.to - 2) * e;
+        var fade = Math.pow(1 - k, 1.6) * g.a;
+        var band = 2 + 6 * e;
+        rctx.globalAlpha = fade * 0.24;
+        rctx.lineWidth = band;
+        rctx.beginPath();
+        rctx.arc(g.x, g.y, r, 0, Math.PI * 2);
+        rctx.stroke();
+        rctx.globalAlpha = fade * 0.8;
+        rctx.lineWidth = 1.1;
+        rctx.beginPath();
+        rctx.arc(g.x, g.y, r + band * 0.2, 0, Math.PI * 2);
+        rctx.stroke();
       });
+      rctx.globalAlpha = 1;
+      if (rings.length) requestAnimationFrame(drawRipples);
+      else { rippling = false; rctx.clearRect(0, 0, W, H); }
+    }
+
+    // The point of the pen is the edge of the stroke's mask: the mask is
+    // 2.6 times the stroke's width, with its edge at the middle, and moves
+    // from 100% to 0%, so the edge runs from -0.3 to 1.3 of the width.
+    // While the pen is over the name, it leaves a small ripple behind it
+    // every little while.
+    function followPen(el, t) {
+      var b = el.getBoundingClientRect(), cs = getComputedStyle(el);
+      var padL = parseFloat(cs.paddingLeft), padR = parseFloat(cs.paddingRight);
+      var y = b.top + parseFloat(cs.paddingTop) + (b.height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)) * 0.62;
+      var last = 0;
+      (function step(now) {
+        if (t !== token || !el.classList.contains('writing')) return;
+        var pos = parseFloat(getComputedStyle(el).webkitMaskPosition || getComputedStyle(el).maskPosition) / 100;
+        var x = b.left + (1.3 - 1.6 * pos) * b.width;
+        if (x > b.left + padL && x < b.right - padR && now - last > 110 * TEMPO) {
+          last = now;
+          ripple(x, y + (Math.random() - 0.5) * b.height * 0.12, 16 + Math.random() * 8, 0.55);
+        }
+        requestAnimationFrame(step);
+      })(performance.now());
     }
 
     // The flight of the name. It is set in the header's own hand, so it
@@ -2034,64 +2003,14 @@ const links = [
     opacity: 0;
   }
 
-  /* For the name, the pot's ink pours out of its mouth and fills the
-     page; the name is written on it. Afterwards it flows back in. */
-  .ink-wash {
+  /* The ripples from the pot, beneath the words. */
+  .ink-ripples {
     position: fixed;
-    left: 0;
-    top: 0;
-    width: 0;
-    height: 0;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     z-index: 1;
-    background: var(--color-accent);
-    opacity: 0;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
     pointer-events: none;
-  }
-
-  .ink-wash .ghost {
-    visibility: visible;
-  }
-
-  .ink-wash .ghost .ink-pre {
-    opacity: 1;
-    filter: none;
-    color: rgba(28, 22, 18, 0.72);
-    transition: none;
-  }
-
-  .ink-wash .ghost .ink-name {
-    color: #1c1612;
-    --ink: #fbf6ee;
-    transition: none;
-  }
-
-  .ink-wash .ghost .ink-name em {
-    transition: none;
-  }
-
-  .ink-wash .ghost .ink-flourish {
-    clip-path: inset(-50% -2% -50% -2%);
-    transition: none;
-  }
-
-  .intro-stage.lit .ink-pre {
-    color: rgba(28, 22, 18, 0.72);
-  }
-
-  .intro-stage.lit .ink-name {
-    color: #1c1612;
-    --ink: #fbf6ee;
-  }
-
-  /* The ink lies over the pot; inside it, a paper twin of the pot shows
-     through exactly where the ink has reached. */
-  .ink-wash .twin {
-    position: fixed;
-    margin: 0;
-    color: #fbf6ee;
-    overflow: visible;
   }
 
   .intro-skip {
