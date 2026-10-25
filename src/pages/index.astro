@@ -597,14 +597,14 @@ const links = [
     }
 
     // Every pause and stagger is scaled by the tempo. Patience alone is
-    // never hurried.
-    var TEMPO = 0.76, tempo = TEMPO;
+    // never hurried, and the name keeps a slower one of its own.
+    var TEMPO = 0.66, NAME_TEMPO = 0.76, tempo = TEMPO;
 
     // The styles' own animations keep the same tempo, patience excepted.
     function quicken(e) {
       if (e.target.closest && e.target.closest('.vw-patience')) return;
       e.target.getAnimations().forEach(function (a) {
-        if (a.playbackRate === 1 && (a instanceof CSSAnimation || a instanceof CSSTransition)) a.playbackRate = 1 / TEMPO;
+        if (a.playbackRate === 1 && (a instanceof CSSAnimation || a instanceof CSSTransition)) a.playbackRate = 1 / tempo;
       });
     }
     stage.addEventListener('animationstart', quicken);
@@ -715,16 +715,18 @@ const links = [
         }, t);
       } else {
         await each(inOrder(all(w, '.l.in'), how.order), how.outGap, add('go'), t);
-        await wait(how.out * 0.6, t);
+        // The next word waits until this one has all but gone, so the two
+        // never stand in the same place at once.
+        await wait(how.out * 0.9, t);
       }
-      // Hand over now; the last of this word clears itself shortly after.
+      var outTempo = tempo;
       tempo = TEMPO;
       setMood('calm');
       timers.push(setTimeout(function () {
         if (t !== token) return;
         w.classList.remove('on', 'written');
         all(w, '.l').forEach(function (l) { l.classList.remove('in', 'go', 'cur'); });
-      }, how.out * 0.4 + 50));
+      }, (how.out * 0.1 + 60) * outTempo));
     }
 
     function resetInk() {
@@ -768,6 +770,7 @@ const links = [
     }
 
     async function play(t) {
+      tempo = TEMPO;
       resetInk();
       measureSlot();
       var words = all(inkSlot, '.vw');
@@ -782,7 +785,8 @@ const links = [
 
       for (var i = 0; i < words.length; i++) await word(words[i], t);
 
-      // And last, the name, revealed once. First everything stops, and
+      // And last, the name, revealed once, at its own slower tempo. First everything stops, and
+      tempo = NAME_TEMPO;
       // the whole line lets go, until there is only the pot on an empty
       // page, and a moment of silence.
       setMood('still');
@@ -793,37 +797,38 @@ const links = [
 
       // Then "This is the", and the name written beneath it in one slow
       // stroke, while the pot's ink is drawn out of it into the pen. The
-      // ink is wet: small ripples spread from the pot's mouth as it gives
-      // up its ink, and from the point of the pen as it lays the ink down.
+      // ink is wet: echoes of the pot's own outline open out of it as it
+      // gives up its ink, and echoes of the letters lift off the stroke as
+      // the pen lays them down.
       var stroke = inkName.querySelector('.nm');
       var em = inkName.querySelector('em');
       var curl = inkCurl.getTotalLength();
-      var mk = smark.getBoundingClientRect(), u = mk.width / 56;
-      var mouthX = mk.left + (50 - 22) * u, mouthY = mk.top + (59 - 2) * u;
       nameLine.classList.add('on');
       pre.classList.add('shown');
+      timers.push(setTimeout(function () { textEcho(pre, null, 0.06, 0.55); }, 450 * tempo));
       await wait(1000, t);
 
       inkCurl.style.strokeDasharray = curl;
       stroke.classList.add('writing');
       inkCurl.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: curl }], {
-        duration: 2800 * TEMPO, easing: 'cubic-bezier(0.4, 0.05, 0.3, 1)', fill: 'forwards'
+        duration: 2800 * tempo, easing: 'cubic-bezier(0.4, 0.05, 0.3, 1)', fill: 'forwards'
       });
       [0, 900, 1800].forEach(function (d) {
-        timers.push(setTimeout(function () { ripple(mouthX, mouthY, 34, 0.7); }, d * TEMPO));
+        timers.push(setTimeout(potEcho, d * tempo));
       });
       followPen(stroke, t);
       await wait(2800, t);
       stroke.classList.replace('writing', 'written');
 
-      // It is underlined, Curiosity catches the light, and the pot fills
-      // again, with a ripple as the ink settles back into it.
+      // It is underlined, Curiosity catches the light, the whole name gives
+      // off one echo of itself, and the pot fills again.
       inkName.classList.add('shine');
       em.classList.add('glint');
+      textEcho(stroke, null, 0.05, 0.6);
       inkCurl.animate([{ strokeDashoffset: curl }, { strokeDashoffset: 0 }], {
-        duration: 1600 * TEMPO, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards'
+        duration: 1600 * tempo, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards'
       });
-      timers.push(setTimeout(function () { ripple(mouthX, mouthY, 40, 0.8); }, 1500 * TEMPO));
+      timers.push(setTimeout(potEcho, 1500 * tempo));
       await wait(2300, t);
       em.classList.remove('glint');
 
@@ -835,23 +840,66 @@ const links = [
       swoop();
     }
 
-    /* Ripples of wet ink, small and local. Drawn on a canvas beneath the
-       words: each ring is a soft band of the accent with a fine line at
-       its crest, opening from where the ink is and fading to nothing. */
+    /* Echoes of wet ink. Each ripple has the shape of what made it, the
+       pot's outline or the letters' own, and opens outward from it,
+       growing a little and fading to nothing. Drawn on a canvas beneath
+       the words: a soft band with a fine line at its crest. */
     var rippleCanvas = stage.querySelector('.ink-ripples');
     var rctx = rippleCanvas.getContext('2d');
     var rings = [], rippling = false;
+    var POT_SHAPE = new Path2D(
+      'M39.2 94 C29.6 94 28.4 79.6 36.8 72.4 C40.4 69.4 41.6 67.6 41.6 64 L58.4 64 C58.4 67.6 59.6 69.4 63.2 72.4 C71.6 79.6 70.4 94 60.8 94 Z ' +
+      'M42.8 64 L42.8 59.2 L57.2 59.2 L57.2 64 Z');
 
-    function ripple(x, y, size, strength) {
+    function echo(cx, cy, grow, strength, paint) {
       for (var i = 0; i < 2; i++) {
         rings.push({
-          x: x, y: y, to: size * (1 - i * 0.35),
-          t0: performance.now() + i * 140 * TEMPO,
-          life: (1100 + i * 150) * TEMPO,
-          a: strength * (1 - i * 0.4)
+          cx: cx, cy: cy, grow: grow * (1 - i * 0.4), paint: paint,
+          t0: performance.now() + i * 150 * tempo,
+          life: (1200 + i * 150) * tempo,
+          a: strength * (1 - i * 0.45)
         });
       }
       if (!rippling) { rippling = true; requestAnimationFrame(drawRipples); }
+    }
+
+    // The pot's own outline, opening out of it.
+    function potEcho() {
+      var m = smark.getBoundingClientRect(), u = m.width / 56;
+      var cx = m.left + (50 - 22) * u, cy = m.top + (79 - 2) * u;
+      echo(cx, cy, 0.55, 0.8, function (c, lw) {
+        c.translate(m.left, m.top);
+        c.scale(u, u);
+        c.translate(-22, -2);
+        c.lineWidth = lw / u;
+        c.stroke(POT_SHAPE);
+      });
+    }
+
+    // The letters' own outline, set exactly over the words (their font,
+    // their baseline), optionally only the part between x0 and x1.
+    function textEcho(el, part, grow, strength) {
+      var b = el.getBoundingClientRect(), cs = getComputedStyle(el);
+      var probe = document.createElement('span');
+      probe.className = 'bl';
+      el.appendChild(probe);
+      var base = probe.getBoundingClientRect().top;
+      probe.remove();
+      var x = b.left + parseFloat(cs.paddingLeft);
+      var font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+      var text = el.textContent.replace(/\s+/g, ' ').trim();
+      var cx = part ? (part[0] + part[1]) / 2 : b.left + b.width / 2;
+      echo(cx, base - parseFloat(cs.fontSize) * 0.3, grow, strength, function (c, lw) {
+        if (part) {
+          c.beginPath();
+          c.rect(part[0], b.top - b.height, part[1] - part[0], b.height * 3);
+          c.clip();
+        }
+        c.font = font;
+        c.textBaseline = 'alphabetic';
+        c.lineWidth = lw;
+        c.strokeText(text, x, base);
+      });
     }
 
     function drawRipples(now) {
@@ -864,24 +912,23 @@ const links = [
       rctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       rctx.clearRect(0, 0, W, H);
       rctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim();
+      rctx.lineJoin = 'round';
       rings = rings.filter(function (g) { return now - g.t0 < g.life; });
       rings.forEach(function (g) {
         var k = (now - g.t0) / g.life;
         if (k < 0) return;
         var e = 1 - Math.pow(1 - k, 3);
-        var r = 2 + (g.to - 2) * e;
+        var sc = 1 + g.grow * e;
         var fade = Math.pow(1 - k, 1.6) * g.a;
-        var band = 2 + 6 * e;
-        rctx.globalAlpha = fade * 0.24;
-        rctx.lineWidth = band;
-        rctx.beginPath();
-        rctx.arc(g.x, g.y, r, 0, Math.PI * 2);
-        rctx.stroke();
-        rctx.globalAlpha = fade * 0.8;
-        rctx.lineWidth = 1.1;
-        rctx.beginPath();
-        rctx.arc(g.x, g.y, r + band * 0.2, 0, Math.PI * 2);
-        rctx.stroke();
+        [[fade * 0.22, (1.5 + 4 * e) / sc], [fade * 0.75, 1 / sc]].forEach(function (pass) {
+          rctx.save();
+          rctx.globalAlpha = pass[0];
+          rctx.translate(g.cx, g.cy);
+          rctx.scale(sc, sc);
+          rctx.translate(-g.cx, -g.cy);
+          g.paint(rctx, pass[1]);
+          rctx.restore();
+        });
       });
       rctx.globalAlpha = 1;
       if (rings.length) requestAnimationFrame(drawRipples);
@@ -891,20 +938,19 @@ const links = [
     // The point of the pen is the edge of the stroke's mask: the mask is
     // 2.6 times the stroke's width, with its edge at the middle, and moves
     // from 100% to 0%, so the edge runs from -0.3 to 1.3 of the width.
-    // While the pen is over the name, it leaves a small ripple behind it
-    // every little while.
+    // Every little while the letters just behind the pen give off an echo.
     function followPen(el, t) {
       var b = el.getBoundingClientRect(), cs = getComputedStyle(el);
       var padL = parseFloat(cs.paddingLeft), padR = parseFloat(cs.paddingRight);
-      var y = b.top + parseFloat(cs.paddingTop) + (b.height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)) * 0.62;
+      var reach = parseFloat(cs.fontSize) * 0.9;
       var last = 0;
       (function step(now) {
         if (t !== token || !el.classList.contains('writing')) return;
         var pos = parseFloat(getComputedStyle(el).webkitMaskPosition || getComputedStyle(el).maskPosition) / 100;
         var x = b.left + (1.3 - 1.6 * pos) * b.width;
-        if (x > b.left + padL && x < b.right - padR && now - last > 110 * TEMPO) {
+        if (x > b.left + padL && x < b.right - padR + reach * 0.3 && now - last > 170 * tempo) {
           last = now;
-          ripple(x, y + (Math.random() - 0.5) * b.height * 0.12, 16 + Math.random() * 8, 0.55);
+          textEcho(el, [x - reach, x], 0.08, 0.5);
         }
         requestAnimationFrame(step);
       })(performance.now());
@@ -925,7 +971,7 @@ const links = [
       var flight = el.animate([
         { transform: 'none' },
         { transform: 'translate(' + dx.toFixed(1) + 'px, ' + dy.toFixed(1) + 'px) scale(' + k.toFixed(4) + ')' }
-      ], { duration: 1400 * TEMPO, easing: 'cubic-bezier(0.76, 0, 0.18, 1)', fill: 'forwards' });
+      ], { duration: 1400 * tempo, easing: 'cubic-bezier(0.76, 0, 0.18, 1)', fill: 'forwards' });
       flight.onfinish = function () {
         brand.style.opacity = '1';
         el.style.visibility = 'hidden';
@@ -950,7 +996,7 @@ const links = [
       var flight = smark.animate([
         { transform: 'translate(0, 0) scale(1)' },
         { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(' + k + ')' }
-      ], { duration: 1400 * TEMPO, easing: 'cubic-bezier(0.76, 0, 0.18, 1)', fill: 'forwards' });
+      ], { duration: 1400 * tempo, easing: 'cubic-bezier(0.76, 0, 0.18, 1)', fill: 'forwards' });
       flight.onfinish = function () {
         settleHeaderInk();
         html.classList.add('landed');
@@ -1745,7 +1791,7 @@ const links = [
   }
 
   /* A probe for where a line's baseline is. */
-  .bl {
+  :global(.bl) {
     display: inline-block;
     width: 0;
     height: 0;
