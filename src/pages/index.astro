@@ -65,8 +65,16 @@ const field = {
    its own type and its own way of arriving and leaving. The order is the
    journey itself: it starts in wonder and rushes in with enthusiasm, needs
    patience when it slows, meets its own imperfection, owns it with
-   honesty, and makes peace with it in acceptance. What is left after all
-   of that is curiosity, which the journey is named for. */
+   honesty, makes peace with it in acceptance, and looks ahead in hope.
+   What is left after all of that is curiosity, which the journey is named
+   for. */
+// Where each word comes back from, around the name, just before it is
+// written (x, y as a share of the screen).
+const echoAt = {
+  wonder: [22, 30], enthusiasm: [78, 24], patience: [20, 66], imperfection: [80, 62],
+  honesty: [28, 84], acceptance: [72, 82], hope: [50, 13],
+};
+
 const virtues = [
   { text: 'wonder', tail: '', cls: 'wonder' },
   { text: 'enthusiasm', tail: '!!', cls: 'enthusiasm' },
@@ -74,6 +82,7 @@ const virtues = [
   { text: 'imperfection', tail: '', cls: 'imperfection' },
   { text: 'honesty', tail: '.', cls: 'honesty' },
   { text: 'acceptance', tail: '', cls: 'acceptance' },
+  { text: 'hope', tail: '', cls: 'hope' },
 ].map(v => {
   const letters = [...v.text].map((c, j) => ({
     c, j, tail: false,
@@ -203,6 +212,14 @@ const links = [
         <span class="ink-pre">This is the</span>
         <span class="ink-name" id="ink-name"><span class="nm">Journey of <em>Curiosity</em></span><svg class="ink-flourish" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M4 22 C 70 30, 130 6, 196 13 S 276 24, 296 6" /></svg></span>
       </p>
+    </div>
+    <!-- Just before the name: every word of the journey comes back for a
+         moment, from all around, and is drawn into it. -->
+    <div class="ink-echoes" aria-hidden="true">
+      {virtues.map(w => (
+        <span class={`echo echo-${w.cls}`} style={`--x:${echoAt[w.cls][0]}%;--y:${echoAt[w.cls][1]}%`}>{w.text + w.tail}</span>
+      ))}
+      <span class="ink-ripple"></span>
     </div>
     <button class="intro-skip" id="intro-skip" type="button">Skip <span aria-hidden="true">&rarr;</span></button>
   </div>
@@ -515,6 +532,7 @@ const links = [
     var nameLine = document.getElementById('ink-name-line');
     var inkName = document.getElementById('ink-name');
     var pre = nameLine.querySelector('.ink-pre');
+    var ripple = stage.querySelector('.ink-ripple');
     var token = 0;
     var narrow = matchMedia('(max-width: 600px)');
     var all = function (root, sel) { return [].slice.call(root.querySelectorAll(sel)); };
@@ -531,6 +549,7 @@ const links = [
       imperfection: { amp: 0.06, speed: 1.7, sway: 0 },
       honesty:      { amp: 0, speed: 1.7, sway: 0 },
       acceptance:   { amp: 0.06, speed: 1.4, sway: 0 },
+      hope:         { amp: 0.1, speed: 0.9, sway: 0.5 },
       curiosity:    { amp: 0.08, speed: 1.1, sway: 0.6 },
       still:        { amp: 0, speed: 1.1, sway: 0 },
     };
@@ -642,6 +661,7 @@ const links = [
       imperfection: { before: 300, gap: 70, settle: 700, hold: 1600, outGap: 40, out: 850 },
       honesty:      { before: 150, gap: 110, typed: true, tailAfter: 250, tailGap: 0, hold: 1700, outGap: 55, out: 0 },
       acceptance:   { before: 500, gap: 65, order: 'scatter', settle: 600, hold: 2000, outGap: 30, out: 650 },
+      hope:         { before: 550, gap: 150, settle: 900, hold: 1900, outGap: 70, out: 1100 },
     };
 
     function cursorOn(w, l) {
@@ -703,12 +723,14 @@ const links = [
       nameLine.classList.remove('on');
       pre.classList.remove('leave');
       pre.style.transition = pre.style.transform = '';
-      inkName.classList.remove('shine', 'fly');
+      inkName.classList.remove('shine', 'fly', 'burst');
       inkName.style.visibility = inkName.style.transformOrigin = '';
       inkName.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       all(inkName, '.nm').forEach(function (n) { n.classList.remove('writing', 'written'); });
       brand.style.clipPath = brand.style.opacity = brand.style.transition = '';
       smark.classList.remove('drink');
+      all(stage, '.echo').forEach(function (e) { e.classList.remove('in', 'gather'); e.style.removeProperty('--dx'); e.style.removeProperty('--dy'); });
+      ripple.classList.remove('go');
     }
 
     // The slot is as wide as a typical word, so the sentence sits in the
@@ -744,13 +766,37 @@ const links = [
 
       for (var i = 0; i < words.length; i++) await word(words[i], t);
 
-      // And last, what is left once the rest has been accepted: the name.
-      // The opening line goes still; its "This is the" glides to make room
-      // (handed to an identical copy, so nothing jumps), "journey of"
-      // lifts away, and "Journey of Curiosity" is written in the header's
-      // own hand.
+      // And last, the name. First a held breath: the line goes still,
+      // "journey of" lifts away, and the pot breathes in.
       setMood('still');
-      await wait(500, t);
+      each(lead.slice(11, 22), 30, add('gone'), t).catch(function () {});
+      await wait(450, t);
+      smark.classList.add('drink');
+      await wait(1000, t);
+
+      // Then everything the journey took comes back for a moment, from all
+      // around, each word in its own hand...
+      var echoes = all(stage, '.echo');
+      await each(echoes, 110, add('in'), t);
+      await wait(700, t);
+
+      // ...and is drawn into the middle, all at once.
+      var page = stage.querySelector('.ink-page').getBoundingClientRect();
+      var cx = page.left + page.width / 2, cy = page.top + page.height / 2;
+      ripple.style.left = cx + 'px';
+      ripple.style.top = cy + 'px';
+      echoes.forEach(function (e) {
+        var r = e.getBoundingClientRect();
+        e.style.setProperty('--dx', (cx - (r.left + r.width / 2)).toFixed(1) + 'px');
+        e.style.setProperty('--dy', (cy - (r.top + r.height / 2)).toFixed(1) + 'px');
+        e.classList.add('gather');
+      });
+      await wait(560, t);
+
+      // Where they meet, the ink breaks like a drop on water, and the name
+      // is written out of it in one stroke, as "This is the" glides to
+      // make room for it (handed to an identical copy, so nothing jumps).
+      ripple.classList.add('go');
       var was = lead.slice(0, 11).map(function (l) { return l.getBoundingClientRect(); });
       nameLine.classList.add('on');
       var now = pre.getBoundingClientRect();
@@ -758,16 +804,12 @@ const links = [
       pre.style.transform = 'translate(' + (was[0].left - now.left).toFixed(1) + 'px, ' + (was[0].bottom - now.bottom).toFixed(1) + 'px)';
       lead.slice(0, 11).forEach(add('swapped'));
       void pre.offsetWidth;
-      pre.style.transition = 'transform 1.4s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.7s ease, filter 0.7s ease';
+      pre.style.transition = 'transform 1.2s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.7s ease, filter 0.7s ease';
       pre.style.transform = '';
-      each(lead.slice(11, 22), 30, add('gone'), t).catch(function () {});
-
-      // All in one movement: as "This is the" glides and "journey of" lifts
-      // away, a single stroke of the pen writes the whole name.
       var stroke = inkName.querySelector('.nm');
-      await wait(120, t);
+      inkName.classList.add('burst');
       stroke.classList.add('writing');
-      await wait(2300, t);
+      await wait(1900, t);
       stroke.classList.replace('writing', 'written');
 
       // It catches the light, draws a breath, and is underlined.
@@ -1649,6 +1691,39 @@ const links = [
     50%, 100% { opacity: 0; }
   }
 
+  /* hope: rises like first light, warm with it, and leaves by floating
+     up. */
+  .ink-slot .vw-hope {
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .ink-slot .vw-hope .l {
+    transition: text-shadow 1.4s ease;
+  }
+
+  .ink-slot .vw-hope .l.in {
+    animation: dawn 1.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .ink-slot .vw-hope.written .l {
+    text-shadow: 0 0 0.5em var(--color-accent-soft), 0 0 0.12em var(--color-accent-soft);
+  }
+
+  .ink-slot .vw-hope .l.in.go {
+    animation: float-up 1.1s cubic-bezier(0.5, 0, 0.75, 0) both;
+  }
+
+  @keyframes dawn {
+    0%   { opacity: 0; filter: blur(6px); transform: translateY(0.7em); color: var(--color-accent); }
+    55%  { opacity: 1; color: var(--color-accent); }
+    100% { opacity: 1; filter: blur(0); transform: none; }
+  }
+
+  @keyframes float-up {
+    to { opacity: 0; filter: blur(5px); transform: translateY(-0.9em); }
+  }
+
   /* acceptance: every letter in a different hand, arriving scattered,
      and settling into one line together. */
   .ink-slot .vw-acceptance .f1 { font-style: italic; }
@@ -1743,7 +1818,18 @@ const links = [
   }
 
   .ink-name .nm.writing {
-    animation: pen 2.3s cubic-bezier(0.45, 0.05, 0.35, 1) both;
+    animation: pen 1.9s cubic-bezier(0.3, 0.1, 0.25, 1) both;
+  }
+
+  /* The name lands with weight: it comes out of the ripple a touch large
+     and settles. */
+  .ink-name.burst {
+    animation: burst 1.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes burst {
+    from { transform: scale(1.18); }
+    to   { transform: none; }
   }
 
   .ink-name .nm.written {
@@ -1826,6 +1912,75 @@ const links = [
     filter: blur(6px);
     transform: translateY(-0.3em);
     transition: opacity 0.8s ease, filter 0.8s ease, transform 0.8s ease;
+  }
+
+  /* The echoes: every word of the journey, back for a moment around the
+     name, each in its own hand, then drawn into it. */
+  .ink-echoes {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .echo {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    white-space: nowrap;
+    padding: 0.3em 0.4em;
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.15rem, 2.8vw, 2.4rem);
+    color: var(--color-text-secondary);
+    opacity: 0;
+    filter: blur(8px);
+    transform: translate(-50%, -50%) scale(1.3);
+    transition: opacity 0.6s ease, filter 0.6s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .echo.in {
+    opacity: 0.9;
+    filter: blur(0);
+    transform: translate(-50%, -50%);
+  }
+
+  .echo.gather {
+    opacity: 0;
+    filter: blur(2px);
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.12);
+    transition: transform 0.6s cubic-bezier(0.6, 0, 0.85, 0.3), opacity 0.6s cubic-bezier(0.7, 0, 1, 0.5), filter 0.6s ease;
+  }
+
+  .echo-wonder { font-weight: 200; letter-spacing: 0.18em; }
+  .echo-enthusiasm { font-weight: 600; font-style: italic; color: var(--color-accent); }
+  .echo-patience { font-style: italic; }
+  .echo-imperfection { rotate: -6deg; }
+  .echo-honesty { font-family: var(--font-mono); font-size: 0.8em; letter-spacing: 0.22em; text-transform: uppercase; }
+  .echo-acceptance { font-family: 'Great Vibes', var(--font-display); font-size: 1.3em; }
+  .echo-hope { font-style: italic; text-shadow: 0 0 0.5em var(--color-accent-soft); }
+
+  /* Where they meet, the ink breaks like a drop on water. */
+  .ink-ripple {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 46vmin;
+    height: 46vmin;
+    margin: -23vmin 0 0 -23vmin;
+    border-radius: 50%;
+    border: 1px solid var(--color-accent);
+    box-shadow: 0 0 40px var(--color-accent-soft), inset 0 0 40px var(--color-accent-soft);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .ink-ripple.go {
+    animation: ripple 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes ripple {
+    0%   { opacity: 0.9; transform: scale(0.04); }
+    100% { opacity: 0; transform: scale(2.6); }
   }
 
   .intro-mark.drink .vessel {
