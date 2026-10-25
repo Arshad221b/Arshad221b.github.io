@@ -181,6 +181,7 @@ const links = [
 
   <!-- The stage for the opening: the mark alone, before anything else. -->
   <div class="intro-stage" id="intro-stage" aria-hidden="true">
+    <div class="ink-flood" aria-hidden="true"></div>
     <svg class="intro-mark" viewBox="22 2 56 96" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
       <path class="ink" d="M50 52 C46 40 60 36 56 26 C52 16 40 20 44 30 C47 37 58 32 60 22 C62 12 54 6 48 8" stroke-width="3.4"/>
       <g class="vessel">
@@ -533,6 +534,7 @@ const links = [
     var inkName = document.getElementById('ink-name');
     var pre = nameLine.querySelector('.ink-pre');
     var ripple = stage.querySelector('.ink-ripple');
+    var flood = stage.querySelector('.ink-flood');
     var token = 0;
     var narrow = matchMedia('(max-width: 600px)');
     var all = function (root, sel) { return [].slice.call(root.querySelectorAll(sel)); };
@@ -731,6 +733,9 @@ const links = [
       smark.classList.remove('drink');
       all(stage, '.echo').forEach(function (e) { e.classList.remove('in', 'gather'); e.style.removeProperty('--dx'); e.style.removeProperty('--dy'); });
       ripple.classList.remove('go');
+      flood.classList.remove('fill', 'drain');
+      stage.classList.remove('flooded', 'inked');
+      inkName.querySelector('em').classList.remove('glint');
     }
 
     // The slot is as wide as a typical word, so the sentence sits in the
@@ -796,6 +801,11 @@ const links = [
       // Where they meet, the ink breaks like a drop on water, and the name
       // is written out of it in one stroke, as "This is the" glides to
       // make room for it (handed to an identical copy, so nothing jumps).
+      // A drop of ink lands where they met and floods the screen.
+      flood.style.setProperty('--fx', cx + 'px');
+      flood.style.setProperty('--fy', cy + 'px');
+      flood.classList.add('fill');
+      stage.classList.add('flooded', 'inked');
       ripple.classList.add('go');
       var was = lead.slice(0, 11).map(function (l) { return l.getBoundingClientRect(); });
       nameLine.classList.add('on');
@@ -804,7 +814,7 @@ const links = [
       pre.style.transform = 'translate(' + (was[0].left - now.left).toFixed(1) + 'px, ' + (was[0].bottom - now.bottom).toFixed(1) + 'px)';
       lead.slice(0, 11).forEach(add('swapped'));
       void pre.offsetWidth;
-      pre.style.transition = 'transform 1.2s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.7s ease, filter 0.7s ease';
+      pre.style.transition = 'transform 1.2s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.7s ease, filter 0.7s ease, color 0.7s ease';
       pre.style.transform = '';
       var stroke = inkName.querySelector('.nm');
       inkName.classList.add('burst');
@@ -812,9 +822,30 @@ const links = [
       await wait(1900, t);
       stroke.classList.replace('writing', 'written');
 
-      // It catches the light, draws a breath, and is underlined.
+      // In the ink it catches the light, draws a breath, and is
+      // underlined.
+      var em = inkName.querySelector('em');
       inkName.classList.add('shine');
-      await wait(2400, t);
+      em.classList.add('glint');
+      await wait(1900, t);
+      em.classList.remove('glint');
+
+      // Then the ink drains back into the pot, and leaves the name on the
+      // page.
+      var mk = smark.getBoundingClientRect();
+      flood.style.setProperty('--gx', (mk.left + mk.width / 2) + 'px');
+      flood.style.setProperty('--gy', (mk.top + mk.height * 0.6) + 'px');
+      flood.classList.add('drain');
+      // Each thing takes its own colour back as the ink leaves it: the name
+      // first, the pot last.
+      await wait(450, t);
+      stage.classList.remove('flooded');
+      await wait(550, t);
+      stage.classList.remove('inked');
+      smark.classList.remove('drink');
+      void smark.offsetWidth;
+      smark.classList.add('drink');
+      await wait(700, t);
 
       // Then it flies home, and lands as the header's name with the mark.
       pre.classList.add('leave');
@@ -1275,6 +1306,7 @@ const links = [
     color: var(--color-accent);
     overflow: visible;
     will-change: transform;
+    transition: color 0.7s ease;
   }
 
   .intro-mark .pot {
@@ -1794,11 +1826,14 @@ const links = [
     letter-spacing: 0;
     line-height: 1;
     color: var(--color-text);
+    --ink: var(--color-accent);
+    transition: color 0.7s ease;
   }
 
   .ink-name em {
     font-style: normal;
-    color: var(--color-accent);
+    color: var(--ink);
+    transition: color 0.7s ease;
   }
 
   /* The name is written in one stroke of the pen. The padding gives the script's
@@ -1843,16 +1878,13 @@ const links = [
   }
 
   /* Curiosity catches the light once. */
-  .ink-name em {
-    background: linear-gradient(105deg, var(--color-accent) 38%, color-mix(in srgb, var(--color-accent) 30%, #fff) 50%, var(--color-accent) 62%);
+  .ink-name em.glint {
+    background: linear-gradient(105deg, var(--ink) 38%, #fff 50%, var(--ink) 62%);
     background-size: 300% 100%;
     background-position: 100% 0;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-  }
-
-  .ink-name.shine em {
     animation: shine 1.5s cubic-bezier(0.45, 0.05, 0.35, 1) both;
   }
 
@@ -1879,7 +1911,7 @@ const links = [
     bottom: -0.2em;
     height: 0.34em;
     overflow: visible;
-    color: var(--color-accent);
+    color: var(--ink);
     clip-path: inset(-50% 102% -50% -2%);
     transition: opacity 0.35s ease;
   }
@@ -1912,6 +1944,38 @@ const links = [
     filter: blur(6px);
     transform: translateY(-0.3em);
     transition: opacity 0.8s ease, filter 0.8s ease, transform 0.8s ease;
+  }
+
+  /* The flood: where the words meet, a drop of ink lands and fills the
+     screen; the name is written out of it in paper, and then the ink
+     drains back into the pot. */
+  .ink-flood {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: var(--color-accent);
+    clip-path: circle(0 at var(--fx, 50%) var(--fy, 50%));
+    pointer-events: none;
+  }
+
+  .ink-flood.fill {
+    clip-path: circle(150% at var(--fx, 50%) var(--fy, 50%));
+    transition: clip-path 1s cubic-bezier(0.7, 0, 0.2, 1);
+  }
+
+  .ink-flood.drain {
+    clip-path: circle(0 at var(--gx, 50%) var(--gy, 50%));
+    transition: clip-path 1.1s cubic-bezier(0.7, 0, 0.3, 1);
+  }
+
+  .intro-stage.inked .intro-mark,
+  .intro-stage.flooded .ink-pre,
+  .intro-stage.flooded .ink-name {
+    color: var(--color-bg);
+  }
+
+  .intro-stage.flooded .ink-name {
+    --ink: var(--color-bg);
   }
 
   /* The echoes: every word of the journey, back for a moment around the
