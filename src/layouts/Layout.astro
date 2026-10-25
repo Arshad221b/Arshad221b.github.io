@@ -296,59 +296,42 @@ const elsewhere = [
     const applyTheme = function () {
       html.classList.toggle('dark', toDark);
       localStorage.setItem('theme', toDark ? 'dark' : 'light');
+      var bar = document.querySelector('meta[name="theme-color"]');
+      if (bar) bar.content = getComputedStyle(html).getPropertyValue('--color-chrome').trim();
     };
-    // The phone's browser bars are left as they are: only the page fills
-    // with the new theme. Safari colours them from the document's own
-    // background, so that is held at the colour the page loaded with; the
-    // page itself is painted on the body, inside it, and swaps as usual.
-    // The bars take the new theme on the next page load.
-    if (!html.style.backgroundColor) {
-      html.style.backgroundColor = getComputedStyle(html).backgroundColor;
-    }
 
-    // Ink spreading across the page from wherever the toggle was pressed,
-    // rather than the theme just snapping. Falls back to an instant swap
-    // where the View Transitions API or motion isn't available.
     var reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!document.startViewTransition || reduceMotion) {
+    if (reduceMotion) {
       applyTheme();
       return;
     }
 
-    var x = event.clientX;
-    var y = event.clientY;
-    var endRadius = Math.hypot(
-      Math.max(x, innerWidth - x),
-      Math.max(y, innerHeight - y)
-    );
-
-    // The header leaves its own transition group so the whole page is one
-    // picture under the circle; the theme and the freeze on transitions go
-    // in together, in one style pass.
-    var header = document.querySelector('body > header');
-    if (header) header.style.viewTransitionName = 'none';
-    var transition = document.startViewTransition(function () {
-      html.classList.add('theme-swap');
+    // The new theme's paper spreads across the screen from the toggle, as
+    // a real layer on the page. The page itself changes only once the
+    // screen is covered, and then the layer lifts away. Because nothing
+    // underneath changes early, a phone's browser bars (which colour
+    // themselves from what is on the page at its edges) change exactly
+    // when the paper reaches them.
+    if (html.classList.contains('theme-swap')) return;
+    var x = event.clientX, y = event.clientY;
+    var reach = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y)) + 2;
+    var at = ' at ' + x + 'px ' + y + 'px)';
+    var sheet = document.createElement('div');
+    sheet.className = 'theme-sheet ' + (toDark ? 'to-dark' : 'to-light');
+    sheet.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(sheet);
+    html.classList.add('theme-swap');
+    sheet.animate({ clipPath: ['circle(0px' + at, 'circle(' + reach + 'px' + at] }, {
+      duration: 650, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards'
+    }).finished.then(function () {
       applyTheme();
-    });
-    transition.finished.finally(function () {
-      html.classList.remove('theme-swap');
-      if (header) header.style.viewTransitionName = '';
-    });
-    transition.ready.then(function () {
-      html.animate(
-        {
-          clipPath: [
-            'circle(0px at ' + x + 'px ' + y + 'px)',
-            'circle(' + endRadius + 'px at ' + x + 'px ' + y + 'px)',
-          ],
-        },
-        {
-          duration: 700,
-          easing: 'cubic-bezier(0.65, 0, 0.35, 1)',
-          pseudoElement: '::view-transition-new(root)',
-        }
-      );
+      requestAnimationFrame(function () {
+        sheet.animate({ opacity: [1, 0] }, { duration: 320, easing: 'ease-out', fill: 'forwards' })
+          .finished.then(function () {
+            sheet.remove();
+            html.classList.remove('theme-swap');
+          });
+      });
     });
   });
 </script>
