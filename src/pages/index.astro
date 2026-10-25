@@ -104,11 +104,14 @@ const links = [
   <script is:inline slot="head">
     /* The intro plays once. After that it waits two weeks before it will
        welcome the same browser back, and it never plays for anyone who has
-       asked for less motion. Decided here, before the first paint, so the
-       page never flashes in and then hides itself. */
+       asked for less motion, or for crawlers and automated browsers, which
+       should see the finished page. Decided here, before the first paint,
+       so the page never flashes in and then hides itself. */
     (function () {
       try {
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (navigator.webdriver) return;
+        if (/bot|crawl|spider|slurp|lighthouse|headless|chrome-lighthouse|pagespeed|prerender|preview/i.test(navigator.userAgent)) return;
         var last = +localStorage.getItem('intro-seen') || 0;
         if (Date.now() - last > 14 * 864e5) {
           document.documentElement.classList.add('intro');
