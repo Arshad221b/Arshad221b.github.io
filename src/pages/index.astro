@@ -207,7 +207,7 @@ const links = [
       </p>
       <p class="ink-name-line" id="ink-name-line" aria-hidden="true">
         <span class="ink-pre">This is the</span>
-        <span class="ink-name" id="ink-name"><span class="nm">Journey of <em>Curiosity</em></span><svg class="ink-flourish" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M4 22 C 70 30, 130 6, 196 13 S 276 24, 296 6" /></svg></span>
+        <span class="ink-name" id="ink-name"><span class="nm">Journey of <em>Curiosity</em></span><span class="bang">!</span><svg class="ink-flourish" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M4 22 C 70 30, 130 6, 196 13 S 276 24, 296 6" /></svg></span>
       </p>
     </div>
     <button class="intro-skip" id="intro-skip" type="button">Skip <span aria-hidden="true">&rarr;</span></button>
@@ -742,6 +742,7 @@ const links = [
       inkName.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       all(inkName, '.nm').forEach(function (n) { n.classList.remove('writing', 'written'); });
       pre.classList.remove('shown');
+      inkName.querySelector('.bang').classList.remove('in', 'out');
       rings.length = 0;
       inkCurl.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       inkCurl.style.strokeDasharray = '';
@@ -802,9 +803,9 @@ const links = [
       var stroke = inkName.querySelector('.nm');
       var em = inkName.querySelector('em');
       var curl = inkCurl.getTotalLength();
+      var bang = inkName.querySelector('.bang');
       nameLine.classList.add('on');
       pre.classList.add('shown');
-      timers.push(setTimeout(function () { textEcho(pre, null, 0.06, 0.55); }, 450 * tempo));
       await wait(1000, t);
 
       inkCurl.style.strokeDasharray = curl;
@@ -815,21 +816,31 @@ const links = [
       [0, 900, 1800].forEach(function (d) {
         timers.push(setTimeout(potEcho, d * tempo));
       });
-      followPen(stroke, t);
+      followPen(stroke, em, t);
       await wait(2800, t);
       stroke.classList.replace('writing', 'written');
+
+      // And then it is exclaimed: a quick flick of the pen after Curiosity.
+      bang.classList.add('in');
+      timers.push(setTimeout(function () { textEcho(bang, null, 0.12, 0.7); }, 120 * tempo));
+      await wait(500, t);
 
       // It is underlined, Curiosity catches the light, the whole name gives
       // off one echo of itself, and the pot fills again.
       inkName.classList.add('shine');
       em.classList.add('glint');
-      textEcho(stroke, null, 0.05, 0.6);
+      textEcho(em, null, 0.05, 0.6);
       inkCurl.animate([{ strokeDashoffset: curl }, { strokeDashoffset: 0 }], {
         duration: 1600 * tempo, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards'
       });
       timers.push(setTimeout(potEcho, 1500 * tempo));
       await wait(2300, t);
       em.classList.remove('glint');
+
+      // The exclamation is let go before the name goes home: the header's
+      // name has none.
+      bang.classList.add('out');
+      await wait(650, t);
 
       // Then it flies home, and lands as the header's name with the mark.
       pre.classList.add('leave');
@@ -937,19 +948,19 @@ const links = [
     // The point of the pen is the edge of the stroke's mask: the mask is
     // 2.6 times the stroke's width, with its edge at the middle, and moves
     // from 100% to 0%, so the edge runs from -0.3 to 1.3 of the width.
-    // Every little while the letters just behind the pen give off an echo.
-    function followPen(el, t) {
-      var b = el.getBoundingClientRect(), cs = getComputedStyle(el);
-      var padL = parseFloat(cs.paddingLeft), padR = parseFloat(cs.paddingRight);
-      var reach = parseFloat(cs.fontSize) * 0.9;
+    // While the pen is writing the coloured word, every little while the
+    // letters just behind it give off an echo.
+    function followPen(el, word, t) {
+      var b = el.getBoundingClientRect(), w = word.getBoundingClientRect();
+      var reach = parseFloat(getComputedStyle(el).fontSize) * 0.9;
       var last = 0;
       (function step(now) {
         if (t !== token || !el.classList.contains('writing')) return;
         var pos = parseFloat(getComputedStyle(el).webkitMaskPosition || getComputedStyle(el).maskPosition) / 100;
         var x = b.left + (1.3 - 1.6 * pos) * b.width;
-        if (x > b.left + padL && x < b.right - padR + reach * 0.3 && now - last > 170 * tempo) {
+        if (x > w.left && x < w.right + reach * 0.3 && now - last > 170 * tempo) {
           last = now;
-          textEcho(el, [x - reach, x], 0.08, 0.5);
+          textEcho(word, [Math.max(w.left, x - reach), x], 0.08, 0.5);
         }
         requestAnimationFrame(step);
       })(performance.now());
@@ -1990,6 +2001,32 @@ const links = [
   @keyframes pen {
     from { -webkit-mask-position: 100% 0; mask-position: 100% 0; }
     to   { -webkit-mask-position: 0 0; mask-position: 0 0; }
+  }
+
+  /* The exclamation after the name: flicked on, and let go before the
+     name goes home. It hangs outside the name's width, so the name is
+     measured and centred without it. */
+  .ink-name .bang {
+    position: absolute;
+    left: 100%;
+    margin-left: 0.04em;
+    color: var(--ink);
+    opacity: 0;
+    transform: translateY(0.25em) rotate(-14deg) scale(0.6);
+    transform-origin: 50% 90%;
+    transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.34, 1.7, 0.5, 1);
+  }
+
+  .ink-name .bang.in {
+    opacity: 1;
+    transform: rotate(6deg);
+  }
+
+  .ink-name .bang.out {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(-0.2em) rotate(6deg);
+    transition: opacity 0.6s ease, transform 0.6s ease, filter 0.6s ease;
   }
 
   /* Curiosity catches the light once. */
