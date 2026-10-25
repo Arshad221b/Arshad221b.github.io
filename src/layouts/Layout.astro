@@ -296,6 +296,10 @@ const elsewhere = [
     const applyTheme = function () {
       html.classList.toggle('dark', toDark);
       localStorage.setItem('theme', toDark ? 'dark' : 'light');
+    };
+    // The phone's browser bars take the new colour only once the reveal
+    // has reached the edges of the screen, not the moment it starts.
+    const tintBars = function () {
       var bar = document.querySelector('meta[name="theme-color"]');
       if (bar) bar.content = getComputedStyle(html).getPropertyValue('--color-chrome').trim();
     };
@@ -306,6 +310,7 @@ const elsewhere = [
     var reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!document.startViewTransition || reduceMotion) {
       applyTheme();
+      tintBars();
       return;
     }
 
@@ -328,6 +333,7 @@ const elsewhere = [
     transition.finished.finally(function () {
       html.classList.remove('theme-swap');
       if (header) header.style.viewTransitionName = '';
+      tintBars();
     });
     transition.ready.then(function () {
       html.animate(
