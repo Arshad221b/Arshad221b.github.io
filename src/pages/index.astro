@@ -734,7 +734,7 @@ const links = [
       all(inkName, '.nm').forEach(function (n) { n.classList.remove('writing', 'written'); });
       pre.classList.remove('shown');
       stage.classList.remove('lit');
-      stage.querySelector('.ink-wash').getAnimations().forEach(function (a) { a.cancel(); });
+      stage.querySelector('.ink-wash').removeAttribute('style');
       all(stage, '.ink-wash > *').forEach(function (n) { n.remove(); });
       stage.querySelector('.ink-page').style.zIndex = '';
       [inkName, pre, inkName.querySelector('em')].forEach(function (n) { n.style.transition = ''; });
@@ -797,12 +797,29 @@ const links = [
       var stroke = inkName.querySelector('.nm');
       var em = inkName.querySelector('em');
       var curl = inkCurl.getTotalLength();
+      // The ink has the pot's own shape: a mask of its body and neck, laid
+      // exactly over the pot (the mark's viewBox is 22 2 56 96). It grows
+      // about the middle of the body, by a scale that leaves the whole
+      // screen inside it: the body holds a circle of about 10 units round
+      // that point, so that is the radius that must reach the far corner.
       var mk = smark.getBoundingClientRect();
-      var vb = smark.querySelector('.vessel').getBoundingClientRect();
-      var wx = vb.left + vb.width / 2, wy = vb.top + vb.height / 2;
-      var reach = Math.hypot(Math.max(wx, innerWidth - wx), Math.max(wy, innerHeight - wy)) + 2;
-      var at = ' at ' + wx.toFixed(2) + 'px ' + wy.toFixed(2) + 'px)';
-      var shut = 'circle(0px' + at, open = 'circle(' + reach.toFixed(2) + 'px' + at;
+      var u = mk.width / 56;
+      var cx = mk.left + (50 - 22) * u, cy = mk.top + (79 - 2) * u;
+      var reach = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy));
+      var SMAX = reach / (10 * u) * 1.05;
+      var shape = function (k) {
+        var w = mk.width * k, h = mk.height * k;
+        var x = cx - (cx - mk.left) * k, y = cy - (cy - mk.top) * k;
+        wash.style.webkitMaskSize = wash.style.maskSize = w.toFixed(2) + 'px ' + h.toFixed(2) + 'px';
+        wash.style.webkitMaskPosition = wash.style.maskPosition = x.toFixed(2) + 'px ' + y.toFixed(2) + 'px';
+      };
+      var easeIO = function (k) { return k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
+      var easeOut = function (k) { return 1 - Math.pow(1 - k, 3); };
+      var POT = 'url("data:image/svg+xml,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="22 2 56 96"><g fill="#000" stroke="#000" stroke-width="3" stroke-linejoin="round">' +
+        '<path d="M39.2 94 C29.6 94 28.4 79.6 36.8 72.4 C40.4 69.4 41.6 67.6 41.6 64 L58.4 64 C58.4 67.6 59.6 69.4 63.2 72.4 C71.6 79.6 70.4 94 60.8 94 Z"/>' +
+        '<path d="M42.8 64 L42.8 59.2 L57.2 59.2 L57.2 64 Z"/></g></svg>') + '")';
+      wash.style.webkitMaskImage = wash.style.maskImage = POT;
 
       var twin = smark.cloneNode(true);
       twin.removeAttribute('id');
@@ -824,9 +841,13 @@ const links = [
         requestAnimationFrame(mirror);
       })();
 
-      await done(wash.animate([{ clipPath: shut }, { clipPath: open }], {
-        duration: 1800 * TEMPO, easing: 'cubic-bezier(0.55, 0, 0.3, 1)', fill: 'forwards'
-      }), t);
+      // The pot fills: the ink, in the pot's exact shape, comes up in it...
+      shape(1);
+      await frames(800, function (k) { wash.style.opacity = easeOut(k).toFixed(4); }, t);
+      // ...and overflows, the pot-shaped ink growing from the pot until it
+      // holds the whole screen. It grows by equal ratios, not equal steps,
+      // so it reads as one steady swell.
+      await frames(1700, function (k) { shape(Math.pow(SMAX, easeIO(k))); }, t);
 
       // On the ink: "This is the", quietly, and the name written beneath
       // it in one slow stroke, while the ink above the pot runs down into
@@ -869,9 +890,9 @@ const links = [
       stage.classList.remove('lit');
       stage.querySelector('.ink-page').style.zIndex = '0';
       void inkName.offsetWidth;
-      await done(wash.animate([{ clipPath: open }, { clipPath: shut }], {
-        duration: 1600 * TEMPO, easing: 'cubic-bezier(0.6, 0, 0.45, 1)', fill: 'forwards'
-      }), t);
+      await frames(1600, function (k) { shape(Math.pow(SMAX, 1 - easeIO(k))); }, t);
+      // Back to the size of the pot, and the pot empties.
+      await frames(700, function (k) { wash.style.opacity = (1 - easeIO(k)).toFixed(4); }, t);
       ghost.remove();
       twin.remove();
       stage.querySelector('.ink-page').style.zIndex = '';
@@ -889,10 +910,18 @@ const links = [
       swoop();
     }
 
-    // Resolves when an animation has run its course (or rejects if the
-    // intro was skipped or replayed meanwhile).
-    function done(anim, t) {
-      return anim.finished.then(function () { if (t !== token) throw 'stale'; });
+    // Runs fn(k) every frame for k from 0 to 1 over ms (on the intro's
+    // tempo), then resolves.
+    function frames(ms, fn, t) {
+      return new Promise(function (res, rej) {
+        var t0 = performance.now(), dur = ms * TEMPO;
+        (function step(now) {
+          if (t !== token) return rej('stale');
+          var k = Math.min(1, Math.max(0, (now - t0) / dur));
+          fn(k);
+          if (k < 1) requestAnimationFrame(step); else res();
+        })(t0);
+      });
     }
 
     // The flight of the name. It is set in the header's own hand, so it
@@ -1995,7 +2024,9 @@ const links = [
     inset: 0;
     z-index: 1;
     background: var(--color-accent);
-    clip-path: circle(0 at 50% 50%);
+    opacity: 0;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
     pointer-events: none;
   }
 
