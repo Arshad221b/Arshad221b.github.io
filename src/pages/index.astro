@@ -207,7 +207,7 @@ const links = [
       </p>
       <p class="ink-name-line" id="ink-name-line" aria-hidden="true">
         <span class="ink-pre">This is the</span>
-        <span class="ink-name" id="ink-name"><span class="nm">Journey of <em>Curiosity</em></span><span class="bang">!</span><svg class="ink-flourish" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M4 22 C 70 30, 130 6, 196 13 S 276 24, 296 6" /></svg></span>
+        <span class="ink-name" id="ink-name"><span class="nm">Journey of <em>Curiosity</em></span><svg class="ink-flourish" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M4 22 C 70 30, 130 6, 196 13 S 276 24, 296 6" /></svg></span>
       </p>
     </div>
     <button class="intro-skip" id="intro-skip" type="button">Skip <span aria-hidden="true">&rarr;</span></button>
@@ -649,7 +649,7 @@ const links = [
     // still leaving, so there is no dead air between them.
     var ways = {
       wonder:       { before: 450, gap: 130, order: 'middle', settle: 1300, hold: 2000, outGap: 50, out: 1100 },
-      enthusiasm:   { before: 60, gap: 40, tailAfter: 180, tailGap: 130, hold: 1200, outGap: 25, out: 450 },
+      enthusiasm:   { before: 150, gap: 55, tailAfter: 240, tailGap: 170, hold: 1800, outGap: 30, out: 550 },
       patience:     { before: 1100, gap: 210, tailAfter: 700, tailGap: 650, hold: 1900, outGap: 0, out: 1600 },
       imperfection: { before: 300, gap: 70, settle: 700, hold: 1600, outGap: 40, out: 850 },
       honesty:      { before: 150, gap: 110, typed: true, tailAfter: 250, tailGap: 0, hold: 1700, outGap: 55, out: 0 },
@@ -742,7 +742,6 @@ const links = [
       inkName.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       all(inkName, '.nm').forEach(function (n) { n.classList.remove('writing', 'written'); });
       pre.classList.remove('shown');
-      inkName.querySelector('.bang').classList.remove('in', 'out');
       rings.length = 0;
       inkCurl.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       inkCurl.style.strokeDasharray = '';
@@ -803,7 +802,6 @@ const links = [
       var stroke = inkName.querySelector('.nm');
       var em = inkName.querySelector('em');
       var curl = inkCurl.getTotalLength();
-      var bang = inkName.querySelector('.bang');
       nameLine.classList.add('on');
       pre.classList.add('shown');
       await wait(1000, t);
@@ -820,11 +818,6 @@ const links = [
       await wait(2800, t);
       stroke.classList.replace('writing', 'written');
 
-      // And then it is exclaimed: a quick flick of the pen after Curiosity.
-      bang.classList.add('in');
-      timers.push(setTimeout(function () { textEcho(bang, null, 0.12, 0.7); }, 120 * tempo));
-      await wait(500, t);
-
       // It is underlined, Curiosity catches the light, the whole name gives
       // off one echo of itself, and the pot fills again.
       inkName.classList.add('shine');
@@ -836,11 +829,6 @@ const links = [
       timers.push(setTimeout(potEcho, 1500 * tempo));
       await wait(2300, t);
       em.classList.remove('glint');
-
-      // The exclamation is let go before the name goes home: the header's
-      // name has none.
-      bang.classList.add('out');
-      await wait(650, t);
 
       // Then it flies home, and lands as the header's name with the mark.
       pre.classList.add('leave');
@@ -2001,32 +1989,6 @@ const links = [
   @keyframes pen {
     from { -webkit-mask-position: 100% 0; mask-position: 100% 0; }
     to   { -webkit-mask-position: 0 0; mask-position: 0 0; }
-  }
-
-  /* The exclamation after the name: flicked on, and let go before the
-     name goes home. It hangs outside the name's width, so the name is
-     measured and centred without it. */
-  .ink-name .bang {
-    position: absolute;
-    left: 100%;
-    margin-left: 0.04em;
-    color: var(--ink);
-    opacity: 0;
-    transform: translateY(0.25em) rotate(-14deg) scale(0.6);
-    transform-origin: 50% 90%;
-    transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.34, 1.7, 0.5, 1);
-  }
-
-  .ink-name .bang.in {
-    opacity: 1;
-    transform: rotate(6deg);
-  }
-
-  .ink-name .bang.out {
-    opacity: 0;
-    filter: blur(4px);
-    transform: translateY(-0.2em) rotate(6deg);
-    transition: opacity 0.6s ease, transform 0.6s ease, filter 0.6s ease;
   }
 
   /* Curiosity catches the light once. */
