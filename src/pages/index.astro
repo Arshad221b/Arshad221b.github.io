@@ -814,11 +814,21 @@ const links = [
       var cx = mk.left + (50 - 22) * u, cy = mk.top + (79 - 2) * u;
       var reach = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy));
       var SMAX = reach / (10 * u) * 1.05;
+      // The ink's own box is only as big as the ink (within the screen), so
+      // it meets the edges of the screen only when the ink does. A phone's
+      // browser bars take their colour from a layer at the edges, and
+      // would otherwise turn orange the moment the ink began.
       var shape = function (k) {
         var w = mk.width * k, h = mk.height * k;
         var x = cx - (cx - mk.left) * k, y = cy - (cy - mk.top) * k;
+        var l = Math.max(0, x), tp = Math.max(0, y);
+        var r = Math.min(innerWidth, x + w), b = Math.min(innerHeight, y + h);
+        wash.style.left = l.toFixed(2) + 'px';
+        wash.style.top = tp.toFixed(2) + 'px';
+        wash.style.width = Math.max(0, r - l).toFixed(2) + 'px';
+        wash.style.height = Math.max(0, b - tp).toFixed(2) + 'px';
         wash.style.webkitMaskSize = wash.style.maskSize = w.toFixed(2) + 'px ' + h.toFixed(2) + 'px';
-        wash.style.webkitMaskPosition = wash.style.maskPosition = x.toFixed(2) + 'px ' + y.toFixed(2) + 'px';
+        wash.style.webkitMaskPosition = wash.style.maskPosition = (x - l).toFixed(2) + 'px ' + (y - tp).toFixed(2) + 'px';
       };
       var easeIO = function (k) { return k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
       var easeOut = function (k) { return 1 - Math.pow(1 - k, 3); };
@@ -2028,7 +2038,10 @@ const links = [
      page; the name is written on it. Afterwards it flows back in. */
   .ink-wash {
     position: fixed;
-    inset: 0;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
     z-index: 1;
     background: var(--color-accent);
     opacity: 0;

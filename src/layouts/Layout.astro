@@ -296,17 +296,9 @@ const elsewhere = [
     const applyTheme = function () {
       html.classList.toggle('dark', toDark);
       localStorage.setItem('theme', toDark ? 'dark' : 'light');
+      var bar = document.querySelector('meta[name="theme-color"]');
+      if (bar) bar.content = getComputedStyle(html).getPropertyValue('--color-chrome').trim();
     };
-    // The swap is a change of colour inside the page, not of the page:
-    // the document's and the body's own backgrounds (which a phone's
-    // browser bars take their colour from) are held at the colours the
-    // page loaded with, and the paper you see is painted on a layer just
-    // inside the body, which is what swaps. The bars take the new theme on
-    // the next page load.
-    if (!html.style.backgroundColor) {
-      html.style.backgroundColor = getComputedStyle(html).backgroundColor;
-      document.body.style.backgroundColor = getComputedStyle(document.body).backgroundColor;
-    }
 
     // Ink spreading across the page from wherever the toggle was pressed,
     // rather than the theme just snapping. Falls back to an instant swap
