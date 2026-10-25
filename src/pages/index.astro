@@ -643,18 +643,19 @@ const links = [
     var add = function (c) { return function (l) { l.classList.add(c); }; };
 
     // How each word comes and goes. Times in ms.
-    // "before" is the silence a word is given before it arrives: wonder
-    // takes a breath, enthusiasm cannot wait, patience makes you wait,
-    // honesty comes straight out. The next word starts while the last is
-    // still leaving, so there is no dead air between them.
+    // Between two words there is one breath, the same every time: the last
+    // word is entirely gone, and the next begins after BREATH. Wonder, the
+    // first, follows the opening line with a little more; patience takes a
+    // longer pause, because waiting is what it is.
+    var BREATH = 140;
     var ways = {
-      wonder:       { before: 450, gap: 130, order: 'middle', settle: 1300, hold: 2000, outGap: 50, out: 1100 },
-      enthusiasm:   { before: 150, gap: 55, tailAfter: 240, tailGap: 170, hold: 1800, outGap: 30, out: 550 },
-      patience:     { before: 1100, gap: 210, tailAfter: 700, tailGap: 650, hold: 1900, outGap: 0, out: 1600 },
-      imperfection: { before: 300, gap: 70, settle: 700, hold: 1600, outGap: 40, out: 850 },
-      honesty:      { before: 150, gap: 110, typed: true, tailAfter: 250, tailGap: 0, hold: 1700, outGap: 55, out: 0 },
-      acceptance:   { before: 500, gap: 65, order: 'scatter', settle: 600, hold: 2000, outGap: 30, out: 650 },
-      hope:         { before: 550, gap: 150, settle: 900, hold: 1900, outGap: 70, out: 1100 },
+      wonder:       { before: 400, gap: 130, order: 'middle', settle: 1300, hold: 2000, outGap: 50, out: 1100 },
+      enthusiasm:   { before: BREATH, gap: 55, tailAfter: 240, tailGap: 170, hold: 1800, outGap: 30, out: 550 },
+      patience:     { before: 700, gap: 210, tailAfter: 700, tailGap: 650, hold: 1900, outGap: 0, out: 1600 },
+      imperfection: { before: BREATH, gap: 70, settle: 700, hold: 1600, outGap: 40, out: 850 },
+      honesty:      { before: BREATH, gap: 110, typed: true, tailAfter: 250, tailGap: 0, hold: 1700, outGap: 55, out: 0 },
+      acceptance:   { before: BREATH, gap: 65, order: 'scatter', settle: 600, hold: 2000, outGap: 30, out: 650 },
+      hope:         { before: BREATH, gap: 150, settle: 900, hold: 1900, outGap: 70, out: 1100 },
     };
 
     // Every word sits on the line's baseline, whatever its type: when it
@@ -715,18 +716,13 @@ const links = [
         }, t);
       } else {
         await each(inOrder(all(w, '.l.in'), how.order), how.outGap, add('go'), t);
-        // The next word waits until this one has all but gone, so the two
-        // never stand in the same place at once.
-        await wait(how.out * 0.9, t);
+        // The next word waits until this one is entirely gone.
+        await wait(how.out, t);
       }
-      var outTempo = tempo;
       tempo = TEMPO;
       setMood('calm');
-      timers.push(setTimeout(function () {
-        if (t !== token) return;
-        w.classList.remove('on', 'written');
-        all(w, '.l').forEach(function (l) { l.classList.remove('in', 'go', 'cur'); });
-      }, (how.out * 0.1 + 60) * outTempo));
+      w.classList.remove('on', 'written');
+      all(w, '.l').forEach(function (l) { l.classList.remove('in', 'go', 'cur'); });
     }
 
     function resetInk() {
