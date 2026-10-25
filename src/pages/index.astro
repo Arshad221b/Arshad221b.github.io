@@ -733,7 +733,8 @@ const links = [
       inkName.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       all(inkName, '.nm').forEach(function (n) { n.classList.remove('writing', 'written'); });
       pre.classList.remove('shown');
-      stage.classList.remove('washed', 'lit', 'tinted');
+      stage.classList.remove('washed', 'lit');
+      all(stage, '.ink-wash .twin').forEach(function (n) { n.remove(); });
       inkCurl.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       inkCurl.style.strokeDasharray = '';
       brand.style.clipPath = brand.style.opacity = brand.style.transition = '';
@@ -794,10 +795,32 @@ const links = [
       var mk = smark.getBoundingClientRect();
       stage.style.setProperty('--wx', (mk.left + mk.width * 28 / 56).toFixed(1) + 'px');
       stage.style.setProperty('--wy', (mk.top + mk.height * 57 / 96).toFixed(1) + 'px');
+      var twin = smark.cloneNode(true);
+      twin.removeAttribute('id');
+      twin.setAttribute('class', 'twin');
+      twin.style.left = mk.left + 'px';
+      twin.style.top = mk.top + 'px';
+      twin.style.width = mk.width + 'px';
+      twin.style.height = mk.height + 'px';
+      stage.querySelector('.ink-wash').appendChild(twin);
+      // The twin follows the pot as its ink drains and fills, frame by
+      // frame, so the two are always the same pot.
+      var tInk = twin.querySelector('.ink'), tVessel = twin.querySelector('.vessel');
+      var oVessel = smark.querySelector('.vessel');
+      (function mirror() {
+        if (!twin.isConnected) return;
+        var a = getComputedStyle(inkCurl), b = getComputedStyle(oVessel);
+        tInk.style.strokeDasharray = a.strokeDasharray;
+        tInk.style.strokeDashoffset = a.strokeDashoffset;
+        tVessel.style.transform = b.transform;
+        tVessel.style.transformOrigin = b.transformOrigin;
+        tVessel.style.transformBox = b.transformBox;
+        requestAnimationFrame(mirror);
+      })();
       nameLine.classList.add('on');
       stage.classList.add('washed');
       await wait(300, t);
-      stage.classList.add('lit', 'tinted');
+      stage.classList.add('lit');
       await wait(500, t);
       pre.classList.add('shown');
       await wait(1000, t);
@@ -825,7 +848,7 @@ const links = [
       await wait(1050, t);
       stage.classList.remove('lit');
       await wait(450, t);
-      stage.classList.remove('tinted');
+      twin.remove();
       smark.classList.remove('drink');
       void smark.offsetWidth;
       smark.classList.add('drink');
@@ -1458,6 +1481,8 @@ const links = [
      changes, each one arriving and leaving in its own manner. The script
      says when; these say how. */
   .ink-page {
+    position: relative;
+    z-index: 2;
     display: grid;
     place-items: center;
     width: min(94vw, 60rem);
@@ -1931,7 +1956,7 @@ const links = [
   .ink-wash {
     position: fixed;
     inset: 0;
-    z-index: -1;
+    z-index: 1;
     background: var(--color-accent);
     clip-path: circle(0 at var(--wx, 50%) var(--wy, 50%));
     transition: clip-path 1.5s cubic-bezier(0.65, 0, 0.35, 1);
@@ -1951,8 +1976,17 @@ const links = [
     --ink: #fbf6ee;
   }
 
-  .intro-stage.tinted .intro-mark {
+  /* The ink lies over the pot; inside it, a paper twin of the pot shows
+     through exactly where the ink has reached. */
+  .ink-wash .twin {
+    position: fixed;
+    margin: 0;
     color: #fbf6ee;
+    overflow: visible;
+  }
+
+  .intro-skip {
+    z-index: 3;
   }
 
   /* Before the name, the line lets go. */
