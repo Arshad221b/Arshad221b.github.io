@@ -538,19 +538,25 @@ const links = [
     var all = function (root, sel) { return [].slice.call(root.querySelectorAll(sel)); };
     var lead = all(inkLine, '.ink-lead .l');
 
-    /* The opening line's motion. "journey" (letters 12 to 18) carries a
-       slow wave; every word sets a mood, and the wave's height, speed and
-       sway, and each letter's tilt, ease toward it, so nothing jumps. */
+    /* The opening line's motion, and the pot's. "journey" (letters 12 to
+       18) carries a slow wave, and the whole line a fainter one; every word
+       sets a mood, and everything eases toward it, so nothing jumps:
+       amp, speed, sway  the wave in "journey" (em, rate, deg)
+       line, lift        the whole line's wave and its height (em)
+       spread            the letters drawing apart from the middle (em)
+       bob, lean, curl   the pot's rise and fall (px), its lean and the
+                         sway of its curl of ink (deg) */
+    var MOOD_KEYS = ['amp', 'speed', 'sway', 'line', 'lift', 'spread', 'bob', 'lean', 'curl'];
     var moods = {
-      calm:         { amp: 0.06, speed: 1.7, sway: 0 },
-      wonder:       { amp: 0.13, speed: 1.2, sway: 1.2 },
-      enthusiasm:   { amp: 0.07, speed: 2.6, sway: 0 },
-      patience:     { amp: 0.05, speed: 0.6, sway: 0 },
-      imperfection: { amp: 0.06, speed: 1.7, sway: 0 },
+      calm:         { amp: 0.06, speed: 1.7, sway: 0, line: 0.02, bob: 1.5, curl: 3 },
+      wonder:       { amp: 0.13, speed: 1.2, sway: 1.2, line: 0.03, spread: 0.012, bob: 3, curl: 9 },
+      enthusiasm:   { amp: 0.07, speed: 2.6, sway: 0, line: 0.025, bob: 2, curl: 5 },
+      patience:     { amp: 0.05, speed: 0.6, sway: 0, line: 0.03, lift: 0.02, bob: 3, curl: 6 },
+      imperfection: { amp: 0.06, speed: 1.7, sway: 0, line: 0.015, bob: 1, lean: -4, curl: 4 },
       honesty:      { amp: 0, speed: 1.7, sway: 0 },
-      acceptance:   { amp: 0.06, speed: 1.4, sway: 0 },
-      hope:         { amp: 0.1, speed: 0.9, sway: 0.5 },
-      curiosity:    { amp: 0.08, speed: 1.1, sway: 0.6 },
+      acceptance:   { amp: 0.06, speed: 1.4, sway: 0, line: 0.02, bob: 1.5, lean: 3, curl: 4 },
+      hope:         { amp: 0.1, speed: 0.9, sway: 0.5, line: 0.03, lift: -0.05, bob: 4, curl: 8 },
+      curiosity:    { amp: 0.08, speed: 1.1, sway: 0.6, line: 0.02, curl: 5 },
       still:        { amp: 0, speed: 1.1, sway: 0 },
     };
     var lean = lead.map(function (l, i) { return (i * 37 % 17) - 8; });
@@ -570,20 +576,20 @@ const links = [
     }
 
     function move(t) {
-      motion = { amp: 0, speed: 1.7, sway: 0, goal: moods.calm, phase: 0, clock: 0, hopAt: -9,
+      motion = { amp: 0, speed: 1.7, sway: 0, line: 0, lift: 0, spread: 0, bob: 0, lean: 0, curl: 0,
+                 goal: moods.calm, phase: 0, clock: 0, hopAt: -9, landAt: -9, pot: true,
                  tilt: lead.map(function () { return 0; }), tiltGoal: lead.map(function () { return 0; }) };
       var prev = performance.now();
       (function frame(ts) {
         if (t !== token) {
           lead.forEach(function (l) { l.style.translate = l.style.rotate = ''; });
+          smark.style.translate = smark.style.rotate = inkCurl.style.rotate = '';
           return;
         }
         var dt = Math.min(0.05, (ts - prev) / 1000);
         prev = ts;
         var m = motion, k = 1 - Math.exp(-dt * 1.6), kt = 1 - Math.exp(-dt * 5);
-        m.amp += (m.goal.amp - m.amp) * k;
-        m.speed += (m.goal.speed - m.speed) * k;
-        m.sway += (m.goal.sway - m.sway) * k;
+        MOOD_KEYS.forEach(function (key) { m[key] += ((m.goal[key] || 0) - m[key]) * k; });
         m.phase += dt * m.speed;
         m.clock += dt;
         lead.forEach(function (l, i) {
@@ -593,12 +599,28 @@ const links = [
             y = -m.amp * (0.5 + 0.5 * Math.sin(a));
             r = m.sway * Math.sin(a + 1.2);
           }
+          y += m.lift - m.line * (0.5 + 0.5 * Math.sin(m.phase * 0.8 - i * 0.35));
           var h = (m.clock - m.hopAt - i * 0.026) / 0.7;
           if (h > 0 && h < 1) y -= 0.22 * Math.sin(Math.PI * h) * (1 - h * 0.4);
+          // As each word lands, a small lift runs along the line toward it.
+          var g = (m.clock - m.landAt - i * 0.022) / 0.55;
+          if (g > 0 && g < 1) y -= 0.05 * Math.sin(Math.PI * g);
           m.tilt[i] += (m.tiltGoal[i] - m.tilt[i]) * kt;
-          l.style.translate = '0 ' + y.toFixed(4) + 'em';
+          l.style.translate = (m.spread * (i - 11)).toFixed(4) + 'em ' + y.toFixed(4) + 'em';
           l.style.rotate = (r + m.tilt[i]).toFixed(3) + 'deg';
         });
+        // The pot breathes with the line, hops with enthusiasm, gives a small
+        // nod as each word lands, and its curl of ink sways in the air.
+        if (m.pot) {
+          var py = -m.bob * (0.5 + 0.5 * Math.sin(m.phase * 0.8 + 1));
+          var ph = (m.clock - m.hopAt + 0.06) / 0.7;
+          if (ph > 0 && ph < 1) py -= 7 * Math.sin(Math.PI * ph) * (1 - ph * 0.4);
+          var pn = (m.clock - m.landAt) / 0.5, nod = 0;
+          if (pn > 0 && pn < 1) { nod = Math.sin(Math.PI * pn); py += 2.5 * nod; }
+          smark.style.translate = '0 ' + py.toFixed(2) + 'px';
+          smark.style.rotate = (m.lean + 2 * nod).toFixed(2) + 'deg';
+          inkCurl.style.rotate = (m.curl * Math.sin(m.phase * 0.7)).toFixed(2) + 'deg';
+        }
         requestAnimationFrame(frame);
       })(prev);
     }
@@ -710,6 +732,7 @@ const links = [
       }
       if (how.settle) await wait(how.settle, t);
       w.classList.add('written');
+      if (motion) motion.landAt = motion.clock;
       straighten();
       await wait(how.hold, t);
 
@@ -988,6 +1011,8 @@ const links = [
     }
 
     function swoop() {
+      if (motion) motion.pot = false;
+      smark.style.translate = smark.style.rotate = inkCurl.style.rotate = '';
       var a = smark.getBoundingClientRect(), b = hmark.getBoundingClientRect();
       var dx = (b.left + b.width / 2) - (a.left + a.width / 2);
       var dy = (b.top + b.height / 2) - (a.top + a.height / 2);
@@ -1419,6 +1444,8 @@ const links = [
   }
 
   .intro-mark .ink {
+    transform-box: fill-box;
+    transform-origin: 45% 100%;
     stroke-dasharray: 120;
     stroke-dashoffset: 120;
   }
