@@ -789,6 +789,7 @@ const links = [
       all(inkName, '.nm').forEach(function (n) { n.classList.remove('writing', 'written'); });
       pre.classList.remove('shown');
       rings.length = 0;
+      rippleCanvas.style.transition = rippleCanvas.style.opacity = '';
       inkCurl.getAnimations().forEach(function (a) { if (!(a instanceof CSSAnimation)) a.cancel(); });
       inkCurl.style.strokeDasharray = '';
       brand.style.clipPath = brand.style.opacity = brand.style.transition = '';
@@ -1031,6 +1032,10 @@ const links = [
 
     function swoop() {
       if (motion) motion.pot = false;
+      // The ripples belong to the page, not the mark: they go as it leaves.
+      rippleCanvas.style.transition = 'opacity 0.35s ease';
+      rippleCanvas.style.opacity = '0';
+      timers.push(setTimeout(function () { rings.length = 0; }, 400));
       smark.style.translate = smark.style.rotate = inkCurl.style.rotate = inkCurl.style.scale = '';
       var a = smark.getBoundingClientRect(), b = hmark.getBoundingClientRect();
       var dx = (b.left + b.width / 2) - (a.left + a.width / 2);
