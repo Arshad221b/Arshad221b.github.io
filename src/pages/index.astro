@@ -598,11 +598,10 @@ const links = [
 
     // Every pause and stagger is scaled by the tempo. Patience alone is
     // never hurried, and the name keeps a slower one of its own.
-    var TEMPO = 0.66, NAME_TEMPO = 0.76, tempo = TEMPO;
+    var TEMPO = 0.66, PATIENCE_TEMPO = 0.85, NAME_TEMPO = 0.76, tempo = TEMPO;
 
-    // The styles' own animations keep the same tempo, patience excepted.
+    // The styles' own animations keep the same tempo.
     function quicken(e) {
-      if (e.target.closest && e.target.closest('.vw-patience')) return;
       e.target.getAnimations().forEach(function (a) {
         if (a.playbackRate === 1 && (a instanceof CSSAnimation || a instanceof CSSTransition)) a.playbackRate = 1 / tempo;
       });
@@ -647,15 +646,15 @@ const links = [
     // word is entirely gone, and the next begins after BREATH. Wonder, the
     // first, follows the opening line with a little more; patience takes a
     // longer pause, because waiting is what it is.
-    var BREATH = 140;
+    var BREATH = 50;
     var ways = {
-      wonder:       { before: 400, gap: 80, order: 'middle', settle: 800, hold: 2000, outGap: 50, out: 1100 },
-      enthusiasm:   { before: BREATH, gap: 55, tailAfter: 240, tailGap: 170, hold: 1800, outGap: 30, out: 550 },
-      patience:     { before: 700, gap: 210, tailAfter: 700, tailGap: 650, hold: 1900, outGap: 0, out: 1100 },
-      imperfection: { before: BREATH, gap: 70, settle: 700, hold: 1600, outGap: 40, out: 850 },
-      honesty:      { before: BREATH, gap: 110, typed: true, tailAfter: 250, tailGap: 0, hold: 1700, outGap: 55, out: 0 },
-      acceptance:   { before: BREATH, gap: 65, order: 'scatter', settle: 600, hold: 2000, outGap: 30, out: 650 },
-      hope:         { before: BREATH, gap: 150, settle: 900, hold: 1900, outGap: 70, out: 1100 },
+      wonder:       { before: 400, gap: 80, order: 'middle', settle: 700, hold: 1700, outGap: 50, out: 1100 },
+      enthusiasm:   { before: BREATH, gap: 55, tailAfter: 240, tailGap: 170, hold: 1500, outGap: 30, out: 550 },
+      patience:     { before: 250, gap: 170, tailAfter: 450, tailGap: 420, hold: 1400, outGap: 0, out: 1000 },
+      imperfection: { before: BREATH, gap: 70, settle: 600, hold: 1400, outGap: 40, out: 850 },
+      honesty:      { before: BREATH, gap: 110, typed: true, tailAfter: 250, tailGap: 0, hold: 1400, outGap: 55, out: 0 },
+      acceptance:   { before: BREATH, gap: 65, order: 'scatter', settle: 500, hold: 1700, outGap: 30, out: 650 },
+      hope:         { before: BREATH, gap: 150, settle: 800, hold: 1600, outGap: 70, out: 1100 },
     };
 
     // Every word sits on the line's baseline, whatever its type: when it
@@ -685,7 +684,7 @@ const links = [
     async function word(w, t) {
       var name = w.className.match(/vw-(\w+)/)[1];
       var how = ways[name];
-      tempo = name === 'patience' ? 1 : TEMPO;
+      tempo = name === 'patience' ? PATIENCE_TEMPO : TEMPO;
       var L = all(w, '.l:not(.tail)'), T = all(w, '.tail');
       setMood(name);
       await wait(how.before, t);
@@ -715,6 +714,8 @@ const links = [
           cursorOn(w, typed[i + 1]);
         }, t);
       } else {
+        // Patience is the last word: the whole line goes with it, at once.
+        if (name === 'patience') lead.slice(0, 22).forEach(add('gone'));
         await each(inOrder(all(w, '.l.in'), how.order), how.outGap, add('go'), t);
         // The next word waits until this one is entirely gone.
         await wait(how.out, t);
@@ -743,7 +744,6 @@ const links = [
       inkCurl.style.strokeDasharray = '';
       brand.style.clipPath = brand.style.opacity = brand.style.transition = '';
       smark.classList.remove('drink');
-      inkName.querySelector('em').classList.remove('glint');
     }
 
     // The slot is as wide as a typical word, so the sentence sits in the
@@ -772,10 +772,10 @@ const links = [
       var words = all(inkSlot, '.vw');
 
       // "This is the journey of", once, and then it never quite sits still.
-      await wait(2300, t);
+      await wait(1400, t);
       move(t);
       await each(lead, 55, add('in'), t);
-      await wait(1100, t);
+      await wait(700, t);
       lead.forEach(add('set'));
       await wait(700, t);
 
@@ -786,11 +786,9 @@ const links = [
       // the pot on an empty page, and the name follows on its breath.
       tempo = NAME_TEMPO;
       setMood('still');
-      each(lead.slice(0, 22), 18, add('gone'), t).catch(function () {});
       smark.classList.add('drink');
-      // The new "This is the" waits until the old line has all but gone, so
-      // the two never show in the same place at once.
-      await wait(650, t);
+      // The old line went with patience, so the name follows at once.
+      await wait(200, t);
 
       // Then "This is the", and the name written beneath it in one slow
       // stroke, while the pot's ink is drawn out of it into the pen. The
@@ -802,31 +800,29 @@ const links = [
       var curl = inkCurl.getTotalLength();
       nameLine.classList.add('on');
       pre.classList.add('shown');
-      await wait(800, t);
+      await wait(500, t);
 
       inkCurl.style.strokeDasharray = curl;
       stroke.classList.add('writing');
       inkCurl.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: curl }], {
-        duration: 2800 * tempo, easing: 'cubic-bezier(0.4, 0.05, 0.3, 1)', fill: 'forwards'
+        duration: 3500 * tempo, easing: 'cubic-bezier(0.4, 0.05, 0.3, 1)', fill: 'forwards'
       });
       [0, 900, 1800].forEach(function (d) {
         timers.push(setTimeout(potEcho, d * tempo));
       });
       followPen(stroke, em, t);
-      await wait(2800, t);
+      await wait(3500, t);
       stroke.classList.replace('writing', 'written');
 
-      // It is underlined, Curiosity catches the light, the whole name gives
-      // off one echo of itself, and the pot fills again.
+      // It is underlined, the whole name gives off one echo of itself,
+      // and the pot fills again.
       inkName.classList.add('shine');
-      em.classList.add('glint');
       textEcho(em, null, 0.05, 0.6);
       inkCurl.animate([{ strokeDashoffset: curl }, { strokeDashoffset: 0 }], {
         duration: 1600 * tempo, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards'
       });
       timers.push(setTimeout(potEcho, 1500 * tempo));
-      await wait(2300, t);
-      em.classList.remove('glint');
+      await wait(1500, t);
 
       // Then it flies home, and lands as the header's name with the mark.
       pre.classList.add('leave');
@@ -1976,7 +1972,7 @@ const links = [
   }
 
   .ink-name .nm.writing {
-    animation: pen 2.8s cubic-bezier(0.4, 0.05, 0.3, 1) both;
+    animation: pen 3.5s cubic-bezier(0.4, 0.05, 0.3, 1) both;
   }
 
   .ink-name .nm.written {
@@ -1987,21 +1983,6 @@ const links = [
   @keyframes pen {
     from { -webkit-mask-position: 100% 0; mask-position: 100% 0; }
     to   { -webkit-mask-position: 0 0; mask-position: 0 0; }
-  }
-
-  /* Curiosity catches the light once. */
-  .ink-name em.glint {
-    background: linear-gradient(105deg, var(--ink) 38%, #fff 50%, var(--ink) 62%);
-    background-size: 300% 100%;
-    background-position: 100% 0;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: shine 1.5s cubic-bezier(0.45, 0.05, 0.35, 1) both;
-  }
-
-  @keyframes shine {
-    to { background-position: 0 0; }
   }
 
   /* The whole name draws a breath as it is finished. */
@@ -2041,8 +2022,10 @@ const links = [
     transition: clip-path 1.4s cubic-bezier(0.65, 0, 0.35, 1) 0.2s, opacity 0.35s ease;
   }
 
+  /* The header has no flourish, so it thins away over the flight. */
   .ink-name.fly .ink-flourish {
     opacity: 0;
+    transition: opacity 1s ease;
   }
 
   /* The ripples from the pot, beneath the words. */
@@ -2062,9 +2045,8 @@ const links = [
   /* Before the name, the line lets go. */
   .ink-line .ink-lead .l.in.gone {
     opacity: 0;
-    filter: blur(6px);
-    transform: translateY(-0.3em);
-    transition: opacity 0.8s ease, filter 0.8s ease, transform 0.8s ease;
+    filter: blur(3px);
+    transition: opacity 1.1s ease, filter 1.1s ease;
   }
 
   .intro-mark.drink .vessel {
