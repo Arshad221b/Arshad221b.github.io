@@ -39,7 +39,18 @@ const elsewhere = [
     <meta name="theme-color" content="#f0e9de" />
     <script is:inline>
       (function() {
-        const theme = localStorage.getItem('theme');
+        // Light by day and dark by night, by the visitor's own clock (no
+        // location, so nothing to ask for). A theme picked with the toggle
+        // holds until the next change of day or night, then the clock
+        // takes over again.
+        let theme = null;
+        try {
+          if (Date.now() < +localStorage.getItem('theme-until')) theme = localStorage.getItem('theme');
+        } catch (e) {}
+        if (theme !== 'dark' && theme !== 'light') {
+          const h = new Date().getHours();
+          theme = h >= 19 || h < 7 ? 'dark' : 'light';
+        }
         if (theme === 'dark') {
           document.documentElement.classList.add('dark');
         }
@@ -296,7 +307,14 @@ const elsewhere = [
     const toDark = !html.classList.contains('dark');
     const applyTheme = function () {
       html.classList.toggle('dark', toDark);
-      localStorage.setItem('theme', toDark ? 'dark' : 'light');
+      // Held until the next 7:00 or 19:00, when the clock decides again.
+      var until = new Date();
+      var h = until.getHours();
+      until.setHours(h < 7 ? 7 : h < 19 ? 19 : 31, 0, 0, 0);
+      try {
+        localStorage.setItem('theme', toDark ? 'dark' : 'light');
+        localStorage.setItem('theme-until', String(until.getTime()));
+      } catch (e) {}
       var bar = document.querySelector('meta[name="theme-color"]');
       if (bar) bar.content = getComputedStyle(html).getPropertyValue('--color-chrome').trim();
     };
