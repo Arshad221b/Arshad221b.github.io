@@ -1,0 +1,154 @@
+---
+/* Where the RSS link goes. An ordinary page, so it reads the same in every
+   browser: what the feed is, its address to copy into a reader, and what
+   is in it. The feed itself stays at /rss.xml for readers to fetch. */
+
+import Layout from '../layouts/Layout.astro';
+import { feedItems } from '../lib/feed';
+
+const title = 'RSS — Arshad Kazi';
+const feedUrl = 'https://arshad-kazi.com/rss.xml';
+const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
+---
+
+<Layout title={title} description="Follow Arshad Kazi's essays and technical writing by RSS.">
+  <article class="feed-page">
+    <div class="folio-rule">
+      <span class="folio-mark">RSS</span>
+      <span class="folio-line"></span>
+      <span class="folio-mark">{feedItems.length} pieces</span>
+    </div>
+
+    <h1>Everything new, in your feed reader<span class="dot">.</span></h1>
+    <p class="lede">
+      Copy the address below into a feed reader (Feedly, NetNewsWire, Reeder,
+      Inoreader and the like) and every new essay and post arrives there as it
+      is published. No email, no account.
+    </p>
+
+    <div class="address">
+      <code id="feed-url">{feedUrl}</code>
+      <button type="button" id="copy-feed">Copy</button>
+    </div>
+
+    <ol class="items">
+      {feedItems.map(item => (
+        <li>
+          <span class="date">{fmt(item.pubDate)}</span>
+          <a href={item.link}>{item.title}</a>
+          <p>{item.description}</p>
+        </li>
+      ))}
+    </ol>
+  </article>
+
+  <script is:inline>
+    (function () {
+      var b = document.getElementById('copy-feed');
+      if (!b) return;
+      b.addEventListener('click', function () {
+        var url = document.getElementById('feed-url').textContent;
+        var done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1600); };
+        if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, function () {});
+      });
+    })();
+  </script>
+</Layout>
+
+<style>
+  .feed-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding-top: var(--space-xl, 3rem);
+    padding-bottom: 5rem;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    margin: 2.2rem 0 1rem;
+  }
+
+  .dot { color: var(--color-accent); }
+
+  .lede {
+    color: var(--color-text-secondary);
+    margin: 0 0 1.4rem;
+  }
+
+  .address {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--color-code-bg);
+    border-radius: var(--radius, 4px);
+    padding: 10px 10px 10px 16px;
+  }
+
+  .address code {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+    word-break: break-all;
+    background: none;
+    padding: 0;
+  }
+
+  .address button {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+
+  .address button:hover { border-color: var(--color-accent); }
+
+  .items {
+    list-style: none;
+    padding: 0;
+    margin: 3rem 0 0;
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .items li {
+    padding: 1.3rem 0;
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .date {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 0.4rem;
+  }
+
+  .items a {
+    font-family: var(--font-display);
+    font-size: 1.32rem;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .items a:hover { color: var(--color-accent); }
+
+  .items p {
+    margin: 0.4rem 0 0;
+    color: var(--color-text-secondary);
+    font-size: 1.02rem;
+    line-height: 1.55;
+  }
+</style>
