@@ -571,6 +571,11 @@ const links = [
       if (name === 'enthusiasm') motion.hopAt = motion.clock + 0.2;
     }
 
+    // A rise and fall over 0..1 that starts and ends at rest.
+    function bump(x) {
+      return x > 0 && x < 1 ? Math.pow(Math.sin(Math.PI * x), 2) : 0;
+    }
+
     function straighten() {
       if (motion) motion.tiltGoal = lead.map(function () { return 0; });
     }
@@ -599,12 +604,14 @@ const links = [
             y = -m.amp * (0.5 + 0.5 * Math.sin(a));
             r = m.sway * Math.sin(a + 1.2);
           }
-          y += m.lift - m.line * (0.5 + 0.5 * Math.sin(m.phase * 0.8 - i * 0.35));
+          // One breath for the line and the pot: it starts in the middle of
+          // the line, beneath the pot, and spreads out to either end.
+          y += m.lift - m.line * (0.5 + 0.5 * Math.sin(m.phase * 0.8 - Math.abs(i - 11) * 0.3));
           var h = (m.clock - m.hopAt - i * 0.026) / 0.7;
           if (h > 0 && h < 1) y -= 0.22 * Math.sin(Math.PI * h) * (1 - h * 0.4);
           // As each word lands, a small lift runs along the line toward it.
-          var g = (m.clock - m.landAt - i * 0.022) / 0.55;
-          if (g > 0 && g < 1) y -= 0.05 * Math.sin(Math.PI * g);
+          var g = (m.clock - m.landAt - i * 0.022) / 0.6;
+          y -= 0.05 * bump(g);
           m.tilt[i] += (m.tiltGoal[i] - m.tilt[i]) * kt;
           l.style.translate = (m.spread * (i - 11)).toFixed(4) + 'em ' + y.toFixed(4) + 'em';
           l.style.rotate = (r + m.tilt[i]).toFixed(3) + 'deg';
@@ -612,14 +619,17 @@ const links = [
         // The pot breathes with the line, hops with enthusiasm, gives a small
         // nod as each word lands, and its curl of ink sways in the air.
         if (m.pot) {
-          var py = -m.bob * (0.5 + 0.5 * Math.sin(m.phase * 0.8 + 1));
-          var ph = (m.clock - m.hopAt + 0.06) / 0.7;
+          // In time with the middle of the line (letter 11) beneath it: the
+          // same breath, the hop as it passes, the nod as the lift does.
+          var py = -m.bob * (0.5 + 0.5 * Math.sin(m.phase * 0.8));
+          var ph = (m.clock - m.hopAt - 11 * 0.026) / 0.7;
           if (ph > 0 && ph < 1) py -= 7 * Math.sin(Math.PI * ph) * (1 - ph * 0.4);
-          var pn = (m.clock - m.landAt) / 0.5, nod = 0;
-          if (pn > 0 && pn < 1) { nod = Math.sin(Math.PI * pn); py += 2.5 * nod; }
+          var nod = bump((m.clock - m.landAt - 11 * 0.022) / 0.6);
+          py += 2 * nod;
           smark.style.translate = '0 ' + py.toFixed(2) + 'px';
-          smark.style.rotate = (m.lean + 2 * nod).toFixed(2) + 'deg';
-          inkCurl.style.rotate = (m.curl * Math.sin(m.phase * 0.7)).toFixed(2) + 'deg';
+          smark.style.rotate = (m.lean + 2.5 * nod).toFixed(2) + 'deg';
+          // The curl follows a beat behind the pot, as ink would.
+          inkCurl.style.rotate = (m.curl * Math.sin(m.phase * 0.8 - 0.9) - 4 * nod).toFixed(2) + 'deg';
         }
         requestAnimationFrame(frame);
       })(prev);
