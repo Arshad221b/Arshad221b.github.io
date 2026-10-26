@@ -33,7 +33,7 @@ const exif = self ? [
   { k: 'Reads as', v: topicsOf(self.slug, 2).map(t => t.label).join(' / ') || '—' },
 ] : [];
 
-let shareImage = '/images/og-thoughts.jpg';
+let shareImage = '/images/share-thoughts.jpg';
 for (const [path, raw] of Object.entries(sources)) {
   if (path.split('/').pop()!.replace('.astro', '') !== slug) continue;
   const found = raw.match(/https:\/\/res\.cloudinary\.com\/[^"']+/);
