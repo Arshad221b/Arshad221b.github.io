@@ -704,7 +704,7 @@ html.dark .theme-toggle .icon-moon { display: none; }
 
   .nav-links {
     justify-content: center;
-    gap: 0.3rem;
+    gap: 0.7rem;
   }
 
   /* Each link is a full thumb-sized target, about 44px tall, even though
@@ -713,9 +713,9 @@ html.dark .theme-toggle .icon-moon { display: none; }
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    padding: 0 0.5rem;
-    font-size: 0.64rem;
-    letter-spacing: 0.1em;
+    padding: 0 0.6rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
   }
 
@@ -729,7 +729,7 @@ html.dark .theme-toggle .icon-moon { display: none; }
   .nav-separator {
     display: block;
     height: 0.75rem;
-    margin: 0 0.25rem;
+    margin: 0 0.4rem;
   }
 
   /* The toggle draws as a small ring but takes a full-size tap. */
