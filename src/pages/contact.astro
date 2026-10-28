@@ -1,5 +1,6 @@
 ---
-/* Contact: a plain form that lands in my inbox.
+/* Contact: a plain form that lands in my inbox, set in three numbered
+   parts under the same hairline headings as the rest of the site.
 
    The site is static, so the message is posted to FormSubmit, which mails
    it on to the address below. It is sent without leaving the page; if
@@ -14,7 +15,7 @@ const endpoint = `https://formsubmit.co/ajax/${inbox}`;
 const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in particular'];
 ---
 
-<Layout title={title} activeNav="/contact" description="Write to Arshad Kazi about something he wrote, work, or anything else.">
+<Layout title={title} activeNav="/contact" description="Write to Arshad Kazi about a job, a collaboration, or something he wrote.">
   <div class="contact-page">
     <Mast
       label="Contact"
@@ -31,38 +32,42 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
       <!-- Left empty by people; bots fill it in, and FormSubmit drops those. -->
       <input type="text" name="_honey" class="honey" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
-      <!-- Written as a letter: the blanks are the fields. -->
-      <div class="letter">
-        <p class="salute">Dear Arshad,</p>
+      <section class="part">
+        <h2 class="part-head"><span class="n">01</span><span>You</span><span class="rule"></span></h2>
+        <div class="field">
+          <label for="f-name">Name</label>
+          <input id="f-name" name="name" type="text" autocomplete="name" required maxlength="120" placeholder="Your name" />
+        </div>
+        <div class="field">
+          <label for="f-email">Email</label>
+          <input id="f-email" name="email" type="email" autocomplete="email" required maxlength="200" placeholder="you@example.com" />
+        </div>
+      </section>
 
-        <p class="line">
-          My name is
-          <span class="field blank"><label for="f-name" class="sr">Your name</label><input id="f-name" name="name" type="text" autocomplete="name" required maxlength="120" placeholder="your name" size="14" /></span>
-          and you can write back to me at
-          <span class="field blank"><label for="f-email" class="sr">Your email</label><input id="f-email" name="email" type="email" autocomplete="email" required maxlength="200" placeholder="you@example.com" size="20" /></span>.
-        </p>
-
-        <fieldset class="line about">
-          <legend class="sr">What it is about</legend>
-          <span>I am writing about</span>
+      <fieldset class="part">
+        <legend class="part-head"><span class="n">02</span><span>About</span><span class="rule"></span></legend>
+        <div class="reasons">
           {reasons.map((r, i) => (
-            <><span class="choice"><label class="reason"><input type="radio" name="about" value={r} checked={i === 0} /><span>{r}</span></label><span class="sep">{i < reasons.length - 2 ? ',' : i === reasons.length - 2 ? ', or' : '.'}</span></span>{' '}</>
+            <label class="reason"><input type="radio" name="about" value={r} checked={i === 0} /><span>{r}</span></label>
           ))}
-        </fieldset>
+        </div>
+      </fieldset>
 
-        <div class="field body">
-          <label for="f-message" class="sr">Your message</label>
+      <section class="part">
+        <h2 class="part-head"><span class="n">03</span><span>Message</span><span class="rule"></span></h2>
+        <div class="field">
+          <label for="f-message" class="sr">Message</label>
           <textarea id="f-message" name="message" rows="8" required maxlength="5000" placeholder="Write here…"></textarea>
         </div>
-      </div>
+      </section>
 
       <div class="actions">
-        <button type="submit" class="send" id="send">Send the letter <span aria-hidden="true">&rarr;</span></button>
+        <button type="submit" class="send" id="send">Send <span aria-hidden="true">&rarr;</span></button>
         <p class="status" id="status" role="status" aria-live="polite"></p>
       </div>
     </form>
 
-    <p class="direct">Or write directly: <a href={`mailto:${inbox}`}>{inbox}</a></p>
+    <p class="direct"><span>Or write directly</span><a href={`mailto:${inbox}`}>{inbox}</a></p>
   </div>
 </Layout>
 
@@ -74,7 +79,7 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
   .form {
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
+    gap: var(--space-2xl);
   }
 
   .honey {
@@ -94,75 +99,121 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
     white-space: nowrap;
   }
 
-  /* The letter: large serif text, the blanks underlined in the line. */
-  .letter {
-    font-family: var(--font-serif);
-    font-size: clamp(1.25rem, 2.6vw, 1.55rem);
-    line-height: 2;
+  .part {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    border: none;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  /* The same hairline headings as the timeline's years. */
+  .part-head {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--color-text);
   }
 
-  .salute {
-    font-family: 'Great Vibes', var(--font-serif);
-    font-size: 2.4em;
-    line-height: 1;
+  .part-head .n {
     color: var(--color-accent);
-    margin: 0 0 0.4em;
   }
 
-  .line {
-    margin: 0 0 0.6em;
+  .part-head .rule {
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
   }
 
-  .blank {
-    display: inline-block;
-    max-width: 100%;
+  fieldset.part .part-head {
+    margin-bottom: var(--space-lg);
   }
 
-  .blank input {
-    font: inherit;
-    font-style: italic;
-    color: var(--color-accent);
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .field label {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  input[type='text'],
+  input[type='email'],
+  textarea {
+    width: 100%;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+    color: var(--color-text);
     background: transparent;
     border: none;
-    border-bottom: 1px solid var(--color-text-muted);
+    border-bottom: 1px solid var(--color-border);
     border-radius: 0;
-    padding: 0 0.15em;
-    max-width: 100%;
+    padding: 0.3rem 0 0.55rem;
     transition: border-color 0.2s ease;
   }
 
-  .blank input::placeholder,
-  .body textarea::placeholder {
-    color: var(--color-text-muted);
-    opacity: 0.7;
+  textarea {
+    font-family: var(--font-serif);
+    font-size: 1.08rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.65;
+    min-height: 11rem;
+    resize: vertical;
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    padding: 0.9rem 1rem;
   }
 
-  .blank input:focus {
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-text-muted);
+    opacity: 0.55;
+  }
+
+  input:focus,
+  textarea:focus {
     outline: none;
-    border-bottom-color: var(--color-accent);
+    border-color: var(--color-accent);
   }
 
   .field.invalid input,
   .field.invalid textarea {
     border-color: var(--color-accent);
-    background: var(--color-accent-soft);
   }
 
-  .about {
-    border: none;
-    padding: 0;
-    margin: 0 0 0.9em;
-    min-width: 0;
+  .field.invalid label {
+    color: var(--color-accent);
   }
 
-  .about > span {
-    margin-right: 0.3em;
+  /* Clear buttons: outlined at rest, filled when chosen. */
+  .reasons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 
   .reason {
     position: relative;
-    display: inline-block;
     cursor: pointer;
   }
 
@@ -173,59 +224,47 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
   }
 
   .reason span {
-    font-style: italic;
-    color: var(--color-text-muted);
-    background-image: linear-gradient(var(--color-accent), var(--color-accent));
-    background-size: 0% 1px;
-    background-position: 0 92%;
-    background-repeat: no-repeat;
-    transition: color 0.2s ease, background-size 0.35s var(--ease-out);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55em;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    padding: 0.8rem 1.1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
   }
 
-  /* A choice keeps its comma; lines break only between choices. */
-  .choice {
-    white-space: nowrap;
-  }
-
-  .sep {
-    color: var(--color-text-muted);
+  .reason span::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px currentColor;
   }
 
   .reason:hover span {
     color: var(--color-text);
+    border-color: var(--color-accent);
   }
 
   .reason input:checked + span {
-    color: var(--color-accent);
-    background-size: 100% 1px;
+    color: #fff;
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .reason input:checked + span::before {
+    background: #fff;
+    box-shadow: none;
   }
 
   .reason input:focus-visible + span {
     outline: 2px solid var(--color-accent);
-    outline-offset: 3px;
-  }
-
-  /* Ruled like a notebook page, the text sitting on the lines. */
-  .body textarea {
-    width: 100%;
-    min-height: 16em;
-    font: inherit;
-    font-size: 0.82em;
-    line-height: 2.2em;
-    color: var(--color-text);
-    background: transparent;
-    background-image: repeating-linear-gradient(transparent 0 calc(2.2em - 1px), var(--color-border) calc(2.2em - 1px) 2.2em);
-    background-attachment: local;
-    border: none;
-    border-left: 2px solid var(--color-accent-soft);
-    border-radius: 0;
-    padding: 0 0 0 0.8em;
-    resize: vertical;
-  }
-
-  .body textarea:focus {
-    outline: none;
-    border-left-color: var(--color-accent);
+    outline-offset: 2px;
   }
 
   .actions {
@@ -233,33 +272,37 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-md);
-    margin-top: var(--space-sm);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
   }
 
   .send {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
     font-family: var(--font-mono);
     font-size: 0.72rem;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: #fff;
-    background: var(--color-text);
+    background: var(--color-accent);
     border: none;
-    border-radius: 2px;
-    padding: 0.95rem 1.4rem;
+    border-radius: 999px;
+    padding: 1rem 1.6rem;
     cursor: pointer;
-    transition: background 0.2s ease, opacity 0.2s ease;
+    transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
   }
 
   .send:hover {
-    background: var(--color-accent);
+    background: var(--color-accent-hover);
   }
 
-  :global(html.dark) .send {
-    color: var(--color-bg);
+  .send:hover span {
+    transform: translateX(3px);
   }
 
-  :global(html.dark) .send:hover {
-    color: #fff;
+  .send span {
+    transition: transform 0.2s ease;
   }
 
   .send[disabled] {
@@ -280,17 +323,28 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
   }
 
   .direct {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.9rem;
+    align-items: baseline;
     margin: var(--space-2xl) 0 0;
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--color-border-light);
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.04em;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
     color: var(--color-text-muted);
+  }
+
+  .direct span {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
   }
 
   .direct a {
     color: var(--color-text-secondary);
+  }
+
+  .direct a:hover {
+    color: var(--color-accent);
   }
 </style>
 
