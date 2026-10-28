@@ -14,6 +14,13 @@ const inbox = 'arshadkaziblog@gmail.com';
 const endpoint = `https://formsubmit.co/ajax/${inbox}`;
 // The sketches behind the form, in the order they are drawn.
 const sketches = ['vitruvian', 'sibyl', 'flying', 'nude', 'water', 'horse'].map(n => `/images/contact/${n}.jpg`);
+// Elsewhere, the same places the About page lists.
+const elsewhere = [
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/arshad221b/' },
+  { label: 'Substack', href: 'https://substack.com/@arshadkazi' },
+  { label: 'GitHub', href: 'https://github.com/Arshad221b' },
+  { label: 'Medium', href: 'https://medium.com/@arshad_221b' },
+];
 const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in particular'];
 ---
 
@@ -75,7 +82,12 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
       </div>
     </form>
 
-    <p class="direct"><span>Or write directly</span><a href={`mailto:${inbox}`}>{inbox}</a></p>
+    <div class="direct">
+      <p class="direct-row"><span class="direct-k">Or write directly</span><a href={`mailto:${inbox}`}>{inbox}</a></p>
+      <p class="direct-row"><span class="direct-k">Elsewhere</span>
+        {elsewhere.map(l => <a class="elsewhere" href={l.href} target="_blank" rel="noopener">{l.label}<span aria-hidden="true">↗</span></a>)}
+      </p>
+    </div>
   </div>
 </Layout>
 
@@ -392,26 +404,46 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
 
   .direct {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 0.9rem;
-    align-items: baseline;
+    flex-direction: column;
+    gap: 0.9rem;
     margin: var(--space-2xl) 0 0;
+  }
+
+  .direct-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 1.1rem;
+    margin: 0;
     font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
     color: var(--color-text-muted);
   }
 
-  .direct span {
+  .direct-k {
+    min-width: 8.5rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
+    font-size: 0.6rem;
   }
 
   .direct a {
-    color: var(--color-text-secondary);
+    color: var(--color-text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1px;
+    transition: color 0.2s ease, border-color 0.2s ease;
   }
 
   .direct a:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .elsewhere span {
+    margin-left: 0.25em;
+    font-size: 0.85em;
     color: var(--color-accent);
   }
 </style>
