@@ -611,34 +611,66 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
     return ok;
   }
 
+  var label = send.querySelector('.send-label');
+
+  // Back from the plain-form route: FormSubmit returns people here.
+  if (/[?&]sent=1/.test(location.search)) {
+    status.classList.add('ok');
+    status.textContent = 'Sent. Thank you, I will write back soon.';
+    history.replaceState(null, '', location.pathname);
+  }
+
+  function finish() {
+    send.disabled = false;
+    send.classList.remove('sending');
+    label.textContent = 'Send message';
+  }
+
+  /* FormSubmit can be slow. Send in the background first; if it has not
+     answered in 25 seconds, or the request fails outright, post the form
+     the ordinary way, which FormSubmit always accepts, and come back here. */
+  function plainSubmit() {
+    label.textContent = 'Sending…';
+    var next = document.createElement('input');
+    next.type = 'hidden'; next.name = '_next';
+    next.value = location.origin + location.pathname + '?sent=1';
+    form.appendChild(next);
+    HTMLFormElement.prototype.submit.call(form);
+  }
+
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     status.classList.remove('ok');
     if (!check()) { status.textContent = 'A name, an email and a message, please.'; return; }
     send.disabled = true;
     send.classList.add('sending');
-    send.querySelector('.send-label').textContent = 'Sending…';
+    label.textContent = 'Sending…';
     status.textContent = '';
     var data = Object.fromEntries(new FormData(form).entries());
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var slow = setTimeout(function () { label.textContent = 'Still sending…'; }, 6000);
+    var giveUp = setTimeout(function () { if (ctrl) ctrl.abort(); }, 25000);
     fetch(form.dataset.endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(data),
+      signal: ctrl ? ctrl.signal : undefined,
     })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (res) {
-        if (!res.ok || String(res.j.success) !== 'true') throw new Error(res.j.message || 'failed');
+        clearTimeout(slow); clearTimeout(giveUp);
+        if (!res.ok || String(res.j.success) !== 'true') throw Object.assign(new Error(res.j.message || 'failed'), { answered: true });
         form.reset();
+        finish();
         status.classList.add('ok');
         status.textContent = 'Sent. Thank you, I will write back soon.';
       })
-      .catch(function () {
+      .catch(function (err) {
+        clearTimeout(slow); clearTimeout(giveUp);
+        // No answer, or the request never got through: take the plain route.
+        if (!err || !err.answered) { plainSubmit(); return; }
+        finish();
         status.innerHTML = 'That did not go through. Please write to <a href="mailto:arshadkaziblog@gmail.com">arshadkaziblog@gmail.com</a> instead.';
-      })
-      .finally(function () {
-        send.disabled = false;
-        send.classList.remove('sending');
-        send.querySelector('.send-label').textContent = 'Send message';
       });
   });
 
