@@ -1013,23 +1013,6 @@ main > .blog-post {
   padding-top: var(--space-lg);
 }
 
-/* Each section is numbered in the margin like a figure. */
-.blog-post-content {
-  counter-reset: section;
-}
-
-.blog-post-content h2::before {
-  counter-increment: section;
-  content: '§ ' counter(section, decimal-leading-zero);
-  position: absolute;
-  top: 0;
-  left: 0;
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.12em;
-  color: var(--color-accent);
-}
-
 .blog-post-content h3 {
   font-size: 1.32rem;
   font-weight: 500;
