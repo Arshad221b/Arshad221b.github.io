@@ -16,10 +16,11 @@ const endpoint = `https://formsubmit.co/ajax/${inbox}`;
 const sketches = ['vitruvian', 'sibyl', 'flying', 'nude', 'water', 'horse'].map(n => `/images/contact/${n}.jpg`);
 // Elsewhere, the same places the About page lists.
 const elsewhere = [
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/arshad221b/' },
-  { label: 'Substack', href: 'https://substack.com/@arshadkazi' },
-  { label: 'GitHub', href: 'https://github.com/Arshad221b' },
-  { label: 'Medium', href: 'https://medium.com/@arshad_221b' },
+  { label: 'Email', handle: inbox, href: `mailto:${inbox}`, mark: '→' },
+  { label: 'LinkedIn', handle: 'in/arshad221b', href: 'https://www.linkedin.com/in/arshad221b/', mark: '↗' },
+  { label: 'Substack', handle: '@arshadkazi', href: 'https://substack.com/@arshadkazi', mark: '↗' },
+  { label: 'GitHub', handle: 'Arshad221b', href: 'https://github.com/Arshad221b', mark: '↗' },
+  { label: 'Medium', handle: '@arshad_221b', href: 'https://medium.com/@arshad_221b', mark: '↗' },
 ];
 const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in particular'];
 ---
@@ -82,12 +83,20 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
       </div>
     </form>
 
-    <div class="direct">
-      <p class="direct-row"><span class="direct-k">Or write directly</span><a href={`mailto:${inbox}`}>{inbox}</a></p>
-      <p class="direct-row"><span class="direct-k">Elsewhere</span>
-        {elsewhere.map(l => <a class="elsewhere" href={l.href} target="_blank" rel="noopener">{l.label}<span aria-hidden="true">↗</span></a>)}
-      </p>
-    </div>
+    <section class="elsewhere">
+      <h2 class="part-head">Or find me</h2>
+      <ul class="places">
+        {elsewhere.map(l => (
+          <li>
+            <a href={l.href} target={l.href.startsWith('mailto') ? undefined : '_blank'} rel="noopener">
+              <span class="place">{l.label}</span>
+              <span class="handle">{l.handle}</span>
+              <span class="mark" aria-hidden="true">{l.mark}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
   </div>
 </Layout>
 
@@ -402,49 +411,67 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
     color: var(--color-accent);
   }
 
-  .direct {
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-    margin: var(--space-2xl) 0 0;
+  /* Elsewhere: one row per place, on hairlines. */
+  .elsewhere {
+    margin-top: var(--space-3xl);
   }
 
-  .direct-row {
-    display: flex;
-    flex-wrap: wrap;
+  .places {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-md) 0 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .places li {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .places a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     align-items: baseline;
-    gap: 0.5rem 1.1rem;
-    margin: 0;
+    gap: var(--space-md);
+    padding: 0.9rem 0;
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .place {
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    transition: color 0.2s ease, transform 0.3s var(--ease-out);
+  }
+
+  .handle {
     font-family: var(--font-mono);
     font-size: 0.7rem;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     color: var(--color-text-muted);
   }
 
-  .direct-k {
-    min-width: 8.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 0.6rem;
+  .mark {
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    transition: color 0.2s ease, transform 0.3s var(--ease-out);
   }
 
-  .direct a {
-    color: var(--color-text);
-    text-decoration: none;
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: 1px;
-    transition: color 0.2s ease, border-color 0.2s ease;
-  }
-
-  .direct a:hover {
+  .places a:hover .place {
     color: var(--color-accent);
-    border-color: var(--color-accent);
+    transform: translateX(4px);
   }
 
-  .elsewhere span {
-    margin-left: 0.25em;
-    font-size: 0.85em;
+  .places a:hover .mark {
     color: var(--color-accent);
+    transform: translate(2px, -2px);
+  }
+
+  @media (max-width: 480px) {
+    .handle {
+      display: none;
+    }
   }
 </style>
 
