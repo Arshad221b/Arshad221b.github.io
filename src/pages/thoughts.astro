@@ -126,23 +126,18 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
                 data-description={post.description.toLowerCase()}
                 data-topics={membership[i].map(t => t.k).join(',')}
                 data-p={membership[i].map(t => t.p.toFixed(4)).join(',')}>
-              <a href={`/thoughts/${post.slug}`} class="entry-link" data-peek={post.plate ?? ''} data-no={post.no}>
-                {/* Every line opens with the mark of the essay: its picture
-                    if it has one, and otherwise its number. */}
-                <span class="entry-mark">
-                  {post.thumb
-                    ? <img src={post.thumb} alt="" loading="lazy" decoding="async" width="150" height="100" />
-                    : <span class="entry-no">{post.no}</span>}
-                </span>
-
+              <a href={`/thoughts/${post.slug}`} class="entry-link" data-peek="" data-no={post.no}>
+                <time class="entry-date" datetime={post.date}>{shortDate(post.date)}</time>
                 <span class="entry-body">
-                  <h3>{post.title}</h3>
-                  <p>{post.description}</p>
+                  <span class="entry-fig"><img src={`/images/thoughts/${post.slug}.jpg`} alt="" width="1600" height="840" loading="lazy" decoding="async" /></span>
                   <span class="entry-meta">
-                    <time datetime={post.date}>{shortDate(post.date)}</time>
+                    <span class="k">Essay {post.no}</span>
+                    <span>{Math.max(1, Math.round(post.words / 230))} min read</span>
                     <span class="entry-topic">{topics[topTopic[i].k].words.slice(0, 2).join(' · ')}</span>
                     <span class="entry-score" hidden></span>
                   </span>
+                  <h3>{post.title}</h3>
+                  <p>{post.description}</p>
                 </span>
               </a>
             </li>
@@ -427,9 +422,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   }
 
   /* ── The ledger ────────────────────────────────────── */
-  /* One flat list rather than a section per year, so a ranking can put
-     any essay next to any other. The year headings are items in the same
-     list and step aside when the order is not chronological. */
+  /* The same timeline as Blogs: one flat list, newest first, under year
+     headings that step aside when a search ranks the essays instead. */
   .thoughts-page {
     width: auto;
     margin: 0;
@@ -445,11 +439,11 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   .year-band {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: var(--space-md);
     list-style: none;
     margin: 0;
-    padding: var(--space-2xl) 0 0.4rem;
+    padding: var(--space-2xl) 0 var(--space-sm);
   }
 
   .year-band:first-child {
@@ -457,22 +451,25 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   }
 
   .year-num {
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.14em;
-    color: var(--color-accent);
+    font-family: var(--font-display);
+    font-size: 2.6rem;
+    font-weight: 200;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: var(--color-text);
   }
 
   .year-line {
     flex: 1;
     height: 1px;
     background: var(--color-border);
+    align-self: center;
   }
 
   .year-count {
     font-family: var(--font-mono);
     font-size: 0.6rem;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-text-muted);
     white-space: nowrap;
@@ -484,15 +481,15 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   .entry {
     margin: 0;
+    border-bottom: 1px solid var(--color-border-light);
   }
 
   .entry-link {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 168px;
-    gap: var(--space-xl);
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    gap: var(--space-lg);
     align-items: start;
-    padding: var(--space-lg) 0;
-    border-bottom: 1px solid var(--color-border-light);
+    padding: var(--space-xl) 0;
     text-decoration: none;
     color: inherit;
   }
@@ -501,67 +498,84 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     text-decoration: none;
   }
 
+  .entry-date {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    padding-top: 0.15rem;
+  }
+
   .entry-body {
-    grid-column: 1;
-    grid-row: 1;
     display: block;
     min-width: 0;
   }
 
+  .entry-fig {
+    display: block;
+    margin-bottom: var(--space-md);
+  }
+
+  .entry-fig img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px var(--color-border-light);
+    transition: box-shadow 0.3s ease;
+  }
+
+  :global(html.dark) .entry-fig img {
+    box-shadow: none;
+    filter: brightness(0.9);
+  }
+
+  .entry-link:hover .entry-fig img {
+    box-shadow: 0 0 0 1px var(--color-accent);
+  }
+
+  .entry-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.9rem;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .entry-meta .k {
+    color: var(--color-accent);
+  }
+
   .entry h3 {
     font-family: var(--font-display);
-    font-size: clamp(1.4rem, 2.6vw, 1.85rem);
+    font-size: clamp(1.5rem, 3vw, 1.9rem);
     font-weight: 400;
-    line-height: 1.18;
-    letter-spacing: -0.022em;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
     color: var(--color-text);
-    max-width: 34ch;
-    margin: 0;
+    margin: 0.4rem 0 0.35rem;
     transition: color 0.25s ease;
   }
 
-  .entry-link:hover h3,
-  .entry-link:focus-visible h3 {
+  .entry-link:hover h3 {
     color: var(--color-accent);
   }
 
   .entry p {
     font-family: var(--font-serif);
-    font-size: 1.04rem;
-    line-height: 1.6;
+    font-size: 1rem;
+    line-height: 1.55;
     color: var(--color-text-secondary);
-    max-width: 60ch;
-    margin: 0.45rem 0 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    max-width: 58ch;
+    margin: 0;
   }
 
-  .entry-meta {
-    display: flex;
-    align-items: baseline;
-    gap: 0.8rem;
-    flex-wrap: wrap;
-    margin-top: 0.6rem;
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-  }
-
-  .entry-meta time {
-    color: var(--color-text-secondary);
-    white-space: nowrap;
-  }
-
-  .entry-topic {
-    opacity: 0.8;
-  }
-
-  /* The bar is the number, drawn. It reads as relevance while searching
-     and as the share of the essay while a topic is chosen. */
+  /* The bar is the number, drawn: relevance while searching, the share of
+     the essay while a topic is chosen. */
   .entry-score[hidden] {
     display: none;
   }
@@ -595,64 +609,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     transition: width 0.22s ease;
   }
 
-  /* The picture, set like a plate in a notebook: in the paper's own ink
-     until you reach for it, when its colour comes back. */
-  .entry-mark {
-    grid-column: 2;
-    grid-row: 1;
-    display: block;
-  }
-
-  .entry-mark img {
-    display: block;
-    width: 168px;
-    height: 112px;
-    object-fit: cover;
-    border-radius: 2px;
-    filter: grayscale(1) sepia(0.45) contrast(1.08);
-    mix-blend-mode: multiply;
-    opacity: 0.85;
-    transition: filter 0.7s ease, opacity 0.7s ease, transform 0.7s var(--ease-out);
-  }
-
-  :global(html.dark) .entry-mark img {
-    mix-blend-mode: normal;
-    filter: grayscale(1) sepia(0.3) brightness(0.8);
-  }
-
-  .entry-link:hover .entry-mark img {
-    filter: none;
-    opacity: 1;
-  }
-
-  /* An essay with no picture is a page with only its number. */
-  .entry-no {
-    display: block;
-    text-align: right;
-    font-family: var(--font-display);
-    font-style: italic;
-    font-weight: 200;
-    font-size: 3.4rem;
-    line-height: 1;
-    letter-spacing: -0.04em;
-    color: var(--color-text-muted);
-    opacity: 0.4;
-    transition: color 0.3s ease, opacity 0.3s ease;
-  }
-
-  .entry-no::before {
-    content: 'N\00b0\00a0';
-    font-size: 0.32em;
-    font-style: normal;
-    letter-spacing: 0.04em;
-    vertical-align: 1.4em;
-  }
-
-  .entry-link:hover .entry-no {
-    color: var(--color-accent);
-    opacity: 1;
-  }
-
   .no-results {
     font-family: var(--font-serif);
     font-style: italic;
@@ -667,21 +623,14 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     display: none !important;
   }
 
-  @media (max-width: 560px) {
+  @media (max-width: 760px) {
     .entry-link {
-      grid-template-columns: minmax(0, 1fr) 84px;
-      gap: var(--space-md);
+      grid-template-columns: 1fr;
+      gap: var(--space-sm);
     }
+  }
 
-    .entry-mark img {
-      width: 84px;
-      height: 56px;
-    }
-
-    .entry-no {
-      font-size: 1.9rem;
-    }
-
+  @media (max-width: 560px) {
     .themes {
       flex-direction: column;
       gap: var(--space-sm);

@@ -8,6 +8,7 @@ interface Props {
 const { title, date, description } = Astro.props;
 
 import Layout from './Layout.astro';
+import { existsSync } from 'node:fs';
 import { relatedTo, posts, topicsOf } from '../lib/thoughts-data';
 
 const siteUrl = 'https://arshad-kazi.com';
@@ -41,6 +42,11 @@ for (const [path, raw] of Object.entries(sources)) {
     shareImage = found[0].replace('/upload/', '/upload/w_1200,h_630,c_fill,g_auto,q_auto,f_jpg/');
   }
 }
+
+// Each essay's plate lives at /images/thoughts/<slug>.jpg: shown under the
+// title, and the picture its shared link carries.
+const figure = slug && existsSync(`public/images/thoughts/${slug}.jpg`) ? `/images/thoughts/${slug}.jpg` : null;
+if (figure) shareImage = figure;
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
@@ -86,6 +92,12 @@ function formatDate(dateStr: string): string {
       )}
     </header>
 
+    {figure && (
+      <figure class="post-figure">
+        <img src={figure} alt="" width="1600" height="840" decoding="async" fetchpriority="high" />
+      </figure>
+    )}
+
     <div class="blog-post-content">
       <slot />
     </div>
@@ -126,6 +138,24 @@ function formatDate(dateStr: string): string {
      that element is swallowed into it as dead text: with the styles
      last, none of them applied at all. -->
 <style>
+  .post-figure {
+    max-width: 760px;
+    margin: 0 auto var(--space-2xl);
+  }
+
+  .post-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px var(--color-border-light);
+  }
+
+  :global(html.dark) .post-figure img {
+    box-shadow: none;
+    filter: brightness(0.92);
+  }
+
   /* ── Closest to this one ───────────────────────────────────────
      Not "related posts". These are the three nearest essays in the same
      latent space the index is searched in, and each one says how close it

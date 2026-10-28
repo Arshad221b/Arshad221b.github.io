@@ -1,0 +1,57 @@
+META PROMPT — FIGURES FOR BLOGS AND THOUGHTS
+=============================================
+
+Use this to make the image for any new blog post, notebook or thought, so it
+matches the ones already on the site.
+
+FORMAT (both kinds)
+- 1200 x 630 canvas, rendered at 2x, exported as JPEG (quality ~82, 1600 px wide).
+- Paper: #f0e9de with a faint warm grain. Ink: #151412. Secondary ink: #46433e.
+  Muted: #85817a. Rules: #ddd3c1. One accent only: #e5461c (registration orange).
+- Type: IBM Plex Mono for every label, small (10–12 px), uppercase, tracked.
+  Newsreader only if a serif is unavoidable. No other fonts. No big titles.
+- Top-left label:  "Fig. — <what it shows>"      (blogs)
+                   "Notebook — <notebook name>"  (notebooks)
+                   "Thoughts — <essay title>"    (thoughts)
+- Bottom-left: the source credit, honest and specific (author, work, year,
+  collection). Bottom-right: optional, one key fact in mono.
+- Margins: 48 px. Nothing touches the edge. No logos, no faces of the author,
+  no stock photos, no AI-generated pictures, no paintings in colour.
+
+SOURCES
+- Prefer an existing public-domain drawing, engraving, woodcut, plate or
+  patent drawing (Wikimedia Commons, The Met, NGA, Wellcome, Royal
+  Collection). Leonardo, Dürer, Rembrandt, Vesalius, Cajal, Gray, Galton,
+  Muybridge, Darwin, Hogarth, Palladio, Flammarion are all in use already.
+- Check the licence and write the credit. Never invent provenance.
+- Lift the scan into the paper: grayscale, slight sepia (~0.35–0.4),
+  contrast ~1.35, brightness ~1.1, then multiply onto the paper so the
+  original paper disappears and only the ink stays.
+
+BLOGS AND NOTEBOOKS (technical)
+- The image must be accurate to the post, not decorative. Either:
+  a) a historical drawing of the exact subject, annotated in accent orange
+     (arrows, a box, a label: e.g. Gray's brain with the dorsal and ventral
+     streams, Muybridge's frames marked for temporal and spatial attention), or
+  b) a diagram computed from real numbers (e.g. the exact Binomial PMF, the
+     binormal ROC curve and its AUC, k-means + Voronoi cells + true k-NN,
+     the causal attention mask with exact 1/(i+1) rows).
+- Every number shown must be computed, not typed in. Label what is
+  illustrative versus exact.
+- Orange marks only what matters: the answer, the stream, the true pair.
+
+THOUGHTS (personal essays)
+- One public-domain drawing or print, chosen for what the essay is about,
+  not literally illustrating it (Melencolia for reflection, Praying Hands
+  for asking for help, the Flammarion engraving for belief, Dürer's old man
+  for a grandfather, Leonardo's heart for love).
+- Centred as a plate, fitted inside 1040 x 470, no annotation, no accent
+  colour on the drawing itself. The essay title sits small, top-left.
+
+CHECKLIST BEFORE SAVING
+- Does it look like a page from the same notebook as the others?
+- Is every label true, and the credit complete?
+- Would it still read at 400 px wide (the share preview)?
+- Save as public/images/blog/<slug>.jpg, public/images/blog/notebook-<slug>.jpg
+  or public/images/thoughts/<slug>.jpg; the post layouts pick it up by slug
+  for the page header and the share image.
