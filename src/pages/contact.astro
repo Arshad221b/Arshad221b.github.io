@@ -16,6 +16,10 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
 ---
 
 <Layout title={title} activeNav="/contact" description="Write to Arshad Kazi about a job, a collaboration, or something he wrote.">
+  <!-- Behind the page: a leaf of Leonardo's own handwriting, from the
+       Codex on the Flight of Birds, faint and still. -->
+  <div class="codex-bg" aria-hidden="true"></div>
+
   <div class="contact-page">
     <Mast
       label="Contact"
@@ -33,7 +37,7 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
       <input type="text" name="_honey" class="honey" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
       <section class="part">
-        <h2 class="part-head"><span class="n">01</span><span>You</span><span class="rule"></span></h2>
+        <h2 class="part-head"><span class="n">01</span><span>You</span></h2>
         <div class="field">
           <label for="f-name">Name</label>
           <input id="f-name" name="name" type="text" autocomplete="name" required maxlength="120" placeholder="Your name" />
@@ -45,7 +49,7 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
       </section>
 
       <fieldset class="part">
-        <legend class="part-head"><span class="n">02</span><span>About</span><span class="rule"></span></legend>
+        <legend class="part-head"><span class="n">02</span><span>About</span></legend>
         <div class="reasons">
           {reasons.map((r, i) => (
             <label class="reason"><input type="radio" name="about" value={r} checked={i === 0} /><span>{r}</span></label>
@@ -54,7 +58,7 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
       </fieldset>
 
       <section class="part">
-        <h2 class="part-head"><span class="n">03</span><span>Message</span><span class="rule"></span></h2>
+        <h2 class="part-head"><span class="n">03</span><span>Message</span></h2>
         <div class="field">
           <label for="f-message" class="sr">Message</label>
           <textarea id="f-message" name="message" rows="8" required maxlength="5000" placeholder="Write here…"></textarea>
@@ -73,7 +77,45 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
 
 <style>
   .contact-page {
+    position: relative;
+    z-index: 1;
     max-width: 640px;
+  }
+
+  .codex-bg {
+    position: fixed;
+    top: 4vh;
+    right: -6vw;
+    width: min(62vw, 900px);
+    height: 92vh;
+    background: url('/images/contact-codex.jpg') center / contain no-repeat;
+    filter: grayscale(1) sepia(0.45) contrast(1.5) brightness(1.08);
+    mix-blend-mode: multiply;
+    opacity: 0.32;
+    transform: rotate(-4deg);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 38%, #000 85%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 38%, #000 85%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* On the dark page the ink turns to light: inverted, and screened in. */
+  :global(html.dark) .codex-bg {
+    filter: grayscale(1) invert(1) sepia(0.4) contrast(1.4) brightness(0.9);
+    mix-blend-mode: screen;
+    opacity: 0.16;
+  }
+
+  @media (max-width: 760px) {
+    .codex-bg {
+      right: -30vw;
+      width: 110vw;
+      opacity: 0.16;
+    }
+
+    :global(html.dark) .codex-bg {
+      opacity: 0.1;
+    }
   }
 
   .form {
@@ -134,13 +176,6 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
     color: #fff;
     background: var(--color-accent);
     letter-spacing: 0.04em;
-  }
-
-  .part-head .rule {
-    flex: 1;
-    height: 1px;
-    background: var(--color-text-muted);
-    opacity: 0.5;
   }
 
   fieldset.part .part-head {
