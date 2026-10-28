@@ -4,9 +4,11 @@ interface Props {
   activeNav?: string;
   description?: string;
   ogImage?: string;
+  /* A page that ends in its own ask (Contact) drops the footer's sign-off. */
+  quietFoot?: boolean;
 }
 
-const { title, activeNav = '', description = '', ogImage = '' } = Astro.props;
+const { title, activeNav = '', description = '', ogImage = '', quietFoot = false } = Astro.props;
 const siteUrl = 'https://arshad-kazi.com';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
 const defaultDescription = 'Arshad Kazi — CV/ML engineer building things to understand how they work. Computer vision, 3D geometry, representation learning.';
@@ -212,7 +214,7 @@ const elsewhere = [
 
     <footer>
       <div class="foot">
-        <p class="foot-line">Thanks for <em>looking</em>.</p>
+        {!quietFoot && <p class="foot-line">Thanks for <em>looking</em>.</p>}
         <div class="foot-cols">
           <div class="foot-col">
             <p class="label">Index</p>
