@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Mast from '../components/Mast.astro';
 
 const title = "Technical Blogs — Arshad Kazi";
 
@@ -96,6 +97,9 @@ const posts = ([
   },
 ]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+// Each essay keeps its number in the body of work, counted from the oldest.
+posts.forEach((p: any, i) => { p.no = String(posts.length - i).padStart(2, '0'); });
+
 const allTags = [...new Set(posts.flatMap(p => p.tags))].sort();
 const totalMinutes = posts.reduce((n, p) => n + p.minutes, 0);
 const totalSections = posts.reduce((n, p) => n + p.contents.length, 0);
@@ -115,74 +119,55 @@ function shortDate(dateStr: string): string {
 
 <Layout title={title} activeNav="/blog" description="Technical deep dives on computer vision, 3D understanding, and ML. Notes on things I finally understood, not tutorials." ogImage="/images/share-blog.jpg">
   <div class="blog-page">
-    <div class="folio-rule">
-      <span class="folio-mark">Technical Blogs</span>
-      <span class="folio-line"></span>
-      <span class="folio-mark">{posts.length} essays, {totalMinutes} minutes</span>
-    </div>
-
-    <div class="blog-intro">
-      <h1>Technical Blogs</h1>
-      <p>
-        Deep dives into computer vision, geometry, and 3D understanding. Not tutorials, just my notes on things I finally understood.
-      </p>
-    </div>
-
-    <dl class="figures">
-      <div>
-        <dt>Essays</dt>
-        <dd>{posts.length}</dd>
-      </div>
-      <div>
-        <dt>Sections</dt>
-        <dd>{totalSections}</dd>
-      </div>
-      <div>
-        <dt>Minutes of reading</dt>
-        <dd>{totalMinutes}</dd>
-      </div>
-      <div>
-        <dt>Topics</dt>
-        <dd>{allTags.length}</dd>
-      </div>
-    </dl>
+    <Mast
+      label="Technical Blogs"
+      aside={`${posts.length} essays, ${totalMinutes} minutes`}
+      title="Technical"
+      accent="Blogs"
+      lede="Deep dives into computer vision, geometry, and 3D understanding. Not tutorials, just my notes on things I finally understood."
+      figures={[
+        { k: 'Essays', v: posts.length },
+        { k: 'Sections', v: totalSections },
+        { k: 'Minutes of reading', v: totalMinutes },
+        { k: 'Topics', v: allTags.length },
+      ]}
+    />
 
     <div class="filters">
-      <p class="filter-label">Filter by topic</p>
+      <p class="filter-label">Topics</p>
       <div class="tag-filters" id="tag-filters">
         {allTags.map(tag => (
           <button class="tag-chip" data-tag={tag}>{tag}</button>
         ))}
       </div>
+      <p class="results-count" id="results-count"></p>
     </div>
 
-    <p class="results-count" id="results-count"></p>
-
+    <!-- The index, like the contents of a book: one row per essay, its
+         particulars in the margin, and every section it holds listed out. -->
     <div class="post-index" id="post-index">
       {grouped.map(group => (
         <section class="year-group" data-year={group.year}>
-          <h2 class="year-label">{group.year}</h2>
+          <h2 class="year-label"><span>{group.year}</span><span class="year-rule"></span><span>{group.items.length} {group.items.length === 1 ? 'essay' : 'essays'}</span></h2>
           <ul class="entry-list">
             {group.items.map(post => (
               <li class="entry" data-title={post.title.toLowerCase()} data-description={post.description.toLowerCase()} data-tags={post.tags.join(',')}>
                 <a href={post.href || `/blog/${post.slug}`}>
-                  <div class="entry-head">
+                  <span class="entry-margin">
+                    <span class="entry-no">N&deg; {post.no}</span>
                     <time datetime={post.date}>{shortDate(post.date)}</time>
-                    <span class="entry-mins">{post.minutes} min read</span>
-                  </div>
-                  <h3>{post.title}</h3>
-                  <p>{post.description}</p>
-                  <ol class="contents">
-                    {post.contents.map((section, i) => (
-                      <li>
-                        <span class="sec-num">{String(i + 1).padStart(2, '0')}</span>
-                        <span class="sec-text">{section}</span>
-                      </li>
-                    ))}
-                  </ol>
-                  <ul class="entry-tags">
-                    {post.tags.map(tag => <li>{tag}</li>)}
-                  </ul>
+                    <span>{post.minutes} min read</span>
+                  </span>
+                  <span class="entry-body">
+                    <h3>{post.title}</h3>
+                    <p>{post.description}</p>
+                    <ol class="contents">
+                      {post.contents.map((section, i) => (
+                        <li><span class="sec-n">{String(i + 1).padStart(2, '0')}</span><span>{section}</span></li>
+                      ))}
+                    </ol>
+                    <span class="entry-tags">{post.tags.join('  ·  ')}</span>
+                  </span>
                 </a>
               </li>
             ))}
@@ -201,96 +186,18 @@ function shortDate(dateStr: string): string {
     flex-direction: column;
   }
 
-  /* ── Folio rule ────────────────────────────────────── */
-  .folio-rule {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    margin-bottom: var(--space-xl);
-  }
-
-  .folio-mark {
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-
-    color: var(--color-text-muted);
-    white-space: nowrap;
-  }
-
-  .folio-line {
-    flex: 1;
-    height: 1px;
-    background: var(--color-border);
-  }
-
-  /* ── Intro ─────────────────────────────────────────── */
-  .blog-intro {
-    margin-bottom: var(--space-xl);
-  }
-
-  .blog-intro h1 {
-    font-size: clamp(3.2rem, 8vw, 4.8rem);
-    line-height: 0.95;
-    letter-spacing: -0.02em;
-    margin: var(--space-md) 0 var(--space-md);
-  }
-
-  .blog-intro p {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 1.17rem;
-    line-height: 1.6;
-    color: var(--color-text-secondary);
-    max-width: 54ch;
-    margin: 0;
-  }
-
-  /* ── Figures band ──────────────────────────────────── */
-  .figures {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-md);
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
-    padding: var(--space-md) 0;
-    margin: 0 0 var(--space-xl);
-  }
-
-  .figures div {
-    display: flex;
-    flex-direction: column-reverse;
-    gap: 0.25rem;
-  }
-
-  .figures dt {
-    font-family: var(--font-mono);
-    font-size: 0.56rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-  }
-
-  .figures dd {
-    font-family: var(--font-serif);
-    font-size: 1.9rem;
-    line-height: 1;
-    color: var(--color-text);
-    margin: 0;
-  }
-
-  /* ── Filters ───────────────────────────────────────── */
+  /* ── Topics: set words, not buttons ───────────────── */
   .filters {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-    margin-bottom: var(--space-xl);
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 0.4rem var(--space-md);
+    align-items: baseline;
+    margin-bottom: var(--space-2xl);
   }
 
   .filter-label {
     font-family: var(--font-mono);
-    font-size: 0.56rem;
+    font-size: 0.6rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--color-text-muted);
@@ -300,56 +207,72 @@ function shortDate(dateStr: string): string {
   .tag-filters {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: 0.15rem 0.9rem;
   }
 
   .tag-chip {
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-    font-weight: 400;
-    background: transparent;
-    color: var(--color-text-muted);
-    padding: 0.2rem 0.5rem;
-    border-radius: 2px;
-    border: 1px solid var(--color-border);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.02rem;
+    background: none;
+    border: none;
+    padding: 0.1rem 0;
+    color: var(--color-text-secondary);
     cursor: pointer;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    background-image: linear-gradient(var(--color-accent), var(--color-accent));
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: color 0.2s ease, background-size 0.35s var(--ease-out);
   }
 
-  .tag-chip:hover {
-    color: var(--color-accent);
-    border-color: var(--color-accent);
-  }
-
+  .tag-chip:hover,
   .tag-chip.active {
-    background: var(--color-accent);
-    color: #fff;
-    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background-size: 100% 1px;
   }
 
-  /* ── Index ─────────────────────────────────────────── */
+  .results-count {
+    grid-column: 2;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    color: var(--color-accent);
+    margin: 0.4rem 0 0;
+  }
+
+  .results-count:empty {
+    display: none;
+  }
+
+  /* ── The index ───────────────────────────────────── */
   .post-index {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xl);
-  }
-
-  .year-group {
-    display: grid;
-    grid-template-columns: 3.5rem 1fr;
-    gap: var(--space-md);
+    gap: var(--space-2xl);
   }
 
   .year-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.62rem;
     font-weight: 400;
-    letter-spacing: 0.12em;
-    color: var(--color-accent) !important;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--color-text-muted);
-    letter-spacing: 0.08em;
-    margin: 0;
-    padding-top: 0.55rem;
+    margin: 0 0 var(--space-sm);
+  }
+
+  .year-label span:first-child {
+    color: var(--color-accent);
+  }
+
+  .year-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
   }
 
   .entry-list {
@@ -368,44 +291,46 @@ function shortDate(dateStr: string): string {
   }
 
   .entry a {
-    display: block;
-    padding: var(--space-md) 0;
+    display: grid;
+    grid-template-columns: 8.5rem minmax(0, 1fr);
+    gap: var(--space-lg);
+    padding: var(--space-lg) 0;
     text-decoration: none;
     color: inherit;
   }
 
-  .entry a:hover {
-    text-decoration: none;
-  }
-
-  .entry-head {
+  /* The particulars, in the margin, where they can be found and ignored. */
+  .entry-margin {
     display: flex;
-    align-items: baseline;
-    gap: 0.6rem;
-    margin-bottom: 0.35rem;
-  }
-
-  .entry time,
-  .entry-mins {
+    flex-direction: column;
+    gap: 0.3rem;
+    padding-top: 0.45rem;
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--color-text-muted);
   }
 
-  .entry-mins {
-    font-size: 0.6rem;
-    opacity: 0.7;
+  .entry-no {
+    color: var(--color-text-secondary);
+    transition: color 0.25s ease;
   }
 
-  /* The title is the one thing that should catch the eye. */
+  .entry a:hover .entry-no {
+    color: var(--color-accent);
+  }
+
   .entry h3 {
     font-family: var(--font-display);
-    font-size: 1.75rem;
+    font-size: clamp(1.45rem, 2.8vw, 1.9rem);
     font-weight: 400;
-    line-height: 1.15;
+    line-height: 1.16;
+    letter-spacing: -0.02em;
     color: var(--color-text);
-    margin: 0 0 0.35rem 0;
-    transition: color 0.15s ease;
+    max-width: 32ch;
+    margin: 0 0 0.5rem;
+    transition: color 0.25s ease;
   }
 
   .entry a:hover h3 {
@@ -414,131 +339,91 @@ function shortDate(dateStr: string): string {
 
   .entry p {
     font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 1.12rem;
-    line-height: 1.55;
-    color: var(--color-text-muted);
-    margin: 0;
+    font-size: 1.06rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
     max-width: 62ch;
+    margin: 0;
   }
 
-  /* The section list is what tells you a post has substance. */
+  /* What the essay holds, section by section, so it can be read from here. */
   .contents {
     list-style: none;
-    padding: 0;
-    margin: var(--space-sm) 0 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem var(--space-lg);
     max-width: 62ch;
+    padding: 0;
+    margin: var(--space-md) 0 0;
   }
 
   .contents li {
     display: flex;
-    gap: 0.7rem;
-    align-items: baseline;
-    padding: 0.2rem 0;
-    margin: 0;
-    border-top: 1px solid var(--color-border-light);
-  }
-
-  .contents li:first-child {
-    border-top: none;
-  }
-
-  .sec-num {
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    color: var(--color-accent);
-    opacity: 0.75;
-    flex-shrink: 0;
-  }
-
-  .sec-text {
+    gap: 0.6rem;
     font-family: var(--font-serif);
-    font-size: 1rem;
-    line-height: 1.45;
-    color: var(--color-text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.4;
+    color: var(--color-text-muted);
+  }
+
+  .sec-n {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.04em;
+    padding-top: 0.22rem;
+    color: var(--color-text-muted);
+    opacity: 0.6;
+    transition: color 0.25s ease;
+  }
+
+  .entry a:hover .sec-n {
+    color: var(--color-accent);
   }
 
   .entry-tags {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    padding: 0;
-    margin: var(--space-sm) 0 0;
-  }
-
-  .entry-tags li {
+    display: block;
+    margin-top: var(--space-md);
     font-family: var(--font-mono);
-    font-size: 0.62rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: pre-wrap;
     color: var(--color-text-muted);
-    border: 1px solid var(--color-border);
-    border-radius: 2px;
-    padding: 0.12rem 0.4rem;
-    margin: 0;
-  }
-
-  .results-count {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--color-text-muted);
-    margin: 0 0 var(--space-md) 0;
-  }
-
-  .results-count:empty {
-    display: none;
+    opacity: 0.8;
   }
 
   .no-results {
-    font-family: var(--font-sans);
-    font-size: 0.88rem;
-    color: var(--color-text-muted);
-    padding: var(--space-xl) 0;
-    margin: 0;
     display: none;
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--color-text-muted);
   }
 
-  @media (max-width: 600px) {
-    .year-group {
+  @media (max-width: 680px) {
+    .entry a {
       grid-template-columns: 1fr;
       gap: var(--space-sm);
     }
 
-    .year-label {
+    .entry-margin {
+      flex-direction: row;
+      gap: 0.9rem;
       padding-top: 0;
     }
 
-    .entry h3 {
-      font-size: 1.5rem;
-    }
-
-    .figures {
-      grid-template-columns: repeat(2, 1fr);
-      gap: var(--space-sm) var(--space-md);
-    }
-
-    .figures dd {
-      font-size: 1.5rem;
+    .contents {
+      grid-template-columns: 1fr;
     }
   }
 
-  /* On a phone the topics are one row you swipe, not a wall of chips. */
-  @media (max-width: 600px) {
-    .tag-filters {
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      scrollbar-width: none;
-      margin: 0 calc(var(--gutter) * -1);
-      padding: 0 var(--gutter) 0.3rem;
-      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--gutter), #000 calc(100% - var(--gutter)), transparent 100%);
-      mask-image: linear-gradient(90deg, transparent 0, #000 var(--gutter), #000 calc(100% - var(--gutter)), transparent 100%);
+  @media (max-width: 560px) {
+    .filters {
+      grid-template-columns: 1fr;
     }
 
-    .tag-filters::-webkit-scrollbar {
-      display: none;
-    }
-
-    .tag-chip {
-      flex-shrink: 0;
+    .results-count {
+      grid-column: 1;
     }
   }
 </style>

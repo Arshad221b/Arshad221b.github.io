@@ -1,0 +1,137 @@
+---
+/* The head of an index page, in the About page's hand: the running head,
+   the title at the hero's weight with its last word in the accent, written
+   settling in as the page opens, a lede, and the figures of the collection. Anything else (a folded note) goes in the slot. */
+interface Props {
+  label: string;
+  aside: string;
+  title: string;
+  accent: string;
+  lede: string;
+  figures: { k: string; v: string | number }[];
+}
+const { label, aside, title, accent, lede, figures } = Astro.props;
+---
+
+<header class="mast">
+  <div class="mast-rule">
+    <span>{label}</span>
+    <span class="mast-line"></span>
+    <span>{aside}</span>
+  </div>
+
+  <h1 class="mast-title">{title} <em>{accent}</em></h1>
+
+  <p class="mast-lede">{lede}</p>
+
+  <dl class="mast-figures">
+    {figures.map(f => <div><dt>{f.k}</dt><dd>{f.v}</dd></div>)}
+  </dl>
+
+  <slot />
+</header>
+
+<style>
+  .mast {
+    margin-bottom: var(--space-3xl);
+  }
+
+  .mast-rule {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .mast-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  .mast-title {
+    animation: mast-rise 0.9s var(--ease-out) 0.05s both;
+    font-size: clamp(3.4rem, 9vw, 6.6rem);
+    font-weight: 200;
+    line-height: 0.92;
+    letter-spacing: -0.05em;
+    margin: var(--space-xl) 0 var(--space-md);
+  }
+
+  .mast-title em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--color-accent);
+  }
+
+  .mast-lede {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    max-width: 54ch;
+    margin: 0;
+    animation: mast-rise 0.9s var(--ease-out) 0.25s both;
+  }
+
+  .mast-figures {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    margin: var(--space-xl) 0 0;
+    padding: var(--space-md) 0 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .mast-figures > div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.3rem;
+    animation: mast-rise 0.8s var(--ease-out) both;
+  }
+
+  .mast-figures > div:nth-child(1) { animation-delay: 0.35s; }
+  .mast-figures > div:nth-child(2) { animation-delay: 0.4s; }
+  .mast-figures > div:nth-child(3) { animation-delay: 0.45s; }
+  .mast-figures > div:nth-child(4) { animation-delay: 0.5s; }
+
+  .mast-figures dt {
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .mast-figures dd {
+    font-family: var(--font-display);
+    font-size: 2.1rem;
+    font-weight: 200;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  @keyframes mast-rise {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 560px) {
+    .mast-figures {
+      grid-template-columns: repeat(2, 1fr);
+      row-gap: var(--space-lg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mast-title, .mast-lede, .mast-figures > div { animation: none; }
+  }
+</style>
