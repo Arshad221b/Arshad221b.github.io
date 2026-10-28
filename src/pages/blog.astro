@@ -139,29 +139,6 @@ const totalDays = notebooks.reduce((n, nb) => n + nb.days.length, 0);
 const fmt = (d: string, o: Intl.DateTimeFormatOptions) => new Date(d + 'T00:00:00').toLocaleDateString('en-US', o);
 const short = (d: string) => fmt(d, { month: 'short', day: 'numeric' });
 const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
-
-/* The chart above the timeline: every piece in order, oldest on the left,
-   each bar as tall as its reading time. An essay is one wide bar; a
-   notebook is a run of thin ones, a bar a day. Placed by order, not by
-   date, so a week of notes is not crushed into a sliver. */
-const CW = 1000, CH = 150, BASE = 128, TOP = 26;
-const chrono = [...items].reverse();
-const units = chrono.reduce((n, it) => n + (it.kind === 'essay' ? 4 : it.nb.days.length) + 1.6, -1.6);
-const unit = CW / units;
-const maxMin = Math.max(...chrono.flatMap(it => it.kind === 'essay' ? [it.minutes] : it.nb.days.map(d => d.minutes)));
-const yh = (m: number) => Math.max(4, (m / maxMin) * (BASE - TOP));
-let cx = 0;
-const bars = chrono.map(it => {
-  const id = items.indexOf(it);
-  const x0 = cx;
-  const rects = it.kind === 'essay'
-    ? [{ x: cx, w: unit * 4, h: yh(it.minutes) }]
-    : it.nb.days.map((d, k) => ({ x: cx + k * unit, w: unit * 0.62, h: yh(d.minutes) }));
-  cx += (it.kind === 'essay' ? 4 : it.nb.days.length) * unit + unit * 1.6;
-  return { id, it, x0, x1: cx - unit * 1.6, rects };
-});
-// A year mark wherever the year changes along the run.
-const yearMarks = bars.filter((b, i) => i === 0 || b.it.date.slice(0, 4) !== bars[i - 1].it.date.slice(0, 4)).map(b => ({ x: b.x0, y: b.it.date.slice(0, 4) }));
 ---
 
 <Layout title={title} activeNav="/blog" description="Essays and day-by-day notebooks on computer vision, the brain and machine learning. Notes on things I finally understood, not tutorials." ogImage="/images/share-blog.jpg">
@@ -181,32 +158,6 @@ const yearMarks = bars.filter((b, i) => i === 0 || b.it.date.slice(0, 4) !== bar
     />
 
     <!-- The two kinds, said once, so the timeline needs no more explaining. -->
-    <!-- Reading time, piece by piece. A line sweeps across it and names each
-         piece as it passes; point at a bar, or at a row below, to hold it. -->
-    <figure class="chart" id="chart" aria-label="Reading time of every essay and notebook, oldest to newest">
-      <div class="chart-now" aria-live="off">
-        <span class="chart-kind" id="chart-kind">&nbsp;</span>
-        <a class="chart-title" id="chart-title" href="#">&nbsp;</a>
-      </div>
-      <svg viewBox={`0 0 ${CW} ${CH}`} preserveAspectRatio="none" class="chart-svg">
-        {[0.25, 0.5, 0.75, 1].map(f => <line class="grid" x1="0" x2={CW} y1={BASE - f * (BASE - TOP)} y2={BASE - f * (BASE - TOP)} />)}
-        <line class="axis" x1="0" x2={CW} y1={BASE} y2={BASE} />
-        {bars.map(b => (
-          <g class={`piece ${b.it.kind}`} data-id={b.id} data-x0={b.x0} data-x1={b.x1}
-             data-kind={b.it.kind === 'essay' ? `Essay · ${b.it.minutes} min` : `Notebook · ${b.it.nb.days.length} days · ${b.it.minutes} min`}
-             data-title={b.it.title} data-href={b.it.href}>
-            <rect class="hit" x={b.x0 - 2} y="0" width={b.x1 - b.x0 + 4} height={CH} />
-            {b.rects.map(r => <rect class="bar" x={r.x} y={BASE - r.h} width={r.w} height={r.h} />)}
-          </g>
-        ))}
-        <line class="sweep" id="sweep" x1="0" x2="0" y1={TOP - 14} y2={BASE + 6} />
-      </svg>
-      <div class="chart-years">
-        {yearMarks.map(m => <span style={`left:${(m.x / CW * 100).toFixed(2)}%`}>{m.y}</span>)}
-        <span class="chart-unit">bar height · minutes to read</span>
-      </div>
-    </figure>
-
     <dl class="key">
       <div><dt><span class="mark essay"></span>Essay</dt><dd>A single post.</dd></div>
       <div><dt><span class="mark notebook"><i></i><i></i><i></i><i></i></span>Notebook</dt><dd>Daily notes on one topic, over a week or so.</dd></div>
@@ -225,7 +176,7 @@ const yearMarks = bars.filter((b, i) => i === 0 || b.it.date.slice(0, 4) !== bar
           <h2 class="year-head"><span class="year-n">{year}</span><span class="year-rule"></span><span class="year-c">{items.filter(it => it.date.startsWith(year)).length} pieces</span></h2>
           <ol class="rows">
             {items.filter(it => it.date.startsWith(year)).map(it => (
-              <li class={`row ${it.kind}`} data-tags={it.tags.join('|')} data-id={items.indexOf(it)}>
+              <li class={`row ${it.kind}`} data-tags={it.tags.join('|')}>
                 <time class="row-date" datetime={it.date}>{short(it.date)}</time>
                 <div class="row-body">
                   <div class="row-fig"><img src={it.image} alt="" width="1600" height="840" loading="lazy" decoding="async" /></div>
@@ -283,138 +234,6 @@ const yearMarks = bars.filter((b, i) => i === 0 || b.it.date.slice(0, 4) !== bar
 
   .meta .k {
     color: var(--color-accent);
-  }
-
-  /* ── The chart ──────────────────────────────────── */
-  .chart {
-    margin: 0 0 var(--space-xl);
-  }
-
-  .chart-now {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    min-height: 3.6rem;
-    margin-bottom: 0.4rem;
-  }
-
-  .chart-kind {
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-accent);
-  }
-
-  .chart-title {
-    font-family: var(--font-display);
-    font-size: clamp(1.15rem, 2.4vw, 1.5rem);
-    font-weight: 300;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-    color: var(--color-text);
-    text-decoration: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    animation: chart-in 0.45s var(--ease-out);
-  }
-
-  .chart-title:hover {
-    color: var(--color-accent);
-  }
-
-  @keyframes chart-in {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: none; }
-  }
-
-  .chart-svg {
-    display: block;
-    width: 100%;
-    height: 150px;
-    overflow: visible;
-  }
-
-  .chart .grid {
-    stroke: var(--color-border-light);
-    stroke-width: 1;
-    stroke-dasharray: 2 4;
-    vector-effect: non-scaling-stroke;
-  }
-
-  .chart .axis {
-    stroke: var(--color-text-muted);
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
-  }
-
-  .chart .hit {
-    fill: transparent;
-    cursor: pointer;
-  }
-
-  /* The bars rest in a faint ink and light up as the line passes. */
-  .chart .bar {
-    fill: var(--color-text-muted);
-    opacity: 0.35;
-    transition: fill 0.5s ease, opacity 0.9s ease;
-  }
-
-  .chart .piece.lit .bar {
-    fill: var(--color-accent);
-    opacity: 1;
-    transition: fill 0.15s ease, opacity 0.15s ease;
-  }
-
-  .chart .piece.seen .bar {
-    opacity: 0.6;
-  }
-
-  .chart .sweep {
-    stroke: var(--color-accent);
-    stroke-width: 1.5;
-    vector-effect: non-scaling-stroke;
-  }
-
-  .chart-years {
-    position: relative;
-    height: 1.2rem;
-    margin-top: 0.35rem;
-    font-family: var(--font-mono);
-    font-size: 0.58rem;
-    letter-spacing: 0.1em;
-    color: var(--color-text-muted);
-  }
-
-  .chart-years span {
-    position: absolute;
-    top: 0;
-  }
-
-  .chart-years .chart-unit {
-    right: 0;
-    text-transform: uppercase;
-    opacity: 0.8;
-  }
-
-  /* The row a bar belongs to answers when you point at the bar. */
-  .row.hi h3 a {
-    color: var(--color-accent);
-  }
-
-  .row.hi .row-fig img {
-    box-shadow: 0 0 0 1px var(--color-accent);
-  }
-
-  @media (max-width: 560px) {
-    .chart-svg {
-      height: 110px;
-    }
-
-    .chart-unit {
-      display: none;
-    }
   }
 
   /* ── The key ──────────────────────────────────────── */
@@ -744,84 +563,6 @@ const yearMarks = bars.filter((b, i) => i === 0 || b.it.date.slice(0, 4) !== bar
 </style>
 
 <script is:inline>
-/* The chart: a line sweeps across, naming each piece as it passes. Point
-   at a bar or a row and it holds there; let go and it carries on. */
-(function () {
-  var svg = document.querySelector('#chart .chart-svg');
-  if (!svg) return;
-  var pieces = [].slice.call(svg.querySelectorAll('.piece'));
-  var sweep = document.getElementById('sweep');
-  var kindEl = document.getElementById('chart-kind'), titleEl = document.getElementById('chart-title');
-  var W = 1000, x = 0, held = null, current = null, last = performance.now();
-  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var rows = {};
-  [].slice.call(document.querySelectorAll('.row[data-id]')).forEach(function (r) { rows[r.dataset.id] = r; });
-
-  function show(p) {
-    if (p === current) return;
-    if (current) { current.classList.remove('lit'); current.classList.add('seen'); if (rows[current.dataset.id]) rows[current.dataset.id].classList.remove('hi'); }
-    current = p;
-    if (!p) return;
-    p.classList.add('lit');
-    if (held && rows[p.dataset.id]) rows[p.dataset.id].classList.add('hi');
-    kindEl.textContent = p.dataset.kind;
-    titleEl.textContent = p.dataset.title;
-    titleEl.href = p.dataset.href;
-    titleEl.style.animation = 'none'; void titleEl.offsetWidth; titleEl.style.animation = '';
-  }
-
-  function at(px) {
-    for (var i = 0; i < pieces.length; i++) {
-      var p = pieces[i];
-      if (px >= +p.dataset.x0 - 6 && px <= +p.dataset.x1 + 6) return p;
-    }
-    return null;
-  }
-
-  function place(px) {
-    sweep.setAttribute('x1', px); sweep.setAttribute('x2', px);
-  }
-
-  (function frame(now) {
-    var dt = Math.min(0.05, (now - last) / 1000); last = now;
-    if (!held && !reduce) {
-      x += dt * 70;
-      if (x > W + 40) { x = -20; pieces.forEach(function (p) { p.classList.remove('seen'); }); }
-      place(Math.max(0, Math.min(W, x)));
-      var p = at(x);
-      if (p) show(p);
-    }
-    requestAnimationFrame(frame);
-  })(last);
-
-  function hold(p) {
-    held = p;
-    x = (+p.dataset.x0 + +p.dataset.x1) / 2;
-    place(x);
-    current = null;
-    show(p);
-  }
-  function release() {
-    if (held && rows[held.dataset.id]) rows[held.dataset.id].classList.remove('hi');
-    held = null;
-  }
-
-  pieces.forEach(function (p) {
-    p.addEventListener('mouseenter', function () { hold(p); });
-    p.addEventListener('mouseleave', release);
-    p.addEventListener('click', function () {
-      var r = rows[p.dataset.id];
-      if (r) r.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
-    });
-  });
-  Object.keys(rows).forEach(function (id) {
-    var p = svg.querySelector('.piece[data-id="' + id + '"]');
-    rows[id].addEventListener('mouseenter', function () { if (p) hold(p); });
-    rows[id].addEventListener('mouseleave', release);
-  });
-  if (reduce) show(pieces[pieces.length - 1]);
-})();
-
 (function () {
   var plates = [].slice.call(document.querySelectorAll('#post-index .row'));
   var years = document.querySelectorAll('#post-index .year');
