@@ -16,10 +16,10 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
 ---
 
 <Layout title={title} activeNav="/contact" quietFoot description="Write to Arshad Kazi about a job, a collaboration, or something he wrote.">
-  <!-- Behind the page: drops of ink landing on the paper and spreading,
-       slowly, all the time; and as you write, each key drops one of its
-       own from the field you are writing in. -->
-  <canvas class="ink-bg" id="ink-bg" aria-hidden="true"></canvas>
+  <!-- Behind the page: a leaf of Leonardo's Codex on the Flight of Birds,
+       writing itself the way he wrote, in mirror script, right to left,
+       line by line; when the page is full it rests, fades, and begins again. -->
+  <canvas class="codex" id="codex" aria-hidden="true"></canvas>
 
   <div class="contact-page">
     <Mast
@@ -83,13 +83,39 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
     max-width: 640px;
   }
 
-  .ink-bg {
+  .codex {
     position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    top: 5vh;
+    right: -4vw;
+    width: min(58vw, 820px);
+    height: 90vh;
+    filter: grayscale(1) sepia(0.5) contrast(1.6) brightness(1.06);
+    mix-blend-mode: multiply;
+    opacity: 0.42;
+    transform: rotate(-3deg);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 88%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 88%, transparent 100%);
     pointer-events: none;
     z-index: 0;
+  }
+
+  /* On the dark page the ink turns to light. */
+  :global(html.dark) .codex {
+    filter: grayscale(1) invert(1) sepia(0.4) contrast(1.5) brightness(0.95);
+    mix-blend-mode: screen;
+    opacity: 0.22;
+  }
+
+  @media (max-width: 760px) {
+    .codex {
+      right: -35vw;
+      width: 115vw;
+      opacity: 0.2;
+    }
+
+    :global(html.dark) .codex {
+      opacity: 0.12;
+    }
   }
 
   .form {
@@ -391,76 +417,66 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
 </style>
 
 <script is:inline>
-/* The ink. Each drop is a small dark blot that spreads into two or three
-   rings and fades; ambient drops are faint and fall mostly to the side of
-   the form, typed ones are orange and fall from the field. */
+/* The codex writes itself. The page is cut into bands a line of script
+   high; each band is revealed from right to left, as Leonardo wrote, a
+   small orange nib at the edge of the ink. Then it rests, fades, again. */
 (function () {
-  var c = document.getElementById('ink-bg');
+  var c = document.getElementById('codex');
   if (!c) return;
-  var x = c.getContext('2d'), drops = [], W = 0, H = 0, dpr = 1, running = false;
+  var x = c.getContext('2d'), img = new Image(), W = 0, H = 0, box = null;
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var BANDS = 26, LINE = 1500, REST = 6000, FADE = 1800;
+
   function size() {
-    dpr = Math.min(devicePixelRatio || 1, 2);
-    W = innerWidth; H = innerHeight;
+    var r = c.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+    W = r.width; H = r.height;
     c.width = W * dpr; c.height = H * dpr;
     x.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-  size();
-  addEventListener('resize', size);
-  function colour(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
-
-  function drop(px, py, accent, scale) {
-    drops.push({ x: px, y: py, t0: performance.now(), life: 4200 + Math.random() * 1800, r: (60 + Math.random() * 110) * scale, accent: accent, rings: accent ? 2 : 3 });
-    if (!running) { running = true; requestAnimationFrame(frame); }
+    if (img.width) {
+      var k = Math.min(W / img.width, H / img.height);
+      box = { w: img.width * k, h: img.height * k };
+      box.x = (W - box.w) / 2; box.y = (H - box.h) / 2;
+    }
   }
 
-  function frame(now) {
+  function draw(now, t0) {
+    if (!box) return;
+    var total = BANDS * LINE, t = now - t0;
     x.clearRect(0, 0, W, H);
-    var ink = colour('--color-text'), acc = colour('--color-accent');
-    drops = drops.filter(function (d) { return now - d.t0 < d.life; });
-    drops.forEach(function (d) {
-      var k = (now - d.t0) / d.life, e = 1 - Math.pow(1 - k, 3);
-      // The blot where it landed, soaking in.
-      x.globalAlpha = (d.accent ? 0.45 : 0.32) * Math.pow(1 - k, 2);
-      x.fillStyle = d.accent ? acc : ink;
-      x.beginPath(); x.arc(d.x, d.y, 2 + 5 * Math.min(1, k * 4), 0, Math.PI * 2); x.fill();
-      // Its rings, one after another.
-      for (var i = 0; i < d.rings; i++) {
-        var ki = k - i * 0.12; if (ki <= 0) continue;
-        var ei = 1 - Math.pow(1 - Math.min(1, ki / (1 - i * 0.12)), 3);
-        x.globalAlpha = (d.accent ? 0.6 : 0.34) * Math.pow(1 - ki, 1.4) * (1 - i * 0.22);
-        x.strokeStyle = d.accent ? acc : ink;
-        x.lineWidth = d.accent ? 1.4 : 1.2;
-        x.beginPath(); x.arc(d.x, d.y, d.r * ei * (1 - i * 0.18), 0, Math.PI * 2); x.stroke();
+    var alpha = t > total + REST ? Math.max(0, 1 - (t - total - REST) / FADE) : 1;
+    x.globalAlpha = alpha;
+    var bh = box.h / BANDS, sh = img.height / BANDS;
+    for (var i = 0; i < BANDS; i++) {
+      var k = Math.max(0, Math.min(1, (t - i * LINE) / LINE));
+      if (k <= 0) break;
+      var e = k < 1 ? 1 - Math.pow(1 - k, 1.6) : 1;
+      var sw = img.width * e, dw = box.w * e;
+      // From the right edge leftward: mirror script.
+      x.drawImage(img, img.width - sw, i * sh, sw, sh, box.x + box.w - dw, box.y + i * bh, dw, bh);
+      if (k < 1) {
+        x.globalAlpha = alpha * 0.9;
+        x.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim();
+        x.beginPath();
+        x.arc(box.x + box.w - dw, box.y + i * bh + bh * 0.6, 3, 0, Math.PI * 2);
+        x.fill();
+        x.globalAlpha = alpha;
       }
-    });
+    }
     x.globalAlpha = 1;
-    if (drops.length) requestAnimationFrame(frame); else { running = false; x.clearRect(0, 0, W, H); }
+    return t > total + REST + FADE;
   }
 
-  if (reduce) return;
-  // Ambient drops, now and then, mostly in the open paper beside the form.
-  (function rain() {
-    var form = document.getElementById('contact-form');
-    var r = form ? form.getBoundingClientRect() : { left: 0, right: 0 };
-    var side = W > 900 && Math.random() < 0.8;
-    var px = side ? r.right + 60 + Math.random() * Math.max(80, W - r.right - 120) : Math.random() * W;
-    drop(px, 60 + Math.random() * (H - 120), false, W > 900 ? 1.3 : 0.75);
-    setTimeout(rain, 700 + Math.random() * 1100);
-  })();
-
-  // Typing drops ink from the field being written in.
-  document.addEventListener('input', function (e) {
-    var f = e.target;
-    if (!f.matches || !f.matches('#contact-form input, #contact-form textarea')) return;
-    var b = f.getBoundingClientRect();
-    drop(b.left + Math.min(b.width - 10, 20 + (f.value.length % 40) * (b.width / 44)), b.top + Math.min(b.height - 8, 26), true, 0.5);
-  });
-  document.addEventListener('change', function (e) {
-    if (!e.target.matches || !e.target.matches('#contact-form input[type=radio]')) return;
-    var b = e.target.parentElement.getBoundingClientRect();
-    drop(b.left + b.width / 2, b.top + b.height / 2, true, 0.9);
-  });
+  img.onload = function () {
+    size();
+    addEventListener('resize', size);
+    if (reduce) { draw(performance.now(), performance.now() - BANDS * LINE); return; }
+    var t0 = performance.now();
+    (function frame(now) {
+      if (draw(now, t0)) t0 = now + 600;
+      requestAnimationFrame(frame);
+    })(t0);
+  };
+  img.src = '/images/contact-codex.jpg';
 })();
 
 (function () {
