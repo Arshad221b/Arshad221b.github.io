@@ -28,9 +28,9 @@ const blogs = Object.entries(blogSources).map(([path, raw]) => {
   };
 }).filter(b => b.title && b.date);
 const posts = [
-  ...essays.map(p => ({ title: p.title, date: p.date, href: `/thoughts/${p.slug}` })),
-  ...blogs.map(b => ({ title: b.title, date: b.date, href: b.href })),
-  ...notebooks.map(n => ({ title: n.title, date: n.endDate, href: `/notebooks/${n.slug}` })),
+  ...essays.map(p => ({ title: p.title, date: p.date, href: `/thoughts/${p.slug}`, kind: 'Essay' })),
+  ...blogs.map(b => ({ title: b.title, date: b.date, href: b.href, kind: 'Blog' })),
+  ...notebooks.map(n => ({ title: n.title, date: n.endDate, href: `/notebooks/${n.slug}`, kind: 'Notebook' })),
 ];
 const model = buildThoughtModel([
   ...essays.map(p => ({ slug: p.slug, title: p.title, description: [p.description, ...p.tags].join(' '), text: p.text })),
@@ -84,6 +84,7 @@ const field = {
     z: +(nz(zs[i]) * 0.7).toFixed(3),
     title: p.title,
     href: p.href,
+    kind: p.kind,
     year: p.date.slice(0, 4),
   })),
   edges: model.edges.map(e => [e.a, e.b]),
@@ -203,7 +204,7 @@ const links = [
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.2 3.8v3.4h3.4"/></svg>
       </button>
 
-      <p class="field-cap label" aria-hidden="true"><span class="sig">&#9679;</span>&nbsp; {posts.length} pieces, placed by meaning <span class="field-cap-hint">&middot; drag to turn</span></p>
+      <p class="field-cap label" aria-hidden="true"><span class="sig">&#9679;</span>&nbsp;Essay &nbsp;<span class="key-blog">&#9632;</span>&nbsp;Blog &nbsp;<span class="key-nb">&#10074;&#10074;&#10074;</span>&nbsp;Notebook &nbsp;&middot;&nbsp; {posts.length} pieces, placed by meaning <span class="field-cap-hint">&middot; drag to turn</span></p>
     </section>
   </div>
 
@@ -404,8 +405,18 @@ const links = [
         var on = i === hover;
         var r = (on ? 5.5 : 3.2) * p.s * pp;
         ctx.globalAlpha = (on ? 1 : Math.max(0.35, 1 - p.depth * 0.35)) * pp;
+        // Each kind its own mark: an essay a dot, a blog a square, a
+        // notebook a short run of days.
+        var kind = pts[i].kind;
         ctx.fillStyle = col.accent;
-        ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
+        if (kind === 'Blog') {
+          ctx.fillRect(p.x - r, p.y - r, r * 2, r * 2);
+        } else if (kind === 'Notebook') {
+          var d = r * 0.7;
+          for (var k = -1; k <= 1; k++) ctx.fillRect(p.x + k * d * 2.4 - d * 0.6, p.y - d * 1.4, d * 1.2, d * 2.8);
+        } else {
+          ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
+        }
         // A keypoint marker: a ring with a gap, as a detector draws it. In
         // the intro it closes in on its point, like a detection locking on.
         ctx.strokeStyle = col.accent;
@@ -462,7 +473,7 @@ const links = [
         tip.hidden = false;
         tip.href = pts[i].href;
         tip.querySelector('.field-tip-title').textContent = pts[i].title;
-        tip.querySelector('.field-tip-year').textContent = 'Essay · ' + pts[i].year;
+        tip.querySelector('.field-tip-year').textContent = pts[i].kind + ' · ' + pts[i].year;
         canvas.style.cursor = 'pointer';
         placeTip();
       }
@@ -1308,6 +1319,16 @@ const links = [
 
   .hero-links a:hover .hl-arrow {
     transform: translate(2px, -2px);
+  }
+
+  .field-cap .key-blog,
+  .field-cap .key-nb {
+    color: var(--color-accent);
+  }
+
+  .field-cap .key-nb {
+    letter-spacing: -0.2em;
+    font-size: 0.8em;
   }
 
   .field-cap {
