@@ -1,0 +1,317 @@
+---
+/* Contact: a plain form that lands in my inbox.
+
+   The site is static, so the message is posted to FormSubmit, which mails
+   it on to the address below. It is sent without leaving the page; if
+   that fails for any reason, the page says so and offers plain email. */
+
+import Layout from '../layouts/Layout.astro';
+import Mast from '../components/Mast.astro';
+
+const title = 'Contact — Arshad Kazi';
+const inbox = 'arshadkaziblog@gmail.com';
+const endpoint = `https://formsubmit.co/ajax/${inbox}`;
+const reasons = ['Something I wrote', 'Work or a project', 'Just saying hello', 'Something else'];
+---
+
+<Layout title={title} activeNav="/contact" description="Write to Arshad Kazi about something he wrote, work, or anything else.">
+  <div class="contact-page">
+    <Mast
+      label="Contact"
+      aside="Replies within days"
+      title="Write"
+      accent="to me"
+      lede="About something I wrote, a project, or nothing in particular. I read every message."
+    />
+
+    <form class="form" id="contact-form" action={`https://formsubmit.co/${inbox}`} method="POST" data-endpoint={endpoint} novalidate>
+      <input type="hidden" name="_subject" value="New message from arshad-kazi.com" />
+      <input type="hidden" name="_template" value="table" />
+      <input type="hidden" name="_captcha" value="false" />
+      <!-- Left empty by people; bots fill it in, and FormSubmit drops those. -->
+      <input type="text" name="_honey" class="honey" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+      <div class="field">
+        <label for="f-name">Name</label>
+        <input id="f-name" name="name" type="text" autocomplete="name" required maxlength="120" />
+      </div>
+
+      <div class="field">
+        <label for="f-email">Email</label>
+        <input id="f-email" name="email" type="email" autocomplete="email" required maxlength="200" />
+        <p class="hint">So I can write back. Never shared.</p>
+      </div>
+
+      <fieldset class="field">
+        <legend>About</legend>
+        <div class="reasons">
+          {reasons.map((r, i) => (
+            <label class="reason">
+              <input type="radio" name="about" value={r} checked={i === 0} />
+              <span>{r}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <div class="field">
+        <label for="f-message">Message</label>
+        <textarea id="f-message" name="message" rows="7" required maxlength="5000"></textarea>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="send" id="send">Send message <span aria-hidden="true">&rarr;</span></button>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+      </div>
+    </form>
+
+    <p class="direct">Or write directly: <a href={`mailto:${inbox}`}>{inbox}</a></p>
+  </div>
+</Layout>
+
+<style>
+  .contact-page {
+    max-width: 640px;
+  }
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .honey {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    border: none;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  label,
+  legend {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    padding: 0;
+  }
+
+  legend {
+    margin-bottom: 0.45rem;
+  }
+
+  input[type='text'],
+  input[type='email'],
+  textarea {
+    width: 100%;
+    font-family: var(--font-serif);
+    font-size: 1.12rem;
+    line-height: 1.5;
+    color: var(--color-text);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    border-radius: 0;
+    padding: 0.35rem 0 0.5rem;
+    transition: border-color 0.2s ease;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    padding: 0.7rem 0.8rem;
+  }
+
+  input:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+
+  .field.invalid input,
+  .field.invalid textarea {
+    border-color: var(--color-accent);
+  }
+
+  .hint {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--color-text-muted);
+  }
+
+  .reasons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .reason {
+    position: relative;
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .reason input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .reason span {
+    display: inline-block;
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .reason:hover span {
+    border-color: var(--color-accent);
+  }
+
+  .reason input:checked + span {
+    color: #fff;
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .reason input:focus-visible + span {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-md);
+    margin-top: var(--space-sm);
+  }
+
+  .send {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--color-text);
+    border: none;
+    border-radius: 2px;
+    padding: 0.95rem 1.4rem;
+    cursor: pointer;
+    transition: background 0.2s ease, opacity 0.2s ease;
+  }
+
+  .send:hover {
+    background: var(--color-accent);
+  }
+
+  :global(html.dark) .send {
+    color: var(--color-bg);
+  }
+
+  :global(html.dark) .send:hover {
+    color: #fff;
+  }
+
+  .send[disabled] {
+    opacity: 0.55;
+    cursor: wait;
+  }
+
+  .status {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+  }
+
+  .status.ok {
+    color: var(--color-accent);
+  }
+
+  .direct {
+    margin: var(--space-2xl) 0 0;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border-light);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+  }
+
+  .direct a {
+    color: var(--color-text-secondary);
+  }
+</style>
+
+<script is:inline>
+(function () {
+  var form = document.getElementById('contact-form');
+  if (!form) return;
+  var send = document.getElementById('send');
+  var status = document.getElementById('status');
+
+  function check() {
+    var ok = true;
+    ['f-name', 'f-email', 'f-message'].forEach(function (id) {
+      var el = document.getElementById(id);
+      var bad = !el.value.trim() || (el.type === 'email' && !el.checkValidity());
+      el.closest('.field').classList.toggle('invalid', bad);
+      if (bad && ok) { el.focus(); ok = false; }
+    });
+    return ok;
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    status.classList.remove('ok');
+    if (!check()) { status.textContent = 'A name, an email and a message, please.'; return; }
+    send.disabled = true;
+    status.textContent = 'Sending…';
+    var data = Object.fromEntries(new FormData(form).entries());
+    fetch(form.dataset.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(data),
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok || String(res.j.success) !== 'true') throw new Error(res.j.message || 'failed');
+        form.reset();
+        status.classList.add('ok');
+        status.textContent = 'Sent. Thank you, I will write back soon.';
+      })
+      .catch(function () {
+        status.innerHTML = 'That did not go through. Please write to <a href="mailto:arshadkaziblog@gmail.com">arshadkaziblog@gmail.com</a> instead.';
+      })
+      .finally(function () { send.disabled = false; });
+  });
+
+  form.addEventListener('input', function (e) {
+    var f = e.target.closest('.field');
+    if (f) f.classList.remove('invalid');
+  });
+})();
+</script>

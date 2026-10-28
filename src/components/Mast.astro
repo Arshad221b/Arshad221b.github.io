@@ -8,9 +8,9 @@ interface Props {
   title: string;
   accent: string;
   lede: string;
-  figures: { k: string; v: string | number }[];
+  figures?: { k: string; v: string | number }[];
 }
-const { label, aside, title, accent, lede, figures } = Astro.props;
+const { label, aside, title, accent, lede, figures = [] } = Astro.props;
 ---
 
 <header class="mast">
@@ -24,9 +24,11 @@ const { label, aside, title, accent, lede, figures } = Astro.props;
 
   <p class="mast-lede">{lede}</p>
 
-  <dl class="mast-figures">
-    {figures.map(f => <div><dt>{f.k}</dt><dd>{f.v}</dd></div>)}
-  </dl>
+  {figures.length > 0 && (
+    <dl class="mast-figures">
+      {figures.map(f => <div><dt>{f.k}</dt><dd>{f.v}</dd></div>)}
+    </dl>
+  )}
 
   <slot />
 </header>
