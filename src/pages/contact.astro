@@ -49,7 +49,7 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
       <input type="text" name="_honey" class="honey" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
       <section class="part">
-        <h2 class="part-head"><span class="n">01</span><span>You</span></h2>
+        <h2 class="part-head"><span>You</span></h2>
         <div class="field">
           <label for="f-name">Name</label>
           <input id="f-name" name="name" type="text" autocomplete="name" required maxlength="120" placeholder="Your name" />
@@ -60,17 +60,17 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
         </div>
       </section>
 
-      <fieldset class="part">
-        <legend class="part-head"><span class="n">02</span><span>About</span></legend>
+      <section class="part" role="radiogroup" aria-labelledby="about-head">
+        <h2 class="part-head" id="about-head"><span>About</span></h2>
         <div class="reasons">
           {reasons.map((r, i) => (
             <label class="reason"><input type="radio" name="about" value={r} checked={i === 0} /><span>{r}</span></label>
           ))}
         </div>
-      </fieldset>
+      </section>
 
       <section class="part">
-        <h2 class="part-head"><span class="n">03</span><span>Message</span></h2>
+        <h2 class="part-head"><span>Message</span></h2>
         <div class="field">
           <label for="f-message" class="sr">Message</label>
           <textarea id="f-message" name="message" rows="8" required maxlength="5000" placeholder="Write here…"></textarea>
@@ -193,23 +193,20 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
     color: var(--color-text);
   }
 
-  .part-head .n {
-    display: inline-grid;
-    place-items: center;
+  /* Each part is marked by a short stroke of the accent, not a number. */
+  .part-head::before {
+    content: '';
     flex: none;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-    font-weight: 400;
-    color: #fff;
+    width: 22px;
+    height: 3px;
+    border-radius: 3px;
     background: var(--color-accent);
-    letter-spacing: 0.04em;
   }
 
-  fieldset.part .part-head {
-    margin-bottom: var(--space-lg);
+  /* And the parts are set apart by a soft line between them. */
+  .part + .part {
+    padding-top: var(--space-2xl);
+    border-top: 1px solid var(--color-border);
   }
 
   .field {
