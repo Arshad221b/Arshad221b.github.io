@@ -12,14 +12,17 @@ import Mast from '../components/Mast.astro';
 const title = 'Contact — Arshad Kazi';
 const inbox = 'arshadkaziblog@gmail.com';
 const endpoint = `https://formsubmit.co/ajax/${inbox}`;
+// The sketches behind the form, in the order they are drawn.
+const sketches = ['vitruvian', 'sibyl', 'flying', 'nude', 'water', 'horse'].map(n => `/images/contact/${n}.jpg`);
 const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in particular'];
 ---
 
 <Layout title={title} activeNav="/contact" quietFoot description="Write to Arshad Kazi about a job, a collaboration, or something he wrote.">
-  <!-- Behind the page: a leaf of Leonardo's Codex on the Flight of Birds,
-       writing itself the way he wrote, in mirror script, right to left,
-       line by line; when the page is full it rests, fades, and begins again. -->
-  <canvas class="codex" id="codex" aria-hidden="true"></canvas>
+  <!-- Behind the page: sketches by Leonardo and Michelangelo, one at a
+       time, each drawing itself in the way a sketch is built: the darkest
+       strokes first, then the lighter lines and the shading. It holds,
+       fades, and the next begins. -->
+  <canvas class="codex" id="codex" aria-hidden="true" data-sketches={JSON.stringify(sketches)}></canvas>
 
   <div class="contact-page">
     <Mast
@@ -89,20 +92,17 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
     right: -4vw;
     width: min(58vw, 820px);
     height: 90vh;
-    filter: grayscale(1) sepia(0.5) contrast(1.6) brightness(1.06);
-    mix-blend-mode: multiply;
-    opacity: 0.42;
+    opacity: 0.34;
     transform: rotate(-3deg);
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 88%, transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 88%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 18%, #000 48%, #000 90%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, transparent 18%, #000 48%, #000 90%, transparent 100%);
     pointer-events: none;
     z-index: 0;
   }
 
   /* On the dark page the ink turns to light. */
   :global(html.dark) .codex {
-    filter: grayscale(1) invert(1) sepia(0.4) contrast(1.5) brightness(0.95);
-    mix-blend-mode: screen;
+    filter: invert(1);
     opacity: 0.22;
   }
 
@@ -417,66 +417,85 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
 </style>
 
 <script is:inline>
-/* The codex writes itself. The page is cut into bands a line of script
-   high; each band is revealed from right to left, as Leonardo wrote, a
-   small orange nib at the edge of the ink. Then it rests, fades, again. */
+/* The sketches draw themselves. Each pixel's ink is how dark it is; a
+   threshold sweeps from dark to light, so the strongest strokes appear
+   first and the faint shading last, softly, as a drawing is built up. */
 (function () {
   var c = document.getElementById('codex');
   if (!c) return;
-  var x = c.getContext('2d'), img = new Image(), W = 0, H = 0, box = null;
+  var list = JSON.parse(c.dataset.sketches), x = c.getContext('2d');
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var BANDS = 26, LINE = 1500, REST = 6000, FADE = 1800;
+  var DRAW = 9000, HOLD = 5000, FADE = 1600, GAP = 500;
+  var W = 0, H = 0, dpr = 1, cur = null, idx = 0, t0 = 0, stopped = false;
 
   function size() {
-    var r = c.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+    var r = c.getBoundingClientRect();
+    // A faint background: drawn at one pixel per CSS pixel, to stay light.
+    dpr = 1;
     W = r.width; H = r.height;
-    c.width = W * dpr; c.height = H * dpr;
-    x.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (img.width) {
-      var k = Math.min(W / img.width, H / img.height);
-      box = { w: img.width * k, h: img.height * k };
-      box.x = (W - box.w) / 2; box.y = (H - box.h) / 2;
-    }
+    c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
+    if (cur) prepare(cur.img);
   }
 
-  function draw(now, t0) {
-    if (!box) return;
-    var total = BANDS * LINE, t = now - t0;
-    x.clearRect(0, 0, W, H);
-    var alpha = t > total + REST ? Math.max(0, 1 - (t - total - REST) / FADE) : 1;
-    x.globalAlpha = alpha;
-    var bh = box.h / BANDS, sh = img.height / BANDS;
-    for (var i = 0; i < BANDS; i++) {
-      var k = Math.max(0, Math.min(1, (t - i * LINE) / LINE));
-      if (k <= 0) break;
-      var e = k < 1 ? 1 - Math.pow(1 - k, 1.6) : 1;
-      var sw = img.width * e, dw = box.w * e;
-      // From the right edge leftward: mirror script.
-      x.drawImage(img, img.width - sw, i * sh, sw, sh, box.x + box.w - dw, box.y + i * bh, dw, bh);
-      if (k < 1) {
-        x.globalAlpha = alpha * 0.9;
-        x.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim();
-        x.beginPath();
-        x.arc(box.x + box.w - dw, box.y + i * bh + bh * 0.6, 3, 0, Math.PI * 2);
-        x.fill();
-        x.globalAlpha = alpha;
-      }
+  // Fit the sketch, and keep its ink (1 - lightness) for every pixel.
+  function prepare(img) {
+    var k = Math.min(c.width / img.width, c.height / img.height);
+    var w = Math.round(img.width * k), h = Math.round(img.height * k);
+    var off = document.createElement('canvas'); off.width = w; off.height = h;
+    var o = off.getContext('2d');
+    // Trim the scan's edges, where the old paper darkens into a frame.
+    var m = 0.07, sx = img.width * m, sy = img.height * m;
+    o.drawImage(img, sx, sy, img.width - 2 * sx, img.height - 2 * sy, 0, 0, w, h);
+    var d = o.getImageData(0, 0, w, h), p = d.data, ink = new Float32Array(w * h);
+    // The paper's tone is the common one (the median), not the lightest
+    // speck; ink is anything clearly darker than it.
+    var lums = [];
+    for (var i = 0; i < p.length; i += 64) lums.push(0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2]);
+    lums.sort(function (a, b) { return a - b; });
+    var hi = lums[Math.floor(lums.length * 0.6)];
+    for (var j = 0, q = 0; j < p.length; j += 4, q++) {
+      var lum = (0.299 * p[j] + 0.587 * p[j + 1] + 0.114 * p[j + 2]) / Math.max(1, hi);
+      ink[q] = Math.max(0, Math.min(1, (0.86 - lum) / 0.55));
     }
-    x.globalAlpha = 1;
-    return t > total + REST + FADE;
+    cur = { img: img, w: w, h: h, ink: ink, data: o.createImageData(w, h), ox: Math.round((c.width - w) / 2), oy: Math.round((c.height - h) / 2) };
   }
 
-  img.onload = function () {
-    size();
-    addEventListener('resize', size);
-    if (reduce) { draw(performance.now(), performance.now() - BANDS * LINE); return; }
-    var t0 = performance.now();
+  function paint(t) {
+    if (!cur) return;
+    var a = t < DRAW ? t / DRAW : 1, fade = t > DRAW + HOLD ? Math.max(0, 1 - (t - DRAW - HOLD) / FADE) : 1;
+    var th = 1 - Math.pow(a, 0.8) * 1.05, ink = cur.ink, out = cur.data.data;
+    for (var q = 0, o = 0; q < ink.length; q++, o += 4) {
+      var v = ink[q], s = Math.max(0, Math.min(1, (v - th) / 0.12));
+      out[o] = 40; out[o + 1] = 30; out[o + 2] = 20; out[o + 3] = v * s * fade * 255;
+    }
+    x.clearRect(0, 0, c.width, c.height);
+    x.putImageData(cur.data, cur.ox, cur.oy);
+  }
+
+  function load(n, done) {
+    var img = new Image();
+    img.onload = function () { prepare(img); done(); };
+    img.onerror = function () { idx = (idx + 1) % list.length; load(idx, done); };
+    img.src = list[n];
+  }
+
+  size();
+  addEventListener('resize', size);
+  load(0, function start() {
+    if (reduce) { paint(DRAW); return; }
+    t0 = performance.now();
     (function frame(now) {
-      if (draw(now, t0)) t0 = now + 600;
+      var t = now - t0;
+      if (t > DRAW + HOLD + FADE + GAP) {
+        idx = (idx + 1) % list.length;
+        cur = null; x.clearRect(0, 0, c.width, c.height);
+        load(idx, start);
+        return;
+      }
+      paint(t);
       requestAnimationFrame(frame);
     })(t0);
-  };
-  img.src = '/images/contact-codex.jpg';
+  });
 })();
 
 (function () {
