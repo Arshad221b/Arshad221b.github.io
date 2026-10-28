@@ -12,9 +12,10 @@ import Layout from '../layouts/Layout.astro';
 import { posts as essays } from '../lib/thoughts-data';
 import { proseOf } from '../lib/text';
 import { buildThoughtModel } from '../lib/thought-model';
+import { notebooks } from '../lib/notebooks';
 
-/* The map holds everything written here: the essays, and the technical
-   blogs beside them, fitted together so each sits by what it is about. */
+/* The map holds everything written here: the essays, the technical blogs
+   and the notebooks, fitted together so each sits by what it is about. */
 const blogSources = import.meta.glob(['./blog/*.astro', './sign-language-recognition-using-cnn-and-opencv.astro'], {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>;
@@ -29,10 +30,13 @@ const blogs = Object.entries(blogSources).map(([path, raw]) => {
 const posts = [
   ...essays.map(p => ({ title: p.title, date: p.date, href: `/thoughts/${p.slug}` })),
   ...blogs.map(b => ({ title: b.title, date: b.date, href: b.href })),
+  ...notebooks.map(n => ({ title: n.title, date: n.endDate, href: `/notebooks/${n.slug}` })),
 ];
 const model = buildThoughtModel([
   ...essays.map(p => ({ slug: p.slug, title: p.title, description: [p.description, ...p.tags].join(' '), text: p.text })),
   ...blogs.map(b => ({ slug: b.slug, title: b.title, description: b.description, text: b.text })),
+  ...notebooks.map(n => ({ slug: `notebook-${n.slug}`, title: n.title, description: [n.description, ...n.tags].join(' '),
+    text: [n.conclusion, ...n.days.map(d => d.title)].join('. ') })),
 ]);
 
 const title = "Arshad Kazi";
@@ -170,7 +174,7 @@ const links = [
   <div class="home wide">
     <section class="hero">
       <figure class="field" id="field">
-        <canvas id="field-canvas" aria-label={`A rotating map of ${posts.length} essays and blogs, placed by meaning`}></canvas>
+        <canvas id="field-canvas" aria-label={`A rotating map of ${posts.length} essays, blogs and notebooks, placed by meaning`}></canvas>
         <a class="field-tip" id="field-tip" href="#" hidden>
           <span class="field-tip-year label"></span>
           <span class="field-tip-title"></span>
