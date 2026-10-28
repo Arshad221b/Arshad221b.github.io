@@ -265,7 +265,8 @@ body {
   max-height: 76vh;
   overflow-y: auto;
   display: none;
-  z-index: 5;
+  /* Behind the essay: wide figures and code may pass over it. */
+  z-index: 0;
   scrollbar-width: none;
 }
 
@@ -935,6 +936,8 @@ main > :not(.wide) {
    An article is a frame with a caption strip: the measurements across
    the top, the title very large, then the text in a single measure. */
 main > .blog-post {
+  position: relative;
+  z-index: 1;
   max-width: var(--measure);
   margin-inline: auto;
 }
@@ -1008,9 +1011,8 @@ main > .blog-post {
   font-size: 1.9rem;
   line-height: 1.12;
   letter-spacing: -0.02em;
-  margin-top: var(--space-3xl);
-  margin-bottom: var(--space-md);
-  padding-top: var(--space-lg);
+  margin-top: var(--space-2xl);
+  margin-bottom: var(--space-sm);
 }
 
 .blog-post-content h3 {
@@ -1031,10 +1033,10 @@ main > .blog-post {
   .blog-post .blog-post-content pre,
   .blog-post .blog-post-content table,
   .blog-post .blog-post-content .mini-diagram {
-    width: min(820px, 92vw);
-    max-width: min(820px, 92vw);
-    margin-left: calc((100% - min(820px, 92vw)) / 2);
-    margin-right: calc((100% - min(820px, 92vw)) / 2);
+    width: min(760px, 92vw);
+    max-width: min(760px, 92vw);
+    margin-left: calc((100% - min(760px, 92vw)) / 2);
+    margin-right: calc((100% - min(760px, 92vw)) / 2);
   }
 }
 

@@ -138,9 +138,17 @@ function formatDate(dateStr: string): string {
      that element is swallowed into it as dead text: with the styles
      last, none of them applied at all. -->
 <style>
+  /* Centred on the text column, as wide as the essay's own figures. */
   .post-figure {
-    max-width: 760px;
-    margin: 0 auto var(--space-2xl);
+    margin: 0 0 var(--space-2xl);
+  }
+
+  @media (min-width: 900px) {
+    .post-figure {
+      width: min(760px, 92vw);
+      margin-left: calc((100% - min(760px, 92vw)) / 2);
+      margin-right: calc((100% - min(760px, 92vw)) / 2);
+    }
   }
 
   .post-figure img {

@@ -94,6 +94,45 @@ function formatDate(dateStr: string): string {
   </script>
 </Layout>
 
+<!-- Above the Disqus script: the compiler drops the closing </noscript>
+     below, and anything after it would be swallowed as dead text. -->
+<style>
+  /* The figure is drawn on the page's own paper, so it sits on it as a
+     plate; on the dark page it is a print laid down on the desk. */
+  /* Centred on the text column, as wide as the essay's own figures. */
+  .post-figure {
+    margin: 0 0 var(--space-2xl);
+  }
+
+  @media (min-width: 900px) {
+    .post-figure {
+      width: min(760px, 92vw);
+      margin-left: calc((100% - min(760px, 92vw)) / 2);
+      margin-right: calc((100% - min(760px, 92vw)) / 2);
+    }
+  }
+
+  .post-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px var(--color-border-light);
+  }
+
+  :global(html.dark) .post-figure img {
+    box-shadow: none;
+    filter: brightness(0.92);
+  }
+
+  .disqus-section {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+  }
+</style>
+
+
 <script is:inline>
   var disqus_config = function () {
     this.page.url = window.location.href;
@@ -125,31 +164,4 @@ function formatDate(dateStr: string): string {
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 
-<style>
-  /* The figure is drawn on the page's own paper, so it sits on it as a
-     plate; on the dark page it is a print laid down on the desk. */
-  .post-figure {
-    max-width: 760px;
-    margin: 0 auto var(--space-2xl);
-  }
-
-  .post-figure img {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 2px;
-    box-shadow: 0 0 0 1px var(--color-border-light);
-  }
-
-  :global(html.dark) .post-figure img {
-    box-shadow: none;
-    filter: brightness(0.92);
-  }
-
-  .disqus-section {
-    margin-top: var(--space-xl);
-    padding-top: var(--space-lg);
-    border-top: 1px solid var(--color-border);
-  }
-</style>
 
