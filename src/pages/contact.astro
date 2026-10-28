@@ -78,7 +78,11 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
       </section>
 
       <div class="actions">
-        <button type="submit" class="send" id="send">Send <span aria-hidden="true">&rarr;</span></button>
+        <button type="submit" class="send" id="send">
+          <svg class="envelope" viewBox="0 0 28 20" aria-hidden="true"><rect x="1" y="1" width="26" height="18" rx="1.5" /><path class="flap" d="M1.5 2 14 11.5 26.5 2" /></svg>
+          <span class="send-label">Send message</span>
+          <span class="send-arrow" aria-hidden="true">&rarr;</span>
+        </button>
         <p class="status" id="status" role="status" aria-live="polite"></p>
       </div>
     </form>
@@ -361,43 +365,85 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-md);
-    padding-top: var(--space-lg);
-    border-top: 1px solid var(--color-text-muted);
   }
 
+  /* Sending a letter: a full-width button, an envelope that moves on
+     when you reach for it and flies off while the message goes. */
   .send {
-    display: inline-flex;
+    position: relative;
+    display: flex;
     align-items: center;
-    gap: 0.6rem;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    gap: 1rem;
+    width: 100%;
+    padding: 1.35rem 1.6rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 2.6vw, 1.6rem);
+    font-weight: 300;
+    letter-spacing: -0.01em;
     color: #fff;
     background: var(--color-accent);
     border: none;
-    border-radius: 999px;
-    padding: 1rem 1.6rem;
-    box-shadow: 0 10px 24px -12px var(--color-accent);
+    border-radius: 4px;
+    box-shadow: 0 18px 36px -18px var(--color-accent);
+    overflow: hidden;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+    transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
   }
 
   .send:hover {
     background: var(--color-accent-hover);
+    box-shadow: 0 22px 40px -16px var(--color-accent);
   }
 
-  .send:hover span {
-    transform: translateX(3px);
+  .send:active {
+    transform: translateY(1px);
   }
 
-  .send span {
-    transition: transform 0.2s ease;
+  .envelope {
+    width: 30px;
+    height: 22px;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    transition: transform 0.35s var(--ease-out);
+  }
+
+  .send:hover .envelope {
+    transform: translateX(4px) rotate(-6deg);
+  }
+
+  .send-label {
+    flex: 1;
+    text-align: left;
+  }
+
+  .send-arrow {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    transition: transform 0.3s var(--ease-out);
+  }
+
+  .send:hover .send-arrow {
+    transform: translateX(6px);
+  }
+
+  /* While it goes: the envelope flies out to the right. */
+  .send.sending .envelope {
+    animation: fly-off 0.9s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+  }
+
+  @keyframes fly-off {
+    to { transform: translate(560px, -40px) rotate(-18deg); opacity: 0; }
   }
 
   .send[disabled] {
-    opacity: 0.55;
     cursor: wait;
+  }
+
+  .actions .status {
+    width: 100%;
   }
 
   .status {
@@ -582,7 +628,9 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
     status.classList.remove('ok');
     if (!check()) { status.textContent = 'A name, an email and a message, please.'; return; }
     send.disabled = true;
-    status.textContent = 'Sending…';
+    send.classList.add('sending');
+    send.querySelector('.send-label').textContent = 'Sending…';
+    status.textContent = '';
     var data = Object.fromEntries(new FormData(form).entries());
     fetch(form.dataset.endpoint, {
       method: 'POST',
@@ -599,7 +647,11 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'nothing in 
       .catch(function () {
         status.innerHTML = 'That did not go through. Please write to <a href="mailto:arshadkaziblog@gmail.com">arshadkaziblog@gmail.com</a> instead.';
       })
-      .finally(function () { send.disabled = false; });
+      .finally(function () {
+        send.disabled = false;
+        send.classList.remove('sending');
+        send.querySelector('.send-label').textContent = 'Send message';
+      });
   });
 
   form.addEventListener('input', function (e) {
