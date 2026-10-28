@@ -11,7 +11,7 @@ import Mast from '../components/Mast.astro';
 const title = 'Contact — Arshad Kazi';
 const inbox = 'arshadkaziblog@gmail.com';
 const endpoint = `https://formsubmit.co/ajax/${inbox}`;
-const reasons = ['Something I wrote', 'Work or a project', 'Just saying hello', 'Something else'];
+const reasons = ['A job', 'A collaboration', 'Something I wrote', 'Just saying hello'];
 ---
 
 <Layout title={title} activeNav="/contact" description="Write to Arshad Kazi about something he wrote, work, or anything else.">
@@ -21,7 +21,7 @@ const reasons = ['Something I wrote', 'Work or a project', 'Just saying hello', 
       aside="Replies within days"
       title="Write"
       accent="to me"
-      lede="About something I wrote, a project, or nothing in particular. I read every message."
+      lede="About a job, a collaboration, something I wrote, or just to say hello. I read every message."
     />
 
     <form class="form" id="contact-form" action={`https://formsubmit.co/${inbox}`} method="POST" data-endpoint={endpoint} novalidate>
