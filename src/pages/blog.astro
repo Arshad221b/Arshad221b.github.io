@@ -1007,9 +1007,37 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   @media (min-width: 900px) {
     .row-body {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
       column-gap: var(--space-2xl);
       align-items: start;
+    }
+
+    /* Every other piece turns the spread around: figure on the right. */
+    .rows > .row:nth-child(even) .row-body {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+    }
+
+    .rows > .row:nth-child(even) .row-body > .row-fig {
+      grid-column: 2;
+    }
+
+    .rows > .row:nth-child(even) .row-body > :not(.row-fig) {
+      grid-column: 1;
+    }
+
+    /* The figure is the star: a slow zoom within its frame as you reach
+       for the piece. */
+    .row-fig {
+      overflow: hidden;
+      border-radius: 2px;
+    }
+
+    .row-fig img {
+      transition: transform 1.2s cubic-bezier(0.22, 0.8, 0.24, 1), box-shadow 0.35s ease;
+    }
+
+    .row:hover .row-fig img {
+      transform: scale(1.045);
     }
 
     .row-body > .row-fig {
