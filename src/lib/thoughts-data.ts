@@ -84,6 +84,19 @@ const docs: Doc[] = posts.map(p => ({
 
 export const model = buildThoughtModel(docs);
 
+/* The fitted topics are lists of words; a reader wants a name. Each topic
+   is named by hand from the essays it gathers, keyed by its strongest
+   word, so a topic that shifts when essays are added falls back to its
+   own words rather than wearing someone else's name. */
+const NAMES: Record<string, string> = {
+  fully: 'Loneliness', language: 'Autism', religion: 'Belief', caste: 'Caste & society',
+  parents: 'Parents', educated: 'Life stories', words: 'Emotions', meeting: 'Turning points',
+  class: 'Class & work', body: 'Body & breath', jobs: 'Craft', buy: 'Money',
+};
+export function topicName(words: string[]): string {
+  return NAMES[words[0]] ?? words.slice(0, 2).join(' · ');
+}
+
 /* What the page itself needs: small enough to inline. */
 export const pageModel = {
   projection: model.projection,
@@ -133,7 +146,7 @@ export function topicsOf(slug: string, count = 2) {
   const i = byIdx.get(slug);
   if (i === undefined) return [];
   return model.theta[i]
-    .map((p, k) => ({ p, label: model.topics[k].words.slice(0, 2).join(' · ') }))
+    .map((p, k) => ({ p, label: topicName(model.topics[k].words) }))
     .sort((a, b) => b.p - a.p)
     .slice(0, count)
     .filter(t => t.p >= 0.1);

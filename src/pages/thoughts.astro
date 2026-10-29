@@ -8,7 +8,7 @@
 
 import Layout from '../layouts/Layout.astro';
 import Mast from '../components/Mast.astro';
-import { posts, pageModel } from '../lib/thoughts-data';
+import { posts, pageModel, topicName } from '../lib/thoughts-data';
 
 const title = "Thoughts — Arshad Kazi";
 const { topics, theta, edges, stats, projection } = pageModel;
@@ -101,7 +101,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
         <div class="theme-strip" id="theme-strip">
           {topics.map((t, k) => (
             <button class="idx" data-topic={k} type="button" title={t.words.join(', ')}>
-              <span class="idx-name">{t.words.slice(0, 2).join(' · ')}</span><span class="idx-n"></span>
+              <span class="idx-name">{topicName(t.words)}</span><span class="idx-n"></span>
             </button>
           ))}
         </div>
@@ -133,7 +133,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
                   <span class="entry-meta">
                     <span class="k">Essay {post.no}</span>
                     <span>{Math.max(1, Math.round(post.words / 230))} min read</span>
-                    <span class="entry-topic">{topics[topTopic[i].k].words.slice(0, 2).join(' · ')}</span>
+                    <span class="entry-topic">{topicName(topics[topTopic[i].k].words)}</span>
                     <span class="entry-score" hidden></span>
                   </span>
                   <h3>{post.title}</h3>
