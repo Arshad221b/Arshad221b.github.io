@@ -169,17 +169,20 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   .why summary {
     font-family: var(--font-mono);
-    font-size: 0.66rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    color: var(--color-text-muted);
+    color: var(--color-text);
     cursor: pointer;
     list-style: none;
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    padding: 0.2rem 0;
+    gap: 0.55rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-text-muted);
+    border-radius: 999px;
     user-select: none;
+    transition: color 0.2s ease, border-color 0.2s ease;
   }
 
   .why summary::-webkit-details-marker {
@@ -189,8 +192,9 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   .why summary::before {
     content: '+';
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     line-height: 1;
+    color: var(--color-accent);
   }
 
   .why[open] summary::before {
@@ -199,6 +203,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   .why summary:hover {
     color: var(--color-accent);
+    border-color: var(--color-accent);
   }
 
   .why-body {

@@ -163,7 +163,17 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
         { k: 'Days of notes', v: totalDays },
         { k: 'Hours of reading', v: (totalMinutes / 60).toFixed(1) },
       ]}
-    />
+    >
+      <details class="why">
+          <summary>Why I write these</summary>
+          <div class="why-body">
+            <p>Transfer learning works in brains too. The prefrontal cortex builds schema, mental frameworks that compress patterns from one domain and apply them to another. The more domains you feed it, the richer the schema. Convolutions in V1 and convolutions in CNNs are the same idea discovered independently. Attention in the parietal cortex and attention in transformers solve the same resource allocation problem. These are not metaphors. They are convergent solutions.</p>
+            <p>Leonardo studied anatomy to paint better and painted to understand anatomy better. Feynman learned to pick locks to understand information theory. Ramanujan found number theory in temple floor patterns. Cross-domain learning is not a distraction from depth. It is how depth actually works.</p>
+            <p>The time box is the point. Retrieval under pressure consolidates memory faster than passive review, and the hippocampus encodes better when a session has a clear boundary. You cannot passively read for sixty minutes and pretend you understood it. You have to write what you know, find the gaps, and come back the next day to fill them.</p>
+            <p>I am a Leonardo fanboy, not because I think I am smart like him because I am really not, but because the man had no formal education past age 14 and still taught himself anatomy and optics and geology and engineering from whatever books and mentors he could get his hands on, and that is the only way I have ever been able to learn anything either. He kept notebooks his entire life, thousands of pages, anatomy next to fluid dynamics next to machine designs, not organized by subject but by date, and he called himself "discepolo della esperienza" which means disciple of experience, and I think the notebook was never documentation for him, it was the actual thinking tool, the place where looking at something carefully enough turns into understanding it.</p>
+          </div>
+        </details>
+    </Mast>
 
     <!-- The two kinds, said once, so the timeline needs no more explaining. -->
     <dl class="key">
@@ -233,6 +243,64 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 </Layout>
 
 <style>
+  /* The longer reasoning stays folded until asked for. */
+  .why {
+    margin-top: var(--space-lg);
+  }
+
+  .why summary {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-text);
+    cursor: pointer;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-text-muted);
+    border-radius: 999px;
+    user-select: none;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .why summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .why summary::before {
+    content: '+';
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    line-height: 1;
+    color: var(--color-accent);
+  }
+
+  .why[open] summary::before {
+    content: '−';
+  }
+
+  .why summary:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .why-body {
+    padding-top: var(--space-md);
+    max-width: 66ch;
+    border-left: 1px solid var(--color-border-light);
+    padding-left: var(--space-md);
+  }
+
+  .why-body p {
+    font-size: 1.12rem;
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--space-md);
+  }
+
   /* ── The console ───────────────────────────────────
      One line to type on and one index of themes. Nothing here is a
      widget: it is a ruled line and a page of set words. */
