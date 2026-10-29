@@ -199,7 +199,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
           <h2 class="year-head"><span class="year-n">{year}</span><span class="year-rule"></span><span class="year-c">{items.filter(it => it.date.startsWith(year)).length} pieces</span></h2>
           <ol class="rows">
             {items.filter(it => it.date.startsWith(year)).map(it => (
-              <li class={`row ${it.kind}`} data-tags={topicsOf(it.tags).join('|')}
+              <li class={`row ${it.kind}`} data-month={it.date.slice(0, 7)} data-tags={topicsOf(it.tags).join('|')}
                   data-text={[it.title, it.description, ...it.tags, ...topicsOf(it.tags), ...(it.kind === 'essay' ? it.contents : it.nb.days.map(d => d.title))].join(' ').toLowerCase()}>
                 <time class="row-date" datetime={it.date}><span class="dd">{fmt(it.date, { month: 'short' })}</span><span class="mm">{it.date.slice(0, 4)}</span></time>
                 <div class="row-body">
@@ -579,6 +579,11 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   /* The month large and light in the margin, the year small beneath it;
      it rides along with its piece as you read, and lights up as you
      reach for it. */
+  /* Later pieces of the same month leave the margin empty. */
+  .row.month-cont .row-date {
+    visibility: hidden;
+  }
+
   .dd {
     font-family: var(--font-display);
     font-size: 1.5rem;
@@ -846,6 +851,26 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 </style>
 
 <script is:inline>
+
+/* Group by month: only the first visible piece of each month shows it;
+   the rest of that month sit beneath it with an empty margin. Recounted
+   whenever a search or topic hides or reorders pieces. */
+(function () {
+  var list = document.getElementById('post-index');
+  if (!list) return;
+  function mark() {
+    var prev = null, ranked = list.classList.contains('ranked');
+    list.querySelectorAll('[data-month]').forEach(function (el) {
+      if (el.classList.contains('hidden') || el.offsetParent === null) return;
+      var m = el.dataset.month;
+      el.classList.toggle('month-cont', !ranked && m === prev);
+      prev = m;
+    });
+  }
+  mark();
+  new MutationObserver(function () { requestAnimationFrame(mark); })
+    .observe(list, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
+})();
 /* On touch, the piece in the middle of the screen is the one you are on. */
 (function () {
   if (matchMedia('(hover: hover)').matches || !('IntersectionObserver' in window)) return;

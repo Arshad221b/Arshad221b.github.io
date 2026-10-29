@@ -121,7 +121,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
         ...group.items.map(post => {
           const i = byIndex.get(post.slug)!;
           return (
-            <li class="entry" data-year={group.year} data-i={i}
+            <li class="entry" data-month={post.date.slice(0, 7)} data-year={group.year} data-i={i}
                 data-title={post.title.toLowerCase()}
                 data-description={post.description.toLowerCase()}
                 data-topics={membership[i].map(t => t.k).join(',')}
@@ -514,6 +514,11 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   /* The month large and light in the margin, the year small beneath it;
      it rides along with its piece as you read, and lights up as you
      reach for it. */
+  /* Later pieces of the same month leave the margin empty. */
+  .entry.month-cont .entry-date {
+    visibility: hidden;
+  }
+
   .dd {
     font-family: var(--font-display);
     font-size: 1.5rem;
@@ -706,6 +711,26 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 </style>
 
 <script is:inline>
+
+/* Group by month: only the first visible piece of each month shows it;
+   the rest of that month sit beneath it with an empty margin. Recounted
+   whenever a search or topic hides or reorders pieces. */
+(function () {
+  var list = document.getElementById('post-index');
+  if (!list) return;
+  function mark() {
+    var prev = null, ranked = list.classList.contains('ranked');
+    list.querySelectorAll('[data-month]').forEach(function (el) {
+      if (el.classList.contains('hidden') || el.offsetParent === null) return;
+      var m = el.dataset.month;
+      el.classList.toggle('month-cont', !ranked && m === prev);
+      prev = m;
+    });
+  }
+  mark();
+  new MutationObserver(function () { requestAnimationFrame(mark); })
+    .observe(list, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
+})();
 (function() {
   /* The site's bar is sticky and sits above everything, so the year has to
      know how tall it is to come to rest just underneath it rather than
