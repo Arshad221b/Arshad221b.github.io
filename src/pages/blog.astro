@@ -910,27 +910,36 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     transition-delay: calc(var(--i, 0) * 45ms + 80ms);
   }
 
+  /* On phones: the same outlined pill as 'Why I write these'. */
   .reveal-toggle {
     position: relative;
     z-index: 1;
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    margin-top: 0.8rem;
-    padding: 0.3rem 0;
+    gap: 0.55rem;
+    margin-top: 0.9rem;
+    padding: 0.55rem 1rem;
+    min-height: 40px;
     font-family: var(--font-mono);
-    font-size: 0.62rem;
+    font-size: 0.66rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
+    color: var(--color-text);
     background: none;
-    border: none;
+    border: 1px solid var(--color-text-muted);
+    border-radius: 999px;
     cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .row.near .reveal-toggle {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
   }
 
   .reveal-toggle::before {
     content: '+';
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     line-height: 1;
     color: var(--color-accent);
     transition: transform 0.3s ease;
