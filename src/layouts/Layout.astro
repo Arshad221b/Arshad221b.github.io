@@ -226,6 +226,42 @@ const elsewhere = [
         </div>
       </div>
     </footer>
+    <!-- Back to the top: a focus reticle whose arc is how far you have read. -->
+    <button class="to-top" id="to-top" type="button" aria-label="Back to top" tabindex="-1">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <circle class="tt-ring" cx="24" cy="24" r="17" />
+        <circle class="tt-arc" id="tt-arc" cx="24" cy="24" r="17" pathLength="100" />
+        <g class="tt-ticks">
+          <path d="M24 1.5v4.5" /><path d="M24 42v4.5" /><path d="M1.5 24h4.5" /><path d="M42 24h4.5" />
+        </g>
+        <path class="tt-arrow" d="M24 30V18M18.5 23.5 24 18l5.5 5.5" />
+      </svg>
+      <span class="tt-label">Top</span>
+    </button>
+    <script is:inline>
+      (function () {
+        var b = document.getElementById('to-top'), arc = document.getElementById('tt-arc');
+        if (!b) return;
+        var queued = false;
+        function update() {
+          queued = false;
+          var max = document.documentElement.scrollHeight - innerHeight;
+          var y = scrollY, p = max > 0 ? Math.min(1, y / max) : 0;
+          arc.style.strokeDashoffset = String(100 - p * 100);
+          var on = y > innerHeight * 0.6;
+          b.classList.toggle('on', on);
+          b.tabIndex = on ? 0 : -1;
+        }
+        addEventListener('scroll', function () { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
+        addEventListener('resize', update);
+        b.addEventListener('click', function () {
+          var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+          scrollTo({ top: 0, behavior: still ? 'auto' : 'smooth' });
+          b.blur();
+        });
+        update();
+      })();
+    </script>
   </body>
 </html>
 

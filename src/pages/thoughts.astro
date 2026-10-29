@@ -449,30 +449,38 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
      reading width, and its figure is shown whole in all the room to their
      right, melting into the paper at its edges. */
   @media (min-width: 900px) {
-    .entry-body {
-      position: relative;
-      display: block;
-      min-height: clamp(22rem, 30vw, 36rem);
-      padding: var(--space-lg) 0;
+    /* The row is as tall as the taller of its words and its figure: the
+       words centred on the left, the figure whole beside them. */
+    .entry-link .entry-body {
+      display: grid;
+      grid-template-columns: min(46%, 38rem) minmax(0, 1fr);
+      grid-template-rows: 1fr auto auto auto auto 1fr;
+      column-gap: var(--space-2xl);
+      padding: var(--space-md) 0;
     }
 
+    .entry-body > :not(.entry-fig) {
+      grid-column: 1;
+    }
+    .entry-body > :nth-child(2) { grid-row: 2; }
+    .entry-body > :nth-child(3) { grid-row: 3; }
+    .entry-body > :nth-child(4) { grid-row: 4; }
+    .entry-body > :nth-child(5) { grid-row: 5; }
+
     .entry-body > .entry-fig {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: calc(100% - min(46%, 38rem) - var(--space-2xl));
+      grid-column: 2;
+      grid-row: 1 / -1;
+      align-self: center;
       margin: 0;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
     }
 
     .entry-body > .entry-fig img {
-      width: auto;
+      display: block;
+      width: 100%;
       height: auto;
-      max-width: 100%;
-      max-height: 100%;
+      max-height: 34rem;
+      object-fit: contain;
+      object-position: left center;
       border-radius: 2px;
       box-shadow: none !important;
       mix-blend-mode: multiply;
@@ -485,9 +493,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
 
     .entry-body > :not(.entry-fig) {
-      position: relative;
       display: block;
-      max-width: min(46%, 38rem);
     }
 
     .entry-body > .entry-meta {

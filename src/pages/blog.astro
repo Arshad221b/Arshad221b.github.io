@@ -1003,32 +1003,37 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
      the words, which sit over its fading edge. Reaching for the piece
      brings the figure into focus. */
   @media (min-width: 900px) {
+    /* The row is as tall as the taller of its words and its figure: the
+       words centred on the left, the figure whole beside them. */
     .row-body {
-      position: relative;
-      isolation: isolate;
-      min-height: clamp(26rem, 34vw, 40rem);
-      padding: var(--space-xl) 0;
+      display: grid;
+      grid-template-columns: min(46%, 38rem) minmax(0, 1fr);
+      grid-template-rows: 1fr auto auto auto 1fr auto;
+      column-gap: var(--space-2xl);
+      padding: var(--space-md) 0;
     }
 
+    .row-body > :not(.row-fig) {
+      grid-column: 1;
+    }
+    .row-body > :nth-child(2) { grid-row: 2; }
+    .row-body > :nth-child(3) { grid-row: 3; }
+    .row-body > :nth-child(4) { grid-row: 4; }
+
     .row-body > .row-fig {
-      position: absolute;
-      z-index: -1;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      /* Beside the words, never under them. */
-      width: calc(100% - min(46%, 38rem) - var(--space-2xl));
+      grid-column: 2;
+      grid-row: 1 / 6;
+      align-self: center;
       margin: 0;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
     }
 
     .row-body > .row-fig img {
-      width: auto;
+      display: block;
+      width: 100%;
       height: auto;
-      max-width: 100%;
-      max-height: 100%;
+      max-height: 34rem;
+      object-fit: contain;
+      object-position: left center;
       border-radius: 2px;
       box-shadow: none !important;
       mix-blend-mode: multiply;
@@ -1042,14 +1047,25 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     }
 
 
-    .row-body > :not(.row-fig) {
-      position: relative;
-      max-width: min(46%, 38rem);
-    }
-
+    /* What it covers runs beneath both, in two even columns. */
     .row-body > .reveal {
       grid-template-rows: 1fr;
-      max-width: min(46%, 38rem);
+      grid-column: 1 / -1;
+      grid-row: 6;
+    }
+
+    .row-body > .reveal .inside {
+      max-width: none;
+      columns: 2;
+      column-gap: var(--space-2xl);
+      padding-left: 0;
+      border-left: 0;
+    }
+
+    .row-body > .reveal .inside li {
+      break-inside: avoid;
+      padding-left: 1rem;
+      border-left: 1px solid var(--color-accent);
     }
 
     .row-body > .reveal .inside li {
