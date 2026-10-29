@@ -215,7 +215,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
                     <summary>{it.kind === 'essay' ? `${it.contents.length} sections` : `${it.nb.days.length} days`}</summary>
                   <ol class="inside">
                     {it.kind === 'essay'
-                      ? it.contents.map((c, i) => <li><span class="in-n">{String(i + 1).padStart(2, '0')}</span><span class="in-t">{c}</span></li>)
+                      ? it.contents.map((c, i) => <li><span class="in-row"><span class="in-n">{String(i + 1).padStart(2, '0')}</span><span class="in-t">{c}</span></span></li>)
                       : it.nb.days.map(d => (
                           <li>{d.href
                             ? <a href={d.href}><span class="in-n">Day {d.day}</span><span class="in-t">{d.title}</span><span class="in-m">{d.minutes} min</span></a>
@@ -678,7 +678,8 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     margin: 0.5rem 0 0;
   }
 
-  .inside li > span,
+  .inside .in-row,
+  .inside .off,
   .inside a {
     display: grid;
     grid-template-columns: 3.4rem minmax(0, 1fr) auto;
