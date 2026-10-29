@@ -898,12 +898,10 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     transition: opacity 0.35s ease, transform 0.35s ease;
   }
 
-  .row:focus-within .reveal,
   .row.near .reveal {
     grid-template-rows: 1fr;
   }
 
-  .row:focus-within .reveal .inside li,
   .row.near .reveal .inside li {
     opacity: 1;
     transform: none;
@@ -932,6 +930,48 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     transition: color 0.2s ease, border-color 0.2s ease;
   }
 
+  .reveal-peek {
+    position: absolute;
+    left: calc(100% + 0.9rem);
+    top: 50%;
+    max-width: 34ch;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.95rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--color-text-muted);
+    opacity: 0;
+    transform: translate(-6px, -50%);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+  }
+
+  @media (hover: hover) {
+    .reveal-toggle:hover .reveal-peek {
+      opacity: 1;
+      transform: translate(0, -50%);
+    }
+
+    .reveal-toggle:hover {
+      color: var(--color-accent);
+      border-color: var(--color-accent);
+    }
+  }
+
+  .row.near .reveal-peek {
+    display: none;
+  }
+
+  @media (hover: none), (max-width: 760px) {
+    .reveal-peek {
+      display: none;
+    }
+  }
+
   .row.near .reveal-toggle {
     color: var(--color-accent);
     border-color: var(--color-accent);
@@ -947,18 +987,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 
   .row.near .reveal-toggle::before {
     content: '−';
-  }
-
-  @media (hover: hover) {
-    .row:hover .reveal {
-      grid-template-rows: 1fr;
-    }
-
-    .row:hover .reveal .inside li {
-      opacity: 1;
-      transform: none;
-      transition-delay: calc(var(--i, 0) * 45ms + 80ms);
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1063,10 +1091,10 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   new MutationObserver(queue).observe(list, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true });
   update();
 })();
-/* On touch there is no hover: each list stays closed behind a small
-   line that opens it when tapped, and closes it when tapped again. */
+/* Each list stays closed behind a small pill that opens it when clicked
+   or tapped, and closes it again; reaching for the pill gives a glimpse
+   of the first line inside. */
 (function () {
-  if (matchMedia('(hover: hover)').matches) return;
   document.querySelectorAll('#post-index .row').forEach(function (r) {
     var list = r.querySelector('.reveal');
     if (!list) return;
@@ -1076,6 +1104,14 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     b.className = 'reveal-toggle';
     b.setAttribute('aria-expanded', 'false');
     b.textContent = n + (r.classList.contains('notebook') ? ' days' : ' sections');
+    // A glimpse of what is inside, shown beside the pill as you reach for it.
+    var first = list.querySelector('.in-t');
+    if (first) {
+      var peek = document.createElement('span');
+      peek.className = 'reveal-peek';
+      peek.textContent = first.textContent;
+      b.appendChild(peek);
+    }
     b.addEventListener('click', function () {
       var open = r.classList.toggle('near');
       b.setAttribute('aria-expanded', open);
