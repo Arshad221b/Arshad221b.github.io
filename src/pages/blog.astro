@@ -749,19 +749,21 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 
   .row-fig {
     margin-bottom: var(--space-md);
+
   }
 
+  /* The figure's paper is a shade darker than the page's; lifted 5% and
+     darkened onto the page, the paper vanishes and only the ink stays. */
   .row-fig img {
     display: block;
     width: 100%;
     height: auto;
-    border-radius: 2px;
-    box-shadow: 0 0 0 1px var(--color-border-light);
-    transition: box-shadow 0.3s ease;
+    mix-blend-mode: darken;
+    filter: brightness(1.05);
   }
 
   :global(html.dark) .row-fig img {
-    box-shadow: none;
+    mix-blend-mode: normal;
     filter: brightness(0.9);
   }
 
@@ -1008,7 +1010,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     .row-body {
       display: grid;
       grid-template-columns: min(46%, 38rem) minmax(0, 1fr);
-      grid-template-rows: 1fr auto auto auto 1fr auto;
+      grid-template-rows: 1fr auto auto auto auto 1fr;
       column-gap: var(--space-2xl);
       padding: var(--space-md) 0;
     }
@@ -1022,7 +1024,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 
     .row-body > .row-fig {
       grid-column: 2;
-      grid-row: 1 / 6;
+      grid-row: 1 / -1;
       align-self: center;
       margin: 0;
     }
@@ -1036,9 +1038,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
       object-position: left center;
       border-radius: 2px;
       box-shadow: none !important;
-      mix-blend-mode: multiply;
       opacity: 1;
-      transition: opacity 0.6s ease, box-shadow 0.8s ease, transform 1.4s cubic-bezier(0.22, 0.8, 0.24, 1), filter 0.6s ease;
     }
 
     :global(html.dark) .row-body > .row-fig img {
@@ -1047,25 +1047,9 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     }
 
 
-    /* What it covers runs beneath both, in two even columns. */
     .row-body > .reveal {
       grid-template-rows: 1fr;
-      grid-column: 1 / -1;
-      grid-row: 6;
-    }
-
-    .row-body > .reveal .inside {
-      max-width: none;
-      columns: 2;
-      column-gap: var(--space-2xl);
-      padding-left: 0;
-      border-left: 0;
-    }
-
-    .row-body > .reveal .inside li {
-      break-inside: avoid;
-      padding-left: 1rem;
-      border-left: 1px solid var(--color-accent);
+      grid-row: 5;
     }
 
     .row-body > .reveal .inside li {

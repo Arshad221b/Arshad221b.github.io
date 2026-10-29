@@ -129,8 +129,34 @@ const elsewhere = [
       <slot />
     </main>
 
+    <script is:inline>
+      // The round back key steps aside while reading on, returns on the way back.
+      (function () {
+        var r = document.querySelector('.article-rule');
+        if (!r) return;
+        var last = scrollY;
+        addEventListener('scroll', function () {
+          var y = scrollY, d = y - last;
+          if (Math.abs(d) < 6) return;
+          r.classList.toggle('away', d > 0 && y > 120);
+          last = y;
+        }, { passive: true });
+      })();
+    </script>
     <!-- Contents of the piece, listed in the margin -->
     <nav class="margin-toc" id="margin-toc" aria-label="Sections"></nav>
+    <script is:inline>
+      // The margin contents wait until the header's figure has scrolled by,
+      // so they never sit over the drawing.
+      (function () {
+        var cover = document.querySelector('.post-cover'), toc = document.getElementById('margin-toc');
+        if (!cover || !toc) return;
+        function check() { toc.classList.toggle('under-cover', cover.getBoundingClientRect().bottom > innerHeight * 0.3); }
+        addEventListener('scroll', check, { passive: true });
+        addEventListener('resize', check);
+        check();
+      })();
+    </script>
 
     <script is:inline>
       (function () {

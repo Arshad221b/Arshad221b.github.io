@@ -115,7 +115,7 @@ function formatDate(dateStr: string): string {
 
   .post-cover {
     position: absolute;
-    top: -1.5rem;
+    top: calc(-1 * var(--main-pt));
     left: calc(50% - min(50vw, 1200px));
     width: min(100vw, 2400px);
     height: clamp(13rem, 46vh, 30rem);
@@ -133,7 +133,8 @@ function formatDate(dateStr: string): string {
     height: 100%;
     object-fit: cover;
     object-position: center;
-    mix-blend-mode: multiply;
+    mix-blend-mode: darken;
+    filter: brightness(1.05);
     opacity: 1;
   }
 
@@ -148,7 +149,7 @@ function formatDate(dateStr: string): string {
     }
 
     .post-cover {
-      top: -1rem;
+      top: calc(-1 * var(--main-pt));
       height: 58vw;
     }
   }

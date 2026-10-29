@@ -753,9 +753,10 @@ html.dark .theme-toggle .icon-moon { display: none; }
 
 /* ── Main ────────────────────────────────────────────── */
 main {
+  --main-pt: var(--space-lg);
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--space-2xl) var(--gutter) var(--space-3xl);
+  padding: var(--main-pt) var(--gutter) var(--space-3xl);
   width: 100%;
   flex: 1;
 }
@@ -1318,7 +1319,8 @@ body > footer {
   }
 
   main {
-    padding: var(--space-xl) var(--gutter) var(--space-2xl);
+    --main-pt: var(--space-md);
+    padding: var(--main-pt) var(--gutter) var(--space-2xl);
   }
 }
 
@@ -1982,4 +1984,70 @@ html,body{overflow-x:clip;}
 
 @media (prefers-reduced-motion: reduce) {
   .to-top, .to-top * { transition: none !important; }
+}
+
+.margin-toc { transition: opacity 0.4s ease; }
+.margin-toc.under-cover { opacity: 0; pointer-events: none; }
+
+/* ── The way back ─────────────────────────────────────────
+   Out of the flow: on a wide screen it waits in the top of the left
+   margin; on a smaller one it is a round key in the corner, opposite the
+   reticle, that steps aside while you read on and returns as you look back. */
+.article-rule {
+  position: fixed;
+  z-index: 160;
+  left: 34px;
+  top: calc(var(--head-h, 4.5rem) + 1.5rem);
+  margin: 0 !important;
+  transition: opacity 0.3s ease, transform 0.5s var(--ease-out);
+}
+
+.article-rule .rule-line,
+.article-rule .kind {
+  display: none !important;
+}
+
+@media (max-width: 1099px) {
+  .article-rule {
+    top: auto;
+    left: 14px;
+    bottom: 18px;
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-bg);
+  }
+
+  .article-rule a {
+    display: grid !important;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    font-size: 0 !important;
+    color: var(--color-text) !important;
+  }
+
+  .article-rule a::before {
+    content: '\2190';
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .article-rule.away {
+    opacity: 0;
+    transform: translateY(18px);
+    pointer-events: none;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1099px) {
+  .article-rule { left: 34px; bottom: 34px; width: 48px; height: 48px; }
+}
+
+/* The fade-in would lift the page into a layer of its own, and figures
+   blended onto the paper would change colour when it ends. */
+main:has(.post-cover, .row-fig, .entry-fig) {
+  animation: none;
 }

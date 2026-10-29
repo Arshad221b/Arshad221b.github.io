@@ -439,9 +439,10 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   /* The same timeline as Blogs: one flat list, newest first, under year
      headings that step aside when a search ranks the essays instead. */
   /* The same column as Blogs and as wide as the essays' figures, centred. */
+  /* Positioned, so it paints over the sketch that comes before it, but
+     with no layer of its own: the figures blend onto the page itself. */
   .thoughts-page {
     position: relative;
-    z-index: 1;
     width: 100%;
   }
 
@@ -483,7 +484,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       object-position: left center;
       border-radius: 2px;
       box-shadow: none !important;
-      mix-blend-mode: multiply;
     }
 
     :global(html.dark) .entry-body > .entry-fig img {
@@ -733,19 +733,21 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   .entry-fig {
     display: block;
     margin-bottom: var(--space-md);
+
   }
 
+  /* The figure's paper is a shade darker than the page's; lifted 5% and
+     darkened onto the page, the paper vanishes and only the ink stays. */
   .entry-fig img {
     display: block;
     width: 100%;
     height: auto;
-    border-radius: 2px;
-    box-shadow: 0 0 0 1px var(--color-border-light);
-    transition: box-shadow 0.3s ease;
+    mix-blend-mode: darken;
+    filter: brightness(1.05);
   }
 
   :global(html.dark) .entry-fig img {
-    box-shadow: none;
+    mix-blend-mode: normal;
     filter: brightness(0.9);
   }
 
