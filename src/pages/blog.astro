@@ -579,18 +579,72 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   /* The month large and light in the margin, the year small beneath it;
      it rides along with its piece as you read, and lights up as you
      reach for it. */
-  /* Later pieces of the same month leave the margin empty. */
-  .row.month-cont .row-date {
+  /* The rider carries the month; each piece's own label is kept only
+     for a ranked search, where order is not by date. */
+  .row-date {
     visibility: hidden;
+  }
+
+  /* The month marker that rides down the margin (built by the script). */
+  :global(.month-rider) {
+    position: sticky;
+    top: 6.5rem;
+    z-index: 2;
+    width: 5.5rem;
+    height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  :global(.month-rider.on) {
+    opacity: 1;
+  }
+
+  :global(.month-rider .dd) {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-text);
+  }
+
+  :global(.month-rider .mm) {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    padding-left: 0.15rem;
+  }
+
+  :global(.month-rider.turn .dd),
+  :global(.month-rider.turn .mm) {
+    animation: month-turn 0.45s cubic-bezier(0.22, 0.8, 0.24, 1);
+  }
+
+  @keyframes month-turn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 760px) {
+    :global(.month-rider) { display: none; }
   }
 
   .dd {
     font-family: var(--font-display);
-    font-size: 1.5rem;
-    font-weight: 300;
-    font-style: italic;
-    line-height: 0.9;
-    letter-spacing: -0.02em;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
     color: var(--color-text);
     font-variant-numeric: lining-nums;
     transition: color 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.5, 0.5, 1);
@@ -851,24 +905,49 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 
 <script is:inline>
 
-/* Group by month: only the first visible piece of each month shows it;
-   the rest of that month sit beneath it with an empty margin. Recounted
-   whenever a search or topic hides or reorders pieces. */
+/* One month marker rides down the margin beside the whole list, and turns
+   to the next month as you cross into it, so a month's label stays with
+   all of its pieces, not just the first. */
 (function () {
   var list = document.getElementById('post-index');
-  if (!list) return;
-  function mark() {
-    var prev = null, ranked = list.classList.contains('ranked');
-    list.querySelectorAll('[data-month]').forEach(function (el) {
-      if (el.classList.contains('hidden') || el.offsetParent === null) return;
-      var m = el.dataset.month;
-      el.classList.toggle('month-cont', !ranked && m === prev);
-      prev = m;
+  if (!list || matchMedia('(max-width: 760px)').matches) return;
+  var rider = document.createElement('div');
+  rider.className = 'month-rider';
+  rider.setAttribute('aria-hidden', 'true');
+  rider.innerHTML = '<span class="dd"></span><span class="mm"></span>';
+  list.parentNode.insertBefore(rider, list);
+  var dd = rider.querySelector('.dd'), mm = rider.querySelector('.mm'), shown = '';
+  var LINE = 140;
+  function update() {
+    var ranked = list.classList.contains('ranked');
+    var rows = [].slice.call(list.querySelectorAll('[data-month]')).filter(function (r) {
+      return !r.classList.contains('hidden') && r.offsetParent !== null;
     });
+    var cur = null;
+    for (var i = 0; i < rows.length; i++) {
+      var b = rows[i].getBoundingClientRect();
+      if (b.top <= LINE + 40) cur = rows[i];
+      if (b.top > LINE + 40) break;
+    }
+    if (!cur && rows.length && rows[0].getBoundingClientRect().top < innerHeight) cur = rows[0];
+    var first = rows.length ? rows[0].getBoundingClientRect().top : Infinity;
+    rider.classList.toggle('on', !ranked && !!cur && first < innerHeight * 0.8);
+    if (!cur) return;
+    var label = cur.querySelector('time');
+    var key = cur.dataset.month;
+    if (key !== shown) {
+      shown = key;
+      rider.classList.remove('turn'); void rider.offsetWidth; rider.classList.add('turn');
+      dd.textContent = label.querySelector('.dd').textContent;
+      mm.textContent = label.querySelector('.mm').textContent;
+    }
   }
-  mark();
-  new MutationObserver(function () { requestAnimationFrame(mark); })
-    .observe(list, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
+  var queued = false;
+  function queue() { if (!queued) { queued = true; requestAnimationFrame(function () { queued = false; update(); }); } }
+  addEventListener('scroll', queue, { passive: true });
+  addEventListener('resize', queue);
+  new MutationObserver(queue).observe(list, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true });
+  update();
 })();
 /* On touch, the piece in the middle of the screen is the one you are on. */
 (function () {
