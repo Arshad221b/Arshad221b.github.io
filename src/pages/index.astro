@@ -1258,7 +1258,8 @@ const links = [
     font-size: 1.15rem;
     line-height: 1.5;
     color: var(--color-text-secondary);
-    margin: calc(-1 * var(--space-md)) 0 var(--space-lg);
+    /* Tucked up under the name, which sets its own space below. */
+    margin: calc(-1 * var(--space-lg) + 0.4rem) 0 var(--space-lg);
   }
 
   .hero-links {
