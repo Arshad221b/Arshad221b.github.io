@@ -1866,3 +1866,5 @@ main > .free {
   max-width: none !important;
   width: 100%;
 }
+
+html,body{overflow-x:clip;}
