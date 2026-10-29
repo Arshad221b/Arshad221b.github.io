@@ -5,8 +5,7 @@
    same row: its date in the margin, its figure at full width, what it is,
    its title and what it asks.
    The one difference is the honest one: an essay is a single piece, a
-   notebook is a run of days, and its row shows the days as a strip you can
-   open one by one.
+   notebook is a run of days, and its row lists them quietly, each a link.
 
    An essay is one piece, read in one sitting. A notebook is a thread of
    short days on one question, each day its own short read. They share a
@@ -169,7 +168,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     <!-- The two kinds, said once, so the timeline needs no more explaining. -->
     <dl class="key">
       <div><dt><span class="mark essay"></span>Essay</dt><dd>A single post.</dd></div>
-      <div><dt><span class="mark notebook"><i></i><i></i><i></i><i></i></span>Notebook</dt><dd>Daily notes on one topic, over a week or so.</dd></div>
+      <div><dt><span class="mark notebook"><i></i><i></i><i></i></span>Notebook</dt><dd>Daily notes on one topic, over a week or so.</dd></div>
     </dl>
 
     <!-- The same console as Thoughts: one line to search on, one row of topics. -->
@@ -211,17 +210,14 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
                   </p>
                   <h3><a href={it.href} class="stretch">{it.title}</a></h3>
                   <p class="desc">{it.description}</p>
-                  {it.kind === 'essay' && (
-                    <ol class="strip" aria-hidden="true"><li><span class="off one"><span class="d">One sitting</span></span></li></ol>
-                  )}
                   {it.kind === 'notebook' && (
-                    <ol class="strip" aria-label="Days">
-                      {it.nb.days.map(d => (
-                        <li>{d.href
-                          ? <a href={d.href}><span class="d">Day {d.day}</span><span class="q">{d.title}</span></a>
-                          : <span class="off"><span class="d">Day {d.day}</span><span class="q">{d.title}</span></span>}</li>
-                      ))}
-                    </ol>
+                    /* A notebook can be read a day at a time. */
+                    <p class="days">
+                      <span class="days-k">Read a day</span>
+                      {it.nb.days.map(d => d.href
+                        ? <a href={d.href} title={`Day ${d.day}: ${d.title}`}>{d.day}</a>
+                        : <span class="off" title={`Day ${d.day}: ${d.title}`}>{d.day}</span>)}
+                    </p>
                   )}
                 </div>
               </li>
@@ -495,23 +491,18 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   }
 
   /* An essay is one block; a notebook is a run of days. */
+  /* An essay is one dot; a notebook, a few, like days. */
   .mark {
     display: inline-flex;
-    gap: 2px;
+    gap: 3px;
   }
 
-  .mark.essay {
-    width: 22px;
-    height: 8px;
-    background: var(--color-accent);
-    border-radius: 1px;
-  }
-
+  .mark.essay,
   .mark.notebook i {
-    width: 4px;
-    height: 8px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
     background: var(--color-accent);
-    border-radius: 1px;
   }
 
   /* ── The timeline ─────────────────────────────────── */
@@ -636,74 +627,44 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   }
 
   /* The run of days: one cell each, the question shown when you reach it. */
-  .strip {
+  /* The days of a notebook, said quietly beneath it. */
+  .days {
     position: relative;
     z-index: 1;
-    list-style: none;
     display: flex;
-    gap: 3px;
-    padding: 0;
-    margin: 0.8rem 0 0;
-  }
-
-  .strip li {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .strip a,
-  .strip .off {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-  }
-
-  .strip .d {
-    display: block;
-    padding-top: 0.4rem;
-    border-top: 3px solid var(--color-accent);
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.75rem;
+    margin: 0.7rem 0 0;
     font-family: var(--font-mono);
-    font-size: 0.55rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
     color: var(--color-text-muted);
+  }
+
+  .days-k {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.58rem;
+    margin-right: 0.2rem;
+  }
+
+  .days a {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
     transition: color 0.2s ease, border-color 0.2s ease;
   }
 
-  .strip .off .d {
-    border-top-color: var(--color-border);
-  }
-
-  .strip .one .d {
-    border-top-color: var(--color-accent);
-  }
-
-  .strip .q {
-    display: none;
-  }
-
-  .strip a:hover .d {
+  .days a:hover {
     color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
   }
 
-  /* The question of the day you point at, said under the strip. */
-  .strip li:hover .q {
-    display: block;
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 100%;
-    padding-top: 0.35rem;
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 0.92rem;
-    line-height: 1.4;
-    color: var(--color-text-secondary);
+  .days .off {
+    opacity: 0.45;
   }
 
-  .row {
-    padding-bottom: calc(var(--space-xl) + 1.4rem);
-  }
 
   .no-results {
     display: none;
@@ -730,12 +691,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     .topics {
       flex-direction: column;
       gap: var(--space-sm);
-    }
-
-    .strip .d {
-      font-size: 0;
-      height: 0;
-      padding-top: 0.8rem;
     }
 
     .row {
