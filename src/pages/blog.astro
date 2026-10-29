@@ -210,15 +210,16 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
                   </p>
                   <h3><a href={it.href} class="stretch">{it.title}</a></h3>
                   <p class="desc">{it.description}</p>
-                  {it.kind === 'notebook' && (
-                    /* A notebook can be read a day at a time. */
-                    <p class="days">
-                      <span class="days-k">Read a day</span>
-                      {it.nb.days.map(d => d.href
-                        ? <a href={d.href} title={`Day ${d.day}: ${d.title}`}>{d.day}</a>
-                        : <span class="off" title={`Day ${d.day}: ${d.title}`}>{d.day}</span>)}
-                    </p>
-                  )}
+                  {/* What it answers: an essay's sections, a notebook's day questions. */}
+                  <ol class="inside">
+                    {it.kind === 'essay'
+                      ? it.contents.map((c, i) => <li><span class="in-n">{String(i + 1).padStart(2, '0')}</span><span class="in-t">{c}</span></li>)
+                      : it.nb.days.map(d => (
+                          <li>{d.href
+                            ? <a href={d.href}><span class="in-n">Day {d.day}</span><span class="in-t">{d.title}</span><span class="in-m">{d.minutes} min</span></a>
+                            : <span class="off"><span class="in-n">Day {d.day}</span><span class="in-t">{d.title}</span></span>}</li>
+                        ))}
+                  </ol>
                 </div>
               </li>
             ))}
@@ -627,44 +628,58 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   }
 
   /* The run of days: one cell each, the question shown when you reach it. */
-  /* The days of a notebook, said quietly beneath it. */
-  .days {
+  /* What a piece answers, listed quietly under it. */
+  .inside {
     position: relative;
     z-index: 1;
-    display: flex;
-    flex-wrap: wrap;
+    list-style: none;
+    max-width: 62ch;
+    padding: 0;
+    margin: 0.9rem 0 0;
+  }
+
+  .inside li > span,
+  .inside a {
+    display: grid;
+    grid-template-columns: 3.4rem minmax(0, 1fr) auto;
+    gap: 0.6rem;
     align-items: baseline;
-    gap: 0.2rem 0.75rem;
-    margin: 0.7rem 0 0;
+    padding: 0.28rem 0;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .in-n {
     font-family: var(--font-mono);
-    font-size: 0.66rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .in-t {
+    font-family: var(--font-serif);
+    font-size: 0.98rem;
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+    transition: color 0.2s ease;
+  }
+
+  .in-m {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
     letter-spacing: 0.06em;
     color: var(--color-text-muted);
+    white-space: nowrap;
   }
 
-  .days-k {
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 0.58rem;
-    margin-right: 0.2rem;
-  }
-
-  .days a {
-    color: var(--color-text-secondary);
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
-    transition: color 0.2s ease, border-color 0.2s ease;
-  }
-
-  .days a:hover {
+  .inside a:hover .in-t {
     color: var(--color-accent);
-    border-bottom-color: var(--color-accent);
   }
 
-  .days .off {
-    opacity: 0.45;
+  .inside .off {
+    opacity: 0.5;
   }
-
 
   .no-results {
     display: none;
