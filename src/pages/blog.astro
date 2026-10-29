@@ -210,9 +210,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
                   </p>
                   <h3><a href={it.href} class="stretch">{it.title}</a></h3>
                   <p class="desc">{it.description}</p>
-                  {/* What it answers, folded away until asked for. */}
-                  <details class="inside-fold">
-                    <summary>{it.kind === 'essay' ? `${it.contents.length} sections` : `${it.nb.days.length} days`}</summary>
+                  {/* What it answers: its lines arrive as the piece comes into view. */}
                   <ol class="inside">
                     {it.kind === 'essay'
                       ? it.contents.map((c, i) => <li style={`--i:${i}`}><span class="in-row"><span class="in-n">{String(i + 1).padStart(2, '0')}</span><span class="in-t">{c}</span></span></li>)
@@ -222,7 +220,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
                             : <span class="off"><span class="in-n">Day {d.day}</span><span class="in-t">{d.title}</span></span>}</li>
                         ))}
                   </ol>
-                  </details>
                 </div>
               </li>
             ))}
@@ -631,46 +628,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   }
 
   /* The run of days: one cell each, the question shown when you reach it. */
-  /* What a piece answers: one small line, opened on request. */
-  .inside-fold {
-    position: relative;
-    z-index: 1;
-    margin-top: 0.8rem;
-  }
-
-  .inside-fold summary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-    cursor: pointer;
-    list-style: none;
-    transition: color 0.2s ease;
-  }
-
-  .inside-fold summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .inside-fold summary::before {
-    content: '+';
-    font-size: 0.8rem;
-    line-height: 1;
-    color: var(--color-accent);
-  }
-
-  .inside-fold[open] summary::before {
-    content: '−';
-  }
-
-  .inside-fold summary:hover {
-    color: var(--color-accent);
-  }
-
+  /* What a piece answers, listed quietly under it. */
   .inside {
     list-style: none;
     max-width: 62ch;
@@ -678,43 +636,24 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     margin: 0.5rem 0 0;
   }
 
-  /* Opening slides the space open, and the lines arrive one after another. */
-  .inside-fold {
-    interpolate-size: allow-keywords;
+  /* As a piece comes into view, its lines arrive one after another. */
+  :global(html.js-lines) .inside li {
+    opacity: 0;
   }
 
-  .inside-fold::details-content {
-    block-size: 0;
-    overflow: hidden;
-    transition: block-size 0.45s cubic-bezier(0.22, 0.8, 0.24, 1), content-visibility 0.45s allow-discrete;
-  }
-
-  .inside-fold[open]::details-content {
-    block-size: auto;
-  }
-
-  .inside-fold[open] .inside li {
-    animation: in-line 0.5s cubic-bezier(0.22, 0.8, 0.24, 1) both;
-    animation-delay: calc(var(--i, 0) * 45ms + 60ms);
+  :global(html.js-lines) .row.seen .inside li {
+    animation: in-line 0.6s cubic-bezier(0.22, 0.8, 0.24, 1) both;
+    animation-delay: calc(var(--i, 0) * 70ms + 120ms);
   }
 
   @keyframes in-line {
-    from { opacity: 0; transform: translateY(6px); }
+    from { opacity: 0; transform: translateX(-6px); }
     to   { opacity: 1; transform: none; }
   }
 
-  .inside-fold summary::before {
-    display: inline-block;
-    transition: transform 0.3s ease;
-  }
-
-  .inside-fold[open] summary::before {
-    transform: rotate(180deg);
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .inside-fold::details-content { transition: none; }
-    .inside-fold[open] .inside li { animation: none; }
+    :global(html.js-lines) .inside li { opacity: 1; }
+    :global(html.js-lines) .row.seen .inside li { animation: none; }
   }
 
   .inside .in-row,
@@ -802,6 +741,15 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 </style>
 
 <script is:inline>
+(function () {
+  if (!('IntersectionObserver' in window)) return;
+  document.documentElement.classList.add('js-lines');
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('seen'); io.unobserve(e.target); } });
+  }, { rootMargin: '0px 0px -12% 0px' });
+  document.querySelectorAll('#post-index .row').forEach(function (r) { io.observe(r); });
+})();
+
 (function () {
   var plates = [].slice.call(document.querySelectorAll('#post-index .row'));
   var years = document.querySelectorAll('#post-index .year');
