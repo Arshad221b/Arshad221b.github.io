@@ -68,7 +68,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       lede="Personal writing. Things I am confused about, excited by, or trying to put into words."
       figures={[
         { k: 'Essays', v: posts.length },
-        { k: 'Years', v: `${firstYear}–${lastYear}` },
+        { k: 'Hours of reading', v: (totalWords / 230 / 60).toFixed(1) },
         { k: 'Words', v: `${Math.round(totalWords / 1000)}k` },
         { k: 'Median essay', v: `${(medianWords / 1000).toFixed(1)}k` },
       ]}
