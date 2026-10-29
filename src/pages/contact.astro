@@ -8,6 +8,7 @@
 
 import Layout from '../layouts/Layout.astro';
 import Mast from '../components/Mast.astro';
+import SketchBackdrop from '../components/SketchBackdrop.astro';
 
 const title = 'Contact — Arshad Kazi';
 const inbox = 'arshadkaziblog@gmail.com';
@@ -30,7 +31,7 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
        time, each drawing itself in the way a sketch is built: the darkest
        strokes first, then the lighter lines and the shading. It holds,
        fades, and the next begins. -->
-  <canvas class="codex" id="codex" aria-hidden="true" data-sketches={JSON.stringify(sketches)}></canvas>
+  <SketchBackdrop sketches={sketches} />
 
   <div class="contact-page">
     <Mast
@@ -148,37 +149,7 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
   }
 
 
-  .codex {
-    position: fixed;
-    top: 5vh;
-    right: -4vw;
-    width: min(58vw, 820px);
-    height: 90vh;
-    opacity: 0.34;
-    transform: rotate(-3deg);
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 18%, #000 48%, #000 90%, transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0%, transparent 18%, #000 48%, #000 90%, transparent 100%);
-    pointer-events: none;
-    z-index: 0;
-  }
 
-  /* On the dark page the ink turns to light. */
-  :global(html.dark) .codex {
-    filter: invert(1);
-    opacity: 0.22;
-  }
-
-  @media (max-width: 760px) {
-    .codex {
-      right: -35vw;
-      width: 115vw;
-      opacity: 0.2;
-    }
-
-    :global(html.dark) .codex {
-      opacity: 0.12;
-    }
-  }
 
   .form {
     display: flex;
@@ -550,86 +521,6 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
 </style>
 
 <script is:inline>
-/* The sketches draw themselves. Each pixel's ink is how dark it is; a
-   threshold sweeps from dark to light, so the strongest strokes appear
-   first and the faint shading last, softly, as a drawing is built up. */
-(function () {
-  var c = document.getElementById('codex');
-  if (!c) return;
-  var list = JSON.parse(c.dataset.sketches), x = c.getContext('2d');
-  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var DRAW = 9000, HOLD = 5000, FADE = 1600, GAP = 500;
-  var W = 0, H = 0, dpr = 1, cur = null, idx = 0, t0 = 0, stopped = false;
-
-  function size() {
-    var r = c.getBoundingClientRect();
-    // A faint background: drawn at one pixel per CSS pixel, to stay light.
-    dpr = 1;
-    W = r.width; H = r.height;
-    c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
-    if (cur) prepare(cur.img);
-  }
-
-  // Fit the sketch, and keep its ink (1 - lightness) for every pixel.
-  function prepare(img) {
-    var k = Math.min(c.width / img.width, c.height / img.height);
-    var w = Math.round(img.width * k), h = Math.round(img.height * k);
-    var off = document.createElement('canvas'); off.width = w; off.height = h;
-    var o = off.getContext('2d');
-    // Trim the scan's edges, where the old paper darkens into a frame.
-    var m = 0.07, sx = img.width * m, sy = img.height * m;
-    o.drawImage(img, sx, sy, img.width - 2 * sx, img.height - 2 * sy, 0, 0, w, h);
-    var d = o.getImageData(0, 0, w, h), p = d.data, ink = new Float32Array(w * h);
-    // The paper's tone is the common one (the median), not the lightest
-    // speck; ink is anything clearly darker than it.
-    var lums = [];
-    for (var i = 0; i < p.length; i += 64) lums.push(0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2]);
-    lums.sort(function (a, b) { return a - b; });
-    var hi = lums[Math.floor(lums.length * 0.6)];
-    for (var j = 0, q = 0; j < p.length; j += 4, q++) {
-      var lum = (0.299 * p[j] + 0.587 * p[j + 1] + 0.114 * p[j + 2]) / Math.max(1, hi);
-      ink[q] = Math.max(0, Math.min(1, (0.86 - lum) / 0.55));
-    }
-    cur = { img: img, w: w, h: h, ink: ink, data: o.createImageData(w, h), ox: Math.round((c.width - w) / 2), oy: Math.round((c.height - h) / 2) };
-  }
-
-  function paint(t) {
-    if (!cur) return;
-    var a = t < DRAW ? t / DRAW : 1, fade = t > DRAW + HOLD ? Math.max(0, 1 - (t - DRAW - HOLD) / FADE) : 1;
-    var th = 1 - Math.pow(a, 0.8) * 1.05, ink = cur.ink, out = cur.data.data;
-    for (var q = 0, o = 0; q < ink.length; q++, o += 4) {
-      var v = ink[q], s = Math.max(0, Math.min(1, (v - th) / 0.12));
-      out[o] = 40; out[o + 1] = 30; out[o + 2] = 20; out[o + 3] = v * s * fade * 255;
-    }
-    x.clearRect(0, 0, c.width, c.height);
-    x.putImageData(cur.data, cur.ox, cur.oy);
-  }
-
-  function load(n, done) {
-    var img = new Image();
-    img.onload = function () { prepare(img); done(); };
-    img.onerror = function () { idx = (idx + 1) % list.length; load(idx, done); };
-    img.src = list[n];
-  }
-
-  size();
-  addEventListener('resize', size);
-  load(0, function start() {
-    if (reduce) { paint(DRAW); return; }
-    t0 = performance.now();
-    (function frame(now) {
-      var t = now - t0;
-      if (t > DRAW + HOLD + FADE + GAP) {
-        idx = (idx + 1) % list.length;
-        cur = null; x.clearRect(0, 0, c.width, c.height);
-        load(idx, start);
-        return;
-      }
-      paint(t);
-      requestAnimationFrame(frame);
-    })(t0);
-  });
-})();
 
 (function () {
   var form = document.getElementById('contact-form');

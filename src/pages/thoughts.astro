@@ -8,9 +8,13 @@
 
 import Layout from '../layouts/Layout.astro';
 import Mast from '../components/Mast.astro';
+import SketchBackdrop from '../components/SketchBackdrop.astro';
 import { posts, pageModel, topicName } from '../lib/thoughts-data';
 
 const title = "Thoughts — Arshad Kazi";
+
+// Behind the page: Michelangelo, Piranesi and Palladio's architect drawing themselves in.
+const sketches = ['sangiovanni1', 'carceri-title', 'rotonda', 'carceri-xiv', 'sangiovanni2'].map(n => `/images/thoughts-bg/${n}.jpg`);
 const { topics, theta, edges, stats, projection } = pageModel;
 
 // Every essay carries its number in the body of work, counted from the
@@ -54,6 +58,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 ---
 
 <Layout title={title} activeNav="/thoughts" description="Personal writing by Arshad Kazi. Things I am confused about, excited by, or trying to put into words. Published on Substack." ogImage="/images/share-thoughts.jpg">
+  <SketchBackdrop sketches={sketches} />
   <div class="thoughts-page wide">
 
     <!-- ── Masthead ───────────────────────────────────────
@@ -431,6 +436,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
      headings that step aside when a search ranks the essays instead. */
   /* The same column as Blogs and as wide as the essays' figures, centred. */
   .thoughts-page {
+    position: relative;
+    z-index: 1;
     width: 100%;
     max-width: 1000px;
     margin-inline: auto;
@@ -793,12 +800,12 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     var rows = [].slice.call(list.querySelectorAll('[data-month]')).filter(function (r) {
       return !r.classList.contains('hidden') && r.offsetParent !== null;
     });
-    // Start level with the first piece, below the year heading, without
-    // moving anything: the offset is taken back underneath.
+    // Sit level with the first piece (below the year heading) until it is
+    // reached, then hold at the top: an offset on the marker's own content,
+    // so no margin of the page around it is touched.
     if (rows.length) {
-      var off = Math.max(0, Math.round(rows[0].getBoundingClientRect().top - list.getBoundingClientRect().top) + 28);
-      rider.style.marginTop = off + 'px';
-      rider.style.marginBottom = -off + 'px';
+      var off = Math.max(0, Math.round(rows[0].getBoundingClientRect().top + 28 - rider.getBoundingClientRect().top));
+      rider.style.transform = 'translateY(' + off + 'px)';
     }
     var cur = null;
     for (var i = 0; i < rows.length; i++) {
