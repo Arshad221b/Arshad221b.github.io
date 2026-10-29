@@ -1019,10 +1019,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
       /* Beside the words, never under them. */
       width: calc(100% - min(46%, 38rem) - var(--space-2xl));
       margin: 0;
-      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%), linear-gradient(180deg, transparent 0%, #000 7%, #000 93%, transparent 100%);
-      mask-image: linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%), linear-gradient(180deg, transparent 0%, #000 7%, #000 93%, transparent 100%);
-      -webkit-mask-composite: source-in;
-      mask-composite: intersect;
     }
 
     .row-body > .row-fig img {
