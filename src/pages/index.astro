@@ -162,7 +162,7 @@ const links = [
     "name": "Arshad Kazi",
     "url": "https://arshad-kazi.com",
     "image": "https://arshad-kazi.com/images/profile.jpg",
-    "jobTitle": "CV/ML Engineer",
+    "jobTitle": "Engineer in computer vision",
     "description": "Notebooks, technical writing and personal essays.",
     "sameAs": [
       "https://github.com/Arshad221b",
@@ -188,6 +188,7 @@ const links = [
           <span class="portrait-guard" aria-hidden="true"></span>
         </span>
         <h1><span class="w"><span>Arshad</span></span> <span class="w"><em>Kazi</em></span></h1>
+        <p class="hero-role">Engineer in computer vision; I also write essays.</p>
         <p class="hero-links">
           {links.map(l => {
             const mail = l.href.startsWith('mailto');
@@ -204,7 +205,7 @@ const links = [
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.2 3.8v3.4h3.4"/></svg>
       </button>
 
-      <p class="field-cap label" aria-hidden="true"><span class="sig">&#9679;</span>&nbsp;Essay &nbsp;<span class="key-blog">&#9632;</span>&nbsp;Blog &nbsp;<span class="key-nb">&#10074;&#10074;&#10074;</span>&nbsp;Notebook &nbsp;&middot;&nbsp; {posts.length} pieces, placed by meaning <span class="field-cap-hint">&middot; drag to turn</span></p>
+      <p class="field-cap label" aria-hidden="true"><span class="sig">&#9679;</span>&nbsp; {posts.length} pieces, placed by meaning <span class="field-cap-hint">&middot; drag to turn</span></p>
     </section>
   </div>
 
@@ -405,18 +406,8 @@ const links = [
         var on = i === hover;
         var r = (on ? 5.5 : 3.2) * p.s * pp;
         ctx.globalAlpha = (on ? 1 : Math.max(0.35, 1 - p.depth * 0.35)) * pp;
-        // Each kind its own mark: an essay a dot, a blog a square, a
-        // notebook a short run of days.
-        var kind = pts[i].kind;
         ctx.fillStyle = col.accent;
-        if (kind === 'Blog') {
-          ctx.fillRect(p.x - r, p.y - r, r * 2, r * 2);
-        } else if (kind === 'Notebook') {
-          var d = r * 0.7;
-          for (var k = -1; k <= 1; k++) ctx.fillRect(p.x + k * d * 2.4 - d * 0.6, p.y - d * 1.4, d * 1.2, d * 2.8);
-        } else {
-          ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
-        }
+        ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
         // A keypoint marker: a ring with a gap, as a detector draws it. In
         // the intro it closes in on its point, like a detection locking on.
         ctx.strokeStyle = col.accent;
@@ -1261,6 +1252,15 @@ const links = [
 
   /* The links sit on a hairline, each with a small arrow; an underline
      draws itself under the one you reach for. */
+  .hero-role {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.15rem;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+    margin: calc(-1 * var(--space-md)) 0 var(--space-lg);
+  }
+
   .hero-links {
     display: flex;
     flex-wrap: wrap;
@@ -1319,16 +1319,6 @@ const links = [
 
   .hero-links a:hover .hl-arrow {
     transform: translate(2px, -2px);
-  }
-
-  .field-cap .key-blog,
-  .field-cap .key-nb {
-    color: var(--color-accent);
-  }
-
-  .field-cap .key-nb {
-    letter-spacing: -0.2em;
-    font-size: 0.8em;
   }
 
   .field-cap {
