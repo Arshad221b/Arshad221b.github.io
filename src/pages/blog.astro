@@ -1117,7 +1117,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   rider.setAttribute('aria-hidden', 'true');
   rider.innerHTML = '<span class="dd"></span><span class="mm"></span>';
   list.parentNode.insertBefore(rider, list);
-  var dd = rider.querySelector('.dd'), mm = rider.querySelector('.mm'), shown = '';
+  var dd = rider.querySelector('.dd'), mm = rider.querySelector('.mm'), shown = '', off = 0;
   var LINE = 140;
   function update() {
     var ranked = list.classList.contains('ranked');
@@ -1128,7 +1128,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     // reached, then hold at the top: an offset on the marker's own content,
     // so no margin of the page around it is touched.
     if (rows.length) {
-      var off = Math.max(0, Math.round(rows[0].getBoundingClientRect().top + 28 - rider.getBoundingClientRect().top));
+      off = Math.max(0, Math.round(rows[0].getBoundingClientRect().top + 28 - (rider.getBoundingClientRect().top - off)));
       rider.style.transform = 'translateY(' + off + 'px)';
     }
     var cur = null;
