@@ -996,12 +996,6 @@ main > .blog-post {
   line-height: 1.75;
 }
 
-/* The first paragraph is set a size up, the way a standfirst leads. */
-.blog-post-content > p:first-of-type {
-  font-size: 1.32rem !important;
-  line-height: 1.6;
-  color: var(--color-text);
-}
 
 .blog-post-content h2 {
   position: relative;
@@ -1217,9 +1211,6 @@ main > .blog-post {
 }
 
 @media (max-width: 600px) {
-  .blog-post-content > p:first-of-type {
-    font-size: 1.2rem !important;
-  }
   .blog-post-description {
     font-size: 1.14rem;
   }
