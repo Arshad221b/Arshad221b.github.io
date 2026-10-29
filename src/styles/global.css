@@ -478,13 +478,14 @@ body > header {
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Once the page has moved, the header frosts over so text passes
-   under it as a blur rather than colliding with the links. */
+/* Once the page has moved, the header turns to frosted glass: mostly
+   clear, the page passing under it as a soft, slightly richer blur, and a
+   hairline beneath. */
 body > header.scrolled {
-  background-color: color-mix(in srgb, var(--color-chrome) 82%, transparent);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2);
-  backdrop-filter: blur(14px) saturate(1.2);
-  box-shadow: 0 1px 0 var(--color-border-light);
+  background-color: color-mix(in srgb, var(--color-bg) 62%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
+  backdrop-filter: saturate(180%) blur(22px);
+  box-shadow: 0 0.5px 0 color-mix(in srgb, var(--color-text) 14%, transparent);
 }
 
 .site-head {
