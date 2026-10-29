@@ -138,62 +138,58 @@ function formatDate(dateStr: string): string {
      that element is swallowed into it as dead text: with the styles
      last, none of them applied at all. -->
 <style>
-  /* The header as a cover: the essay's figure sits behind and to the
-     right of the title, wider than the text column, and dissolves into
-     the paper toward the title and below it. */
+  /* The header's figure runs edge to edge across the screen as a band at
+     the top, and fades into the paper where the title begins, so it never
+     sits under the words. */
   .blog-post-header.has-figure {
     position: relative;
     isolation: isolate;
-    padding-top: var(--space-md);
+    padding-top: clamp(11rem, 40vh, 26rem);
     padding-bottom: var(--space-sm);
     margin-bottom: var(--space-lg);
   }
 
   .post-cover {
-    overflow: hidden;
     position: absolute;
     z-index: -1;
-    top: -2rem;
-    right: calc((100% - min(1000px, 94vw)) / 2);
-    width: min(720px, 70vw);
-    height: calc(100% + 3rem);
+    top: -1.5rem;
+    left: calc(50% - 50vw);
+    width: 100vw;
+    height: clamp(13rem, 46vh, 30rem);
     margin: 0;
+    overflow: hidden;
     pointer-events: none;
-    /* An oval fade: the drawing's square edges never show. */
-    -webkit-mask-image: radial-gradient(ellipse 46% 50% at 62% 46%, #000 25%, transparent 78%);
-    mask-image: radial-gradient(ellipse 46% 50% at 62% 46%, #000 25%, transparent 78%);
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 50%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 50%, transparent 100%);
   }
 
-  /* A thought's plate is a drawing on its own old paper, labelled; the
-     cover takes the drawing alone, larger, and lifts its paper tone so
-     only the ink stays on the page. */
   .post-cover img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 46%;
-    transform: scale(1.75);
-    transform-origin: center 46%;
-    filter: grayscale(1) contrast(1.6) brightness(1.18);
-    opacity: 0.55;
+    object-position: center;
     mix-blend-mode: multiply;
+    object-position: center 46%;
+    transform: scale(1.25);
+    transform-origin: center 46%;
+    filter: grayscale(1) contrast(1.5) brightness(1.12);
+    opacity: 0.8;
   }
 
   :global(html.dark) .post-cover img {
     mix-blend-mode: screen;
-    opacity: 0.3;
-    filter: grayscale(1) invert(1) contrast(1.6) brightness(0.9);
+    opacity: 0.4;
+    filter: grayscale(1) invert(1) contrast(1.5) brightness(0.9);
   }
 
   @media (max-width: 760px) {
-    .post-cover {
-      right: -1rem;
-      width: 100vw;
-      top: -1rem;
+    .blog-post-header.has-figure {
+      padding-top: calc(52vw + 0.5rem);
     }
 
-    .post-cover img {
-      opacity: 0.32;
+    .post-cover {
+      top: -1rem;
+      height: 58vw;
     }
   }
 

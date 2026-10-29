@@ -36,6 +36,14 @@ const totalWords = posts.reduce((sum, p) => sum + p.words, 0);
 const lengths = posts.map(p => p.words).sort((a, b) => a - b);
 const medianWords = lengths[Math.floor(lengths.length / 2)];
 
+/* The essay's own first words, as a pull quote: the first sentence long
+   enough to say something, cut gently if it runs on. */
+function opening(text: string): string {
+  const sentences = text.replace(/\s+/g, ' ').match(/[^.!?]+[.!?]+/g) ?? [text];
+  const s = (sentences.find(x => x.trim().length > 50) ?? sentences[0] ?? '').trim();
+  return s.length > 170 ? s.slice(0, 165).replace(/\s+\S*$/, '') + '…' : s;
+}
+
 function shortDate(dateStr: string): string {
   return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
@@ -59,7 +67,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
 <Layout title={title} activeNav="/thoughts" description="Personal writing by Arshad Kazi. Things I am confused about, excited by, or trying to put into words. Published on Substack." ogImage="/images/share-thoughts.jpg">
   <SketchBackdrop sketches={sketches} place="top" />
-  <div class="thoughts-page wide">
+  <div class="thoughts-page wide free">
 
     <!-- ── Masthead ───────────────────────────────────────
          Set like the front of a specimen sheet: the running head, the
@@ -143,6 +151,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
                   </span>
                   <h3>{post.title}</h3>
                   <p>{post.description}</p>
+                  <span class="entry-quote">{opening(post.text)}</span>
                 </span>
               </a>
             </li>
@@ -439,8 +448,94 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 1000px;
-    margin-inline: auto;
+  }
+
+  /* As on Blogs: on a wide screen each essay's words keep to the left at a
+     reading width, and its figure is shown whole in all the room to their
+     right, melting into the paper at its edges. */
+  @media (min-width: 900px) {
+    .entry-body {
+      position: relative;
+      display: block;
+      min-height: clamp(22rem, 30vw, 36rem);
+      padding: var(--space-lg) 0;
+    }
+
+    .entry-body > .entry-fig {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: calc(100% - min(46%, 38rem) - var(--space-2xl));
+      margin: 0;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%), linear-gradient(180deg, transparent 0%, #000 7%, #000 93%, transparent 100%);
+      mask-image: linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%), linear-gradient(180deg, transparent 0%, #000 7%, #000 93%, transparent 100%);
+      -webkit-mask-composite: source-in;
+      mask-composite: intersect;
+    }
+
+    .entry-body > .entry-fig img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 0;
+      box-shadow: none !important;
+      mix-blend-mode: multiply;
+      transition: transform 1.4s cubic-bezier(0.22, 0.8, 0.24, 1);
+    }
+
+    :global(html.dark) .entry-body > .entry-fig img {
+      mix-blend-mode: normal;
+      opacity: 0.85;
+    }
+
+    .entry-link:hover .entry-fig img {
+      transform: scale(1.03);
+    }
+
+    .entry-body > :not(.entry-fig) {
+      position: relative;
+      display: block;
+      max-width: min(46%, 38rem);
+    }
+
+    .entry-body > .entry-meta {
+      display: flex;
+    }
+  }
+
+  /* The essay's opening line, in its own voice. */
+  .entry-quote {
+    display: block;
+    position: relative;
+    margin-top: var(--space-md);
+    padding-left: 1.1rem;
+    border-left: 2px solid var(--color-accent);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(1.15rem, 1.6vw, 1.4rem);
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+  }
+
+  .entry-quote::before {
+    content: '“';
+    position: absolute;
+    left: 1.1rem;
+    top: -0.55em;
+    font-size: 2.6em;
+    line-height: 1;
+    color: var(--color-accent);
+    opacity: 0.25;
+    pointer-events: none;
+  }
+
+  @media (max-width: 760px) {
+    .entry-quote {
+      font-size: 1.08rem;
+    }
   }
 
   .ledger {

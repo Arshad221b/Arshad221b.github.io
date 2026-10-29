@@ -99,13 +99,13 @@ function formatDate(dateStr: string): string {
 <style>
   /* The figure is drawn on the page's own paper, so it sits on it as a
      plate; on the dark page it is a print laid down on the desk. */
-  /* The header as a cover: the essay's figure sits behind and to the
-     right of the title, wider than the text column, and dissolves into
-     the paper toward the title and below it. */
+  /* The header's figure runs edge to edge across the screen as a band at
+     the top, and fades into the paper where the title begins, so it never
+     sits under the words. */
   .blog-post-header.has-figure {
     position: relative;
     isolation: isolate;
-    padding-top: var(--space-md);
+    padding-top: clamp(11rem, 40vh, 26rem);
     padding-bottom: var(--space-sm);
     margin-bottom: var(--space-lg);
   }
@@ -113,16 +113,15 @@ function formatDate(dateStr: string): string {
   .post-cover {
     position: absolute;
     z-index: -1;
-    top: -2rem;
-    right: calc((100% - min(1000px, 94vw)) / 2);
-    width: min(720px, 70vw);
-    height: calc(100% + 3rem);
+    top: -1.5rem;
+    left: calc(50% - 50vw);
+    width: 100vw;
+    height: clamp(13rem, 46vh, 30rem);
     margin: 0;
+    overflow: hidden;
     pointer-events: none;
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 45%), linear-gradient(180deg, #000 55%, transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0%, #000 45%), linear-gradient(180deg, #000 55%, transparent 100%);
-    -webkit-mask-composite: source-in;
-    mask-composite: intersect;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 50%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 50%, transparent 100%);
   }
 
   .post-cover img {
@@ -130,25 +129,23 @@ function formatDate(dateStr: string): string {
     height: 100%;
     object-fit: cover;
     object-position: center;
-    opacity: 0.55;
     mix-blend-mode: multiply;
+    opacity: 0.95;
   }
 
   :global(html.dark) .post-cover img {
     mix-blend-mode: normal;
-    opacity: 0.22;
-    filter: brightness(0.9);
+    opacity: 0.6;
   }
 
   @media (max-width: 760px) {
-    .post-cover {
-      right: -1rem;
-      width: 100vw;
-      top: -1rem;
+    .blog-post-header.has-figure {
+      padding-top: calc(52vw + 0.5rem);
     }
 
-    .post-cover img {
-      opacity: 0.32;
+    .post-cover {
+      top: -1rem;
+      height: 58vw;
     }
   }
 
