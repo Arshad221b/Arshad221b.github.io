@@ -3,11 +3,16 @@
    sketch is built: the darkest strokes first, then the lighter lines and
    the shading. It holds, fades, and the next begins. It fills about half
    the screen on the right and dissolves at its edges into the paper. */
-interface Props { sketches: string[] }
-const { sketches } = Astro.props;
+interface Props {
+  sketches: string[];
+  /* 'top': behind the head of the page only, scrolling away with it, so a
+     long list below reads on clean paper. */
+  place?: 'fixed' | 'top';
+}
+const { sketches, place = 'fixed' } = Astro.props;
 ---
 
-<canvas class="sketch-bg" aria-hidden="true" data-sketches={JSON.stringify(sketches)}></canvas>
+<canvas class={`sketch-bg ${place === 'top' ? 'at-top' : ''}`} aria-hidden="true" data-sketches={JSON.stringify(sketches)}></canvas>
 
 <style is:global>
   .sketch-bg {
@@ -23,6 +28,13 @@ const { sketches } = Astro.props;
     -webkit-mask-image: radial-gradient(ellipse 62% 58% at 58% 50%, #000 45%, transparent 100%);
     mask-image: radial-gradient(ellipse 62% 58% at 58% 50%, #000 45%, transparent 100%);
     animation: sketch-drift 16s ease-in-out infinite alternate;
+  }
+
+  .sketch-bg.at-top {
+    position: absolute;
+    height: 100vh;
+    -webkit-mask-image: radial-gradient(ellipse 62% 52% at 58% 42%, #000 40%, transparent 100%);
+    mask-image: radial-gradient(ellipse 62% 52% at 58% 42%, #000 40%, transparent 100%);
   }
 
   /* A slow breath, so the page never sits quite still. */
