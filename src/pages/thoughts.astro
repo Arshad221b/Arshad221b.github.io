@@ -171,11 +171,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   /* The page takes a wider canvas than the reading column, because the map
      and the ledger both want room. No transform is used to do it: a fixed
      child (the picture that lifts off a line) has to stay fixed. */
-  .thoughts-page {
-    width: min(1060px, 92vw);
-    margin-left: calc(50% - min(530px, 46vw));
-  }
-
   /* The longer reasoning stays folded until asked for. */
   .why {
     margin-top: var(--space-lg);
