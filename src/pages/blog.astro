@@ -1000,41 +1000,25 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     color: var(--color-text-muted);
   }
 
-  /* On a wide screen, use the width: under the figure the piece splits,
-     its title and summary on the left and what it covers beside them on
-     the right, always shown, with nothing to open. */
+  /* On a wide screen, use the width: what a piece covers is always shown
+     beneath its summary, in two even columns across the whole entry, so
+     nothing hangs beside a shorter neighbour. */
   @media (min-width: 900px) {
-    .row-body {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-      column-gap: var(--space-2xl);
-      align-items: start;
-    }
-
-    .row-body > .row-fig {
-      grid-column: 1 / -1;
-    }
-
-    .row-body > .meta,
-    .row-body > h3,
-    .row-body > .desc {
-      grid-column: 1;
-    }
-
     .row-body > .reveal {
-      grid-column: 2;
-      grid-row: 2 / span 3;
-      margin-top: 0.2rem;
       grid-template-rows: 1fr;
+    }
+
+    .row-body > .reveal .inside {
+      max-width: none;
+      column-count: 2;
+      column-gap: var(--space-2xl);
+      column-rule: 1px solid var(--color-border-light);
     }
 
     .row-body > .reveal .inside li {
       opacity: 1;
       transform: none;
-    }
-
-    .row-body > .reveal .inside {
-      margin-top: 0;
+      break-inside: avoid;
     }
 
     .row-body > :global(.reveal-toggle) {
