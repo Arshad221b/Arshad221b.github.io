@@ -201,7 +201,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
             {items.filter(it => it.date.startsWith(year)).map(it => (
               <li class={`row ${it.kind}`} data-tags={topicsOf(it.tags).join('|')}
                   data-text={[it.title, it.description, ...it.tags, ...topicsOf(it.tags), ...(it.kind === 'essay' ? it.contents : it.nb.days.map(d => d.title))].join(' ').toLowerCase()}>
-                <time class="row-date" datetime={it.date}>{short(it.date)}</time>
+                <time class="row-date" datetime={it.date}><span class="dd">{it.date.slice(8, 10)}</span><span class="mm">{fmt(it.date, { month: 'short' })}</span></time>
                 <div class="row-body">
                   <div class="row-fig"><img src={it.image} alt="" width="1600" height="840" loading="lazy" decoding="async" /></div>
                   <p class="meta">
@@ -437,7 +437,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 760px;
+    max-width: 880px;
     margin-inline: auto;
   }
 
@@ -558,20 +558,66 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   .row {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-sm);
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: var(--space-lg);
     align-items: start;
     padding: var(--space-xl) 0;
     border-bottom: 1px solid var(--color-border-light);
   }
 
   .row-date {
+    position: sticky;
+    top: 6.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    padding-top: 0.1rem;
+    color: var(--color-text);
+  }
+
+  /* The day large and light in the margin, the month small beneath it;
+     it rides along with its piece as you read, and lights up as you
+     reach for it. */
+  .dd {
+    font-family: var(--font-display);
+    font-size: 2.7rem;
+    font-weight: 200;
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    font-variant-numeric: lining-nums;
+    transition: color 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.5, 0.5, 1);
+  }
+
+  .mm {
     font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--color-text-muted);
-    padding-top: 0.15rem;
+    padding-left: 0.15rem;
+  }
+
+  .mm::after {
+    content: '';
+    display: block;
+    width: 14px;
+    height: 2px;
+    margin-top: 0.45rem;
+    border-radius: 2px;
+    background: var(--color-accent);
+    transform-origin: left;
+    transform: scaleX(0.4);
+    transition: transform 0.4s cubic-bezier(0.34, 1.5, 0.5, 1);
+  }
+
+  .row:hover .dd {
+    color: var(--color-accent);
+    transform: translateY(-3px);
+  }
+
+  .row:hover .mm::after {
+    transform: scaleX(1.6);
   }
 
   .row-fig {
@@ -637,7 +683,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   .inside {
     list-style: none;
     max-width: 62ch;
-    padding: 0.15rem 0 0.15rem 1rem;
+    padding: 0 0 0 1rem;
     margin: 0.9rem 0 0;
     border-left: 1px solid var(--color-accent);
   }
@@ -710,6 +756,11 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   .reveal > .inside {
     min-height: 0;
     overflow: hidden;
+    margin-top: 0;
+  }
+
+  .reveal {
+    margin-top: 0.9rem;
   }
 
   .reveal .inside li {
@@ -757,6 +808,21 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     .row {
       grid-template-columns: 1fr;
       gap: var(--space-sm);
+    }
+
+    .row-date {
+      position: static;
+      flex-direction: row;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
+    .dd {
+      font-size: 1.5rem;
+    }
+
+    .mm::after {
+      display: none;
     }
 
     .row-date {

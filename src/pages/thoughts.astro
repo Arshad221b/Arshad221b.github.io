@@ -127,7 +127,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
                 data-topics={membership[i].map(t => t.k).join(',')}
                 data-p={membership[i].map(t => t.p.toFixed(4)).join(',')}>
               <a href={`/thoughts/${post.slug}`} class="entry-link" data-peek="" data-no={post.no}>
-                <time class="entry-date" datetime={post.date}>{shortDate(post.date)}</time>
+                <time class="entry-date" datetime={post.date}><span class="dd">{post.date.slice(8, 10)}</span><span class="mm">{new Date(post.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short' })}</span></time>
                 <span class="entry-body">
                   <span class="entry-fig"><img src={`/images/thoughts/${post.slug}.jpg`} alt="" width="1600" height="840" loading="lazy" decoding="async" /></span>
                   <span class="entry-meta">
@@ -427,7 +427,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   /* The same column as Blogs and as wide as the essays' figures, centred. */
   .thoughts-page {
     width: 100%;
-    max-width: 760px;
+    max-width: 880px;
     margin-inline: auto;
   }
 
@@ -488,8 +488,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   .entry-link {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-sm);
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: var(--space-lg);
     align-items: start;
     padding: var(--space-xl) 0;
     text-decoration: none;
@@ -501,12 +501,58 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   }
 
   .entry-date {
+    position: sticky;
+    top: 6.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    padding-top: 0.1rem;
+    color: var(--color-text);
+  }
+
+  /* The day large and light in the margin, the month small beneath it;
+     it rides along with its piece as you read, and lights up as you
+     reach for it. */
+  .dd {
+    font-family: var(--font-display);
+    font-size: 2.7rem;
+    font-weight: 200;
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    font-variant-numeric: lining-nums;
+    transition: color 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.5, 0.5, 1);
+  }
+
+  .mm {
     font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--color-text-muted);
-    padding-top: 0.15rem;
+    padding-left: 0.15rem;
+  }
+
+  .mm::after {
+    content: '';
+    display: block;
+    width: 14px;
+    height: 2px;
+    margin-top: 0.45rem;
+    border-radius: 2px;
+    background: var(--color-accent);
+    transform-origin: left;
+    transform: scaleX(0.4);
+    transition: transform 0.4s cubic-bezier(0.34, 1.5, 0.5, 1);
+  }
+
+  .entry-link:hover .dd {
+    color: var(--color-accent);
+    transform: translateY(-3px);
+  }
+
+  .entry-link:hover .mm::after {
+    transform: scaleX(1.6);
   }
 
   .entry-body {
@@ -629,6 +675,21 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     .entry-link {
       grid-template-columns: 1fr;
       gap: var(--space-sm);
+    }
+
+    .entry-date {
+      position: static;
+      flex-direction: row;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
+    .dd {
+      font-size: 1.5rem;
+    }
+
+    .mm::after {
+      display: none;
     }
   }
 
