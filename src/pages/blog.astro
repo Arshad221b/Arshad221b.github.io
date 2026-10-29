@@ -923,6 +923,13 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     var rows = [].slice.call(list.querySelectorAll('[data-month]')).filter(function (r) {
       return !r.classList.contains('hidden') && r.offsetParent !== null;
     });
+    // Start level with the first piece, below the year heading, without
+    // moving anything: the offset is taken back underneath.
+    if (rows.length) {
+      var off = Math.max(0, Math.round(rows[0].getBoundingClientRect().top - list.getBoundingClientRect().top) + 28);
+      rider.style.marginTop = off + 'px';
+      rider.style.marginBottom = -off + 'px';
+    }
     var cur = null;
     for (var i = 0; i < rows.length; i++) {
       var b = rows[i].getBoundingClientRect();
