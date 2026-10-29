@@ -1837,3 +1837,23 @@ html.theme-swap body > header {
   }
 
 }
+
+/* ── No filler rules ────────────────────────────────────
+   The thin lines that only ran beside a label (in a page's running head,
+   beside a year, in an article's head) and the rules framing the footer
+   are gone; the spacers stay, so everything sits where it did. Lines that
+   divide one thing from the next are kept. */
+.mast-line,
+.year-rule,
+.year-line,
+.rule-line,
+.folio-line {
+  background: transparent !important;
+}
+
+body > footer,
+.foot-cols,
+.blog-post-footer,
+.mast-figures {
+  border-top: none !important;
+}
