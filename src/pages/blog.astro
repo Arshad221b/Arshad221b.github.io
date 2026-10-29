@@ -210,7 +210,9 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
                   </p>
                   <h3><a href={it.href} class="stretch">{it.title}</a></h3>
                   <p class="desc">{it.description}</p>
-                  {/* What it answers: an essay's sections, a notebook's day questions. */}
+                  {/* What it answers, folded away until asked for. */}
+                  <details class="inside-fold">
+                    <summary>{it.kind === 'essay' ? `${it.contents.length} sections` : `${it.nb.days.length} days`}</summary>
                   <ol class="inside">
                     {it.kind === 'essay'
                       ? it.contents.map((c, i) => <li><span class="in-n">{String(i + 1).padStart(2, '0')}</span><span class="in-t">{c}</span></li>)
@@ -220,6 +222,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
                             : <span class="off"><span class="in-n">Day {d.day}</span><span class="in-t">{d.title}</span></span>}</li>
                         ))}
                   </ol>
+                  </details>
                 </div>
               </li>
             ))}
@@ -628,14 +631,51 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   }
 
   /* The run of days: one cell each, the question shown when you reach it. */
-  /* What a piece answers, listed quietly under it. */
-  .inside {
+  /* What a piece answers: one small line, opened on request. */
+  .inside-fold {
     position: relative;
     z-index: 1;
+    margin-top: 0.8rem;
+  }
+
+  .inside-fold summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    list-style: none;
+    transition: color 0.2s ease;
+  }
+
+  .inside-fold summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .inside-fold summary::before {
+    content: '+';
+    font-size: 0.8rem;
+    line-height: 1;
+    color: var(--color-accent);
+  }
+
+  .inside-fold[open] summary::before {
+    content: '−';
+  }
+
+  .inside-fold summary:hover {
+    color: var(--color-accent);
+  }
+
+  .inside {
     list-style: none;
     max-width: 62ch;
     padding: 0;
-    margin: 0.9rem 0 0;
+    margin: 0.5rem 0 0;
   }
 
   .inside li > span,
