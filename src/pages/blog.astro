@@ -172,17 +172,25 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
       <div><dt><span class="mark notebook"><i></i><i></i><i></i><i></i></span>Notebook</dt><dd>Daily notes on one topic, over a week or so.</dd></div>
     </dl>
 
-    <!-- Search: titles, summaries, topics, an essay's sections and each
-         notebook day's question. -->
-    <div class="seek">
-      <input type="search" id="seek-input" placeholder={`Search ${items.length} essays and notebooks`} autocomplete="off" aria-label="Search the blogs" />
-      <p class="seek-note" id="seek-note" aria-live="polite"></p>
-    </div>
+    <!-- The same console as Thoughts: one line to search on, one row of topics. -->
+    <div class="console">
+      <div class="seek">
+        <input type="text" id="search-input" placeholder={`Search ${items.length} essays and notebooks`} autocomplete="off" aria-label="Search the blogs" />
+        <span class="seek-key" aria-hidden="true">/</span>
+        <button type="button" class="seek-clear" id="seek-clear" aria-label="Clear search">Clear</button>
+      </div>
 
-    <div class="topics">
-      <p class="small-label">Topics</p>
-      <div class="tag-filters" id="tag-filters">
-        {topics.map(t => <button type="button" class="tag-chip" data-tag={t.name}>{t.name}<sup class="tag-n">{t.count}</sup></button>)}
+      <p class="console-note" id="results-count"></p>
+
+      <div class="themes">
+        <span class="themes-name">Topics</span>
+        <div class="theme-strip" id="theme-strip">
+          {topics.map(t => (
+            <button class="idx" data-tag={t.name} type="button">
+              <span class="idx-name">{t.name}</span><span class="idx-n">{t.count}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
 
@@ -228,6 +236,205 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 </Layout>
 
 <style>
+  /* ── The console ───────────────────────────────────
+     One line to type on and one index of themes. Nothing here is a
+     widget: it is a ruled line and a page of set words. */
+  .console {
+    margin: 0 0 var(--space-2xl);
+  }
+
+  .seek {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-md);
+    border-bottom: 1px solid var(--color-text);
+    padding: 0.35rem 0 0.5rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .seek:focus-within {
+    border-color: var(--color-accent);
+  }
+
+  #search-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: none;
+    outline: none;
+    font-family: var(--font-serif);
+    font-size: clamp(1.4rem, 3.4vw, 1.85rem);
+    font-weight: 400;
+    line-height: 1.25;
+    color: var(--color-text);
+    padding: 0;
+  }
+
+  #search-input::placeholder {
+    font-style: italic;
+    color: var(--color-text-muted);
+    opacity: 0.75;
+  }
+
+  /* The one control on the right is the slash key while the line is empty
+     and the way out of the search once it is not. */
+  .seek-key {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    padding: 0.05rem 0.4rem;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .seek-clear {
+    display: none;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-text-muted);
+    padding: 0;
+    white-space: nowrap;
+  }
+
+  .seek-clear:hover {
+    color: var(--color-accent);
+  }
+
+  .seek.has-value .seek-key {
+    display: none;
+  }
+
+  .seek.has-value .seek-clear {
+    display: block;
+  }
+
+  /* Say what is on screen in words. This page is not a dashboard. */
+  .console-note {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--color-text-muted);
+    margin: var(--space-sm) 0 0;
+    min-height: 1.6em;
+  }
+
+  /* One strip, on one or two lines, that recounts itself against what is
+     on screen. Nothing here is a list of everything that exists. */
+  .themes {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+  }
+
+  .themes-name {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    padding-top: 0.1rem;
+  }
+
+  .theme-strip {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem 1.3rem;
+  }
+
+  .idx {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: var(--font-serif);
+    font-size: 1.04rem;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+    transition: color 0.14s ease, text-decoration-color 0.14s ease;
+  }
+
+  /* The figure rides above the word, the way a footnote mark does. It is
+     the live count, so it moves while you type. */
+  .idx-n {
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-muted);
+    opacity: 0.7;
+    transform: translateY(-0.5em);
+  }
+
+  .idx:hover,
+  .idx:focus-visible {
+    color: var(--color-accent);
+    text-decoration-color: var(--color-accent);
+    outline: none;
+  }
+
+  .idx:hover .idx-n,
+  .idx:focus-visible .idx-n {
+    color: var(--color-accent);
+    opacity: 1;
+  }
+
+  .idx.active {
+    color: var(--color-accent);
+    font-weight: 600;
+    text-decoration-color: var(--color-accent);
+    text-decoration-thickness: 2px;
+  }
+
+  .idx.active .idx-n {
+    color: var(--color-accent);
+    opacity: 1;
+  }
+
+  .idx.gone {
+    display: none;
+  }
+
+  .idx-more {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    transition: color 0.14s ease;
+  }
+
+  .idx-more:hover {
+    color: var(--color-accent);
+  }
+
+  .idx-more:empty {
+    display: none;
+  }
+
+
   .blog-page {
     display: flex;
     flex-direction: column;
@@ -305,88 +512,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     height: 8px;
     background: var(--color-accent);
     border-radius: 1px;
-  }
-
-  .seek {
-    margin-bottom: var(--space-lg);
-  }
-
-  .seek input {
-    width: 100%;
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: clamp(1.4rem, 3vw, 1.8rem);
-    font-weight: 300;
-    color: var(--color-text);
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--color-text-muted);
-    border-radius: 0;
-    padding: 0.4rem 0 0.6rem;
-    -webkit-appearance: none;
-    appearance: none;
-  }
-
-  .seek input::placeholder {
-    color: var(--color-text-muted);
-    opacity: 0.8;
-  }
-
-  .seek input:focus {
-    outline: none;
-    border-bottom-color: var(--color-accent);
-  }
-
-  .seek-note {
-    min-height: 1rem;
-    margin: 0.5rem 0 0;
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
-    color: var(--color-accent);
-  }
-
-  .topics {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-lg);
-    margin-bottom: var(--space-2xl);
-  }
-
-  .tag-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.1rem 0.9rem;
-  }
-
-  .tag-chip {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 1rem;
-    background: none;
-    border: none;
-    padding: 0.05rem 0;
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    background-image: linear-gradient(var(--color-accent), var(--color-accent));
-    background-size: 0% 1px;
-    background-position: 0 100%;
-    background-repeat: no-repeat;
-    transition: color 0.2s ease, background-size 0.35s var(--ease-out);
-  }
-
-  .tag-n {
-    margin-left: 0.2em;
-    font-family: var(--font-mono);
-    font-style: normal;
-    font-size: 0.58em;
-    color: var(--color-text-muted);
-  }
-
-  .tag-chip:hover,
-  .tag-chip.active {
-    color: var(--color-accent);
-    background-size: 100% 1px;
   }
 
   /* ── The timeline ─────────────────────────────────── */
@@ -630,10 +755,11 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 (function () {
   var plates = [].slice.call(document.querySelectorAll('#post-index .row'));
   var years = document.querySelectorAll('#post-index .year');
-  var chips = [].slice.call(document.querySelectorAll('.tag-chip'));
+  var chips = [].slice.call(document.querySelectorAll('#theme-strip .idx'));
   var empty = document.getElementById('no-results');
   var tag = null, query = [];
-  var input = document.getElementById('seek-input'), note = document.getElementById('seek-note');
+  var input = document.getElementById('search-input'), note = document.getElementById('results-count');
+  var seek = input.closest('.seek'), clear = document.getElementById('seek-clear');
 
   // Every word typed must appear somewhere in the piece (a prefix is
   // enough: 'attent' finds attention); a topic narrows it further.
@@ -656,7 +782,11 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 
   input.addEventListener('input', function () {
     query = input.value.toLowerCase().split(/[^a-z0-9]+/).filter(function (w) { return w.length > 1; });
+    seek.classList.toggle('has-value', input.value.length > 0);
     apply();
+  });
+  clear.addEventListener('click', function () {
+    input.value = ''; query = []; seek.classList.remove('has-value'); apply(); input.focus();
   });
 
   // '/' jumps to the search, as on Thoughts.
