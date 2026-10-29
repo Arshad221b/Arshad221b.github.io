@@ -432,12 +432,12 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   }
 
 
-  /* The same column as Thoughts and the essays themselves, centred. */
+  /* The same column as Thoughts and as wide as the essays' figures, centred. */
   .blog-page {
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: var(--measure);
+    max-width: 760px;
     margin-inline: auto;
   }
 
