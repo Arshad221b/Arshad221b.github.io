@@ -943,11 +943,11 @@ main > .blog-post {
 }
 
 .article-rule {
-  margin-bottom: var(--space-2xl);
+  margin-bottom: var(--space-lg);
 }
 
 .blog-post-header {
-  margin-bottom: var(--space-2xl);
+  margin-bottom: var(--space-lg);
 }
 
 .blog-post-header h1 {
