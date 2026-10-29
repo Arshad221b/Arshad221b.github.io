@@ -432,9 +432,13 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   }
 
 
+  /* The same column as Thoughts and the essays themselves, centred. */
   .blog-page {
     display: flex;
     flex-direction: column;
+    width: 100%;
+    max-width: var(--measure);
+    margin-inline: auto;
   }
 
   .small-label,

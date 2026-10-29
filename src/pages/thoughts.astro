@@ -424,9 +424,11 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   /* ── The ledger ────────────────────────────────────── */
   /* The same timeline as Blogs: one flat list, newest first, under year
      headings that step aside when a search ranks the essays instead. */
+  /* The same column as Blogs and the essays themselves, centred. */
   .thoughts-page {
-    width: auto;
-    margin: 0;
+    width: 100%;
+    max-width: var(--measure);
+    margin-inline: auto;
   }
 
   .ledger {
