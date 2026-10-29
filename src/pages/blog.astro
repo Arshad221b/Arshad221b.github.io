@@ -581,7 +581,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
      reach for it. */
   .dd {
     font-family: var(--font-display);
-    font-size: 2.3rem;
+    font-size: 1.5rem;
     font-weight: 300;
     font-style: italic;
     line-height: 0.9;
@@ -813,18 +813,8 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
       gap: var(--space-sm);
     }
 
+    /* On a phone the year headings carry the time; no margin date. */
     .row-date {
-      position: static;
-      flex-direction: row;
-      align-items: baseline;
-      gap: 0.5rem;
-    }
-
-    .dd {
-      font-size: 1.5rem;
-    }
-
-    .mm::after {
       display: none;
     }
 
