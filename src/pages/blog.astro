@@ -201,7 +201,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
             {items.filter(it => it.date.startsWith(year)).map(it => (
               <li class={`row ${it.kind}`} data-tags={topicsOf(it.tags).join('|')}
                   data-text={[it.title, it.description, ...it.tags, ...topicsOf(it.tags), ...(it.kind === 'essay' ? it.contents : it.nb.days.map(d => d.title))].join(' ').toLowerCase()}>
-                <time class="row-date" datetime={it.date}><span class="dd">{it.date.slice(8, 10)}</span><span class="mm">{fmt(it.date, { month: 'short' })}</span></time>
+                <time class="row-date" datetime={it.date}><span class="dd">{fmt(it.date, { month: 'short' })}</span><span class="mm">{it.date.slice(0, 4)}</span></time>
                 <div class="row-body">
                   <div class="row-fig"><img src={it.image} alt="" width="1600" height="840" loading="lazy" decoding="async" /></div>
                   <p class="meta">
@@ -576,15 +576,16 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     color: var(--color-text);
   }
 
-  /* The day large and light in the margin, the month small beneath it;
+  /* The month large and light in the margin, the year small beneath it;
      it rides along with its piece as you read, and lights up as you
      reach for it. */
   .dd {
     font-family: var(--font-display);
-    font-size: 2.7rem;
+    font-size: 2.3rem;
     font-weight: 200;
-    line-height: 0.85;
-    letter-spacing: -0.05em;
+    font-style: italic;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
     font-variant-numeric: lining-nums;
     transition: color 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.5, 0.5, 1);
   }

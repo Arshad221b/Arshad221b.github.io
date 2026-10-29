@@ -127,7 +127,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
                 data-topics={membership[i].map(t => t.k).join(',')}
                 data-p={membership[i].map(t => t.p.toFixed(4)).join(',')}>
               <a href={`/thoughts/${post.slug}`} class="entry-link" data-peek="" data-no={post.no}>
-                <time class="entry-date" datetime={post.date}><span class="dd">{post.date.slice(8, 10)}</span><span class="mm">{new Date(post.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short' })}</span></time>
+                <time class="entry-date" datetime={post.date}><span class="dd">{new Date(post.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short' })}</span><span class="mm">{post.date.slice(0, 4)}</span></time>
                 <span class="entry-body">
                   <span class="entry-fig"><img src={`/images/thoughts/${post.slug}.jpg`} alt="" width="1600" height="840" loading="lazy" decoding="async" /></span>
                   <span class="entry-meta">
@@ -511,15 +511,16 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     color: var(--color-text);
   }
 
-  /* The day large and light in the margin, the month small beneath it;
+  /* The month large and light in the margin, the year small beneath it;
      it rides along with its piece as you read, and lights up as you
      reach for it. */
   .dd {
     font-family: var(--font-display);
-    font-size: 2.7rem;
+    font-size: 2.3rem;
     font-weight: 200;
-    line-height: 0.85;
-    letter-spacing: -0.05em;
+    font-style: italic;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
     font-variant-numeric: lining-nums;
     transition: color 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.5, 0.5, 1);
   }
