@@ -129,9 +129,18 @@ const items: Item[] = [
 ].sort((a, b) => b.date.localeCompare(a.date));
 
 // Topics worth filtering by: the ones that more than one piece shares.
-const tagCount = new Map<string, number>();
-items.forEach(it => it.tags.forEach(t => tagCount.set(t, (tagCount.get(t) ?? 0) + 1)));
-const topics = [...tagCount].filter(([, n]) => n > 1).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([t]) => t);
+/* A handful of plain topics, as on Thoughts, in place of the raw tags:
+   each is the set of tags that mean it, and a piece belongs to every
+   topic one of its tags falls under. */
+const TOPICS: [string, string[]][] = [
+  ['Vision', ['computer vision', '3D vision', 'pose estimation', 'visual cortex', 'OpenCV', 'sign language']],
+  ['The brain', ['neuroscience', 'psychology', 'perception', 'visual cortex', 'autism']],
+  ['Neural networks', ['deep learning', 'CNN', 'transformers', 'attention', 'LLMs']],
+  ['Search & embeddings', ['embeddings', 'vector databases', 'similarity search', 'multimodal']],
+  ['Probability & evaluation', ['probability', 'statistics', 'evaluation', 'ROC', 'AUC', 'PMF']],
+];
+const topicsOf = (tags: string[]) => TOPICS.filter(([, ts]) => ts.some(t => tags.includes(t))).map(([n]) => n);
+const topics = TOPICS.map(([n]) => ({ name: n, count: items.filter(it => topicsOf(it.tags).includes(n)).length })).filter(t => t.count > 0);
 
 const totalMinutes = items.reduce((n, it) => n + it.minutes, 0);
 const totalDays = notebooks.reduce((n, nb) => n + nb.days.length, 0);
@@ -166,7 +175,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     <div class="topics">
       <p class="small-label">Topics</p>
       <div class="tag-filters" id="tag-filters">
-        {topics.map(tag => <button type="button" class="tag-chip" data-tag={tag}>{tag}</button>)}
+        {topics.map(t => <button type="button" class="tag-chip" data-tag={t.name}>{t.name}<sup class="tag-n">{t.count}</sup></button>)}
       </div>
     </div>
 
@@ -176,7 +185,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
           <h2 class="year-head"><span class="year-n">{year}</span><span class="year-rule"></span><span class="year-c">{items.filter(it => it.date.startsWith(year)).length} pieces</span></h2>
           <ol class="rows">
             {items.filter(it => it.date.startsWith(year)).map(it => (
-              <li class={`row ${it.kind}`} data-tags={it.tags.join('|')}>
+              <li class={`row ${it.kind}`} data-tags={topicsOf(it.tags).join('|')}>
                 <time class="row-date" datetime={it.date}>{short(it.date)}</time>
                 <div class="row-body">
                   <div class="row-fig"><img src={it.image} alt="" width="1600" height="840" loading="lazy" decoding="async" /></div>
@@ -317,6 +326,14 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     background-position: 0 100%;
     background-repeat: no-repeat;
     transition: color 0.2s ease, background-size 0.35s var(--ease-out);
+  }
+
+  .tag-n {
+    margin-left: 0.2em;
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 0.58em;
+    color: var(--color-text-muted);
   }
 
   .tag-chip:hover,
