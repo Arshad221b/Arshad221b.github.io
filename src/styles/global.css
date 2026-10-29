@@ -1858,7 +1858,7 @@ html.theme-swap body > header {
    A page marked .free has no box: it runs the width of the screen, with
    margins that grow and shrink with it. */
 main:has(> .free) {
-  max-width: none;
+  max-width: 2000px;
   padding-inline: clamp(1rem, 5vw, 7rem);
 }
 
