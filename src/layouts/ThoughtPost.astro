@@ -75,7 +75,12 @@ function formatDate(dateStr: string): string {
       <span class="kind">Note</span>
     </div>
 
-    <header class="blog-post-header">
+    <header class={`blog-post-header ${figure ? 'has-figure' : ''}`}>
+      {figure && (
+        <figure class="post-cover" aria-hidden="true">
+          <img src={figure} alt="" width="1600" height="840" decoding="async" fetchpriority="high" />
+        </figure>
+      )}
       <div class="blog-post-meta">
         <time>{formatDate(date)}</time>
       </div>
@@ -92,11 +97,6 @@ function formatDate(dateStr: string): string {
       )}
     </header>
 
-    {figure && (
-      <figure class="post-figure">
-        <img src={figure} alt="" width="1600" height="840" decoding="async" fetchpriority="high" />
-      </figure>
-    )}
 
     <div class="blog-post-content">
       <slot />
@@ -138,31 +138,66 @@ function formatDate(dateStr: string): string {
      that element is swallowed into it as dead text: with the styles
      last, none of them applied at all. -->
 <style>
-  /* Centred on the text column, as wide as the essay's own figures. */
-  .post-figure {
-    margin: 0 0 var(--space-2xl);
+  /* The header as a cover: the essay's figure sits behind and to the
+     right of the title, wider than the text column, and dissolves into
+     the paper toward the title and below it. */
+  .blog-post-header.has-figure {
+    position: relative;
+    isolation: isolate;
+    padding-top: var(--space-xl);
+    padding-bottom: var(--space-lg);
+    margin-bottom: var(--space-xl);
   }
 
-  @media (min-width: 900px) {
-    .post-figure {
-      width: min(760px, 92vw);
-      margin-left: calc((100% - min(760px, 92vw)) / 2);
-      margin-right: calc((100% - min(760px, 92vw)) / 2);
+  .post-cover {
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+    top: -2rem;
+    right: calc((100% - min(1000px, 94vw)) / 2);
+    width: min(720px, 70vw);
+    height: calc(100% + 3rem);
+    margin: 0;
+    pointer-events: none;
+    /* An oval fade: the drawing's square edges never show. */
+    -webkit-mask-image: radial-gradient(ellipse 46% 50% at 62% 46%, #000 25%, transparent 78%);
+    mask-image: radial-gradient(ellipse 46% 50% at 62% 46%, #000 25%, transparent 78%);
+  }
+
+  /* A thought's plate is a drawing on its own old paper, labelled; the
+     cover takes the drawing alone, larger, and lifts its paper tone so
+     only the ink stays on the page. */
+  .post-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 46%;
+    transform: scale(1.75);
+    transform-origin: center 46%;
+    filter: grayscale(1) contrast(1.6) brightness(1.18);
+    opacity: 0.55;
+    mix-blend-mode: multiply;
+  }
+
+  :global(html.dark) .post-cover img {
+    mix-blend-mode: screen;
+    opacity: 0.3;
+    filter: grayscale(1) invert(1) contrast(1.6) brightness(0.9);
+  }
+
+  @media (max-width: 760px) {
+    .post-cover {
+      right: -1rem;
+      width: 100vw;
+      top: -1rem;
+    }
+
+    .post-cover img {
+      opacity: 0.32;
     }
   }
 
-  .post-figure img {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 2px;
-    box-shadow: 0 0 0 1px var(--color-border-light);
-  }
 
-  :global(html.dark) .post-figure img {
-    box-shadow: none;
-    filter: brightness(0.92);
-  }
 
   /* ── Closest to this one ───────────────────────────────────────
      Not "related posts". These are the three nearest essays in the same

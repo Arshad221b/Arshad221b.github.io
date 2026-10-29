@@ -46,7 +46,12 @@ function formatDate(dateStr: string): string {
       <span class="kind">Essay</span>
     </div>
 
-    <header class="blog-post-header">
+    <header class={`blog-post-header ${figure ? 'has-figure' : ''}`}>
+      {figure && (
+        <figure class="post-cover" aria-hidden="true">
+          <img src={figure} alt="" width="1600" height="840" decoding="async" fetchpriority="high" />
+        </figure>
+      )}
       <div class="blog-post-meta">
         <time>{formatDate(date)}</time>
       </div>
@@ -61,11 +66,6 @@ function formatDate(dateStr: string): string {
       )}
     </header>
 
-    {figure && (
-      <figure class="post-figure">
-        <img src={figure} alt="" width="1600" height="840" decoding="async" fetchpriority="high" />
-      </figure>
-    )}
 
     <div class="blog-post-content">
       <slot />
@@ -99,31 +99,60 @@ function formatDate(dateStr: string): string {
 <style>
   /* The figure is drawn on the page's own paper, so it sits on it as a
      plate; on the dark page it is a print laid down on the desk. */
-  /* Centred on the text column, as wide as the essay's own figures. */
-  .post-figure {
-    margin: 0 0 var(--space-2xl);
+  /* The header as a cover: the essay's figure sits behind and to the
+     right of the title, wider than the text column, and dissolves into
+     the paper toward the title and below it. */
+  .blog-post-header.has-figure {
+    position: relative;
+    isolation: isolate;
+    padding-top: var(--space-xl);
+    padding-bottom: var(--space-lg);
+    margin-bottom: var(--space-xl);
   }
 
-  @media (min-width: 900px) {
-    .post-figure {
-      width: min(760px, 92vw);
-      margin-left: calc((100% - min(760px, 92vw)) / 2);
-      margin-right: calc((100% - min(760px, 92vw)) / 2);
+  .post-cover {
+    position: absolute;
+    z-index: -1;
+    top: -2rem;
+    right: calc((100% - min(1000px, 94vw)) / 2);
+    width: min(720px, 70vw);
+    height: calc(100% + 3rem);
+    margin: 0;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 45%), linear-gradient(180deg, #000 55%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 45%), linear-gradient(180deg, #000 55%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+
+  .post-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0.55;
+    mix-blend-mode: multiply;
+  }
+
+  :global(html.dark) .post-cover img {
+    mix-blend-mode: normal;
+    opacity: 0.22;
+    filter: brightness(0.9);
+  }
+
+  @media (max-width: 760px) {
+    .post-cover {
+      right: -1rem;
+      width: 100vw;
+      top: -1rem;
+    }
+
+    .post-cover img {
+      opacity: 0.32;
     }
   }
 
-  .post-figure img {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 2px;
-    box-shadow: 0 0 0 1px var(--color-border-light);
-  }
 
-  :global(html.dark) .post-figure img {
-    box-shadow: none;
-    filter: brightness(0.92);
-  }
 
   .disqus-section {
     margin-top: var(--space-xl);
