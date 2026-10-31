@@ -1982,9 +1982,10 @@ html,body{overflow-x:clip;}
 .margin-toc.under-cover { opacity: 0; pointer-events: none; }
 
 /* ── The way back ─────────────────────────────────────────
-   Out of the flow: on a wide screen it waits in the top of the left
-   margin; on a smaller one it is a round key in the corner, opposite the
-   reticle, that steps aside while you read on and returns as you look back. */
+   The reticle's mirror: the same ring and ticks, an arrow pointing home.
+   On a wide screen it waits in the top of the left margin with its name
+   beside it; on a smaller one it sits in the corner opposite the reticle,
+   steps aside while you read on and returns as you look back. */
 .article-rule {
   position: fixed;
   z-index: 160;
@@ -1999,32 +2000,83 @@ html,body{overflow-x:clip;}
   display: none !important;
 }
 
+.article-rule a {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--color-text) !important;
+}
+
+.article-rule svg {
+  display: block;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.article-rule .ab-ring {
+  stroke-width: 1;
+  opacity: 0.25;
+  fill: var(--color-bg);
+}
+
+.article-rule .ab-ticks {
+  stroke-width: 1;
+  opacity: 0.55;
+  transform-origin: 24px 24px;
+  transition: transform 0.5s var(--ease-out), opacity 0.3s ease;
+}
+
+.article-rule .ab-arrow {
+  stroke-width: 1.3;
+  transition: transform 0.5s var(--ease-out), stroke 0.3s ease;
+}
+
+.article-rule .ab-label {
+  color: var(--color-text-muted);
+  transition: color 0.3s ease;
+}
+
+.article-rule a:hover .ab-ticks,
+.article-rule a:focus-visible .ab-ticks {
+  transform: scale(0.8);
+  opacity: 1;
+}
+
+.article-rule a:hover .ab-arrow,
+.article-rule a:focus-visible .ab-arrow {
+  transform: translateX(-2px);
+  stroke: var(--color-accent);
+}
+
+.article-rule a:hover .ab-label,
+.article-rule a:focus-visible .ab-label {
+  color: var(--color-accent);
+}
+
+.article-rule a:focus-visible {
+  outline: none;
+}
+
 @media (max-width: 1099px) {
   .article-rule {
     top: auto;
-    left: 14px;
-    bottom: 18px;
-    width: 42px;
-    height: 42px;
-    border: 1px solid var(--color-border);
-    border-radius: 50%;
-    background: var(--color-bg);
+    left: 34px;
+    bottom: 34px;
   }
 
-  .article-rule a {
-    display: grid !important;
-    place-items: center;
-    width: 100%;
-    height: 100%;
-    font-size: 0 !important;
-    color: var(--color-text) !important;
+  .article-rule svg {
+    width: 48px;
+    height: 48px;
   }
 
-  .article-rule a::before {
-    content: '\2190';
-    font-family: var(--font-mono);
-    font-size: 1rem;
-    line-height: 1;
+  .article-rule .ab-label {
+    display: none;
   }
 
   .article-rule.away {
@@ -2034,8 +2086,13 @@ html,body{overflow-x:clip;}
   }
 }
 
-@media (min-width: 761px) and (max-width: 1099px) {
-  .article-rule { left: 34px; bottom: 34px; width: 48px; height: 48px; }
+@media (max-width: 760px) {
+  .article-rule { left: 14px; bottom: 18px; }
+  .article-rule svg { width: 42px; height: 42px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-rule *, .article-rule *::before { transition: none !important; }
 }
 
 /* The fade-in would lift the page into a layer of its own, and figures
