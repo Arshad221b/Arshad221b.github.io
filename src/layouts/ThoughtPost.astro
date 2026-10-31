@@ -1,4 +1,5 @@
 ---
+import { img, share, has } from '../lib/media';
 import PlatePaint from '../components/PlatePaint.astro';
 interface Props {
   title: string;
@@ -9,7 +10,6 @@ interface Props {
 const { title, date, description } = Astro.props;
 
 import Layout from './Layout.astro';
-import { existsSync } from 'node:fs';
 import { relatedTo, posts } from '../lib/thoughts-data';
 
 const siteUrl = 'https://arshad-kazi.com';
@@ -34,7 +34,7 @@ const exif = self ? [
   { k: 'Read', v: `${Math.max(1, Math.round(self.words / 230))} min` },
 ] : [];
 
-let shareImage = '/images/share-thoughts.jpg';
+let shareImage = share('/images/share-thoughts.jpg');
 for (const [path, raw] of Object.entries(sources)) {
   if (path.split('/').pop()!.replace('.astro', '') !== slug) continue;
   const found = raw.match(/https:\/\/res\.cloudinary\.com\/[^"']+/);
@@ -43,10 +43,10 @@ for (const [path, raw] of Object.entries(sources)) {
   }
 }
 
-// Each essay's plate lives at /images/thoughts/<slug>.jpg: shown under the
+// Each essay's plate lives in Cloudinary as thoughts/<slug> (see lib/media): shown under the
 // title, and the picture its shared link carries.
-const figure = slug && existsSync(`public/images/thoughts/${slug}.jpg`) ? `/images/thoughts/${slug}.jpg` : null;
-if (figure) shareImage = figure;
+const figure = slug && has(`/images/thoughts/${slug}.jpg`) ? img(`/images/thoughts/${slug}.jpg`) : null;
+if (figure) shareImage = share(`/images/thoughts/${slug}.jpg`);
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');

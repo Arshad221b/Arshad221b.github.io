@@ -1,4 +1,5 @@
 ---
+import { img, share, has } from '../lib/media';
 /* The home page.
 
    The centre of it is a figure, not a photograph: every essay on the site
@@ -129,7 +130,7 @@ const links = [
 
 ---
 
-<Layout title={title} activeNav="/" description="Arshad Kazi. Notebooks, technical writing and personal essays." ogImage="/images/share-about.jpg">
+<Layout title={title} activeNav="/" description="Arshad Kazi. Notebooks, technical writing and personal essays." ogImage={share("/images/share-about.jpg")}>
   <script is:inline slot="head">
     /* The intro plays once. After that it waits sixty days before it will
        welcome the same browser back, and it never plays for anyone who has
@@ -161,7 +162,7 @@ const links = [
     "@type": "Person",
     "name": "Arshad Kazi",
     "url": "https://arshad-kazi.com",
-    "image": "https://arshad-kazi.com/images/profile.jpg",
+    "image": "https://res.cloudinary.com/dpq4fqlde/image/upload/f_jpg,q_auto/site/profile.jpg",
     "jobTitle": "Engineer in computer vision",
     "description": "Notebooks, technical writing and personal essays.",
     "sameAs": [
@@ -184,7 +185,7 @@ const links = [
 
       <div class="hero-text">
         <span class="portrait">
-          <img src="/images/profile.jpg" alt="Arshad Kazi" width="640" height="800" draggable="false" oncontextmenu="return false" />
+          <img src={img("/images/profile.jpg")} alt="Arshad Kazi" width="640" height="800" draggable="false" oncontextmenu="return false" />
           <span class="portrait-guard" aria-hidden="true"></span>
         </span>
         <h1><span class="w"><span>Arshad</span></span> <span class="w"><em>Kazi</em></span></h1>

@@ -1,4 +1,5 @@
 ---
+import { img, share } from '../lib/media';
 import SketchBackdrop from '../components/SketchBackdrop.astro';
 /* Blogs: the essays and the notebooks, on one page.
 
@@ -19,7 +20,7 @@ import { notebooks } from '../lib/notebooks';
 // Behind the head of the page: Leonardo's studies of flight, water, the horse
 // and the measured body, turn about with Michelangelo's figure studies,
 // drawing themselves in.
-const sketches = ['flying', 'sibyl', 'water', 'nude', 'vitruvian', 'horse'].map(n => `/images/contact/${n}.jpg`);
+const sketches = ['flying', 'sibyl', 'water', 'nude', 'vitruvian', 'horse'].map(n => img(`/images/contact/${n}.jpg`));
 const title = "Technical Blogs — Arshad Kazi";
 
 // `contents` mirrors the section headings inside each post, so the index says
@@ -122,12 +123,12 @@ type Item =
 const items: Item[] = [
   ...posts.map(p => ({
     kind: 'essay' as const, date: p.date, title: p.title, description: p.description,
-    href: p.href || `/blog/${p.slug}`, image: `/images/blog/${p.slug}.jpg`,
+    href: p.href || `/blog/${p.slug}`, image: img(`/images/blog/${p.slug}.jpg`),
     minutes: p.minutes, tags: p.tags, contents: p.contents,
   })),
   ...notebooks.map(nb => ({
     kind: 'notebook' as const, date: nb.endDate, title: nb.title, description: nb.description,
-    href: `/notebooks/${nb.slug}`, image: `/images/blog/notebook-${nb.slug}.jpg`,
+    href: `/notebooks/${nb.slug}`, image: img(`/images/blog/notebook-${nb.slug}.jpg`),
     minutes: nb.minutes, tags: nb.tags, nb,
   })),
 ].sort((a, b) => b.date.localeCompare(a.date));
@@ -154,7 +155,7 @@ const short = (d: string) => fmt(d, { month: 'short', day: 'numeric' });
 const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 ---
 
-<Layout title={title} activeNav="/blog" description="Essays and day-by-day notebooks on computer vision, the brain and machine learning. Notes on things I finally understood, not tutorials." ogImage="/images/share-blog.jpg">
+<Layout title={title} activeNav="/blog" description="Essays and day-by-day notebooks on computer vision, the brain and machine learning. Notes on things I finally understood, not tutorials." ogImage={share("/images/share-blog.jpg")}>
   <SketchBackdrop sketches={sketches} place="top" />
   <div class="blog-page free">
     <div class="first-screen">

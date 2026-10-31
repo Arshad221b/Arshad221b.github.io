@@ -1,4 +1,5 @@
 ---
+import { img } from '../../../lib/media';
 import Layout from '../../../layouts/Layout.astro';
 import { experiment, days } from '../../../data/modern-nets-days';
 
@@ -17,7 +18,7 @@ function formatDateLong(dateStr: string): string {
 const activeDays = days.filter(d => d.bullets.length > 0);
 ---
 
-<Layout title={title} activeNav="/blog" description="Revisiting transformers, tokenizers, attention, and the GPT family. Intuitive understanding for interviews and curiosity." ogImage="/images/blog/notebook-modern-nets.jpg">
+<Layout title={title} activeNav="/blog" description="Revisiting transformers, tokenizers, attention, and the GPT family. Intuitive understanding for interviews and curiosity." ogImage={img("/images/blog/notebook-modern-nets.jpg")}>
   <div class="experiment-page">
     <a href="/blog" class="back-link">&larr; Blogs</a>
 

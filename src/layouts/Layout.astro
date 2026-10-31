@@ -1,4 +1,5 @@
 ---
+import { share } from '../lib/media';
 interface Props {
   title: string;
   activeNav?: string;
@@ -15,7 +16,7 @@ const metaDescription = description || defaultDescription;
    only the local ones get the site prefixed onto them. */
 const metaImage = ogImage
   ? (ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`)
-  : `${siteUrl}/images/share-about.jpg`;
+  : share('/images/share-about.jpg');
 
 const navItems = [
   { label: 'About', href: '/' },

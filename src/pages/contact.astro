@@ -1,4 +1,5 @@
 ---
+import { img } from '../lib/media';
 /* Contact: a plain form that lands in my inbox, set in three numbered
    parts under the same hairline headings as the rest of the site.
 
@@ -14,7 +15,7 @@ const title = 'Contact — Arshad Kazi';
 const inbox = 'arshadkaziblog@gmail.com';
 const endpoint = `https://formsubmit.co/ajax/${inbox}`;
 // The sketches behind the form, in the order they are drawn.
-const sketches = ['vitruvian', 'sibyl', 'flying', 'nude', 'water', 'horse'].map(n => `/images/contact/${n}.jpg`);
+const sketches = ['vitruvian', 'sibyl', 'flying', 'nude', 'water', 'horse'].map(n => img(`/images/contact/${n}.jpg`));
 // Elsewhere, the same places the About page lists.
 const elsewhere = [
   { label: 'Email', href: `mailto:${inbox}`, icon: 'M3 6h18v12H3z M3 6l9 7 9-7' },

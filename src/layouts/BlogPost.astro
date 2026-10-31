@@ -1,4 +1,5 @@
 ---
+import { img, share, has } from '../lib/media';
 import PlatePaint from '../components/PlatePaint.astro';
 interface Props {
   title: string;
@@ -10,15 +11,14 @@ interface Props {
 const { title, date, description, tags = [] } = Astro.props;
 
 import Layout from './Layout.astro';
-import { existsSync } from 'node:fs';
 
 const siteUrl = 'https://arshad-kazi.com';
 const articleUrl = new URL(Astro.url.pathname, siteUrl).href;
 
-/* Each essay's figure lives at /images/blog/<slug>.jpg: shown at the head
+/* Each essay's figure lives in Cloudinary as blog/<slug> (see lib/media): shown at the head
    of the essay, and the picture a shared link carries. */
 const slug = Astro.url.pathname.replace(/\/$/, '').split('/').pop();
-const figure = existsSync(`public/images/blog/${slug}.jpg`) ? `/images/blog/${slug}.jpg` : null;
+const figure = has(`/images/blog/${slug}.jpg`) ? img(`/images/blog/${slug}.jpg`) : null;
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
@@ -26,7 +26,7 @@ function formatDate(dateStr: string): string {
 }
 ---
 
-<Layout title={`${title} — Arshad Kazi`} activeNav="/blog" description={description} ogImage={figure ?? "/images/share-blog.jpg"}>
+<Layout title={`${title} — Arshad Kazi`} activeNav="/blog" description={description} ogImage={figure ?? share("/images/share-blog.jpg")}>
   <script type="application/ld+json" slot="head" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Article",

@@ -1,4 +1,5 @@
 ---
+import { img, share, has } from '../lib/media';
 /* The Thoughts index.
 
    Nothing on this page is a list I maintain. The essays are read out of
@@ -13,7 +14,7 @@ import { posts, pageModel, topicName } from '../lib/thoughts-data';
 const title = "Thoughts — Arshad Kazi";
 
 // Behind the page: Michelangelo, Piranesi and Palladio's architect drawing themselves in.
-const sketches = ['sangiovanni1', 'carceri-title', 'rotonda', 'carceri-xiv', 'sangiovanni2'].map(n => `/images/thoughts-bg/${n}.jpg`);
+const sketches = ['sangiovanni1', 'carceri-title', 'rotonda', 'carceri-xiv', 'sangiovanni2'].map(n => img(`/images/thoughts-bg/${n}.jpg`));
 const { topics, theta, edges, stats, projection } = pageModel;
 
 // Every essay carries its number in the body of work, counted from the
@@ -64,7 +65,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
 ---
 
-<Layout title={title} activeNav="/thoughts" description="Personal writing by Arshad Kazi. Things I am confused about, excited by, or trying to put into words. Published on Substack." ogImage="/images/share-thoughts.jpg">
+<Layout title={title} activeNav="/thoughts" description="Personal writing by Arshad Kazi. Things I am confused about, excited by, or trying to put into words. Published on Substack." ogImage={share("/images/share-thoughts.jpg")}>
   <SketchBackdrop sketches={sketches} place="top" />
   <div class="thoughts-page wide free">
 
@@ -155,7 +156,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
                   <p>{post.description}</p>
                   <span class="entry-topic">{topicName(topics[topTopic[i].k].words)}</span>
                 </span>
-                <span class="entry-fig"><span class="fig-ink"><img src={`/images/thoughts/${post.slug}.jpg`} alt="" width="1600" height="840" loading="lazy" decoding="async" /></span></span>
+                <span class="entry-fig"><span class="fig-ink"><img src={img(`/images/thoughts/${post.slug}.jpg`)} alt="" width="1600" height="840" loading="lazy" decoding="async" /></span></span>
               </a>
             </li>
           );

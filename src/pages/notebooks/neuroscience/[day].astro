@@ -1,4 +1,5 @@
 ---
+import { img } from '../../../lib/media';
 import Layout from '../../../layouts/Layout.astro';
 import { experiment, days } from '../../../data/neuroscience-days';
 import type { GetStaticPaths } from 'astro';
@@ -24,7 +25,7 @@ const prevDay = currentIndex > 0 ? activeDays[currentIndex - 1] : null;
 const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex + 1] : null;
 ---
 
-<Layout title={title} activeNav="/blog" description={`Day ${day.day}: ${day.curiosityTitle}`} ogImage="/images/blog/notebook-neuroscience.jpg">
+<Layout title={title} activeNav="/blog" description={`Day ${day.day}: ${day.curiosityTitle}`} ogImage={img("/images/blog/notebook-neuroscience.jpg")}>
   <div class="experiment-page">
     <a href="/notebooks/neuroscience" class="back-link">&larr; All Days</a>
 

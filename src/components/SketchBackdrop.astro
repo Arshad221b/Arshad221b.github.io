@@ -122,6 +122,7 @@ const { sketches, place = 'fixed' } = Astro.props;
 
   function load(n, done) {
     var img = new Image();
+    img.crossOrigin = 'anonymous';
     img.onload = function () { prepare(img); done(); };
     img.onerror = function () { idx = (idx + 1) % list.length; load(idx, done); };
     img.src = list[n];

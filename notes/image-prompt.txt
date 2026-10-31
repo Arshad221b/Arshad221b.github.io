@@ -52,6 +52,6 @@ CHECKLIST BEFORE SAVING
 - Does it look like a page from the same notebook as the others?
 - Is every label true, and the credit complete?
 - Would it still read at 400 px wide (the share preview)?
-- Save as public/images/blog/<slug>.jpg, public/images/blog/notebook-<slug>.jpg
-  or public/images/thoughts/<slug>.jpg; the post layouts pick it up by slug
+- Upload to Cloudinary (cloud dpq4fqlde) as site/blog/<slug>, site/blog/notebook-<slug>
+  or site/thoughts/<slug>, and add the path to src/data/media.json; the post layouts pick it up by slug
   for the page header and the share image.

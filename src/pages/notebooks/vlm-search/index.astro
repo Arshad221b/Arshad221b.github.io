@@ -1,4 +1,5 @@
 ---
+import { img } from '../../../lib/media';
 import Layout from '../../../layouts/Layout.astro';
 import { experiment, days } from '../../../data/vlm-search-days';
 
@@ -17,7 +18,7 @@ function formatDateLong(dateStr: string): string {
 const activeDays = days.filter(d => d.bullets.length > 0);
 ---
 
-<Layout title={title} activeNav="/blog" description="From neuroscience to CLIP to a working text-to-image search prototype. 7-day tiny experiment." ogImage="/images/blog/notebook-vlm-search.jpg">
+<Layout title={title} activeNav="/blog" description="From neuroscience to CLIP to a working text-to-image search prototype. 7-day tiny experiment." ogImage={img("/images/blog/notebook-vlm-search.jpg")}>
   <div class="experiment-page">
     <a href="/blog" class="back-link">&larr; Blogs</a>
 
