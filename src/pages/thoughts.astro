@@ -125,7 +125,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
          further up the bank, and its opening line drifts in the river
          beside the point where it lands. -->
     <div class="river-wrap">
-    <svg class="river" aria-hidden="true"><defs><clipPath id="river-inked"><rect x="0" y="0" width="100%" height="0" /></clipPath></defs><path class="river-wash" clip-path="url(#river-inked)" /><path class="river-line" /></svg>
+    <svg class="river" aria-hidden="true"><defs><clipPath id="river-inked"><rect x="0" y="0" width="100%" height="0" /></clipPath></defs><symbol id="mughal-rosette" viewBox="-6 -6 12 12"><g><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(0)" /><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(90)" /><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(180)" /><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(270)" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(45)" opacity="0.7" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(135)" opacity="0.7" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(225)" opacity="0.7" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(315)" opacity="0.7" /><circle r="1.25" fill="var(--color-bg)" /><circle r="0.65" /></g></symbol></defs><path class="river-wash" clip-path="url(#river-inked)" /><path class="river-bank" /><path class="river-inlay" clip-path="url(#river-inked)" /><path class="river-water" /><path class="river-line" /><g class="river-flowers"></g></svg>
     <ol class="ledger" id="post-index">
       {grouped.map(group => [
         <li class="year-band" data-year={group.year}>
@@ -450,13 +450,45 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   /* The water swells where a long essay comes ashore and narrows to a
      stream between short ones: its width is the length of the thinking. */
   .river .river-wash {
-    fill: color-mix(in srgb, var(--color-accent) 5%, transparent);
+    fill: color-mix(in srgb, #3f8f8a 8%, transparent);
     stroke: none;
   }
 
+  /* The river runs as a Mughal garden's water channel: two fine edges of
+     stone with the water between, small fountains set along it like the
+     jets and inlaid flowers of a charbagh rill. The centre line is kept
+     only to measure the curve by. */
+  .river .river-bank {
+    stroke: color-mix(in srgb, var(--color-text) 30%, transparent);
+    stroke-width: 6;
+  }
+
+  .river .river-water {
+    stroke: var(--color-bg);
+    stroke-width: 3.8;
+  }
+
   .river .river-line {
-    stroke: color-mix(in srgb, var(--color-text) 24%, transparent);
-    stroke-width: 1.3;
+    stroke: transparent;
+  }
+
+  /* Inlay along the channel's floor, as in pietra dura. */
+  .river .river-inlay {
+    fill: none;
+    stroke: color-mix(in srgb, var(--color-accent) 55%, transparent);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-dasharray: 0.1 10;
+  }
+
+  .river-flowers :global(use) {
+    fill: color-mix(in srgb, var(--color-accent) 60%, transparent);
+    opacity: 0;
+    transition: opacity 0.6s ease 0.5s;
+  }
+
+  .river-flowers :global(use.on) {
+    opacity: 1;
   }
 
   .ledger {
@@ -530,13 +562,15 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     gap: 0.6rem;
   }
 
+  /* Each landing is an eight-pointed star, the Mughal tile's khatam, set
+     on a small disc of paper that parts the channel around it. */
   .node-dot {
     flex: none;
-    width: 9px;
-    height: 9px;
+    width: 19px;
+    height: 19px;
     border-radius: 50%;
-    background: var(--color-accent);
-    box-shadow: 0 0 0 5px var(--color-bg);
+    background: var(--color-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cg fill='%23e5461c'%3E%3Crect x='-6' y='-6' width='12' height='12'/%3E%3Crect x='-6' y='-6' width='12' height='12' transform='rotate(45)'/%3E%3C/g%3E%3C/svg%3E") center / 17px no-repeat;
+    box-shadow: 0 0 0 3px var(--color-bg);
     transition: transform 0.4s var(--ease-out);
   }
 
@@ -599,6 +633,9 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   /* On a phone the ink follows the finger directly, and nothing ripples. */
   @media (max-width: 719px) {
     .river-wrap .river .river-line,
+    .river-wrap .river .river-bank,
+    .river-wrap .river .river-water,
+    .river-wrap .river-flowers :global(use),
     .river-wrap #river-inked rect {
       transition: none;
     }
@@ -621,13 +658,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     }
   }
 
-  .river .river-line {
-    transition: stroke-dashoffset 0.9s cubic-bezier(0.3, 0.7, 0.3, 1);
-  }
 
-  #river-inked rect {
-    transition: height 0.9s cubic-bezier(0.3, 0.7, 0.3, 1);
-  }
+
 
   .node-date {
     font-family: var(--font-mono);
@@ -792,7 +824,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     .entry:nth-child(odd of .entry) .entry-river { grid-column: river / span 2; }
     .entry:nth-child(odd of .entry) .entry-body { grid-column: lbody; }
     .entry:nth-child(odd of .entry) .entry-fig { right: var(--fx); }
-    .entry:nth-child(odd of .entry) .entry-node { transform: translateX(calc(var(--river) / 2 - var(--bend) - 4.5px)); }
+    .entry:nth-child(odd of .entry) .entry-node { transform: translateX(calc(var(--river) / 2 - var(--bend) - 9.5px)); }
     .entry:nth-child(odd of .entry) .entry-quote { padding-left: calc(var(--river) / 2 - var(--bend) + 1.4rem); }
 
     /* The right bank, the river bending towards it; its plate lies across
@@ -801,7 +833,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     .entry:nth-child(even of .entry) .entry-body { grid-column: rbody; }
     .entry:nth-child(even of .entry) .entry-fig { left: var(--fx); }
     .entry:nth-child(even of .entry) .entry-river { align-items: flex-end; text-align: right; }
-    .entry:nth-child(even of .entry) .entry-node { flex-direction: row-reverse; transform: translateX(calc(var(--bend) - var(--river) / 2 + 4.5px)); }
+    .entry:nth-child(even of .entry) .entry-node { flex-direction: row-reverse; transform: translateX(calc(var(--bend) - var(--river) / 2 + 9.5px)); }
     .entry:nth-child(even of .entry) .entry-quote { padding-right: calc(var(--river) / 2 - var(--bend) + 1.4rem); }
 
     /* The banks interleave rather than stepping like a ladder. */
@@ -1470,6 +1502,9 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     var svg = wrap.querySelector('.river');
     var line = svg.querySelector('.river-line');
     var wash = svg.querySelector('.river-wash');
+    var bank = svg.querySelector('.river-bank');
+    var water = svg.querySelector('.river-water');
+    var flowers = svg.querySelector('.river-flowers'), blooms = [];
     var ledger = wrap.querySelector('.ledger');
     var clip = svg.querySelector('#river-inked rect');
     var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1513,7 +1548,27 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       svg.setAttribute('viewBox', '0 0 ' + box.width.toFixed(0) + ' ' + height);
       line.setAttribute('d', d);
       length = line.getTotalLength();
-      line.style.strokeDasharray = length + ' ' + length;
+      svg.querySelector('.river-inlay').setAttribute('d', d);
+      [line, bank, water].forEach(function (el) {
+        el.setAttribute('d', d);
+        el.style.strokeDasharray = length + ' ' + length;
+      });
+
+      // Fountains along the channel, kept clear of the landings.
+      flowers.innerHTML = '';
+      blooms = [];
+      for (var f = 90; f < length - 60; f += 170) {
+        var fp = line.getPointAtLength(f);
+        if (pts.some(function (p) { return Math.abs(p[1] - fp.y) < 46; })) continue;
+        var use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+        use.setAttribute('href', '#mughal-rosette');
+        use.setAttribute('x', (fp.x - 8).toFixed(1));
+        use.setAttribute('y', (fp.y - 8).toFixed(1));
+        use.setAttribute('width', '16');
+        use.setAttribute('height', '16');
+        flowers.appendChild(use);
+        blooms.push([use, fp.y]);
+      }
       samples = [];
       stops = pts.slice(1, -1).map(function (p) { return p[1]; });
 
@@ -1534,11 +1589,32 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
         right.push((p.x + dy / n * h).toFixed(1) + ' ' + (p.y - dx / n * h).toFixed(1));
       }
       wash.setAttribute('d', 'M' + left.join(' L') + ' L' + right.reverse().join(' L') + ' Z');
+      place(Math.min(cur, length));
       ink();
     }
 
     // The drops are all there from the start; the river runs on from one
     // to the next as each essay comes into view, joining them up.
+    // Where the river has got to, in length along the curve, and where it
+    // is going: on a wide screen it runs on from landing to landing; on a
+    // phone it follows the finger directly.
+    var cur = 0, goal = 0, from = 0, began = 0, running = false;
+
+    function place(len) {
+      [line, bank, water].forEach(function (el) { el.style.strokeDashoffset = (length - len).toFixed(1); });
+      var pt = line.getPointAtLength(Math.max(0, Math.min(length, len)));
+      clip.style.height = pt.y.toFixed(0) + 'px';
+      blooms.forEach(function (b) { b[0].classList.toggle('on', b[1] <= pt.y); });
+    }
+
+    function step(now) {
+      var k = Math.min(1, (now - began) / 900);
+      k = 1 - Math.pow(1 - k, 3);
+      cur = from + (goal - from) * k;
+      place(cur);
+      if (k < 1) requestAnimationFrame(step); else running = false;
+    }
+
     function ink() {
       var top = wrap.getBoundingClientRect().top, reach = innerHeight * 0.72 - top, y = 0;
       if (still || innerHeight + scrollY >= document.documentElement.scrollHeight - 4) reach = Infinity;
@@ -1547,14 +1623,16 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       if (reach === Infinity) y = height;
       var drawn = length;
       for (var i = 0; i < samples.length; i++) if (samples[i][1] >= y) { drawn = samples[i][0]; break; }
-      line.style.strokeDashoffset = (length - drawn).toFixed(1);
-      clip.style.height = y.toFixed(0) + 'px';
       ledger.querySelectorAll('.entry').forEach(function (e) {
         var d = e.querySelector('.node-dot');
         if (!d.offsetParent) return;
         var r = d.getBoundingClientRect();
         e.classList.toggle('reached', r.top + r.height / 2 - wrap.getBoundingClientRect().top <= y + 1);
       });
+      if (still || phone.matches) { cur = goal = drawn; place(cur); return; }
+      if (Math.abs(drawn - goal) < 0.5) return;
+      from = cur; goal = drawn; began = performance.now();
+      if (!running) { running = true; requestAnimationFrame(step); }
     }
 
     function later() {
