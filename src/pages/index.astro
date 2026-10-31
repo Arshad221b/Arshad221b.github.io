@@ -623,7 +623,8 @@ const links = [
                  tilt: lead.map(function () { return 0; }), tiltGoal: lead.map(function () { return 0; }) };
       var prev = performance.now();
       (function frame(ts) {
-        if (t !== token) {
+        // Once the intro has let go, the stage is hidden: stop for good.
+        if (t !== token || stage.hidden) {
           lead.forEach(function (l) { l.style.translate = l.style.rotate = ''; });
           smark.style.translate = smark.style.rotate = inkCurl.style.rotate = inkCurl.style.scale = '';
           return;

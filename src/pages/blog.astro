@@ -222,7 +222,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
                   data-text={[it.title, it.description, ...it.tags, ...topicsOf(it.tags), ...(it.kind === 'essay' ? it.contents : it.nb.days.map(d => d.title))].join(' ').toLowerCase()}>
                 <time class="row-date" datetime={it.date}><span class="dd">{fmt(it.date, { month: 'short' })}</span><span class="mm">{it.date.slice(0, 4)}</span></time>
                 <div class="row-body">
-                  <div class="row-fig"><img src={it.image} alt="" width="1600" height="840" loading="lazy" decoding="async" /></div>
+                  <div class="row-fig"><img src={it.image} data-ink crossorigin="anonymous" alt="" width="1600" height="840" loading="lazy" decoding="async" /></div>
                   <p class="meta">
                     <span class="k">{it.kind === 'essay' ? 'Essay' : 'Notebook'}</span>
                     <span>{it.kind === 'essay' ? `${it.minutes} min read` : `${it.nb.days.length} days · ${it.minutes} min in all`}</span>
@@ -761,19 +761,15 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 
   }
 
-  /* The figure's paper is a shade darker than the page's; lifted 5% and
-     darkened onto the page, the paper vanishes and only the ink stays. */
+  /* The figure's paper is lifted out by InkPlates; only the ink stays. */
   .row-fig img {
     display: block;
     width: 100%;
     height: auto;
-    mix-blend-mode: darken;
-    filter: brightness(1.05);
   }
 
   :global(html.dark) .row-fig img {
-    mix-blend-mode: normal;
-    filter: brightness(0.9);
+    filter: invert(1) hue-rotate(180deg) brightness(0.9);
   }
 
   .row:hover .row-fig img {
@@ -1051,7 +1047,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     }
 
     :global(html.dark) .row-body > .row-fig img {
-      mix-blend-mode: normal;
       opacity: 0.85;
     }
 
@@ -1121,46 +1116,56 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   rider.className = 'month-rider';
   rider.setAttribute('aria-hidden', 'true');
   rider.innerHTML = '<span class="dd"></span><span class="mm"></span>';
+  // A zero-height mark where the marker would sit if it never stuck.
+  var mark = document.createElement('span');
+  mark.style.cssText = 'display:block;height:0';
+  list.parentNode.insertBefore(mark, list);
   list.parentNode.insertBefore(rider, list);
-  var dd = rider.querySelector('.dd'), mm = rider.querySelector('.mm'), shown = '', off = 0;
-  var LINE = 140;
-  function update() {
-    var ranked = list.classList.contains('ranked');
-    var rows = [].slice.call(list.querySelectorAll('[data-month]')).filter(function (r) {
+  var dd = rider.querySelector('.dd'), mm = rider.querySelector('.mm'), shown = '', off = -1, on = null;
+  var LINE = 140, rows = [], tops = [], home = 0, stick = 0, ranked = false;
+  // Everything is measured when the list or the page changes; a scroll
+  // only compares numbers.
+  function measure() {
+    ranked = list.classList.contains('ranked');
+    rows = [].slice.call(list.querySelectorAll('[data-month]')).filter(function (r) {
       return !r.classList.contains('hidden') && r.offsetParent !== null;
     });
+    var y = scrollY;
+    tops = rows.map(function (r) { return r.getBoundingClientRect().top + y; });
+    home = mark.getBoundingClientRect().top + y;
+    stick = parseFloat(getComputedStyle(rider).top) || 0;
+    update();
+  }
+  function update() {
+    var y = scrollY;
     // Sit level with the first piece (below the year heading) until it is
-    // reached, then hold at the top: an offset on the marker's own content,
-    // so no margin of the page around it is touched.
+    // reached, then hold at the top.
     if (rows.length) {
-      off = Math.max(0, Math.round(rows[0].getBoundingClientRect().top + 28 - (rider.getBoundingClientRect().top - off)));
-      rider.style.transform = 'translateY(' + off + 'px)';
+      var o = Math.max(0, Math.round(tops[0] - y + 28 - Math.max(home - y, stick)));
+      if (o !== off) { off = o; rider.style.transform = 'translateY(' + o + 'px)'; }
     }
-    var cur = null;
-    for (var i = 0; i < rows.length; i++) {
-      var b = rows[i].getBoundingClientRect();
-      if (b.top <= LINE + 40) cur = rows[i];
-      if (b.top > LINE + 40) break;
-    }
-    if (!cur && rows.length && rows[0].getBoundingClientRect().top < innerHeight) cur = rows[0];
-    var first = rows.length ? rows[0].getBoundingClientRect().top : Infinity;
-    rider.classList.toggle('on', !ranked && !!cur && first < innerHeight * 0.8);
-    if (!cur) return;
-    var label = cur.querySelector('time');
-    var key = cur.dataset.month;
+    var cur = -1;
+    for (var i = 0; i < tops.length && tops[i] - y <= LINE + 40; i++) cur = i;
+    var first = rows.length ? tops[0] - y : Infinity;
+    if (cur < 0 && first < innerHeight) cur = 0;
+    var now = !ranked && cur >= 0 && first < innerHeight * 0.8;
+    if (now !== on) { on = now; rider.classList.toggle('on', now); }
+    if (cur < 0) return;
+    var row = rows[cur], key = row.dataset.month;
     if (key !== shown) {
       shown = key;
+      var label = row.querySelector('time');
       rider.classList.remove('turn'); void rider.offsetWidth; rider.classList.add('turn');
       dd.textContent = label.querySelector('.dd').textContent;
       mm.textContent = label.querySelector('.mm').textContent;
     }
   }
-  var queued = false;
+  var queued = false, mq = false;
   function queue() { if (!queued) { queued = true; requestAnimationFrame(function () { queued = false; update(); }); } }
+  function remeasure() { if (!mq) { mq = true; requestAnimationFrame(function () { mq = false; measure(); }); } }
   addEventListener('scroll', queue, { passive: true });
-  addEventListener('resize', queue);
-  new MutationObserver(queue).observe(list, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true });
-  update();
+  new ResizeObserver(remeasure).observe(document.body);
+  new MutationObserver(remeasure).observe(list, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true });
 })();
 /* Each list stays closed behind a small pill that opens it when clicked
    or tapped, and closes it again; reaching for the pill gives a glimpse

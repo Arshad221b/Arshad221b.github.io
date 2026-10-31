@@ -156,7 +156,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
                   <p>{post.description}</p>
                   <span class="entry-topic">{topicName(topics[topTopic[i].k].words)}</span>
                 </span>
-                <span class="entry-fig"><span class="fig-ink"><img src={img(`/images/thoughts/${post.slug}.jpg`)} alt="" width="1600" height="840" loading="lazy" decoding="async" /></span></span>
+                <span class="entry-fig"><span class="fig-ink"><img src={img(`/images/thoughts/${post.slug}.jpg`)} data-ink crossorigin="anonymous" alt="" width="1600" height="840" loading="lazy" decoding="async" /></span></span>
               </a>
             </li>
           );
@@ -758,16 +758,9 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     background: none;
   }
 
-  /* The plate's paper is turned white by its filter and blended into the
-     page by a plain wrapper: Safari drops a blend that shares an element
-     with a filter. */
+  /* The plate's paper is lifted out by InkPlates, so nothing blends. */
   .fig-ink {
     display: block;
-    mix-blend-mode: multiply;
-  }
-
-  :global(html.dark) .fig-ink {
-    mix-blend-mode: screen;
   }
 
   .entry-fig img {

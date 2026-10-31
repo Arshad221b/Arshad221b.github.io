@@ -85,7 +85,7 @@ function formatDate(dateStr: string): string {
     <header class={`blog-post-header ${figure ? 'has-figure' : ''}`}>
       {figure && (
         <figure class="post-cover" aria-hidden="true">
-          <span class="plate-ink"><img src={figure} alt="" width="1600" height="840" decoding="async" fetchpriority="high" /></span>
+          <span class="plate-ink"><img src={figure} data-ink crossorigin="anonymous" alt="" width="1600" height="840" decoding="async" fetchpriority="high" /></span>
         </figure>
       )}
       {figure && <PlatePaint />}
@@ -177,18 +177,11 @@ function formatDate(dateStr: string): string {
     pointer-events: none;
   }
 
-  /* The plate is blended into the paper by a plain wrapper, never by the
-     image itself: Safari drops a blend on an element that also carries a
-     mask or a filter, and the image carries both. */
+  /* The plate's paper is lifted out by InkPlates, so nothing blends. */
   .plate-ink {
     position: absolute;
     inset: 0;
     display: block;
-    mix-blend-mode: multiply;
-  }
-
-  :global(html.dark) .plate-ink {
-    mix-blend-mode: screen;
   }
 
   .post-cover img {

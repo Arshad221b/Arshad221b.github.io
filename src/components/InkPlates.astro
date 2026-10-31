@@ -1,0 +1,133 @@
+---
+/* Plates are ink on old paper. Rather than blend that paper away (which
+   Safari draws as a box whenever the plate also has a mask, a filter or a
+   transform), each plate's paper is lifted out once, in the browser: the
+   common paper colour becomes transparent and only the ink is left, so the
+   plate sits on the page with no blending at all. Any image marked
+   data-ink gets this, including ones added later.
+
+   It costs the page next to nothing: the work runs in a worker, at the
+   size the plate is shown rather than the size of the scan, only as a
+   plate nears the screen, and each result is kept, so a page seen before
+   pays nothing at all. */
+---
+
+<style is:global>
+  img[data-ink]:not(.inked) { visibility: hidden; }
+</style>
+
+<script is:inline>
+(function () {
+  var imgs = document.querySelectorAll('img[data-ink]');
+  if (!imgs.length) return;
+  function show(img) { img.classList.add('inked'); }
+  if (!window.Worker || !window.OffscreenCanvas || !window.createImageBitmap) { imgs.forEach(show); return; }
+
+  // Bump the version whenever the inking changes, to drop old results.
+  var STORE = 'ink-v2';
+
+  var work = function () {
+    var STORE = '__STORE__';
+    function pct(h, n) { for (var v = 0, s = 0; v < 256; v++) { s += h[v]; if (s >= n * 0.88) return v; } return 255; }
+
+    // Paper becomes transparent; what is darker than it is ink, with its
+    // colour as it would be on white.
+    function ink(bmp, width) {
+      var w = Math.min(width, bmp.width), h = Math.round(bmp.height * w / bmp.width);
+      var c = new OffscreenCanvas(w, h), x = c.getContext('2d', { willReadFrequently: true });
+      x.drawImage(bmp, 0, 0, w, h);
+      bmp.close();
+      var d = x.getImageData(0, 0, w, h), p = d.data, n = 0;
+      var hr = new Uint32Array(256), hg = new Uint32Array(256), hb = new Uint32Array(256);
+      for (var i = 0; i < p.length; i += 32, n++) { hr[p[i]]++; hg[p[i + 1]]++; hb[p[i + 2]]++; }
+      // Each channel measured against its paper, as a table, once.
+      var lr = new Uint8Array(256), lg = new Uint8Array(256), lb = new Uint8Array(256);
+      var pr = Math.max(1, pct(hr, n)), pg = Math.max(1, pct(hg, n)), pb = Math.max(1, pct(hb, n));
+      for (var v = 0; v < 256; v++) {
+        lr[v] = Math.min(255, v * 255 / pr); lg[v] = Math.min(255, v * 255 / pg); lb[v] = Math.min(255, v * 255 / pb);
+      }
+      var inv = new Float32Array(256);
+      for (var a = 1; a < 256; a++) inv[a] = 255 / a;
+      for (var j = 0; j < p.length; j += 4) {
+        var r = lr[p[j]], g = lg[p[j + 1]], b = lb[p[j + 2]];
+        var m = r < g ? (r < b ? r : b) : (g < b ? g : b), al = 255 - m;
+        if (al < 13) { p[j + 3] = 0; continue; }
+        var k = inv[al];
+        p[j] = 255 - (255 - r) * k; p[j + 1] = 255 - (255 - g) * k; p[j + 2] = 255 - (255 - b) * k;
+        p[j + 3] = al;
+      }
+      x.putImageData(d, 0, 0);
+      return c;
+    }
+
+    // The page hands over the image it already has, so nothing is fetched
+    // twice. A PNG is quick to make, so the plate is shown with it at once;
+    // the smaller WebP is made after, and kept for the next visit.
+    onmessage = async function (e) {
+      var c;
+      try { c = ink(e.data.bmp, e.data.width); postMessage({ id: e.data.id, blob: await c.convertToBlob({ type: 'image/png' }) }); }
+      catch (err) { return postMessage({ id: e.data.id, blob: null }); }
+      try {
+        var keep = await c.convertToBlob({ type: 'image/webp', quality: 0.9 });
+        var store = await caches.open(STORE);
+        await store.put(e.data.key, new Response(keep, { headers: { 'content-type': keep.type } }));
+      } catch (_) {}
+    };
+  };
+
+  var src = '(' + work.toString().replace('__STORE__', STORE) + ')()';
+  var worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+  var list = Array.prototype.slice.call(imgs);
+
+  // Old results go when the inking changes.
+  if (window.caches) caches.keys().then(function (ks) { ks.forEach(function (k) { if (k.indexOf('ink-') === 0 && k !== STORE) caches.delete(k); }); }).catch(function () {});
+
+  function swap(img, blob) {
+    if (!blob) return show(img);
+    var u = URL.createObjectURL(blob);
+    img.addEventListener('load', function () { show(img); }, { once: true });
+    img.addEventListener('error', function () { show(img); }, { once: true });
+    img.src = u;
+  }
+  worker.onmessage = function (e) { swap(list[e.data.id], e.data.blob); };
+
+  // The width it is shown at, in device pixels, rounded up to a few
+  // steps so the stored results are shared between nearby screen sizes.
+  function width(img) {
+    var w = Math.ceil((img.getBoundingClientRect().width || 800) * Math.min(2, devicePixelRatio || 1));
+    return Math.min(1600, Math.ceil(w / 400) * 400);
+  }
+
+  function loaded(img) {
+    return new Promise(function (ok, no) {
+      if (img.complete && img.naturalWidth) return ok();
+      img.addEventListener('load', ok, { once: true });
+      img.addEventListener('error', no, { once: true });
+    });
+  }
+
+  // A plate seen before comes straight from the store; a new one is drawn
+  // from the copy the page already loaded and inked in the worker.
+  function start(img) {
+    var id = list.indexOf(img), w = width(img), key = img.getAttribute('src') + '#ink' + w;
+    var stored = window.caches
+      ? caches.open(STORE).then(function (s) { return s.match(key); }).catch(function () {})
+      : Promise.resolve();
+    stored.then(function (hit) {
+      if (hit) return hit.blob().then(function (b) { swap(img, b); });
+      return loaded(img)
+        .then(function () { return createImageBitmap(img); })
+        .then(function (bmp) { worker.postMessage({ id: id, key: key, width: w, bmp: bmp }, [bmp]); });
+    }).catch(function () { show(img); });
+  }
+
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (en) {
+      if (!en.isIntersecting) return;
+      io.unobserve(en.target);
+      start(en.target);
+    });
+  }, { rootMargin: '800px 0px' });
+  list.forEach(function (img) { io.observe(img); });
+})();
+</script>
