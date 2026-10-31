@@ -169,6 +169,11 @@ function formatDate(dateStr: string): string {
     filter: invert(1) hue-rotate(180deg);
   }
 
+  /* Once inked the paper is gone, so there is nothing to lift. */
+  :global(html:not(.dark)) .post-cover img:global(.inked) {
+    filter: none;
+  }
+
   /* On a wide screen the header is a full-bleed hero composed on thirds.
      The plate is the whole first screen, whatever the window, up behind the
      nav; it is drawn wider than the screen, sized from the window's height,

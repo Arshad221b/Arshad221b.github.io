@@ -156,7 +156,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
                   <p>{post.description}</p>
                   <span class="entry-topic">{topicName(topics[topTopic[i].k].words)}</span>
                 </span>
-                <span class="entry-fig"><span class="fig-ink"><img src={img(`/images/thoughts/${post.slug}.jpg`)} data-ink crossorigin="anonymous" alt="" width="1600" height="840" loading="lazy" decoding="async" /></span></span>
+                <span class="entry-fig"><span class="fig-ink"><img src={img(`/images/thoughts/${post.slug}.jpg`)} data-ink="gray feather-88@719" crossorigin="anonymous" alt="" width="1600" height="840" loading="lazy" decoding="async" /></span></span>
               </a>
             </li>
           );
@@ -454,6 +454,12 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     will-change: transform;
   }
 
+  /* The same glide on both, so the river stays put while its window opens. */
+  .river-wrap.gliding .river-window,
+  .river-wrap.gliding .river {
+    transition: transform 0.9s cubic-bezier(0.215, 0.61, 0.355, 1);
+  }
+
   .river path {
     fill: none;
     stroke-linecap: round;
@@ -627,7 +633,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   .ledger.flowing .entry-fig img {
     transition: opacity 1.2s ease 0.6s, transform 0.8s var(--ease-out);
-    will-change: opacity, transform;
   }
 
   .ledger.flowing .entry:not(.reached) .entry-body {
@@ -787,6 +792,20 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 52%, transparent 100%);
     mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 52%, transparent 100%);
     transition: transform 0.8s var(--ease-out), opacity 0.6s ease;
+  }
+
+  /* Once inked, the grey, the contrast and the phone's feather are in the
+     image itself, so the browser has nothing to filter or mask. */
+  .entry .entry-fig img.inked,
+  .entry .entry-link:hover .entry-fig img.inked {
+    filter: none;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  :global(html.dark) .entry .entry-fig img.inked,
+  :global(html.dark) .entry .entry-link:hover .entry-fig img.inked {
+    filter: invert(1) contrast(1.4) brightness(0.9);
   }
 
   :global(html.dark) .entry-fig img {
@@ -1515,6 +1534,9 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     var flowers = svg.querySelector('.river-flowers'), blooms = [];
     var ledger = wrap.querySelector('.ledger');
     var win = wrap.querySelector('.river-window');
+    // Closed until it is drawn, so the whole river never shows for a moment.
+    win.style.transform = 'translate3d(0,-100%,0)';
+    svg.style.transform = 'translate3d(0,100%,0)';
     var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
     // On a phone the river simply follows the finger: no steps, no
     // arrivals, nothing moving but the ink.
@@ -1598,7 +1620,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       }
       wash.setAttribute('d', 'M' + left.join(' L') + ' L' + right.reverse().join(' L') + ' Z');
       shownY = -1;
-      place(Math.min(cur, length));
+      place(Math.min(cur, length), true);
       ink();
     }
 
@@ -1607,9 +1629,9 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     // Where the river has got to, in length along the curve, and where it
     // is going: on a wide screen it runs on from landing to landing; on a
     // phone it follows the finger directly.
-    var cur = 0, goal = 0, from = 0, began = 0, running = false, shownY = -1;
+    var cur = 0, shownY = -1;
 
-    function place(len) {
+    function place(len, jump) {
       // How far down the page the river has reached, read from the curve's
       // samples rather than measured on the path each frame.
       var lo = 0, hi = samples.length - 1, y = 0;
@@ -1617,19 +1639,16 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
         while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (samples[mid][0] <= len) lo = mid; else hi = mid - 1; }
         y = len >= length ? height : samples[lo][1];
       }
+      // Only reading on glides; a redraw (load, resize, a search) jumps
+      // straight to where the river is, or it would sweep the whole page.
+      var glide = jump ? wrap.classList.contains('gliding') : false;
+      if (glide) wrap.classList.remove('gliding');
       win.style.transform = 'translate3d(0,' + (y - height).toFixed(1) + 'px,0)';
       svg.style.transform = 'translate3d(0,' + (height - y).toFixed(1) + 'px,0)';
+      if (glide) { void win.offsetWidth; wrap.classList.add('gliding'); }
       if (y === shownY) return;
       shownY = y;
       blooms.forEach(function (b) { b[0].classList.toggle('on', b[1] <= y); });
-    }
-
-    function step(now) {
-      var k = Math.min(1, (now - began) / 900);
-      k = 1 - Math.pow(1 - k, 3);
-      cur = from + (goal - from) * k;
-      place(cur);
-      if (k < 1) requestAnimationFrame(step); else running = false;
     }
 
     function ink() {
@@ -1646,10 +1665,11 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
         landings.forEach(function (l) { l[0].classList.toggle('reached', l[1] <= y + 1); });
         lastY = y;
       }
-      if (still || phone.matches) { cur = goal = drawn; place(cur); return; }
-      if (Math.abs(drawn - goal) < 0.5) return;
-      from = cur; goal = drawn; began = performance.now();
-      if (!running) { running = true; requestAnimationFrame(step); }
+      // On a wide screen the glide from one landing to the next is the
+      // browser's own transition, run by the graphics card, not by script.
+      if (Math.abs(drawn - cur) < 0.5) return;
+      cur = drawn;
+      place(cur);
     }
 
     function later() {
@@ -1661,7 +1681,10 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       // Our own 'reached' marks are not a change of layout.
       if (list.some(function (m) { return m.attributeName !== 'class' || !m.target.classList.contains('entry') || m.target.classList.contains('hidden') !== (m.oldValue || '').includes('hidden'); })) later();
     }).observe(ledger, { subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ['class', 'style', 'hidden'] });
-    function flow() { ledger.classList.toggle('flowing', !still && !phone.matches); }
+    function flow() {
+      ledger.classList.toggle('flowing', !still && !phone.matches);
+      wrap.classList.toggle('gliding', !still && !phone.matches);
+    }
     flow();
     phone.addEventListener('change', function () { flow(); later(); });
     var inkQueued = false;

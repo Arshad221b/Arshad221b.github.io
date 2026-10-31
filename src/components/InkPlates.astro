@@ -28,15 +28,18 @@
   if (!window.Worker || !window.OffscreenCanvas || !window.createImageBitmap) { imgs.forEach(show); return; }
 
   // Bump the version whenever the inking changes, to drop old results.
-  var STORE = 'ink-v2';
+  var STORE = 'ink-v3';
 
   var work = function () {
     var STORE = '__STORE__';
     function pct(h, n) { for (var v = 0, s = 0; v < 256; v++) { s += h[v]; if (s >= n * 0.88) return v; } return 255; }
 
     // Paper becomes transparent; what is darker than it is ink, with its
-    // colour as it would be on white.
-    function ink(bmp, width) {
+    // colour as it would be on white. A plate's own look is drawn in here
+    // too, once, rather than by the browser on every paint: 'gray' is the
+    // engraving's grey with its contrast raised, and a feather thins its
+    // edges into the paper as an oval.
+    function ink(bmp, width, gray, feather) {
       var w = Math.min(width, bmp.width), h = Math.round(bmp.height * w / bmp.width);
       var c = new OffscreenCanvas(w, h), x = c.getContext('2d', { willReadFrequently: true });
       x.drawImage(bmp, 0, 0, w, h);
@@ -52,12 +55,24 @@
       }
       var inv = new Float32Array(256);
       for (var a = 1; a < 256; a++) inv[a] = 255 / a;
-      for (var j = 0; j < p.length; j += 4) {
+      var fx = new Float32Array(w);
+      for (var xx = 0; xx < w; xx++) { var u = (xx + 0.5) / w * 2 - 1; fx[xx] = u * u; }
+      for (var j = 0, q = 0; j < p.length; j += 4, q++) {
         var r = lr[p[j]], g = lg[p[j + 1]], b = lb[p[j + 2]];
         var m = r < g ? (r < b ? r : b) : (g < b ? g : b), al = 255 - m;
         if (al < 13) { p[j + 3] = 0; continue; }
         var k = inv[al];
-        p[j] = 255 - (255 - r) * k; p[j + 1] = 255 - (255 - g) * k; p[j + 2] = 255 - (255 - b) * k;
+        r = 255 - (255 - r) * k; g = 255 - (255 - g) * k; b = 255 - (255 - b) * k;
+        if (gray) {
+          var l = (0.2126 * r + 0.7152 * g + 0.0722 * b - 127.5) * 1.35 + 127.5;
+          r = g = b = l < 0 ? 0 : l > 255 ? 255 : l;
+        }
+        if (feather) {
+          var vy = ((q / w | 0) + 0.5) / h * 2 - 1, rr = Math.sqrt(fx[q % w] + vy * vy);
+          if (rr >= 1) { p[j + 3] = 0; continue; }
+          if (rr > feather) al *= 1 - (rr - feather) / (1 - feather);
+        }
+        p[j] = r; p[j + 1] = g; p[j + 2] = b;
         p[j + 3] = al;
       }
       x.putImageData(d, 0, 0);
@@ -69,7 +84,7 @@
     // the smaller WebP is made after, and kept for the next visit.
     onmessage = async function (e) {
       var c;
-      try { c = ink(e.data.bmp, e.data.width); postMessage({ id: e.data.id, blob: await c.convertToBlob({ type: 'image/png' }) }); }
+      try { c = ink(e.data.bmp, e.data.width, e.data.gray, e.data.feather); postMessage({ id: e.data.id, blob: await c.convertToBlob({ type: 'image/png' }) }); }
       catch (err) { return postMessage({ id: e.data.id, blob: null }); }
       try {
         var keep = await c.convertToBlob({ type: 'image/webp', quality: 0.9 });
@@ -117,7 +132,16 @@
   // A plate seen before comes straight from the store; a new one is drawn
   // from the copy the page already loaded and inked in the worker.
   function start(img) {
-    var id = list.indexOf(img), w = width(img), key = img.getAttribute('src') + '#ink' + w;
+    // data-ink may ask for 'gray', and for a 'feather' (the oval's solid
+    // part, as a fraction) where the plate's own CSS would mask one.
+    var opts = (img.getAttribute('data-ink') || '').split(' ');
+    var gray = opts.indexOf('gray') !== -1, feather = 0;
+    opts.forEach(function (o) {
+      var f = /^feather-(\d+)(?:@(\d+))?$/.exec(o);
+      if (f && (!f[2] || matchMedia('(max-width: ' + f[2] + 'px)').matches)) feather = f[1] / 100;
+    });
+    var id = list.indexOf(img), w = width(img);
+    var key = img.getAttribute('src') + '#ink' + w + (gray ? 'g' : '') + (feather ? 'f' + feather : '');
     var stored = window.caches
       ? caches.open(STORE).then(function (s) { return s.match(key); }).catch(function () {})
       : Promise.resolve();
@@ -125,7 +149,7 @@
       if (hit) return hit.blob().then(function (b) { swap(img, b); });
       return loaded(img)
         .then(function () { return createImageBitmap(img); })
-        .then(function (bmp) { worker.postMessage({ id: id, key: key, width: w, bmp: bmp }, [bmp]); });
+        .then(function (bmp) { worker.postMessage({ id: id, key: key, width: w, gray: gray, feather: feather, bmp: bmp }, [bmp]); });
     }).catch(function () { show(img); });
   }
 

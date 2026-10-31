@@ -85,7 +85,7 @@ function formatDate(dateStr: string): string {
     <header class={`blog-post-header ${figure ? 'has-figure' : ''}`}>
       {figure && (
         <figure class="post-cover" aria-hidden="true">
-          <span class="plate-ink"><img src={figure} data-ink crossorigin="anonymous" alt="" width="1600" height="840" decoding="async" fetchpriority="high" /></span>
+          <span class="plate-ink"><img src={figure} data-ink="gray" crossorigin="anonymous" alt="" width="1600" height="840" decoding="async" fetchpriority="high" /></span>
         </figure>
       )}
       {figure && <PlatePaint />}
@@ -207,6 +207,15 @@ function formatDate(dateStr: string): string {
   :global(html.dark) .post-cover img {
     opacity: 0.4;
     filter: grayscale(1) invert(1) contrast(1.5) brightness(0.9);
+  }
+
+  /* Once inked, the grey and the contrast are in the image itself. */
+  :global(html:not(.dark)) .post-cover img:global(.inked) {
+    filter: none;
+  }
+
+  :global(html.dark) .post-cover img:global(.inked) {
+    filter: invert(1) contrast(1.5) brightness(0.9);
   }
 
   /* On a wide screen the header is a full-bleed hero composed on thirds.
