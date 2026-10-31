@@ -483,6 +483,59 @@ function formatDate(dateStr: string): string {
     padding-top: var(--space-lg);
     border-top: 1px solid var(--color-border);
   }
+
+  /* ── On a phone: the frontispiece ─────────────────────────
+     A phone is too narrow for a plate behind the words, so here the essay
+     opens as a chapter in a book does: the date, the title and the
+     readout first, then the plate, whole and sharp at its own
+     proportions, its paper melting into the page's. */
+  @media (max-width: 760px) {
+    .blog-post-header.has-figure {
+      display: flex;
+      flex-direction: column;
+      padding-top: 0;
+    }
+
+    .blog-post-header.has-figure > .blog-post-meta { order: 1; }
+    .blog-post-header.has-figure > h1 { order: 2; }
+    .blog-post-header.has-figure > :not(.post-cover):not(.blog-post-meta):not(h1) { order: 3; }
+
+    .post-cover {
+      order: 4;
+      position: relative;
+      top: auto;
+      left: auto;
+      width: calc(100% + 2 * var(--gutter));
+      height: auto;
+      margin: var(--space-lg) calc(-1 * var(--gutter)) var(--space-md);
+      animation: none;
+    }
+
+    .plate-ink {
+      position: relative;
+      inset: auto;
+    }
+
+    .post-cover img {
+      position: static;
+      width: 100%;
+      height: auto;
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+
+    /* The plate's own printed title and credit are trimmed away; the
+       page's title says it already. */
+    .post-cover {
+      overflow: hidden;
+      margin-top: calc(var(--space-lg) - 6.2vw);
+      margin-bottom: calc(var(--space-md) - 6.2vw);
+    }
+
+    .post-cover img {
+      clip-path: inset(11.5% 0 11.5% 0);
+    }
+  }
 </style>
 
 <script is:inline>
