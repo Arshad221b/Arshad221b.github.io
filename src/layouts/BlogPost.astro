@@ -159,6 +159,13 @@ function formatDate(dateStr: string): string {
       top: calc(-1 * var(--main-pt));
       height: 58vw;
     }
+
+    /* On a phone the figure starts right under the header; let its top
+       fade in rather than end in a hard line there. */
+    .post-cover img {
+      -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 62%, transparent 100%), linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+      mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 62%, transparent 100%), linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    }
   }
 
 

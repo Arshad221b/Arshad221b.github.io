@@ -9,7 +9,7 @@ const { title, date, description } = Astro.props;
 
 import Layout from './Layout.astro';
 import { existsSync } from 'node:fs';
-import { relatedTo, posts, topicsOf } from '../lib/thoughts-data';
+import { relatedTo, posts } from '../lib/thoughts-data';
 
 const siteUrl = 'https://arshad-kazi.com';
 const articleUrl = new URL(Astro.url.pathname, siteUrl).href;
@@ -31,7 +31,6 @@ const exif = self ? [
   { k: 'No.', v: `${String(posts.length - at).padStart(2, '0')} / ${posts.length}` },
   { k: 'Words', v: self.words.toLocaleString('en-US') },
   { k: 'Read', v: `${Math.max(1, Math.round(self.words / 230))} min` },
-  { k: 'Reads as', v: topicsOf(self.slug, 2).map(t => t.label).join(' / ') || '—' },
 ] : [];
 
 let shareImage = '/images/share-thoughts.jpg';
@@ -202,6 +201,15 @@ function formatDate(dateStr: string): string {
       top: calc(-1 * var(--main-pt));
       height: 58vw;
     }
+
+    /* A phone's box is short for its width, so the crop would keep the
+       plate's top strip, label and all, hard against the header. Draw in
+       closer and let the top fade in as the bottom fades out. */
+    .post-cover img {
+      -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 60%, transparent 89%), linear-gradient(90deg, transparent 10%, #000 20%, #000 80%, transparent 90%);
+      mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 60%, transparent 89%), linear-gradient(90deg, transparent 10%, #000 20%, #000 80%, transparent 90%);
+      transform: scale(1.32);
+    }
   }
 
 
@@ -211,11 +219,11 @@ function formatDate(dateStr: string): string {
      latent space the index is searched in, and each one says how close it
      actually is, so a weak neighbour is visibly a weak neighbour. */
   /* ── EXIF ────────────────────────────────────────────
-     Set like the information panel of a photo viewer: four fields in a
+     Set like the information panel of a photo viewer: three fields in a
      row, the name small above, the value in the instrument face. */
   .exif {
     display: grid;
-    grid-template-columns: auto auto auto 1fr;
+    grid-template-columns: auto auto 1fr;
     gap: var(--space-md) var(--space-xl);
     margin: 0;
     padding: var(--space-md) 0;
@@ -252,13 +260,7 @@ function formatDate(dateStr: string): string {
 
   @media (max-width: 560px) {
     .exif {
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-sm) var(--space-md);
-    }
-
-    .exif dd {
-      white-space: normal;
-      line-height: 1.4;
+      gap: var(--space-sm) var(--space-lg);
     }
   }
 
