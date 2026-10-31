@@ -1,6 +1,5 @@
 ---
 import { img, share, has } from '../lib/media';
-import PlatePaint from '../components/PlatePaint.astro';
 interface Props {
   title: string;
   date: string;
@@ -60,7 +59,6 @@ function formatDate(dateStr: string): string {
           <span class="plate-ink"><img src={figure} data-ink crossorigin="anonymous" alt="" width="1600" height="840" decoding="async" fetchpriority="high" /></span>
         </figure>
       )}
-      {figure && <PlatePaint />}
       <div class="blog-post-meta">
         <time>{formatDate(date)}</time>
       </div>
@@ -251,39 +249,10 @@ function formatDate(dateStr: string): string {
     }
   }
 
-  /* The reveal, at every size, all in one short beat: a sheet of
-     the page's paper over the plate is wiped away in brush strokes (PlatePaint
-     does that), as the ink develops from pale to its full black and the
-     title rises into place. */
+  /* The plate simply appears; only the title rises into place. */
   @media (prefers-reduced-motion: no-preference) {
-    .post-cover img {
-      /* Its own layer, so Safari fades and moves the masked, filtered
-         plate without painting it again. */
-      will-change: opacity, transform;
-      animation: plate-develop 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-    }
-
-    /* In the dark the plate is inverted by its filter, so it is painted
-       in without the developing, which would flash it light. */
-    :global(html.dark) .post-cover img {
-      animation: none;
-    }
-
     .blog-post-header.has-figure > :not(.post-cover) {
       animation: hero-rise 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-    }
-  }
-
-  /* Reading on, the plate falls back: it drifts down behind the title and
-     pales, rather than scrolling away like a banner. */
-  @supports (animation-timeline: scroll()) {
-    @media (prefers-reduced-motion: no-preference) {
-      .post-cover {
-        will-change: transform, opacity;
-        animation: plate-drift linear both;
-        animation-timeline: scroll(root);
-        animation-range: 0 70vh;
-      }
     }
   }
 
