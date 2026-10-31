@@ -218,7 +218,13 @@ function formatDate(dateStr: string): string {
       --hero-h: max(34rem, 100vh);
       --img-w: max(calc(min(100vw, 2400px) * 1.05), calc(var(--hero-h) * 2.25));
       --band-w: min(1240px, calc(100vw - 2 * var(--gutter)));
-      padding-top: calc(var(--hero-h) * 0.5 - var(--head-h, 4.5rem) - var(--main-pt));
+      /* The title block sits in the optical middle of the screen below the
+         nav, a touch above true centre, whatever the window's height. */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 0;
+      padding-bottom: 9vh;
       min-height: calc(var(--hero-h) - var(--head-h, 4.5rem) - var(--main-pt));
       margin-bottom: var(--space-xl);
     }
