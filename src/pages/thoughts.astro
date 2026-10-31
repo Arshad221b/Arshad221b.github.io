@@ -593,6 +593,19 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     opacity: 0.06;
   }
 
+  /* On a phone the ink follows the finger directly, and nothing ripples. */
+  @media (max-width: 719px) {
+    .river-wrap .river .river-line,
+    .river-wrap #river-inked rect {
+      transition: none;
+    }
+
+    .entry.reached .node-dot::before,
+    .entry.reached .node-dot::after {
+      animation: none;
+    }
+  }
+
   @keyframes drop-ripple {
     0% { transform: scale(1); opacity: 0.55; }
     100% { transform: scale(4.2); opacity: 0; }
@@ -1457,6 +1470,9 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     var ledger = wrap.querySelector('.ledger');
     var clip = svg.querySelector('#river-inked rect');
     var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // On a phone the river simply follows the finger: no steps, no
+    // arrivals, nothing moving but the ink.
+    var phone = matchMedia('(max-width: 719px)');
     var length = 0, height = 0, queued = false, samples = [], stops = [];
 
     function centre(el, box) {
@@ -1523,7 +1539,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     function ink() {
       var top = wrap.getBoundingClientRect().top, reach = innerHeight * 0.72 - top, y = 0;
       if (still || innerHeight + scrollY >= document.documentElement.scrollHeight - 4) reach = Infinity;
-      stops.forEach(function (s) { if (s <= reach) y = s; });
+      if (phone.matches) y = Math.min(height, Math.max(0, innerHeight * 0.85 - top));
+      else stops.forEach(function (s) { if (s <= reach) y = s; });
       if (reach === Infinity) y = height;
       var drawn = length;
       for (var i = 0; i < samples.length; i++) if (samples[i][1] >= y) { drawn = samples[i][0]; break; }
@@ -1546,7 +1563,9 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       // Our own 'reached' marks are not a change of layout.
       if (list.some(function (m) { return m.attributeName !== 'class' || !m.target.classList.contains('entry') || m.target.classList.contains('hidden') !== (m.oldValue || '').includes('hidden'); })) later();
     }).observe(ledger, { subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ['class', 'style', 'hidden'] });
-    if (!still) ledger.classList.add('flowing');
+    function flow() { ledger.classList.toggle('flowing', !still && !phone.matches); }
+    flow();
+    phone.addEventListener('change', function () { flow(); later(); });
     addEventListener('scroll', ink, { passive: true });
     addEventListener('load', later);
     later();
