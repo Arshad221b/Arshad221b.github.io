@@ -1045,7 +1045,9 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
    all of its pieces, not just the first. */
 (function () {
   var list = document.getElementById('post-index');
-  if (!list || matchMedia('(max-width: 760px)').matches) return;
+  // The river carries the dates now; the old margin rider is not built, so
+  // nothing measures the rows on every scroll.
+  return;
   var rider = document.createElement('div');
   rider.className = 'month-rider';
   rider.setAttribute('aria-hidden', 'true');
@@ -1511,7 +1513,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     // On a phone the river simply follows the finger: no steps, no
     // arrivals, nothing moving but the ink.
     var phone = matchMedia('(max-width: 719px)');
-    var length = 0, height = 0, queued = false, samples = [], stops = [];
+    var length = 0, height = 0, queued = false, samples = [], stops = [], landings = [], lastY = -1;
 
     function centre(el, box) {
       var r = el.getBoundingClientRect();
@@ -1523,9 +1525,12 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       var box = wrap.getBoundingClientRect();
       height = wrap.offsetHeight;
       var pts = [];
+      landings = [];
+      lastY = -1;
       ledger.querySelectorAll('.year-band .year-num, .entry .node-dot').forEach(function (el) {
         if (!el.offsetParent) return;
         var c = centre(el, box), e = el.closest('.entry');
+        if (e) landings.push([e, c[1]]);
         // Half the water's width at this landing: a few pixels for a year,
         // more for a longer essay.
         c.push(e ? 3 + Math.sqrt(+e.dataset.words || 0) / 5 : 3);
@@ -1623,12 +1628,12 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       if (reach === Infinity) y = height;
       var drawn = length;
       for (var i = 0; i < samples.length; i++) if (samples[i][1] >= y) { drawn = samples[i][0]; break; }
-      ledger.querySelectorAll('.entry').forEach(function (e) {
-        var d = e.querySelector('.node-dot');
-        if (!d.offsetParent) return;
-        var r = d.getBoundingClientRect();
-        e.classList.toggle('reached', r.top + r.height / 2 - wrap.getBoundingClientRect().top <= y + 1);
-      });
+      // Positions were measured when the river was drawn; here nothing is
+      // measured again, and classes change only when the river moves on.
+      if (y !== lastY) {
+        landings.forEach(function (l) { l[0].classList.toggle('reached', l[1] <= y + 1); });
+        lastY = y;
+      }
       if (still || phone.matches) { cur = goal = drawn; place(cur); return; }
       if (Math.abs(drawn - goal) < 0.5) return;
       from = cur; goal = drawn; began = performance.now();
@@ -1647,7 +1652,12 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     function flow() { ledger.classList.toggle('flowing', !still && !phone.matches); }
     flow();
     phone.addEventListener('change', function () { flow(); later(); });
-    addEventListener('scroll', ink, { passive: true });
+    var inkQueued = false;
+    addEventListener('scroll', function () {
+      if (inkQueued) return;
+      inkQueued = true;
+      requestAnimationFrame(function () { inkQueued = false; ink(); });
+    }, { passive: true });
     addEventListener('load', later);
     later();
   })();

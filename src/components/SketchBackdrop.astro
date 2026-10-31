@@ -74,12 +74,15 @@ const { sketches, place = 'fixed' } = Astro.props;
   var list = JSON.parse(c.dataset.sketches), x = c.getContext('2d');
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var DRAW = 5000, HOLD = 2500, FADE = 1000, GAP = 300;
+  var seen = true, observing = false;
   var W = 0, H = 0, dpr = 1, cur = null, idx = 0, t0 = 0, stopped = false;
 
   function size() {
     var r = c.getBoundingClientRect();
-    // A faint background: drawn at one pixel per CSS pixel, to stay light.
-    dpr = 1;
+    // A faint background: drawn at half a pixel per CSS pixel and scaled
+    // up, which no one can see at its strength and costs a quarter of the
+    // work, so nothing else on the page stutters while it draws.
+    dpr = 0.5;
     W = r.width; H = r.height;
     c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
     if (cur) prepare(cur.img);
@@ -132,7 +135,12 @@ const { sketches, place = 'fixed' } = Astro.props;
   addEventListener('resize', size);
   load(0, function start() {
     if (reduce) { paint(DRAW); return; }
+    if (!observing) {
+      observing = true;
+      new IntersectionObserver(function (es) { seen = es[0].isIntersecting; }).observe(c);
+    }
     t0 = performance.now();
+    var last = 0, held = false;
     (function frame(now) {
       var t = now - t0;
       if (t > DRAW + HOLD + FADE + GAP) {
@@ -141,7 +149,14 @@ const { sketches, place = 'fixed' } = Astro.props;
         load(idx, start);
         return;
       }
-      paint(t);
+      // About thirty frames a second; nothing at all while the drawing
+      // holds still, or while it is scrolled out of sight.
+      var holding = t > DRAW && t < DRAW + HOLD;
+      if (seen && now - last >= 32 && !(holding && held)) {
+        paint(t);
+        last = now;
+        held = holding;
+      }
       requestAnimationFrame(frame);
     })(t0);
   });

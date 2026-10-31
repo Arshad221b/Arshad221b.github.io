@@ -152,8 +152,9 @@ const elsewhere = [
       (function () {
         var cover = document.querySelector('.post-cover'), toc = document.getElementById('margin-toc');
         if (!cover || !toc) return;
-        function check() { toc.classList.toggle('under-cover', cover.getBoundingClientRect().bottom > innerHeight * 0.3); }
-        addEventListener('scroll', check, { passive: true });
+        var queued = false;
+        function check() { queued = false; toc.classList.toggle('under-cover', cover.getBoundingClientRect().bottom > innerHeight * 0.3); }
+        addEventListener('scroll', function () { if (!queued) { queued = true; requestAnimationFrame(check); } }, { passive: true });
         addEventListener('resize', check);
         check();
       })();
