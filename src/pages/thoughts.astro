@@ -534,18 +534,11 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     border-radius: 50%;
     background: var(--color-accent);
     box-shadow: 0 0 0 5px var(--color-bg);
-    transform: scale(0);
-    transition: transform 0.45s var(--ease-out) 0.55s;
+    transition: transform 0.4s var(--ease-out);
   }
 
-  /* Each drop appears as the river reaches it. */
-  .entry.reached .node-dot {
-    transform: scale(1);
-  }
-
-  .entry.reached .entry-link:hover .node-dot {
+  .entry-link:hover .node-dot {
     transform: scale(1.5);
-    transition-delay: 0s;
   }
 
   .river .river-line {
@@ -1461,8 +1454,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       ink();
     }
 
-    // The river runs on from drop to drop: as an essay comes into view the
-    // line is carried to its landing, and the drop appears when it arrives.
+    // The drops are all there from the start; the river runs on from one
+    // to the next as each essay comes into view, joining them up.
     function ink() {
       var top = wrap.getBoundingClientRect().top, reach = innerHeight * 0.72 - top, y = 0;
       if (still || innerHeight + scrollY >= document.documentElement.scrollHeight - 4) reach = Infinity;
