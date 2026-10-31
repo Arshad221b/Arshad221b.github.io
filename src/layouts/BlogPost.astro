@@ -1,4 +1,5 @@
 ---
+import PlatePaint from '../components/PlatePaint.astro';
 interface Props {
   title: string;
   date: string;
@@ -59,6 +60,7 @@ function formatDate(dateStr: string): string {
           <img src={figure} alt="" width="1600" height="840" decoding="async" fetchpriority="high" />
         </figure>
       )}
+      {figure && <PlatePaint />}
       <div class="blog-post-meta">
         <time>{formatDate(date)}</time>
       </div>
@@ -109,9 +111,15 @@ function formatDate(dateStr: string): string {
   /* The header's figure runs edge to edge across the screen as a band at
      the top, and fades into the paper where the title begins, so it never
      sits under the words. */
+  /* The plate runs up behind the site header, so header and drawing are
+     one picture: the drawing begins under the nav and fades to bare paper
+     exactly where the nav's words sit, then the title starts where the
+     drawing ends. Its height never exceeds the plate's own proportions, so
+     the whole drawing always fits. */
   .blog-post-header.has-figure {
+    --plate-h: min(clamp(17rem, 62vh, 40rem), calc(min(100vw, 2400px) / 1.905));
     position: relative;
-    padding-top: clamp(11rem, 40vh, 26rem);
+    padding-top: calc(var(--plate-h) * 0.92 - var(--head-h, 4.5rem) - var(--main-pt));
     padding-bottom: var(--space-sm);
     margin-bottom: var(--space-lg);
   }
@@ -122,51 +130,143 @@ function formatDate(dateStr: string): string {
 
   .post-cover {
     position: absolute;
-    top: calc(-1 * var(--main-pt));
+    top: calc(-1 * (var(--main-pt) + var(--head-h, 4.5rem)));
     left: calc(50% - min(50vw, 1200px));
     width: min(100vw, 2400px);
-    height: clamp(13rem, 46vh, 30rem);
+    height: var(--plate-h);
     margin: 0;
     overflow: hidden;
     pointer-events: none;
   }
 
   .post-cover img {
+    /* The whole figure, never a crop of it, its outermost edges thinning
+       into the paper. */
+    --iris: 100%;
+    --veil: var(--head-h, 4.5rem);
+    --side: linear-gradient(#000, #000);
     width: 100%;
-    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 62%, transparent 100%), linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-    -webkit-mask-composite: source-in;
-    mask-image: linear-gradient(180deg, #000 0%, #000 62%, transparent 100%), linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-    mask-composite: intersect;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     object-position: center;
+    -webkit-mask-image: radial-gradient(ellipse calc(var(--iris) * 0.55) calc(var(--iris) * 0.9) at 50% 50%, #000 0%, #000 70%, transparent 100%), linear-gradient(180deg, transparent calc(var(--veil) * 0.5), #000 calc(var(--veil) * 1.65)), var(--side);
+    mask-image: radial-gradient(ellipse calc(var(--iris) * 0.55) calc(var(--iris) * 0.9) at 50% 50%, #000 0%, #000 70%, transparent 100%), linear-gradient(180deg, transparent calc(var(--veil) * 0.5), #000 calc(var(--veil) * 1.65)), var(--side);
+    -webkit-mask-composite: source-in, source-in;
+    mask-composite: intersect;
     mix-blend-mode: darken;
     filter: brightness(1.05);
-    opacity: 1;
   }
+
 
   :global(html.dark) .post-cover img {
     mix-blend-mode: normal;
     opacity: 0.6;
   }
 
+  /* On a wide screen the header is a full-bleed hero composed on thirds.
+     The plate is the whole first screen, whatever the window, up behind the
+     nav; it is drawn wider than the screen, sized from the window's height,
+     so its centre of interest sits on the right third and it bleeds off the
+     right edge, the way a photograph crops its subject, reaching back left
+     to thin into paper.
+     The title stands on the left third, on the paper where the plate fades
+     out, with the date above and the readout below; the essay begins in its
+     column just past the fold. */
+  @media (min-width: 1200px) {
+    .blog-post-header.has-figure {
+      --hero-h: max(34rem, 100vh);
+      --img-w: max(calc(min(100vw, 2400px) * 1.05), calc(var(--hero-h) * 2.25));
+      --band-w: min(1240px, calc(100vw - 2 * var(--gutter)));
+      padding-top: calc(var(--hero-h) * 0.5 - var(--head-h, 4.5rem) - var(--main-pt));
+      min-height: calc(var(--hero-h) - var(--head-h, 4.5rem) - var(--main-pt));
+      margin-bottom: var(--space-xl);
+    }
+
+    .blog-post-header.has-figure > :not(.post-cover) {
+      width: calc(var(--band-w) * 0.42);
+      max-width: none;
+      margin-left: calc(50% - var(--band-w) / 2);
+    }
+
+    .blog-post-header.has-figure h1 {
+      font-size: clamp(3.4rem, 4.9vw, 6.4rem);
+      line-height: 0.98;
+      letter-spacing: -0.03em;
+    }
+
+    .post-cover {
+      left: calc(50% - min(50vw, 1200px));
+      width: min(100vw, 2400px);
+      height: var(--hero-h);
+    }
+
+    .post-cover img {
+      --veil: calc(var(--head-h, 4.5rem) * 1.4);
+      position: absolute;
+      top: 0;
+      left: calc(min(100vw, 2400px) * 0.64 - var(--img-w) / 2);
+      width: var(--img-w);
+      height: 100%;
+      object-fit: cover;
+      object-position: center 30%;
+      -webkit-mask-image: radial-gradient(ellipse calc(var(--iris) * 0.6) calc(var(--iris) * 0.95) at 50% 46%, #000 0%, #000 72%, transparent 100%), linear-gradient(180deg, transparent calc(var(--veil) * 0.5), #000 calc(var(--veil) * 1.65)), linear-gradient(180deg, #000 0%, #000 62%, transparent 98%), linear-gradient(90deg, transparent 0%, transparent 30%, #000 46%);
+      -webkit-mask-composite: source-in, source-in, source-in;
+      mask-image: radial-gradient(ellipse calc(var(--iris) * 0.6) calc(var(--iris) * 0.95) at 50% 46%, #000 0%, #000 72%, transparent 100%), linear-gradient(180deg, transparent calc(var(--veil) * 0.5), #000 calc(var(--veil) * 1.65)), linear-gradient(180deg, #000 0%, #000 62%, transparent 98%), linear-gradient(90deg, transparent 0%, transparent 30%, #000 46%);
+      mask-composite: intersect;
+    }
+
+  }
+
+  /* On a phone the header stands two rows tall, so the plate waits just
+     below it instead of running underneath, at its own proportions. */
   @media (max-width: 760px) {
     .blog-post-header.has-figure {
-      padding-top: calc(52vw + 0.5rem);
+      --plate-h: 52.5vw;
+      padding-top: calc(var(--plate-h) * 0.92 - var(--main-pt));
     }
 
     .post-cover {
       top: calc(-1 * var(--main-pt));
-      height: 58vw;
     }
 
-    /* On a phone the figure starts right under the header; let its top
-       fade in rather than end in a hard line there. */
     .post-cover img {
-      -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 62%, transparent 100%), linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-      mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 62%, transparent 100%), linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+      --veil: 0px;
     }
   }
+
+  /* The reveal, at every size, all in one short beat: a sheet of
+     the page's paper over the plate is wiped away in brush strokes (PlatePaint
+     does that), as the ink develops from pale to its full black and the
+     title rises into place. */
+  @media (prefers-reduced-motion: no-preference) {
+    .post-cover img {
+      animation: plate-develop 1.3s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    }
+
+    /* In the dark the plate is inverted by its filter, so it is painted
+       in without the developing, which would flash it light. */
+    :global(html.dark) .post-cover img {
+      animation: none;
+    }
+
+    .blog-post-header.has-figure > :not(.post-cover) {
+      animation: hero-rise 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    }
+  }
+
+  /* Reading on, the plate falls back: it drifts down behind the title and
+     pales, rather than scrolling away like a banner. */
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .post-cover {
+        animation: plate-drift linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 70vh;
+      }
+    }
+  }
+
+
 
 
 
