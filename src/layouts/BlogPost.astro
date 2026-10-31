@@ -252,6 +252,9 @@ function formatDate(dateStr: string): string {
      title rises into place. */
   @media (prefers-reduced-motion: no-preference) {
     .post-cover img {
+      /* Its own layer, so Safari fades and moves the masked, filtered
+         plate without painting it again. */
+      will-change: opacity, transform;
       animation: plate-develop 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
     }
 
@@ -271,6 +274,7 @@ function formatDate(dateStr: string): string {
   @supports (animation-timeline: scroll()) {
     @media (prefers-reduced-motion: no-preference) {
       .post-cover {
+        will-change: transform, opacity;
         animation: plate-drift linear both;
         animation-timeline: scroll(root);
         animation-range: 0 70vh;

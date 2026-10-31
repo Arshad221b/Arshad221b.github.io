@@ -125,7 +125,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
          further up the bank, and its opening line drifts in the river
          beside the point where it lands. -->
     <div class="river-wrap">
-    <svg class="river" aria-hidden="true"><defs><clipPath id="river-inked"><rect x="0" y="0" width="100%" height="0" /></clipPath></defs><symbol id="mughal-rosette" viewBox="-6 -6 12 12"><g><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(0)" /><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(90)" /><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(180)" /><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(270)" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(45)" opacity="0.7" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(135)" opacity="0.7" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(225)" opacity="0.7" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(315)" opacity="0.7" /><circle r="1.25" fill="var(--color-bg)" /><circle r="0.65" /></g></symbol></defs><path class="river-wash" clip-path="url(#river-inked)" /><path class="river-bank" /><path class="river-inlay" clip-path="url(#river-inked)" /><path class="river-water" /><path class="river-line" /><g class="river-flowers"></g></svg>
+    <div class="river-window"><svg class="river" aria-hidden="true"><defs><symbol id="mughal-rosette" viewBox="-6 -6 12 12"><g><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(0)" /><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(90)" /><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(180)" /><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(270)" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(45)" opacity="0.7" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(135)" opacity="0.7" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(225)" opacity="0.7" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(315)" opacity="0.7" /><circle r="1.25" fill="var(--color-bg)" /><circle r="0.65" /></g></symbol></defs><path class="river-wash" /><path class="river-bank" /><path class="river-inlay" /><path class="river-water" /><path class="river-line" /><g class="river-flowers"></g></svg></div>
     <ol class="ledger" id="post-index">
       {grouped.map(group => [
         <li class="year-band" data-year={group.year}>
@@ -431,6 +431,19 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     --bend: 2.2rem;
   }
 
+  /* The river is painted once, whole, and shown through a window whose
+     lower edge slides down as it is inked: the window moves up and the
+     river inside it moves down by the same amount, so only two layers move
+     and nothing is redrawn, which keeps Safari smooth. */
+  .river-window {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+    will-change: transform;
+  }
+
   .river {
     position: absolute;
     inset: 0;
@@ -438,7 +451,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     height: 100%;
     overflow: visible;
     pointer-events: none;
-    z-index: 0;
+    will-change: transform;
   }
 
   .river path {
@@ -614,6 +627,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   .ledger.flowing .entry-fig img {
     transition: opacity 1.2s ease 0.6s, transform 0.8s var(--ease-out);
+    will-change: opacity, transform;
   }
 
   .ledger.flowing .entry:not(.reached) .entry-body {
@@ -635,8 +649,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     .river-wrap .river .river-line,
     .river-wrap .river .river-bank,
     .river-wrap .river .river-water,
-    .river-wrap .river-flowers :global(use),
-    .river-wrap #river-inked rect {
+    .river-wrap .river-flowers :global(use) {
       transition: none;
     }
 
@@ -1501,7 +1514,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     var water = svg.querySelector('.river-water');
     var flowers = svg.querySelector('.river-flowers'), blooms = [];
     var ledger = wrap.querySelector('.ledger');
-    var clip = svg.querySelector('#river-inked rect');
+    var win = wrap.querySelector('.river-window');
     var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
     // On a phone the river simply follows the finger: no steps, no
     // arrivals, nothing moving but the ink.
@@ -1547,10 +1560,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       line.setAttribute('d', d);
       length = line.getTotalLength();
       svg.querySelector('.river-inlay').setAttribute('d', d);
-      [line, bank, water].forEach(function (el) {
-        el.setAttribute('d', d);
-        el.style.strokeDasharray = length + ' ' + length;
-      });
+      [line, bank, water].forEach(function (el) { el.setAttribute('d', d); });
 
       // Fountains along the channel, kept clear of the landings.
       flowers.innerHTML = '';
@@ -1587,6 +1597,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
         right.push((p.x + dy / n * h).toFixed(1) + ' ' + (p.y - dx / n * h).toFixed(1));
       }
       wash.setAttribute('d', 'M' + left.join(' L') + ' L' + right.reverse().join(' L') + ' Z');
+      shownY = -1;
       place(Math.min(cur, length));
       ink();
     }
@@ -1596,13 +1607,21 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     // Where the river has got to, in length along the curve, and where it
     // is going: on a wide screen it runs on from landing to landing; on a
     // phone it follows the finger directly.
-    var cur = 0, goal = 0, from = 0, began = 0, running = false;
+    var cur = 0, goal = 0, from = 0, began = 0, running = false, shownY = -1;
 
     function place(len) {
-      [line, bank, water].forEach(function (el) { el.style.strokeDashoffset = (length - len).toFixed(1); });
-      var pt = line.getPointAtLength(Math.max(0, Math.min(length, len)));
-      clip.style.height = pt.y.toFixed(0) + 'px';
-      blooms.forEach(function (b) { b[0].classList.toggle('on', b[1] <= pt.y); });
+      // How far down the page the river has reached, read from the curve's
+      // samples rather than measured on the path each frame.
+      var lo = 0, hi = samples.length - 1, y = 0;
+      if (hi >= 0) {
+        while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (samples[mid][0] <= len) lo = mid; else hi = mid - 1; }
+        y = len >= length ? height : samples[lo][1];
+      }
+      win.style.transform = 'translate3d(0,' + (y - height).toFixed(1) + 'px,0)';
+      svg.style.transform = 'translate3d(0,' + (height - y).toFixed(1) + 'px,0)';
+      if (y === shownY) return;
+      shownY = y;
+      blooms.forEach(function (b) { b[0].classList.toggle('on', b[1] <= y); });
     }
 
     function step(now) {

@@ -20,7 +20,11 @@
 (function () {
   var imgs = document.querySelectorAll('img[data-ink]');
   if (!imgs.length) return;
-  function show(img) { img.classList.add('inked'); }
+  function show(img) {
+    if (img.classList.contains('inked')) return;
+    img.classList.add('inked');
+    img.dispatchEvent(new Event('inked'));
+  }
   if (!window.Worker || !window.OffscreenCanvas || !window.createImageBitmap) { imgs.forEach(show); return; }
 
   // Bump the version whenever the inking changes, to drop old results.
@@ -82,12 +86,16 @@
   // Old results go when the inking changes.
   if (window.caches) caches.keys().then(function (ks) { ks.forEach(function (k) { if (k.indexOf('ink-') === 0 && k !== STORE) caches.delete(k); }); }).catch(function () {});
 
+  // The new image is decoded before it goes in, so the plate never shows
+  // an empty frame between the two (Safari does, otherwise).
   function swap(img, blob) {
     if (!blob) return show(img);
-    var u = URL.createObjectURL(blob);
-    img.addEventListener('load', function () { show(img); }, { once: true });
-    img.addEventListener('error', function () { show(img); }, { once: true });
-    img.src = u;
+    var u = URL.createObjectURL(blob), pre = new Image();
+    pre.src = u;
+    (pre.decode ? pre.decode() : Promise.resolve()).catch(function () {}).then(function () {
+      img.src = u;
+      show(img);
+    });
   }
   worker.onmessage = function (e) { swap(list[e.data.id], e.data.blob); };
 

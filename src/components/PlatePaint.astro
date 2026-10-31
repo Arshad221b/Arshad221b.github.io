@@ -109,7 +109,11 @@
       }
       requestAnimationFrame(frame);
     }
-    if (img && !img.complete) {
+    // A plate whose paper is being lifted out is painted in once it is
+    // ready, so the brush never uncovers an empty page.
+    if (img && img.hasAttribute('data-ink') && !img.classList.contains('inked')) {
+      img.addEventListener('inked', go, { once: true });
+    } else if (img && !img.complete) {
       img.addEventListener('load', go, { once: true });
       img.addEventListener('error', finish, { once: true });
     } else {

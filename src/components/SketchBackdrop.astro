@@ -24,17 +24,16 @@ const { sketches, place = 'fixed' } = Astro.props;
     opacity: 0.55;
     pointer-events: none;
     z-index: 0;
-    /* No frame: the drawing fades out on every side into the paper. */
-    -webkit-mask-image: radial-gradient(ellipse 62% 58% at 58% 50%, #000 45%, transparent 100%);
-    mask-image: radial-gradient(ellipse 62% 58% at 58% 50%, #000 45%, transparent 100%);
+    /* No frame: the drawing fades out on every side into the paper. The
+       fade is drawn into the canvas itself, not set as a CSS mask, which
+       Safari would recompute on every frame. */
+    will-change: transform;
     animation: sketch-drift 16s ease-in-out infinite alternate;
   }
 
   .sketch-bg.at-top {
     position: absolute;
     height: 100vh;
-    -webkit-mask-image: radial-gradient(ellipse 62% 52% at 58% 42%, #000 40%, transparent 100%);
-    mask-image: radial-gradient(ellipse 62% 52% at 58% 42%, #000 40%, transparent 100%);
   }
 
   /* A slow breath, so the page never sits quite still. */
@@ -75,7 +74,21 @@ const { sketches, place = 'fixed' } = Astro.props;
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var DRAW = 5000, HOLD = 2500, FADE = 1000, GAP = 300;
   var seen = true, observing = false;
-  var W = 0, H = 0, dpr = 1, cur = null, idx = 0, t0 = 0, stopped = false;
+  var W = 0, H = 0, dpr = 1, cur = null, idx = 0, t0 = 0, stopped = false, fadeMask = null;
+  var top = c.classList.contains('at-top');
+
+  // The soft ellipse the drawing fades into the paper through, drawn once.
+  function makeMask() {
+    var m = document.createElement('canvas'); m.width = c.width; m.height = c.height;
+    var g = m.getContext('2d'), e = top ? [0.62, 0.52, 0.58, 0.42, 0.4] : [0.62, 0.58, 0.58, 0.5, 0.45];
+    g.translate(m.width * e[2], m.height * e[3]);
+    g.scale(m.width * e[0], m.height * e[1]);
+    var grad = g.createRadialGradient(0, 0, 0, 0, 0, 1);
+    grad.addColorStop(e[4], '#000'); grad.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = grad;
+    g.fillRect(-2, -2, 4, 4);
+    fadeMask = m;
+  }
 
   function size() {
     var r = c.getBoundingClientRect();
@@ -85,6 +98,7 @@ const { sketches, place = 'fixed' } = Astro.props;
     dpr = 0.5;
     W = r.width; H = r.height;
     c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
+    makeMask();
     if (cur) prepare(cur.img);
   }
 
@@ -141,6 +155,10 @@ const { sketches, place = 'fixed' } = Astro.props;
     x.clearRect(0, 0, c.width, c.height);
     x.globalAlpha = fade;
     x.drawImage(cur.off, cur.ox, cur.oy);
+    x.globalAlpha = 1;
+    x.globalCompositeOperation = 'destination-in';
+    x.drawImage(fadeMask, 0, 0);
+    x.globalCompositeOperation = 'source-over';
   }
 
   function load(n, done) {
