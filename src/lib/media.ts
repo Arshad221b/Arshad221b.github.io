@@ -10,7 +10,17 @@ import uploaded from '../data/media.json';
 const CLOUD = 'https://res.cloudinary.com/dpq4fqlde/image/upload';
 const known = new Set(uploaded as string[]);
 const rel = (path: string) => path.replace(/^\/?images\//, '');
-const id = (path: string) => 'site/' + rel(path).replace(/\.[a-z]+$/i, '');
+/* A picture replaced since it was first uploaded: Cloudinary keeps the old
+   one under its name, so the new one has a name of its own. */
+const replaced: Record<string, string> = {
+  'thoughts/drive-my-car-a-movie-about-love-and-disconnect': 'thoughts/drive-my-car-a-movie-about-love-and-disconnect-poster',
+  'thoughts/steve-jobs-by-walter-isaacson': 'thoughts/steve-jobs-by-walter-isaacson-poster',
+  'thoughts/dabholkar-on-scientific-thinking': 'thoughts/dabholkar-on-scientific-thinking-photo',
+};
+const id = (path: string) => {
+  const name = rel(path).replace(/\.[a-z]+$/i, '');
+  return 'site/' + (replaced[name] ?? name);
+};
 
 /* For the page: in whatever format the browser reads best. */
 export const img = (path: string) => `${CLOUD}/f_auto,q_auto/${id(path)}`;
