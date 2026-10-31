@@ -7,7 +7,6 @@
    is dropping a file in that folder. */
 
 import Layout from '../layouts/Layout.astro';
-import Mast from '../components/Mast.astro';
 import SketchBackdrop from '../components/SketchBackdrop.astro';
 import { posts, pageModel, topicName } from '../lib/thoughts-data';
 
@@ -69,24 +68,15 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   <SketchBackdrop sketches={sketches} place="top" />
   <div class="thoughts-page wide free">
 
-    <!-- ── Masthead ───────────────────────────────────────
-         Set like the front of a specimen sheet: the running head, the
-         title at full size, and the figures of the collection stated
-         plainly rather than hidden in prose. -->
-    <Mast
-      label="Thoughts"
-      aside="Personal essays"
-      title="Personal"
-      accent="Thoughts"
-      lede="Personal writing. Things I am confused about, excited by, or trying to put into words."
-      figures={[
-        { k: 'Essays', v: posts.length },
-        { k: 'Hours of reading', v: (totalWords / 230 / 60).toFixed(1) },
-        { k: 'Words', v: `${Math.round(totalWords / 1000)}k` },
-        { k: 'Median essay', v: `${(medianWords / 1000).toFixed(1)}k` },
-      ]}
-    >
-      <details class="why">
+    <!-- ── The opening ────────────────────────────────────
+         The title large, a line of what this is, and the collection's
+         figures standing to the right like a book's colophon. -->
+    <header class="tp-head">
+      <div class="tp-title">
+        <p class="tp-kicker">Thoughts <span>{firstYear}–{lastYear}</span></p>
+        <h1>Personal <em>Thoughts</em></h1>
+        <p class="tp-lede">Personal writing. Things I am confused about, excited by, or trying to put into words.</p>
+        <details class="why">
         <summary>Why I write these</summary>
         <div class="why-body">
           <p>Most of the time I don't know what I think about something until I write it down and read it back, which is probably the most honest reason I do this at all. Writing is the only place where I can hold a thought long enough to actually examine it, because in conversation the thought moves too fast or the other person needs a response before I've finished figuring out what I'm trying to say.</p>
@@ -94,23 +84,27 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
           <p>Some of it is about being autistic, not the internet version where it's a personality trait you put in your bio, but the actual daily experience of being simultaneously too much for some people and not enough for others. And some of it is just me being excited about an idea, a paper, a connection between two things that nobody told me were connected.</p>
           <p class="substack-line">These are also published on <a href="https://substack.com/@arshadkazi" target="_blank" rel="noopener">Substack</a>.</p>
         </div>
-      </details>
-    </Mast>
+        </details>
+      </div>
+      <dl class="tp-figures">
+        <div><dt>Essays</dt><dd>{posts.length}</dd></div>
+        <div><dt>Words</dt><dd>{Math.round(totalWords / 1000)}k</dd></div>
+        <div><dt>Hours of reading</dt><dd>{(totalWords / 230 / 60).toFixed(1)}</dd></div>
+        <div><dt>Median essay</dt><dd>{(medianWords / 1000).toFixed(1)}k</dd></div>
+      </dl>
+    </header>
 
-    <!-- ── The console ────────────────────────────────────
-         Searching and narrowing, kept on one strip so the index below
-         it never has to move over to make room. -->
+    <!-- ── Finding one ────────────────────────────────────
+         One quiet line to search by meaning, and the themes running on
+         after it as words rather than boxes. -->
     <div class="console">
       <div class="seek">
         <input type="text" id="search-input" placeholder={`Search ${posts.length} essays by meaning`} autocomplete="off" />
         <span class="seek-key" aria-hidden="true">/</span>
         <button type="button" class="seek-clear" id="seek-clear" aria-label="Clear search">Clear</button>
       </div>
-
-      <p class="console-note" id="results-count"></p>
-
       <div class="themes">
-        <span class="themes-name">Topics</span>
+        <span class="themes-name">Or read about</span>
         <div class="theme-strip" id="theme-strip">
           {topics.map((t, k) => (
             <button class="idx" data-topic={k} type="button" title={t.words.join(', ')}>
@@ -119,79 +113,162 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
           ))}
         </div>
       </div>
+      <p class="console-note" id="results-count"></p>
     </div>
 
-    <!-- ── The ledger ─────────────────────────────────────
-         The journey line: every essay a drop of ink on it, every year a
-         station, the pictures set like plates in a notebook. -->
+    <!-- ── The river ──────────────────────────────────────
+         A line of thought runs down the page (drawn by the script below).
+         Each essay comes ashore on alternating banks with its plate set
+         further up the bank, and its opening line drifts in the river
+         beside the point where it lands. -->
+    <div class="river-wrap">
+    <svg class="river" aria-hidden="true"><defs><clipPath id="river-inked"><rect x="0" y="0" width="100%" height="0" /></clipPath></defs><path class="river-wash" clip-path="url(#river-inked)" /><path class="river-line" /></svg>
     <ol class="ledger" id="post-index">
       {grouped.map(group => [
         <li class="year-band" data-year={group.year}>
           <span class="year-num">{group.year}</span>
-          <span class="year-line"></span>
           <span class="year-count">{group.items.length} {group.items.length === 1 ? 'essay' : 'essays'}</span>
         </li>,
         ...group.items.map(post => {
           const i = byIndex.get(post.slug)!;
           return (
-            <li class="entry" data-month={post.date.slice(0, 7)} data-year={group.year} data-i={i}
+            <li class="entry" data-month={post.date.slice(0, 7)} data-year={group.year} data-i={i} data-words={post.words}
                 data-title={post.title.toLowerCase()}
                 data-description={post.description.toLowerCase()}
                 data-topics={membership[i].map(t => t.k).join(',')}
                 data-p={membership[i].map(t => t.p.toFixed(4)).join(',')}>
               <a href={`/thoughts/${post.slug}`} class="entry-link" data-peek="" data-no={post.no}>
-                <time class="entry-date" datetime={post.date}><span class="dd">{new Date(post.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short' })}</span><span class="mm">{post.date.slice(0, 4)}</span></time>
+                <span class="entry-river">
+                  <span class="entry-node"><span class="node-dot"></span><span class="node-date">{shortDate(post.date)}</span></span>
+                  <span class="entry-quote">{opening(post.text)}</span>
+                </span>
                 <span class="entry-body">
-                  <span class="entry-fig"><img src={`/images/thoughts/${post.slug}.jpg`} alt="" width="1600" height="840" loading="lazy" decoding="async" /></span>
                   <span class="entry-meta">
-                    <span class="k">Essay {post.no}</span>
-                    <span>{Math.max(1, Math.round(post.words / 230))} min read</span>
-                    <span class="entry-topic">{topicName(topics[topTopic[i].k].words)}</span>
+                    <span class="k">No. {post.no}</span>
+                    <time class="entry-date" datetime={post.date}><span class="dd">{new Date(post.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short' })}</span> <span class="mm">{post.date.slice(0, 4)}</span></time>
+                    <span>{Math.max(1, Math.round(post.words / 230))} min</span>
                     <span class="entry-score" hidden></span>
                   </span>
                   <h3>{post.title}</h3>
                   <p>{post.description}</p>
-                  <span class="entry-quote">{opening(post.text)}</span>
+                  <span class="entry-topic">{topicName(topics[topTopic[i].k].words)}</span>
                 </span>
+                <span class="entry-fig"><span class="fig-ink"><img src={`/images/thoughts/${post.slug}.jpg`} alt="" width="1600" height="840" loading="lazy" decoding="async" /></span></span>
               </a>
             </li>
           );
         }),
       ])}
     </ol>
+    </div>
 
     <p class="no-results" id="no-results">Nothing here matches that. Try a shorter word.</p>
 
-    <!-- The picture, lifted off the line you are pointing at. -->
     <div class="peek" id="peek" aria-hidden="true"><img alt="" /><span class="peek-no"></span></div>
   </div>
 </Layout>
 
 <style>
-  /* The page takes a wider canvas than the reading column, because the map
-     and the ledger both want room. No transform is used to do it: a fixed
-     child (the picture that lifts off a line) has to stay fixed. */
-  /* The longer reasoning stays folded until asked for. */
+  /* ── The Thoughts page ───────────────────────────────────
+     Quiet and typographic, like the front of a well-made book: a large
+     title, a colophon of figures, a single line to search, and the essays
+     set as a contents page with their plates beside them. Space does the
+     separating; there are no rules and no boxes. */
+  .thoughts-page {
+    position: relative;
+    width: 100%;
+    max-width: 1640px;
+    margin: 0 auto;
+  }
+
+  /* ── Opening ─────────────────────────────────────────── */
+  .tp-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: var(--space-2xl);
+    padding: var(--space-2xl) 0 var(--space-xl);
+  }
+
+  .tp-kicker {
+    margin: 0 0 var(--space-md);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .tp-kicker span {
+    margin-left: 0.8rem;
+    color: var(--color-accent);
+  }
+
+  .tp-head h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(3.4rem, 9vw, 8.4rem);
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+  }
+
+  .tp-head h1 em {
+    color: var(--color-accent);
+    font-weight: 300;
+  }
+
+  .tp-lede {
+    max-width: 34rem;
+    margin: var(--space-lg) 0 0;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(1.15rem, 1.6vw, 1.4rem);
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+  }
+
+  .tp-figures {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: var(--space-lg) var(--space-xl);
+    margin: 0 0 0.4rem;
+  }
+
+  .tp-figures dt {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .tp-figures dd {
+    margin: 0.3rem 0 0;
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: 2.2rem;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  /* Why I write these: folded until asked for. */
   .why {
     margin-top: var(--space-lg);
   }
 
   .why summary {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--color-text);
-    cursor: pointer;
-    list-style: none;
     display: inline-flex;
     align-items: center;
     gap: 0.55rem;
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--color-text-muted);
-    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text);
+    cursor: pointer;
+    list-style: none;
     user-select: none;
-    transition: color 0.2s ease, border-color 0.2s ease;
   }
 
   .why summary::-webkit-details-marker {
@@ -200,383 +277,227 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   .why summary::before {
     content: '+';
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    line-height: 1;
     color: var(--color-accent);
+    font-size: 0.9rem;
+    transition: transform 0.3s var(--ease-out);
   }
 
   .why[open] summary::before {
-    content: '−';
+    transform: rotate(45deg);
   }
 
   .why summary:hover {
     color: var(--color-accent);
-    border-color: var(--color-accent);
   }
 
   .why-body {
-    padding-top: var(--space-md);
-    max-width: 66ch;
-    border-left: 1px solid var(--color-border-light);
-    padding-left: var(--space-md);
+    max-width: 38rem;
+    margin-top: var(--space-md);
   }
 
   .why-body p {
-    font-size: 1.12rem;
-    line-height: 1.8;
+    font-size: 1.06rem;
+    line-height: 1.75;
     color: var(--color-text-secondary);
-    margin: 0 0 var(--space-md);
+    margin: 0 0 var(--space-sm);
   }
 
-  .substack-line {
-    font-family: var(--font-mono);
-    font-size: 0.7rem !important;
-    letter-spacing: 0.04em;
-    color: var(--color-text-muted) !important;
-    margin-bottom: 0 !important;
-  }
-
-  /* ── The console ───────────────────────────────────
-     One line to type on and one index of themes. Nothing here is a
-     widget: it is a ruled line and a page of set words. */
+  /* ── Finding one ─────────────────────────────────────── */
   .console {
-    margin: 0 0 var(--space-2xl);
+    padding: var(--space-lg) 0 var(--space-2xl);
   }
 
   .seek {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-md);
-    border-bottom: 1px solid var(--color-text);
-    padding: 0.35rem 0 0.5rem;
-    transition: border-color 0.2s ease;
+    position: relative;
+    max-width: 40rem;
   }
 
-  .seek:focus-within {
-    border-color: var(--color-accent);
-  }
-
-  #search-input {
-    flex: 1;
-    min-width: 0;
+  .seek input {
+    width: 100%;
+    padding: 0.6rem 2.4rem 0.6rem 0;
     border: none;
-    background: none;
-    outline: none;
-    font-family: var(--font-serif);
-    font-size: clamp(1.4rem, 3.4vw, 1.85rem);
-    font-weight: 400;
-    line-height: 1.25;
-    color: var(--color-text);
-    padding: 0;
-  }
-
-  #search-input::placeholder {
+    border-bottom: 1px solid var(--color-border);
+    background: transparent;
+    font-family: var(--font-display);
     font-style: italic;
-    color: var(--color-text-muted);
-    opacity: 0.75;
+    font-size: clamp(1.3rem, 2vw, 1.7rem);
+    color: var(--color-text);
+    outline: none;
+    transition: border-color 0.3s ease;
   }
 
-  /* The one control on the right is the slash key while the line is empty
-     and the way out of the search once it is not. */
-  .seek-key {
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    line-height: 1.5;
+  .seek input::placeholder {
     color: var(--color-text-muted);
-    border: 1px solid var(--color-border);
-    border-radius: 2px;
-    padding: 0.05rem 0.4rem;
-    user-select: none;
-    white-space: nowrap;
+  }
+
+  .seek input:focus {
+    border-bottom-color: var(--color-accent);
+  }
+
+  .seek-key,
+  .seek-clear {
+    position: absolute;
+    right: 0;
+    bottom: 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
   }
 
   .seek-clear {
     display: none;
-    border: none;
+    border: 0;
     background: none;
     cursor: pointer;
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--color-text-muted);
-    padding: 0;
-    white-space: nowrap;
   }
 
-  .seek-clear:hover {
-    color: var(--color-accent);
-  }
+  .seek.has-value .seek-key { display: none; }
+  .seek.has-value .seek-clear { display: block; }
+  .seek-clear:hover { color: var(--color-accent); }
 
-  .seek.has-value .seek-key {
-    display: none;
-  }
-
-  .seek.has-value .seek-clear {
-    display: block;
-  }
-
-  /* Say what is on screen in words. This page is not a dashboard. */
-  .console-note {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 1.05rem;
-    color: var(--color-text-muted);
-    margin: var(--space-sm) 0 0;
-    min-height: 1.6em;
-  }
-
-  /* One strip, on one or two lines, that recounts itself against what is
-     on screen. Nothing here is a list of everything that exists. */
   .themes {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
-    gap: var(--space-md);
+    gap: 0.4rem 1.2rem;
     margin-top: var(--space-lg);
   }
 
   .themes-name {
     font-family: var(--font-mono);
-    font-size: 0.66rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    letter-spacing: 0.14em;
     color: var(--color-text-muted);
-    white-space: nowrap;
-    padding-top: 0.1rem;
   }
 
   .theme-strip {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.35rem 1.3rem;
+    display: contents;
   }
 
   .idx {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.25rem;
-    background: none;
-    border: none;
     padding: 0;
+    border: 0;
+    background: none;
     cursor: pointer;
-    font-family: var(--font-serif);
-    font-size: 1.04rem;
-    line-height: 1.5;
+    font-family: var(--font-display);
+    font-size: 1.08rem;
     color: var(--color-text-secondary);
-    text-decoration: underline;
-    text-decoration-color: transparent;
-    text-underline-offset: 0.2em;
-    text-decoration-thickness: 1px;
-    transition: color 0.14s ease, text-decoration-color 0.14s ease;
-  }
-
-  /* The figure rides above the word, the way a footnote mark does. It is
-     the live count, so it moves while you type. */
-  .idx-n {
-    font-family: var(--font-mono);
-    font-size: 0.56rem;
-    font-variant-numeric: tabular-nums;
-    color: var(--color-text-muted);
-    opacity: 0.7;
-    transform: translateY(-0.5em);
+    transition: color 0.2s ease;
   }
 
   .idx:hover,
-  .idx:focus-visible {
-    color: var(--color-accent);
-    text-decoration-color: var(--color-accent);
-    outline: none;
-  }
-
-  .idx:hover .idx-n,
-  .idx:focus-visible .idx-n {
-    color: var(--color-accent);
-    opacity: 1;
-  }
-
   .idx.active {
     color: var(--color-accent);
-    font-weight: 600;
-    text-decoration-color: var(--color-accent);
-    text-decoration-thickness: 2px;
   }
 
-  .idx.active .idx-n {
-    color: var(--color-accent);
-    opacity: 1;
-  }
-
-  .idx.gone {
-    display: none;
-  }
-
-  .idx-more {
-    border: none;
-    background: none;
-    padding: 0;
-    cursor: pointer;
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.08em;
-    color: var(--color-text-muted);
-    white-space: nowrap;
-    transition: color 0.14s ease;
-  }
-
-  .idx-more:hover {
-    color: var(--color-accent);
-  }
-
-  .idx-more:empty {
-    display: none;
-  }
-
-  /* ── The ledger ────────────────────────────────────── */
-  /* The same timeline as Blogs: one flat list, newest first, under year
-     headings that step aside when a search ranks the essays instead. */
-  /* The same column as Blogs and as wide as the essays' figures, centred. */
-  /* Positioned, so it paints over the sketch that comes before it, but
-     with no layer of its own: the figures blend onto the page itself. */
-  .thoughts-page {
-    position: relative;
-    width: 100%;
-  }
-
-  /* As on Blogs: on a wide screen each essay's words keep to the left at a
-     reading width, and its figure is shown whole in all the room to their
-     right, melting into the paper at its edges. */
-  @media (min-width: 900px) {
-    /* The row is as tall as the taller of its words and its figure: the
-       words centred on the left, the figure whole beside them. */
-    .entry-link .entry-body {
-      display: grid;
-      grid-template-columns: min(46%, 38rem) minmax(0, 1fr);
-      grid-template-rows: 1fr auto auto auto auto 1fr;
-      column-gap: var(--space-2xl);
-      padding: var(--space-md) 0;
-    }
-
-    .entry-body > :not(.entry-fig) {
-      grid-column: 1;
-    }
-    .entry-body > :nth-child(2) { grid-row: 2; }
-    .entry-body > :nth-child(3) { grid-row: 3; }
-    .entry-body > :nth-child(4) { grid-row: 4; }
-    .entry-body > :nth-child(5) { grid-row: 5; }
-
-    .entry-body > .entry-fig {
-      grid-column: 2;
-      grid-row: 1 / -1;
-      align-self: center;
-      margin: 0;
-    }
-
-    .entry-body > .entry-fig img {
-      display: block;
-      width: 100%;
-      height: auto;
-      max-height: 34rem;
-      object-fit: contain;
-      object-position: left center;
-      border-radius: 2px;
-      box-shadow: none !important;
-    }
-
-    :global(html.dark) .entry-body > .entry-fig img {
-      mix-blend-mode: normal;
-      opacity: 0.85;
-    }
-
-
-    .entry-body > :not(.entry-fig) {
-      display: block;
-    }
-
-    .entry-body > .entry-meta {
-      display: flex;
-    }
-  }
-
-  /* The essay's opening line, in its own voice. */
-  .entry-quote {
-    display: block;
-    position: relative;
-    margin-top: var(--space-md);
-    font-family: var(--font-display);
+  .idx.active .idx-name {
     font-style: italic;
-    font-weight: 300;
-    font-size: clamp(1.15rem, 1.6vw, 1.4rem);
-    line-height: 1.45;
-    letter-spacing: -0.01em;
-    color: var(--color-text);
   }
 
-  .entry-quote::before {
-    content: '“';
-    position: absolute;
-    left: -0.42em;
-    top: -0.5em;
-    font-size: 2.6em;
-    line-height: 1;
+  .idx-n {
+    margin-left: 0.2rem;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    vertical-align: super;
     color: var(--color-accent);
-    opacity: 0.25;
-    pointer-events: none;
   }
 
-  @media (max-width: 760px) {
-    .entry-quote {
-      font-size: 1.08rem;
-    }
+  .console-note {
+    margin: var(--space-md) 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .console-note:empty {
+    display: none;
+  }
+
+  /* ── The river ───────────────────────────────────────────
+     The essays come ashore on alternating banks of a line of thought that
+     meanders down the page. The line itself is an SVG drawn by the script
+     through each essay's landing point; everything else is laid out here. */
+  .river-wrap {
+    position: relative;
+    --river: 9rem;
+    --bend: 2.2rem;
+  }
+
+  .river {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .river path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* The water swells where a long essay comes ashore and narrows to a
+     stream between short ones: its width is the length of the thinking. */
+  .river .river-wash {
+    fill: color-mix(in srgb, var(--color-accent) 9%, transparent);
+    stroke: none;
+  }
+
+  .river .river-line {
+    stroke: color-mix(in srgb, var(--color-text) 42%, transparent);
+    stroke-width: 1.3;
   }
 
   .ledger {
+    position: relative;
     display: flex;
     flex-direction: column;
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 0 0 var(--space-3xl);
   }
 
+  /* A year is a station on the river: its numeral sits on the water, the
+     line passing behind it. */
   .year-band {
+    align-self: center;
     display: flex;
-    align-items: baseline;
-    gap: var(--space-md);
-    list-style: none;
-    margin: 0;
-    padding: var(--space-2xl) 0 var(--space-sm);
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    margin: var(--space-3xl) 0 var(--space-xl);
+    padding: 0.6rem 1.4rem;
+    background: var(--color-bg);
+    border-radius: 999px;
   }
 
   .year-band:first-child {
-    padding-top: 0;
+    margin-top: 0;
   }
 
   .year-num {
     font-family: var(--font-display);
-    font-size: 2.6rem;
-    font-weight: 200;
-    letter-spacing: -0.04em;
+    font-weight: 300;
+    font-size: clamp(2.6rem, 4.6vw, 4rem);
     line-height: 1;
+    letter-spacing: -0.04em;
     color: var(--color-text);
-  }
-
-  .year-line {
-    flex: 1;
-    height: 1px;
-    background: var(--color-border);
-    align-self: center;
   }
 
   .year-count {
     font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
+    font-size: 0.56rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--color-text-muted);
-    white-space: nowrap;
   }
 
   .ledger.ranked .year-band {
@@ -585,172 +506,64 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   .entry {
     margin: 0;
-    border-bottom: 1px solid var(--color-border-light);
   }
 
   .entry-link {
     display: grid;
-    grid-template-columns: 5.5rem minmax(0, 1fr);
-    gap: var(--space-lg);
-    align-items: start;
-    padding: var(--space-xl) 0;
-    text-decoration: none;
+    align-items: center;
     color: inherit;
+    text-decoration: none;
   }
 
   .entry-link:hover {
     text-decoration: none;
   }
 
-  .entry-date {
-    position: sticky;
-    top: 6.5rem;
+  /* Where the essay touches the river: an ink drop and its date. */
+  .entry-node {
+    position: relative;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.35rem;
-    padding-top: 0.1rem;
-    color: var(--color-text);
+    align-items: center;
+    gap: 0.6rem;
   }
 
-  /* The month large and light in the margin, the year small beneath it;
-     it rides along with its piece as you read, and lights up as you
-     reach for it. */
-  /* The rider carries the month; each piece's own label is kept only
-     for a ranked search, where order is not by date. */
-  .entry-date {
-    visibility: hidden;
-  }
-
-  .ledger.ranked .entry-date {
-    visibility: visible;
-    position: static;
-  }
-
-  /* The month marker that rides down the margin (built by the script). */
-  :global(.month-rider) {
-    position: sticky;
-    top: 6.5rem;
-    z-index: 2;
-    width: 5.5rem;
-    height: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-  }
-
-  :global(.month-rider.on) {
-    opacity: 1;
-  }
-
-  :global(.month-rider .dd) {
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    font-weight: 500;
-    line-height: 1;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--color-text);
-  }
-
-  :global(.month-rider .mm) {
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-    padding-left: 0.15rem;
-  }
-
-  :global(.month-rider.turn .dd),
-  :global(.month-rider.turn .mm) {
-    animation: month-turn 0.45s cubic-bezier(0.22, 0.8, 0.24, 1);
-  }
-
-  @keyframes month-turn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: none; }
-  }
-
-  @media (max-width: 760px) {
-    :global(.month-rider) { display: none; }
-  }
-
-  .dd {
-    font-family: var(--font-display);
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    font-weight: 500;
-    line-height: 1;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--color-text);
-    font-variant-numeric: lining-nums;
-    transition: color 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.5, 0.5, 1);
-  }
-
-  .mm {
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-    padding-left: 0.15rem;
-  }
-
-  .mm::after {
-    content: '';
-    display: block;
-    width: 14px;
-    height: 2px;
-    margin-top: 0.45rem;
-    border-radius: 2px;
+  .node-dot {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
     background: var(--color-accent);
-    transform-origin: left;
-    transform: scaleX(0.4);
-    transition: transform 0.4s cubic-bezier(0.34, 1.5, 0.5, 1);
+    box-shadow: 0 0 0 5px var(--color-bg);
+    transition: transform 0.4s var(--ease-out);
   }
 
-  .entry-link:hover .dd {
-    color: var(--color-accent);
-    transform: translateY(-3px);
+  .entry-link:hover .node-dot {
+    transform: scale(1.5);
   }
 
-  .entry-link:hover .mm::after {
-    transform: scaleX(1.6);
+  .node-date {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  /* The essay's opening line, drifting in the river. */
+  .entry-quote {
+    display: block;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--color-text-secondary);
   }
 
   .entry-body {
-    display: block;
-    min-width: 0;
-  }
-
-  .entry-fig {
-    display: block;
-    margin-bottom: var(--space-md);
-
-  }
-
-  /* The figure's paper is a shade darker than the page's; lifted 5% and
-     darkened onto the page, the paper vanishes and only the ink stays. */
-  .entry-fig img {
-    display: block;
-    width: 100%;
-    height: auto;
-    mix-blend-mode: darken;
-    filter: brightness(1.05);
-  }
-
-  :global(html.dark) .entry-fig img {
-    mix-blend-mode: normal;
-    filter: brightness(0.9);
-  }
-
-  .entry-link:hover .entry-fig img {
-    box-shadow: 0 0 0 1px var(--color-accent);
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
   }
 
   .entry-meta {
@@ -758,8 +571,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     flex-wrap: wrap;
     gap: 0.3rem 0.9rem;
     font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
+    font-size: 0.58rem;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--color-text-muted);
   }
@@ -769,13 +582,12 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   }
 
   .entry h3 {
+    margin: 0.1rem 0 0;
     font-family: var(--font-display);
-    font-size: clamp(1.5rem, 3vw, 1.9rem);
     font-weight: 400;
-    line-height: 1.2;
+    font-size: clamp(1.5rem, 2.2vw, 2rem);
+    line-height: 1.12;
     letter-spacing: -0.02em;
-    color: var(--color-text);
-    margin: 0.4rem 0 0.35rem;
     transition: color 0.25s ease;
   }
 
@@ -784,83 +596,307 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   }
 
   .entry p {
-    font-family: var(--font-serif);
-    font-size: 1rem;
-    line-height: 1.55;
-    color: var(--color-text-secondary);
-    max-width: 58ch;
     margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.65;
+    color: var(--color-text-secondary);
   }
 
-  /* The bar is the number, drawn: relevance while searching, the share of
-     the essay while a topic is chosen. */
-  .entry-score[hidden] {
-    display: none;
+  .entry-topic {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+  }
+
+  .entry-topic::before {
+    content: 'on ';
+  }
+
+  /* Each plate lies large and faint behind its essay, washed into the
+     bank like an engraving in the paper. No box, no layer of its own: the
+     fade is on the image, so the blend still reaches the page. */
+  .entry-link {
+    position: relative;
+  }
+
+  .entry-body,
+  .entry-river {
+    position: relative;
+  }
+
+  .entry-fig {
+    position: absolute;
+    top: 50%;
+    display: block;
+    width: var(--fw);
+    /* Centred by margin, not transform: a transform would give the plate
+       a layer of its own and cut its blend off from the page. */
+    margin: calc(var(--fy) - var(--fw) * 0.2625) 0 0;
+    pointer-events: none;
+    isolation: auto;
+    background: none;
+  }
+
+  /* The plate's paper is turned white by its filter and blended into the
+     page by a plain wrapper: Safari drops a blend that shares an element
+     with a filter. */
+  .fig-ink {
+    display: block;
+    mix-blend-mode: multiply;
+  }
+
+  :global(html.dark) .fig-ink {
+    mix-blend-mode: screen;
+  }
+
+  .entry-fig img {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: grayscale(1) contrast(1.35);
+    opacity: 0.36;
+    /* Feathered on every side, so no plate, whatever its paper, ever
+       shows its rectangle. */
+    -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 52%, transparent 100%);
+    mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 52%, transparent 100%);
+    transition: transform 0.8s var(--ease-out), opacity 0.6s ease;
+  }
+
+  :global(html.dark) .entry-fig img {
+    filter: grayscale(1) invert(1) contrast(1.4) brightness(0.9);
+    opacity: 0.32;
+  }
+
+  .entry-link:hover .entry-fig img {
+    transform: scale(1.03);
+    opacity: 0.55;
+  }
+
+  /* Each plate takes its own size and height up the bank, so no two
+     landings look alike. */
+  .entry { --fw: 34rem; --fy: 0rem; --fx: -5rem; }
+  .entry:nth-child(3n of .entry) { --fw: 28rem; --fy: -3rem; --fx: -1rem; }
+  .entry:nth-child(3n + 2 of .entry) { --fw: 40rem; --fy: 2.5rem; --fx: -9rem; }
+  .entry:nth-child(5n of .entry) { --fw: 24rem; --fy: -1rem; --fx: 1rem; }
+
+  /* ── Wide screens and iPads: both banks ─────────────── */
+  @media (min-width: 720px) {
+    .entry-link {
+      grid-template-columns:
+        [lside] minmax(0, 1fr) [lbody] minmax(0, 22rem)
+        [river] var(--river)
+        [rbody] minmax(0, 22rem) [rside] minmax(0, 1fr);
+      column-gap: 2.6rem;
+    }
+
+    .entry-link > * {
+      grid-row: 1;
+    }
+
+    .entry-river {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    /* The left bank; its plate lies across the river. */
+    .entry:nth-child(odd of .entry) .entry-river { grid-column: river / span 2; }
+    .entry:nth-child(odd of .entry) .entry-body { grid-column: lbody; }
+    .entry:nth-child(odd of .entry) .entry-fig { right: var(--fx); }
+    .entry:nth-child(odd of .entry) .entry-node { transform: translateX(calc(var(--river) / 2 - var(--bend) - 4.5px)); }
+    .entry:nth-child(odd of .entry) .entry-quote { padding-left: calc(var(--river) / 2 - var(--bend) + 1.4rem); }
+
+    /* The right bank, the river bending towards it; its plate lies across
+       the river. */
+    .entry:nth-child(even of .entry) .entry-river { grid-column: lbody / span 2; }
+    .entry:nth-child(even of .entry) .entry-body { grid-column: rbody; }
+    .entry:nth-child(even of .entry) .entry-fig { left: var(--fx); }
+    .entry:nth-child(even of .entry) .entry-river { align-items: flex-end; text-align: right; }
+    .entry:nth-child(even of .entry) .entry-node { flex-direction: row-reverse; transform: translateX(calc(var(--bend) - var(--river) / 2 + 4.5px)); }
+    .entry:nth-child(even of .entry) .entry-quote { padding-right: calc(var(--river) / 2 - var(--bend) + 1.4rem); }
+
+    /* The banks interleave rather than stepping like a ladder. */
+    .entry-quote {
+      max-width: 19rem;
+    }
+
+    /* Room between essays, so each landing stands on its own. */
+    .entry + .entry {
+      margin-top: var(--space-xl);
+    }
+
+    .entry {
+      padding: var(--space-lg) 0;
+    }
+  }
+
+  /* An iPad: the same two banks, cut closer. A narrower channel, the
+     essays taking most of each bank, the plates smaller and fainter. */
+  @media (min-width: 720px) and (max-width: 1099px) {
+    .river-wrap {
+      --river: 6rem;
+      --bend: 1.4rem;
+    }
+
+    .entry-link {
+      grid-template-columns:
+        [lside] minmax(0, 0.12fr) [lbody] minmax(0, 1fr)
+        [river] var(--river)
+        [rbody] minmax(0, 1fr) [rside] minmax(0, 0.12fr);
+      column-gap: 1.6rem;
+    }
+
+    .entry-quote {
+      max-width: 15rem;
+    }
+
+    .entry { --fw: 22rem; --fx: -3rem; }
+    .entry:nth-child(3n of .entry) { --fw: 18rem; --fx: -1rem; }
+    .entry:nth-child(3n + 2 of .entry) { --fw: 25rem; --fx: -5rem; }
+    .entry:nth-child(5n of .entry) { --fw: 16rem; --fx: 0rem; }
+
+    .entry-fig img {
+      opacity: 0.28;
+    }
+  }
+
+  /* ── Phones: one bank, the river down the left ───────── */
+  @media (max-width: 719px) {
+    .river-wrap {
+      --river: 2.2rem;
+      --bend: 0.35rem;
+    }
+
+    .entry-link {
+      grid-template-columns: var(--river) minmax(0, 1fr);
+      column-gap: var(--space-md);
+      row-gap: var(--space-sm);
+      align-items: start;
+      padding: var(--space-lg) 0;
+    }
+
+    .entry-river {
+      display: contents;
+    }
+
+    .entry-node {
+      grid-column: 1;
+      grid-row: 2;
+      align-self: start;
+      justify-self: center;
+      margin-top: 0.5rem;
+    }
+
+    .entry:nth-child(even of .entry) .entry-node { transform: translateX(var(--bend)); }
+    .entry:nth-child(odd of .entry) .entry-node { transform: translateX(calc(-1 * var(--bend))); }
+
+    .node-date {
+      display: none;
+    }
+
+    /* Here the plate leads its essay, in the flow and large, never under
+       the words. */
+    .entry-fig {
+      position: static;
+      grid-column: 2;
+      grid-row: 1;
+      width: min(100%, 32rem);
+      margin: 0 0 var(--space-xs);
+      overflow: hidden;
+    }
+
+    /* Drawn in past the plate's blank margins and caption, so the drawing
+       itself fills the column. */
+    .entry-fig img,
+    .entry-link:hover .entry-fig img {
+      transform: scale(1.42);
+      opacity: 0.9;
+      -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 74%, transparent 100%);
+      mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 74%, transparent 100%);
+    }
+
+    .entry-body {
+      grid-column: 2;
+      grid-row: 2;
+    }
+
+    .entry-quote {
+      grid-column: 2;
+      grid-row: 3;
+      padding-left: var(--space-md);
+    }
+
+    .year-band {
+      align-self: flex-start;
+      align-items: flex-start;
+      margin-left: calc(var(--river) / 2 - 1.4rem);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .tp-head {
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+      padding-top: var(--space-lg);
+    }
+
+    .tp-figures {
+      grid-template-columns: repeat(4, auto);
+      justify-content: start;
+      gap: var(--space-md) var(--space-lg);
+    }
+
+    .tp-figures dd {
+      font-size: 1.6rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .tp-figures {
+      grid-template-columns: repeat(2, auto);
+    }
   }
 
   .entry-score {
     position: relative;
-    padding-left: 3.1rem;
-    color: var(--color-accent);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-  }
-
-  .entry-score::before,
-  .entry-score::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.42em;
+    width: 3rem;
     height: 2px;
-    border-radius: 1px;
-  }
-
-  .entry-score::before {
-    width: 2.6rem;
+    align-self: center;
     background: var(--color-border);
   }
 
   .entry-score::after {
-    width: calc(2.6rem * var(--fill, 0%) / 100%);
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--fill, 0%);
     background: var(--color-accent);
-    transition: width 0.22s ease;
   }
 
   .no-results {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 1.1rem;
-    color: var(--color-text-muted);
-    padding: var(--space-2xl) 0;
-    margin: 0;
     display: none;
+    padding: var(--space-xl) 0;
+    text-align: center;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.3rem;
+    color: var(--color-text-muted);
   }
 
-  .peek {
+  :global(.month-rider) {
     display: none !important;
   }
 
-  @media (max-width: 760px) {
-    .entry-link {
-      grid-template-columns: 1fr;
-      gap: var(--space-sm);
-    }
-
-    /* On a phone the year headings carry the time; no margin date. */
-    .entry-date {
-      display: none;
-    }
+  .peek {
+    display: none;
   }
 
-  @media (max-width: 560px) {
-    .themes {
-      flex-direction: column;
-      gap: var(--space-sm);
-    }
-
-    .idx {
-      font-size: 0.98rem;
+  @media (prefers-reduced-motion: reduce) {
+    .entry-fig img,
+    .entry h3,
+    .node-dot {
+      transition: none;
     }
   }
 </style>
@@ -1323,4 +1359,98 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   });
 })();
 
+</script>
+
+<script is:inline>
+  /* The river: one smooth curve through every visible essay's landing
+     point and every year's station, in order down the page. It is redrawn
+     whenever the layout moves or a search changes what is shown, and it is
+     inked on as the reader scrolls down to it. */
+  (function () {
+    var wrap = document.querySelector('.river-wrap');
+    if (!wrap) return;
+    var svg = wrap.querySelector('.river');
+    var line = svg.querySelector('.river-line');
+    var wash = svg.querySelector('.river-wash');
+    var ledger = wrap.querySelector('.ledger');
+    var clip = svg.querySelector('#river-inked rect');
+    var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var length = 0, height = 0, queued = false;
+
+    function centre(el, box) {
+      var r = el.getBoundingClientRect();
+      return [r.left + r.width / 2 - box.left, r.top + r.height / 2 - box.top];
+    }
+
+    function draw() {
+      queued = false;
+      var box = wrap.getBoundingClientRect();
+      height = wrap.offsetHeight;
+      var pts = [];
+      ledger.querySelectorAll('.year-band .year-num, .entry .node-dot').forEach(function (el) {
+        if (!el.offsetParent) return;
+        var c = centre(el, box), e = el.closest('.entry');
+        // Half the water's width at this landing: a few pixels for a year,
+        // more for a longer essay.
+        c.push(e ? 3 + Math.sqrt(+e.dataset.words || 0) / 5 : 3);
+        pts.push(c);
+      });
+      if (pts.length < 2) { line.setAttribute('d', ''); wash.setAttribute('d', ''); return; }
+      pts.sort(function (a, b) { return a[1] - b[1]; });
+      pts.unshift([pts[0][0], 0, 2]);
+      pts.push([pts[pts.length - 1][0], height, 2]);
+
+      // Catmull-Rom through the points, as cubic Béziers: a curve that
+      // passes through every landing and never kinks.
+      var d = 'M' + pts[0][0].toFixed(1) + ' ' + pts[0][1].toFixed(1);
+      for (var i = 0; i < pts.length - 1; i++) {
+        var p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+        d += ' C' + (p1[0] + (p2[0] - p0[0]) / 6).toFixed(1) + ' ' + (p1[1] + (p2[1] - p0[1]) / 6).toFixed(1) +
+             ' ' + (p2[0] - (p3[0] - p1[0]) / 6).toFixed(1) + ' ' + (p2[1] - (p3[1] - p1[1]) / 6).toFixed(1) +
+             ' ' + p2[0].toFixed(1) + ' ' + p2[1].toFixed(1);
+      }
+      svg.setAttribute('viewBox', '0 0 ' + box.width.toFixed(0) + ' ' + height);
+      line.setAttribute('d', d);
+      length = line.getTotalLength();
+      line.style.strokeDasharray = length + ' ' + length;
+
+      // The water: a ribbon either side of the line, its half-width eased
+      // between the landings by height down the page.
+      var left = [], right = [], k = 0;
+      function halfAt(y) {
+        while (k < pts.length - 2 && pts[k + 1][1] < y) k++;
+        var a = pts[k], b = pts[k + 1], t = Math.min(1, Math.max(0, (y - a[1]) / Math.max(1, b[1] - a[1])));
+        t = t * t * (3 - 2 * t);
+        return a[2] + (b[2] - a[2]) * t;
+      }
+      for (var s = 0; s <= length; s += 6) {
+        var p = line.getPointAtLength(s), q = line.getPointAtLength(Math.min(length, s + 1));
+        var dx = q.x - p.x, dy = q.y - p.y, n = Math.hypot(dx, dy) || 1, h = halfAt(p.y);
+        left.push((p.x - dy / n * h).toFixed(1) + ' ' + (p.y + dx / n * h).toFixed(1));
+        right.push((p.x + dy / n * h).toFixed(1) + ' ' + (p.y - dx / n * h).toFixed(1));
+      }
+      wash.setAttribute('d', 'M' + left.join(' L') + ' L' + right.reverse().join(' L') + ' Z');
+      ink();
+    }
+
+    function ink() {
+      var frac = 1;
+      if (!still) {
+        var top = wrap.getBoundingClientRect().top;
+        frac = Math.min(1, Math.max(0, (innerHeight * 0.92 - top) / Math.max(1, height)));
+      }
+      line.style.strokeDashoffset = (length * (1 - frac)).toFixed(1);
+      clip.setAttribute('height', (height * frac).toFixed(0));
+    }
+
+    function later() {
+      if (!queued) { queued = true; requestAnimationFrame(draw); }
+    }
+
+    new ResizeObserver(later).observe(ledger);
+    new MutationObserver(later).observe(ledger, { subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+    addEventListener('scroll', ink, { passive: true });
+    addEventListener('load', later);
+    later();
+  })();
 </script>
