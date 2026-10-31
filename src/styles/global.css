@@ -2155,6 +2155,19 @@ main:has(.post-cover, .row-fig, .entry-fig) {
   z-index: 1;
 }
 
+/* On the index pages the opening (title, figures, search and topics) is
+   the whole first screen on anything wider than a phone, whatever the
+   window, and the list begins below the fold, as About does. */
+@media (min-width: 720px) {
+  .first-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100svh - var(--head-h, 4.5rem) - var(--main-pt, 2rem));
+    padding-bottom: var(--space-sm);
+  }
+}
+
 /* The header plate's reveal on a wide screen: the ink developing and the
    title rising into place. As the reader goes on, the plate falls back. */
 

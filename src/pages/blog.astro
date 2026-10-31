@@ -1,4 +1,5 @@
 ---
+import SketchBackdrop from '../components/SketchBackdrop.astro';
 /* Blogs: the essays and the notebooks, on one page.
 
    One timeline, newest first, under clear year headings. Every piece is the
@@ -15,6 +16,9 @@ import Layout from '../layouts/Layout.astro';
 import Mast from '../components/Mast.astro';
 import { notebooks } from '../lib/notebooks';
 
+// Behind the head of the page: Leonardo's studies of flight, water, the horse
+// and the measured body, drawing themselves in.
+const sketches = ['flying', 'water', 'vitruvian', 'horse'].map(n => `/images/contact/${n}.jpg`);
 const title = "Technical Blogs — Arshad Kazi";
 
 // `contents` mirrors the section headings inside each post, so the index says
@@ -150,7 +154,9 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 ---
 
 <Layout title={title} activeNav="/blog" description="Essays and day-by-day notebooks on computer vision, the brain and machine learning. Notes on things I finally understood, not tutorials." ogImage="/images/share-blog.jpg">
+  <SketchBackdrop sketches={sketches} place="top" />
   <div class="blog-page free">
+    <div class="first-screen">
     <Mast
       label="Technical Blogs"
       aside={`${posts.length} essays · ${notebooks.length} notebooks`}
@@ -201,6 +207,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
           ))}
         </div>
       </div>
+    </div>
     </div>
 
     <div class="timeline" id="post-index">
