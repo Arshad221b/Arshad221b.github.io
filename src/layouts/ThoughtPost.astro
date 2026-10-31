@@ -85,7 +85,7 @@ function formatDate(dateStr: string): string {
     <header class={`blog-post-header ${figure ? 'has-figure' : ''}`}>
       {figure && (
         <figure class="post-cover" aria-hidden="true">
-          <img src={figure} alt="" width="1600" height="840" decoding="async" fetchpriority="high" />
+          <span class="plate-ink"><img src={figure} alt="" width="1600" height="840" decoding="async" fetchpriority="high" /></span>
         </figure>
       )}
       {figure && <PlatePaint />}
@@ -177,6 +177,20 @@ function formatDate(dateStr: string): string {
     pointer-events: none;
   }
 
+  /* The plate is blended into the paper by a plain wrapper, never by the
+     image itself: Safari drops a blend on an element that also carries a
+     mask or a filter, and the image carries both. */
+  .plate-ink {
+    position: absolute;
+    inset: 0;
+    display: block;
+    mix-blend-mode: multiply;
+  }
+
+  :global(html.dark) .plate-ink {
+    mix-blend-mode: screen;
+  }
+
   .post-cover img {
     /* The whole plate, never a crop of it: the drawing is ink on the
        page's own paper, so shown entire it has no edge to show; a soft
@@ -193,13 +207,11 @@ function formatDate(dateStr: string): string {
     -webkit-mask-composite: source-in, source-in, source-in;
     mask-image: radial-gradient(ellipse calc(var(--iris) * 0.55) calc(var(--iris) * 0.9) at 50% 50%, #000 0%, #000 70%, transparent 100%), linear-gradient(180deg, transparent 0%, transparent 10.5%, #000 12.2%, #000 87.8%, transparent 89.5%), linear-gradient(180deg, transparent calc(var(--veil) * 0.5), #000 calc(var(--veil) * 1.65)), var(--side);
     mask-composite: intersect;
-    mix-blend-mode: multiply;
     filter: grayscale(1) contrast(1.35);
   }
 
 
   :global(html.dark) .post-cover img {
-    mix-blend-mode: screen;
     opacity: 0.4;
     filter: grayscale(1) invert(1) contrast(1.5) brightness(0.9);
   }
