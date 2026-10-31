@@ -21,7 +21,7 @@ const { sketches, place = 'fixed' } = Astro.props;
     right: 0;
     width: 54vw;
     height: 100vh;
-    opacity: 0.34;
+    opacity: 0.55;
     pointer-events: none;
     z-index: 0;
     /* No frame: the drawing fades out on every side into the paper. */
@@ -45,17 +45,17 @@ const { sketches, place = 'fixed' } = Astro.props;
 
   html.dark .sketch-bg {
     filter: invert(1);
-    opacity: 0.2;
+    opacity: 0.32;
   }
 
   @media (max-width: 760px) {
     .sketch-bg {
       width: 100vw;
-      opacity: 0.16;
+      opacity: 0.24;
     }
 
     html.dark .sketch-bg {
-      opacity: 0.1;
+      opacity: 0.16;
     }
   }
 
@@ -73,7 +73,7 @@ const { sketches, place = 'fixed' } = Astro.props;
   if (!c) return;
   var list = JSON.parse(c.dataset.sketches), x = c.getContext('2d');
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var DRAW = 9000, HOLD = 5000, FADE = 1600, GAP = 500;
+  var DRAW = 5000, HOLD = 2500, FADE = 1000, GAP = 300;
   var W = 0, H = 0, dpr = 1, cur = null, idx = 0, t0 = 0, stopped = false;
 
   function size() {
