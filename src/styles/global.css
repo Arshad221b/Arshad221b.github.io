@@ -2158,9 +2158,11 @@ main:has(.post-cover, .row-fig, .entry-fig) {
 /* The header plate's reveal on a wide screen: the ink developing and the
    title rising into place. As the reader goes on, the plate falls back. */
 
+/* The ink develops by deepening, never by changing the plate's filter: on
+   the paper it is blended into, paper stays the page's own colour at any
+   strength, so no box shows while the ink comes up from pale to black. */
 @keyframes plate-develop {
-  from { filter: grayscale(1) contrast(0.55) brightness(1.25) blur(3px); transform: scale(1.05); }
-  to { transform: scale(1); }
+  from { opacity: 0.22; }
 }
 
 @keyframes hero-rise {
