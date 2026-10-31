@@ -541,6 +541,43 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     transform: scale(1.5);
   }
 
+  /* When the river reaches a drop it ripples once, like water: two thin
+     rings spreading and fading, a beat after the line arrives. */
+  .node-dot {
+    position: relative;
+  }
+
+  .node-dot::before,
+  .node-dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--color-accent);
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .entry.reached .node-dot::before {
+    animation: drop-ripple 1.8s cubic-bezier(0.2, 0.6, 0.3, 1) 0.75s 1;
+  }
+
+  .entry.reached .node-dot::after {
+    animation: drop-ripple 1.8s cubic-bezier(0.2, 0.6, 0.3, 1) 1.1s 1;
+  }
+
+  @keyframes drop-ripple {
+    0% { transform: scale(1); opacity: 0.55; }
+    100% { transform: scale(4.2); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .entry.reached .node-dot::before,
+    .entry.reached .node-dot::after {
+      animation: none;
+    }
+  }
+
   .river .river-line {
     transition: stroke-dashoffset 0.9s cubic-bezier(0.3, 0.7, 0.3, 1);
   }
