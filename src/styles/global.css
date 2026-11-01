@@ -113,22 +113,9 @@ html {
   color: #fff;
 }
 
-/* Moving between pages is a cut between frames: the old one fades, the
-   new one comes up into focus. The header holds still across the cut. */
-@view-transition {
-  navigation: auto;
-}
-
-body > header { view-transition-name: site-head; }
-
+/* Moving between pages is instant: no transition between them. Only the
+   theme toggle runs a view transition of its own. */
 @media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(root) {
-    animation: 160ms ease-in both vt-out;
-  }
-  ::view-transition-new(root) {
-    animation: 420ms var(--ease-out) both vt-in;
-  }
-
   /* The theme toggle runs its own reveal (a circle opening from the
      button), so the cut above is switched off for it. */
   html.theme-swap::view-transition-old(root),
@@ -148,14 +135,6 @@ html.theme-swap *::after {
   transition: none !important;
 }
 
-@keyframes vt-out {
-  to { opacity: 0; }
-}
-
-@keyframes vt-in {
-  from { opacity: 0; filter: blur(6px); }
-}
-
 body {
   font-family: var(--font-serif);
   font-optical-sizing: auto;
@@ -173,15 +152,6 @@ body {
   flex-direction: column;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  main {
-    animation: focus-in 0.8s var(--ease-out) backwards;
-  }
-}
-
-@keyframes focus-in {
-  from { opacity: 0; filter: blur(4px); transform: translateY(8px); }
-}
 
 /* ── The viewfinder ───────────────────────────────────────
    Corner brackets around the window, and a readout of where the pointer
@@ -2142,12 +2112,6 @@ html,body{overflow-x:clip;}
   .article-rule *, .article-rule *::before { transition: none !important; }
 }
 
-/* The fade-in would lift the page into a layer of its own, and figures
-   blended onto the paper would change colour when it ends. */
-main:has(.post-cover, .row-fig, .entry-fig) {
-  animation: none;
-}
-
 /* The essay may rise into the faded foot of its header plate, so it sits
    above the plate's frame of paper. */
 .blog-post-content {
@@ -2166,12 +2130,6 @@ main:has(.post-cover, .row-fig, .entry-fig) {
     min-height: calc(100svh - var(--head-h, 4.5rem) - var(--main-pt, 2rem));
     padding-bottom: var(--space-sm);
   }
-}
-
-/* The header's title rising into place. */
-@keyframes hero-rise {
-  from { opacity: 0; transform: translateY(22px); }
-  to { opacity: 1; transform: none; }
 }
 
 /* Every figure blends inside its own frame of the page's paper, so no

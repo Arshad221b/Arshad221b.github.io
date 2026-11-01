@@ -13,7 +13,10 @@
 ---
 
 <style is:global>
-  img[data-ink]:not(.inked) { visibility: hidden; }
+  /* Until its inked copy is ready, a plate shows at once, its paper
+     multiplied away into the page's. */
+  img[data-ink]:not(.inked) { mix-blend-mode: multiply; }
+  html.dark img[data-ink]:not(.inked) { mix-blend-mode: screen; }
 </style>
 
 <script is:inline>

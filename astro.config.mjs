@@ -7,6 +7,8 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://arshad-kazi.com',
   integrations: [sitemap()],
+  // Browsers without prerendering fetch a page as the pointer reaches its link.
+  prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
   // Notebooks now live on the Blogs page; SLAM was withdrawn. Old links land there.
   redirects: {
     '/notebooks': '/blog',

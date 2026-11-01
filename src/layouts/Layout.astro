@@ -84,6 +84,12 @@ const elsewhere = [
     <meta name="twitter:description" content={metaDescription} />
     <meta name="twitter:image" content={metaImage} />
     <slot name="head" />
+    <!-- The next page is ready before the click: prepared as the pointer
+         rests on a link (or a finger touches it), so moving between pages
+         is instant. -->
+    <script type="speculationrules" is:inline>
+      {"prerender": [{"where": {"href_matches": "/*"}, "eagerness": "moderate"}]}
+    </script>
   </head>
   <body>
     <div class="viewfinder" aria-hidden="true">
