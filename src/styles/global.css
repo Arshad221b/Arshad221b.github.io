@@ -2138,3 +2138,27 @@ html,body{overflow-x:clip;}
   isolation: isolate;
   background-color: var(--color-bg);
 }
+
+/* ── Nothing scrolls sideways, anywhere ─────────────────────────
+   The page itself is clipped to the screen (clip, not hidden, so sticky
+   headers still stick). Code wraps instead of running off; long
+   equations and wide diagrams are scaled down to fit their column by the
+   layout's script, never scrolled. */
+html,
+body {
+  overflow-x: clip;
+}
+
+pre,
+pre code {
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere;
+}
+
+pre,
+.katex-display,
+.mini-diagram,
+.arch-diagram,
+[class*="table-wrap"] {
+  overflow-x: hidden !important;
+}

@@ -306,6 +306,31 @@ const elsewhere = [
         update();
       })();
     </script>
+    <script is:inline>
+      // A long equation or a wide diagram is scaled to fit its column, so
+      // nothing ever needs scrolling sideways. Equations are typeset by a
+      // script after the page loads, so each is fitted as it appears, and
+      // again whenever a font, a stylesheet or the window changes its size.
+      (function () {
+        var sel = '.katex-display, .mini-diagram, .arch-diagram, [class*="table-wrap"]';
+        var seen = window.WeakSet ? new WeakSet() : null, t = 0;
+        var ro = window.ResizeObserver ? new ResizeObserver(soon) : null;
+        function soon() { clearTimeout(t); t = setTimeout(fit, 60); }
+        function fit() {
+          document.querySelectorAll(sel).forEach(function (el) {
+            if (ro && seen && !seen.has(el) && el.firstElementChild) { seen.add(el); ro.observe(el.firstElementChild); }
+            el.style.zoom = '';
+            var over = el.scrollWidth / Math.max(1, el.clientWidth);
+            if (over > 1.01) el.style.zoom = (1 / over).toFixed(3);
+          });
+        }
+        fit();
+        addEventListener('load', fit);
+        if (document.fonts) document.fonts.ready.then(fit);
+        addEventListener('resize', soon);
+        if (window.MutationObserver) new MutationObserver(soon).observe(document.body, { childList: true, subtree: true });
+      })();
+    </script>
     <InkPlates />
   </body>
 </html>

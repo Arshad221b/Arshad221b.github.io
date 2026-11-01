@@ -698,16 +698,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     padding-left: 0.15rem;
   }
 
-  :global(.month-rider.turn .dd),
-  :global(.month-rider.turn .mm) {
-    animation: month-turn 0.45s cubic-bezier(0.22, 0.8, 0.24, 1);
-  }
-
-  @keyframes month-turn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: none; }
-  }
-
   @media (max-width: 760px) {
     :global(.month-rider) { display: none; }
   }
@@ -1155,7 +1145,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     if (key !== shown) {
       shown = key;
       var label = row.querySelector('time');
-      rider.classList.remove('turn'); void rider.offsetWidth; rider.classList.add('turn');
       dd.textContent = label.querySelector('.dd').textContent;
       mm.textContent = label.querySelector('.mm').textContent;
     }
