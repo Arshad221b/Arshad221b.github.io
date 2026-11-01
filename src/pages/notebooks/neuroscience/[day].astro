@@ -901,45 +901,45 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 <style>
   /* ── Day page header ── */
   .day-page-header {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-6);
   }
 
   .day-page-number {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--fs-small);
     color: var(--color-accent);
-    font-weight: 600;
+    font-weight: var(--fw-bold);
   }
 
   .day-page-title {
     font-family: var(--font-serif);
-    font-size: 1.6rem;
-    font-weight: 700;
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-bold);
     color: var(--color-text);
-    margin-top: 0.25rem;
-    line-height: 1.3;
+    margin-top: var(--space-1);
+    line-height: var(--lh-snug);
   }
 
   /* ── Day navigation ── */
   .day-nav {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
-    margin-top: 2.5rem;
-    padding-top: 1.5rem;
+    gap: var(--space-4);
+    margin-top: var(--space-10);
+    padding-top: var(--space-6);
     border-top: 1px solid var(--color-border);
   }
 
   .day-nav-link {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: var(--space-0-5);
     text-decoration: none;
     color: inherit;
-    padding: 0.5rem 0.75rem;
+    padding: var(--space-2) var(--space-3);
     border: 1px solid var(--color-border);
-    border-radius: 6px;
-    transition: border-color 0.15s ease;
+    border-radius: var(--radius-lg);
+    transition: border-color var(--dur-fast) ease;
     max-width: 45%;
   }
 
@@ -954,37 +954,37 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .day-nav-direction {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 700;
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
   }
 
   .day-nav-title {
-    font-size: 0.8rem;
+    font-size: var(--fs-small);
     color: var(--color-text-muted);
-    line-height: 1.4;
+    line-height: var(--lh-snug);
   }
 
   /* ── Side-by-side diagrams ── */
   .stream-diagrams {
     display: flex;
-    gap: 1.25rem;
-    margin-bottom: 1.5rem;
+    gap: var(--space-5);
+    margin-bottom: var(--space-6);
   }
 
   .stream-diagram {
     flex: 1;
     border: 1px solid var(--color-border);
-    border-radius: 8px;
-    padding: 1rem 1.25rem;
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-5);
   }
 
   .diagram-title {
     font-family: var(--font-serif);
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: var(--fs-small);
+    font-weight: var(--fw-bold);
     color: var(--color-text-muted);
-    margin-bottom: 0.75rem;
+    margin-bottom: var(--space-3);
   }
 
   .flow {
@@ -996,8 +996,8 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   .flow-step {
     display: flex;
     align-items: baseline;
-    gap: 0.6rem;
-    padding-left: 1rem;
+    gap: var(--space-2);
+    padding-left: var(--space-4);
     position: relative;
   }
 
@@ -1006,7 +1006,7 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     position: absolute;
     left: 1.45rem;
     top: -0.5rem;
-    font-size: 0.6rem;
+    font-size: var(--fs-micro);
     color: var(--color-accent);
   }
 
@@ -1016,30 +1016,30 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .flow-node {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--fs-small);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
     background: var(--color-accent-soft);
-    border-radius: 3px;
-    padding: 0.15rem 0.45rem;
+    border-radius: var(--radius);
+    padding: var(--space-0-5) var(--space-2);
     white-space: nowrap;
     flex-shrink: 0;
   }
 
   .flow-label {
     font-family: var(--font-sans);
-    font-size: 0.72rem;
+    font-size: var(--fs-label);
     color: var(--color-text-muted);
-    line-height: 1.4;
+    line-height: var(--lh-snug);
   }
 
   .flow-step + .flow-step {
-    margin-top: 0.4rem;
+    margin-top: var(--space-1-5);
   }
 
   .flow-fork {
     flex-wrap: wrap;
-    gap: 0.35rem 0.4rem;
+    gap: var(--space-1-5) var(--space-1-5);
   }
 
   .flow-fork .flow-label {
@@ -1054,49 +1054,49 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   /* ── Sections under diagrams ── */
   .day-section {
-    margin-bottom: 1.25rem;
+    margin-bottom: var(--space-5);
   }
 
   .section-heading {
     font-family: var(--font-serif);
-    font-size: 0.95rem;
-    font-weight: 700;
+    font-size: var(--fs-ui);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
-    margin-bottom: 0.15rem;
+    margin-bottom: var(--space-0-5);
   }
 
   .section-subtitle {
-    font-size: 1.12rem;
+    font-size: var(--fs-body);
     color: var(--color-text-muted);
-    margin-bottom: 0.5rem;
-    line-height: 1.5;
+    margin-bottom: var(--space-2);
+    line-height: var(--lh-ui);
     font-style: italic;
   }
 
   .day-section > .day-bullets {
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-2);
   }
 
   .region-tag {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: var(--fs-label);
     color: var(--color-accent);
     background: var(--color-accent-soft);
-    border-radius: 3px;
-    padding: 0.1rem 0.35rem;
+    border-radius: var(--radius);
+    padding: var(--space-0-5) var(--space-1-5);
     vertical-align: baseline;
   }
 
   .mechanism-list li {
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-2);
   }
 
   /* ── Mini diagrams (Day 4+) ── */
   .mini-diagram {
     border: 1px solid var(--color-border);
-    border-radius: 8px;
-    padding: 0.85rem 1rem;
-    margin-bottom: 0.75rem;
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-3);
     background: #f5efe8;
   }
 
@@ -1109,14 +1109,14 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
-    margin-bottom: 0.35rem;
+    gap: var(--space-1-5);
+    margin-bottom: var(--space-1-5);
   }
 
   .ctx-neuron {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--fs-small);
+    font-weight: var(--fw-bold);
     border-radius: 50%;
     width: 2.2rem;
     height: 2.2rem;
@@ -1137,34 +1137,34 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   }
 
   .ctx-arrow {
-    font-size: 0.85rem;
+    font-size: var(--fs-small);
     color: var(--color-text-muted);
   }
 
   .ctx-caption {
     text-align: center;
-    font-size: 0.7rem;
+    font-size: var(--fs-label);
     color: var(--color-text-muted);
     font-style: italic;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-2);
   }
 
   .ctx-example {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--space-1);
   }
 
   .ctx-example-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.72rem;
+    gap: var(--space-2);
+    font-size: var(--fs-label);
   }
 
   .ctx-signal {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: var(--fs-label);
     min-width: 2.5rem;
     text-align: center;
   }
@@ -1174,7 +1174,7 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .ctx-result {
     font-family: var(--font-sans);
-    font-size: 0.72rem;
+    font-size: var(--fs-label);
     color: var(--color-text-muted);
   }
 
@@ -1184,84 +1184,84 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     align-items: center;
     justify-content: center;
     gap: 0;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-2);
   }
 
   .inhib-zone {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 0.3rem 0.6rem;
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
+    padding: var(--space-1) var(--space-2);
     text-align: center;
   }
 
   .inhib-end {
     background: var(--color-border);
     color: var(--color-text-muted);
-    border-radius: 4px 0 0 4px;
+    border-radius: var(--radius) 0 0 var(--radius);
   }
 
   .inhib-end:last-child {
-    border-radius: 0 4px 4px 0;
+    border-radius: 0 var(--radius) var(--radius) 0;
   }
 
   .inhib-excite {
     background: var(--color-accent);
     color: var(--color-bg);
-    padding: 0.3rem 1rem;
+    padding: var(--space-1) var(--space-4);
   }
 
   .inhib-examples {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--space-1);
   }
 
   .inhib-case {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.72rem;
+    gap: var(--space-2);
+    font-size: var(--fs-label);
   }
 
   .inhib-line {
     font-family: var(--font-mono);
-    font-weight: 700;
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
   }
 
-  .inhib-short { font-size: 0.7rem; }
-  .inhib-long { font-size: 0.7rem; color: var(--color-text-muted); }
+  .inhib-short { font-size: var(--fs-label); }
+  .inhib-long { font-size: var(--fs-label); color: var(--color-text-muted); }
 
   /* ── Depth Neurons diagram (Day 5) ── */
   .dn-grid {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-2);
   }
 
   .dn-card {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: var(--space-1);
   }
 
   .dn-label {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 700;
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
   }
 
   .dn-bar-row {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: var(--space-1-5);
   }
 
   .dn-depth-label {
     font-family: var(--font-mono);
-    font-size: 0.6rem;
+    font-size: var(--fs-micro);
     color: var(--color-text-muted);
     min-width: 1.8rem;
     text-align: center;
@@ -1271,7 +1271,7 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     flex: 1;
     height: 0.7rem;
     background: var(--color-border);
-    border-radius: 3px;
+    border-radius: var(--radius);
     display: flex;
     align-items: center;
     position: relative;
@@ -1280,7 +1280,7 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .dn-bar {
     height: 100%;
-    border-radius: 3px;
+    border-radius: var(--radius);
   }
 
   .dn-bar-excitatory {
@@ -1300,18 +1300,18 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   .dn-bar-near {
     background: var(--color-accent);
     opacity: 0.85;
-    border-radius: 3px 0 0 3px;
+    border-radius: var(--radius) 0 0 var(--radius);
   }
 
   .dn-bar-far {
     background: var(--color-text-muted);
     opacity: 0.5;
-    border-radius: 0 3px 3px 0;
+    border-radius: 0 var(--radius) var(--radius) 0;
   }
 
   .dn-hint {
     font-family: var(--font-sans);
-    font-size: 0.65rem;
+    font-size: var(--fs-label);
     color: var(--color-text-muted);
     font-style: italic;
   }
@@ -1326,7 +1326,7 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
+    gap: var(--space-1-5);
     flex-wrap: wrap;
   }
 
@@ -1334,13 +1334,13 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
+    gap: var(--space-1);
   }
 
   .amodal-panel-label {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
-    font-weight: 600;
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
     color: var(--color-text-muted);
   }
 
@@ -1359,7 +1359,7 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     width: 1.8rem;
     height: 2.8rem;
     border: 2px solid var(--color-text-muted);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
   }
 
   .amodal-book-visible {
@@ -1377,8 +1377,8 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     width: 1.4rem;
     height: 2.2rem;
     background: var(--color-accent);
-    border-radius: 3px 3px 6px 6px;
-    margin: 0 -0.3rem;
+    border-radius: var(--radius) var(--radius) var(--radius-lg) var(--radius-lg);
+    margin: 0 calc(-1 * var(--space-1));
     z-index: 1;
     position: relative;
   }
@@ -1388,15 +1388,15 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     height: 2.8rem;
     background: var(--color-border);
     border: 2px solid var(--color-text-muted);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
   }
 
   .amodal-cup-front {
     width: 1.4rem;
     height: 2.2rem;
     background: var(--color-accent);
-    border-radius: 3px 3px 6px 6px;
-    margin-left: -2.7rem;
+    border-radius: var(--radius) var(--radius) var(--radius-lg) var(--radius-lg);
+    margin-left: calc(-1 * (var(--space-10) + var(--space-1)));
     z-index: 1;
     position: relative;
   }
@@ -1404,10 +1404,10 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   .amodal-plus,
   .amodal-equals {
     font-family: var(--font-mono);
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: var(--fs-ui);
+    font-weight: var(--fw-bold);
     color: var(--color-text-muted);
-    padding: 0 0.1rem;
+    padding: 0 var(--space-0-5);
   }
 
   .amodal-equals {
@@ -1416,16 +1416,16 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .amodal-panel-desc {
     font-family: var(--font-sans);
-    font-size: 0.58rem;
+    font-size: var(--fs-micro);
     color: var(--color-text-muted);
     text-align: center;
     max-width: 7rem;
-    line-height: 1.3;
+    line-height: var(--lh-snug);
   }
 
   .amodal-desc-result {
     color: var(--color-accent);
-    font-weight: 600;
+    font-weight: var(--fw-bold);
   }
 
   /* ── Kanizsa triangle (conic-gradient pac-mans) ── */
@@ -1433,7 +1433,7 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     position: relative;
     width: 10rem;
     height: 9rem;
-    margin: 0 auto 0.35rem;
+    margin: 0 auto var(--space-1-5);
   }
 
   .kanisza-pac {
@@ -1467,20 +1467,20 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.2rem;
-    margin-bottom: 0.25rem;
+    gap: var(--space-1);
+    margin-bottom: var(--space-1);
   }
 
   .disp-region {
     width: 2.8rem;
     height: 2rem;
-    border-radius: 4px;
+    border-radius: var(--radius);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--fs-small);
+    font-weight: var(--fw-bold);
   }
 
   .disp-ambiguous {
@@ -1492,9 +1492,9 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   .disp-confident {
     background: var(--color-accent);
     color: var(--color-bg);
-    font-size: 0.6rem;
+    font-size: var(--fs-micro);
     text-align: center;
-    line-height: 1.2;
+    line-height: var(--lh-snug);
   }
 
   .disp-conf-label {
@@ -1505,22 +1505,22 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.3rem;
+    gap: var(--space-1);
     font-family: var(--font-mono);
-    font-size: 0.65rem;
+    font-size: var(--fs-label);
     color: var(--color-accent);
-    margin-bottom: 0.25rem;
+    margin-bottom: var(--space-1);
   }
 
   .disp-arrow-center {
-    font-size: 0.5rem;
+    font-size: var(--fs-micro);
   }
 
   /* ── Da Vinci stereopsis diagram (top-down SVG) ── */
   .dv-scene {
     display: flex;
     justify-content: center;
-    margin-bottom: 0.4rem;
+    margin-bottom: var(--space-1-5);
   }
 
   .dv-svg {
@@ -1531,32 +1531,32 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .dv-insight {
     font-family: var(--font-sans);
-    font-size: 0.6rem;
+    font-size: var(--fs-micro);
     color: var(--color-accent);
     text-align: center;
-    line-height: 1.4;
-    padding: 0.4rem;
+    line-height: var(--lh-snug);
+    padding: var(--space-1-5);
     background: var(--color-accent-soft);
-    border-radius: 4px;
+    border-radius: var(--radius);
     max-width: 90%;
   }
 
   .dv-insight-label {
-    font-weight: 700;
+    font-weight: var(--fw-bold);
   }
 
   /* ── Border ownership diagram ── */
   .bo-scene {
     display: flex;
     justify-content: center;
-    margin-bottom: 0.4rem;
+    margin-bottom: var(--space-1-5);
   }
 
   .bo-surface {
     width: 8rem;
     height: 5rem;
     background: var(--color-border);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1574,9 +1574,9 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   .bo-arrow {
     position: absolute;
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: var(--fs-label);
     color: var(--color-accent);
-    font-weight: 700;
+    font-weight: var(--fw-bold);
   }
 
   .bo-arrow-top { top: -0.9rem; left: 50%; transform: translateX(-50%); }
@@ -1587,22 +1587,22 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   .bo-legend {
     display: flex;
     justify-content: center;
-    gap: 1rem;
+    gap: var(--space-4);
     font-family: var(--font-sans);
-    font-size: 0.65rem;
+    font-size: var(--fs-label);
     color: var(--color-text-muted);
   }
 
   .bo-legend-item {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: var(--space-1);
   }
 
   .bo-swatch {
     width: 0.7rem;
     height: 0.7rem;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     display: inline-block;
   }
 
@@ -1620,17 +1620,17 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.6rem;
-    margin-bottom: 0.3rem;
+    gap: var(--space-2);
+    margin-bottom: var(--space-1);
   }
 
   .bright-card {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.3rem;
-    padding: 1rem 1.5rem;
-    border-radius: 6px;
+    gap: var(--space-1);
+    padding: var(--space-4) var(--space-6);
+    border-radius: var(--radius-lg);
   }
 
   .bright-card-light {
@@ -1653,12 +1653,12 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     width: 2.5rem;
     height: 2.5rem;
     background: #888;
-    border-radius: 4px;
+    border-radius: var(--radius);
   }
 
   .bright-label {
     font-family: var(--font-mono);
-    font-size: 0.6rem;
+    font-size: var(--fs-micro);
     color: var(--color-text-muted);
   }
 
@@ -1668,9 +1668,9 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .bright-vs {
     font-family: var(--font-mono);
-    font-size: 1rem;
+    font-size: var(--fs-ui);
     color: var(--color-text-muted);
-    font-weight: 700;
+    font-weight: var(--fw-bold);
   }
 
   /* ── Receptive field diagram ── */
@@ -1678,14 +1678,14 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.8rem;
+    gap: var(--space-3);
   }
 
   .rf-card {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.2rem;
+    gap: var(--space-1);
   }
 
   .rf-visual {
@@ -1721,26 +1721,26 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   }
 
   .rf-dot {
-    font-size: 0.5rem;
+    font-size: var(--fs-micro);
     color: var(--color-accent);
   }
 
   .rf-arrow {
     font-family: var(--font-mono);
-    font-size: 1rem;
+    font-size: var(--fs-ui);
     color: var(--color-text-muted);
   }
 
   .rf-card-label {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    font-weight: 700;
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
   }
 
   .rf-card-desc {
     font-family: var(--font-sans);
-    font-size: 0.6rem;
+    font-size: var(--fs-micro);
     color: var(--color-text-muted);
     text-align: center;
     max-width: 8rem;
@@ -1751,27 +1751,27 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    gap: 1.5rem;
+    gap: var(--space-6);
   }
 
   .popout-card {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.3rem;
+    gap: var(--space-1);
   }
 
   .popout-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.3rem;
-    padding: 0.5rem;
+    gap: var(--space-1);
+    padding: var(--space-2);
   }
 
   .popout-dot {
-    font-size: 1.1rem;
+    font-size: var(--fs-body);
     text-align: center;
-    line-height: 1;
+    line-height: var(--lh-none);
   }
 
   .popout-yellow {
@@ -1791,13 +1791,13 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   }
 
   .popout-grid-text {
-    gap: 0.2rem;
+    gap: var(--space-1);
   }
 
   .popout-char {
     font-family: var(--font-mono);
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: var(--fs-small);
+    font-weight: var(--fw-bold);
     color: var(--color-text-muted);
     text-align: center;
     width: 1.2rem;
@@ -1805,7 +1805,7 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .popout-label {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
+    font-size: var(--fs-label);
     text-align: center;
   }
 
@@ -1821,17 +1821,17 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     .dv-hidden-row {
       flex-direction: column;
       align-items: center;
-      gap: 0.25rem;
+      gap: var(--space-1);
     }
     .disp-region {
       width: 2rem;
-      font-size: 0.6rem;
+      font-size: var(--fs-micro);
     }
     .bright-compare {
-      gap: 0.3rem;
+      gap: var(--space-1);
     }
     .bright-card {
-      padding: 0.7rem 1rem;
+      padding: var(--space-3) var(--space-4);
     }
   }
 
@@ -1840,8 +1840,8 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    gap: 0.2rem;
-    margin-bottom: 0.6rem;
+    gap: var(--space-1);
+    margin-bottom: var(--space-2);
     flex-wrap: wrap;
   }
 
@@ -1849,16 +1849,16 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
+    gap: var(--space-1);
     min-width: 5.5rem;
   }
 
   .pipeline-node {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 0.35rem 0.65rem;
-    border-radius: 5px;
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
+    padding: var(--space-1-5) var(--space-3);
+    border-radius: var(--radius);
     text-align: center;
     white-space: nowrap;
   }
@@ -1887,32 +1887,32 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .pipeline-desc {
     font-family: var(--font-sans);
-    font-size: 0.6rem;
+    font-size: var(--fs-micro);
     color: var(--color-text-muted);
     text-align: center;
-    line-height: 1.3;
+    line-height: var(--lh-snug);
     max-width: 7rem;
   }
 
   .pipeline-connector {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: var(--fs-small);
     color: var(--color-accent);
-    padding-top: 0.3rem;
-    font-weight: 700;
+    padding-top: var(--space-1);
+    font-weight: var(--fw-bold);
   }
 
   .pipeline-spectrum {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: var(--space-1-5);
     justify-content: center;
   }
 
   .pipeline-spectrum-left,
   .pipeline-spectrum-right {
     font-family: var(--font-mono);
-    font-size: 0.6rem;
+    font-size: var(--fs-micro);
     color: var(--color-text-muted);
     font-style: italic;
   }
@@ -1922,14 +1922,14 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     max-width: 12rem;
     height: 3px;
     background: linear-gradient(to right, var(--color-accent), var(--color-text));
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
   }
 
   /* ── V4 Functions diagram ── */
   .v4f-grid {
     display: flex;
-    gap: 0.6rem;
-    margin-bottom: 0.5rem;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
   }
 
   .v4f-card {
@@ -1937,17 +1937,17 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.5rem 0.4rem;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-1-5);
     border: 1px solid var(--color-border);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     background: var(--color-bg);
   }
 
   .v4f-number {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
-    font-weight: 700;
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
     color: var(--color-bg);
     background: var(--color-accent);
     width: 1.3rem;
@@ -1960,8 +1960,8 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .v4f-title {
     font-family: var(--font-mono);
-    font-size: 0.68rem;
-    font-weight: 700;
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
     text-align: center;
   }
@@ -1976,16 +1976,16 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   .v4f-color-demo {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: var(--space-1);
   }
 
   .v4f-color-ctx {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.15rem;
-    padding: 0.3rem;
-    border-radius: 4px;
+    gap: var(--space-0-5);
+    padding: var(--space-1);
+    border-radius: var(--radius);
   }
 
   .v4f-ctx-warm {
@@ -2013,20 +2013,20 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .v4f-ctx-label {
     font-family: var(--font-mono);
-    font-size: 0.5rem;
+    font-size: var(--fs-micro);
     color: var(--color-text-muted);
   }
 
   .v4f-equals {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
-    font-weight: 700;
+    font-size: var(--fs-small);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
   }
 
   .v4f-shapes {
     display: flex;
-    gap: 0.3rem;
+    gap: var(--space-1);
   }
 
   .v4f-shape-svg {
@@ -2038,52 +2038,52 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   .v4f-invariance {
     display: flex;
     align-items: center;
-    gap: 0.2rem;
+    gap: var(--space-1);
   }
 
   .v4f-inv-shape {
-    font-size: 1.2rem;
+    font-size: var(--fs-body);
     color: var(--color-accent);
-    line-height: 1;
+    line-height: var(--lh-none);
   }
 
   .v4f-inv-small {
-    font-size: 0.7rem;
+    font-size: var(--fs-label);
   }
 
   .v4f-inv-rotated {
     transform: rotate(30deg);
-    font-size: 1rem;
+    font-size: var(--fs-ui);
   }
 
   .v4f-inv-approx {
     font-family: var(--font-mono);
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: var(--fs-ui);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
   }
 
   .v4f-desc {
     font-family: var(--font-sans);
-    font-size: 0.58rem;
+    font-size: var(--fs-micro);
     color: var(--color-text-muted);
     text-align: center;
-    line-height: 1.3;
+    line-height: var(--lh-snug);
   }
 
   .v4f-damage {
     font-family: var(--font-sans);
-    font-size: 0.65rem;
+    font-size: var(--fs-label);
     color: var(--color-text-muted);
     text-align: center;
-    padding: 0.35rem;
+    padding: var(--space-1-5);
     border-top: 1px solid var(--color-border);
-    margin-top: 0.2rem;
+    margin-top: var(--space-1);
   }
 
   .v4f-damage-label {
     font-family: var(--font-mono);
-    font-weight: 700;
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
   }
 
@@ -2092,14 +2092,14 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
       flex-direction: column;
     }
     .pipeline-flow {
-      gap: 0.15rem;
+      gap: var(--space-0-5);
     }
     .pipeline-stage {
       min-width: 4rem;
     }
     .pipeline-node {
-      font-size: 0.6rem;
-      padding: 0.25rem 0.4rem;
+      font-size: var(--fs-micro);
+      padding: var(--space-1) var(--space-1-5);
     }
   }
 
@@ -2108,21 +2108,21 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    gap: 0.8rem;
-    margin-bottom: 0.5rem;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
   }
 
   .itc-panel {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.3rem;
+    gap: var(--space-1);
   }
 
   .itc-panel-label {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
-    font-weight: 700;
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
   }
 
@@ -2133,13 +2133,13 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   }
 
   .itc-v1 {
-    gap: 2px;
+    gap: var(--space-0-5);
   }
 
   .itc-col {
     width: 2.2rem;
     height: 100%;
-    border-radius: 3px;
+    border-radius: var(--radius);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2151,8 +2151,8 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .itc-col-label {
     font-family: var(--font-mono);
-    font-size: 0.6rem;
-    font-weight: 600;
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-bold);
     color: var(--color-bg);
   }
 
@@ -2165,7 +2165,7 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   .itc-col-overlap {
     position: absolute;
     height: 100%;
-    border-radius: 3px;
+    border-radius: var(--radius);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2195,22 +2195,22 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .itc-col-overlap .itc-col-label {
     color: var(--color-accent);
-    font-size: 0.55rem;
+    font-size: var(--fs-micro);
     position: relative;
     z-index: 1;
   }
 
   .itc-vs {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: var(--fs-label);
     color: var(--color-text-muted);
-    font-weight: 600;
-    padding-top: 1.2rem;
+    font-weight: var(--fw-bold);
+    padding-top: var(--space-5);
   }
 
   .itc-hint {
     font-family: var(--font-sans);
-    font-size: 0.58rem;
+    font-size: var(--fs-micro);
     color: var(--color-text-muted);
     font-style: italic;
     text-align: center;
@@ -2218,15 +2218,15 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .itc-stat {
     font-family: var(--font-sans);
-    font-size: 0.62rem;
+    font-size: var(--fs-micro);
     color: var(--color-text-muted);
     text-align: center;
-    padding-top: 0.2rem;
+    padding-top: var(--space-1);
   }
 
   .itc-stat-num {
     font-family: var(--font-mono);
-    font-weight: 700;
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
   }
 
@@ -2235,44 +2235,44 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    gap: 0.4rem;
-    margin-bottom: 0.3rem;
+    gap: var(--space-1-5);
+    margin-bottom: var(--space-1);
   }
 
   .popc-object {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.2rem;
+    gap: var(--space-1);
   }
 
   .popc-obj-label {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
-    font-weight: 700;
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
   }
 
   .popc-bars {
     display: flex;
     align-items: flex-end;
-    gap: 2px;
+    gap: var(--space-0-5);
     height: 2.5rem;
   }
 
   .popc-bar {
     width: 0.4rem;
     background: var(--color-accent);
-    border-radius: 2px 2px 0 0;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
     min-height: 2px;
   }
 
   .popc-sim {
     font-family: var(--font-mono);
-    font-size: 0.58rem;
-    font-weight: 600;
-    padding: 0 0.15rem;
-    padding-bottom: 0.8rem;
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-bold);
+    padding: 0 var(--space-0-5);
+    padding-bottom: var(--space-3);
   }
 
   .popc-sim-high {
@@ -2285,16 +2285,16 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .popc-neurons-label {
     font-family: var(--font-mono);
-    font-size: 0.55rem;
+    font-size: var(--fs-micro);
     color: var(--color-text-muted);
     text-align: center;
-    margin-bottom: 0.2rem;
+    margin-bottom: var(--space-1);
   }
 
   /* ── Agnosia comparison diagram ── */
   .agn-compare {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--space-2);
     justify-content: center;
   }
 
@@ -2302,44 +2302,44 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     flex: 1;
     max-width: 10rem;
     border: 1px solid var(--color-border);
-    border-radius: 6px;
-    padding: 0.5rem;
+    border-radius: var(--radius-lg);
+    padding: var(--space-2);
     background: var(--color-bg);
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: var(--space-1);
   }
 
   .agn-card-title {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
-    font-weight: 700;
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
     text-align: center;
   }
 
   .agn-card-damage {
     font-family: var(--font-mono);
-    font-size: 0.55rem;
+    font-size: var(--fs-micro);
     color: var(--color-bg);
     background: var(--color-text-muted);
     text-align: center;
-    padding: 0.15rem 0.3rem;
-    border-radius: 3px;
+    padding: var(--space-0-5) var(--space-1);
+    border-radius: var(--radius);
   }
 
   .agn-preserved,
   .agn-lost {
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
+    gap: var(--space-0-5);
   }
 
   .agn-check,
   .agn-cross {
     font-family: var(--font-sans);
-    font-size: 0.58rem;
-    line-height: 1.3;
+    font-size: var(--fs-micro);
+    line-height: var(--lh-snug);
   }
 
   .agn-check {
@@ -2355,8 +2355,8 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     align-items: stretch;
     justify-content: center;
-    gap: 0.6rem;
-    margin-bottom: 0.4rem;
+    gap: var(--space-2);
+    margin-bottom: var(--space-1-5);
   }
 
   .catag-group {
@@ -2365,35 +2365,35 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.2rem;
-    padding: 0.5rem;
+    gap: var(--space-1);
+    padding: var(--space-2);
     border: 1px solid var(--color-border);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     background: var(--color-bg);
   }
 
   .catag-group-title {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    font-weight: 700;
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
   }
 
   .catag-traits {
     font-family: var(--font-sans);
-    font-size: 0.58rem;
+    font-size: var(--fs-micro);
     color: var(--color-text-muted);
     text-align: center;
     font-style: italic;
-    line-height: 1.3;
+    line-height: var(--lh-snug);
   }
 
   .catag-items {
     font-family: var(--font-mono);
-    font-size: 0.58rem;
+    font-size: var(--fs-micro);
     color: var(--color-text);
     text-align: center;
-    line-height: 1.4;
+    line-height: var(--lh-snug);
   }
 
   .catag-divider {
@@ -2426,7 +2426,7 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   /* ── Full Architecture Diagrams (Day 7) ── */
   .full-arch-diagram {
     overflow-x: auto;
-    padding: 0.75rem 0.5rem;
+    padding: var(--space-3) var(--space-2);
     -webkit-overflow-scrolling: touch;
   }
 
@@ -2438,7 +2438,7 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     margin: 0 auto;
   }
 
-  @media (max-width: 700px) {
+  @media (max-width: 760px) {
     .arch-svg {
       min-width: 560px;
     }

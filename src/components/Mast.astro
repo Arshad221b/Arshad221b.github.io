@@ -43,8 +43,8 @@ const { label, aside, title, accent, lede, figures = [] } = Astro.props;
     align-items: center;
     gap: var(--space-md);
     font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.14em;
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--color-text-muted);
     white-space: nowrap;
@@ -52,10 +52,10 @@ const { label, aside, title, accent, lede, figures = [] } = Astro.props;
 
   /* On a narrow phone the two labels share the line by wrapping, not by
      running off it. */
-  @media (max-width: 420px) {
+  @media (max-width: 480px) {
     .mast-rule {
       flex-wrap: wrap;
-      row-gap: 0.3rem;
+      row-gap: var(--space-1);
     }
   }
 
@@ -66,24 +66,24 @@ const { label, aside, title, accent, lede, figures = [] } = Astro.props;
   }
 
   .mast-title {
-    font-size: clamp(3.4rem, 9vw, 6.6rem);
-    font-weight: 200;
-    line-height: 0.92;
-    letter-spacing: -0.05em;
+    font-size: var(--fs-display);
+    font-weight: var(--fw-display);
+    line-height: var(--lh-display);
+    letter-spacing: var(--track-tight);
     margin: var(--space-xl) 0 var(--space-md);
   }
 
   .mast-title em {
     font-style: italic;
-    font-weight: 300;
+    font-weight: var(--fw-light);
     color: var(--color-accent);
   }
 
   .mast-lede {
     font-family: var(--font-serif);
     font-style: italic;
-    font-size: 1.2rem;
-    line-height: 1.6;
+    font-size: var(--fs-body);
+    line-height: var(--lh-ui);
     color: var(--color-text-secondary);
     max-width: 54ch;
     margin: 0;
@@ -101,7 +101,7 @@ const { label, aside, title, accent, lede, figures = [] } = Astro.props;
   .mast-figures > div {
     display: flex;
     flex-direction: column-reverse;
-    gap: 0.3rem;
+    gap: var(--space-1);
   }
 
   .mast-figures > div:nth-child(1) { animation-delay: 0.35s; }
@@ -111,24 +111,24 @@ const { label, aside, title, accent, lede, figures = [] } = Astro.props;
 
   .mast-figures dt {
     font-family: var(--font-mono);
-    font-size: 0.56rem;
-    letter-spacing: 0.14em;
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--color-text-muted);
   }
 
   .mast-figures dd {
     font-family: var(--font-display);
-    font-size: 2.1rem;
-    font-weight: 200;
-    letter-spacing: -0.03em;
-    line-height: 1;
+    font-size: var(--fs-h2);
+    font-weight: var(--fw-display);
+    letter-spacing: var(--track-tight);
+    line-height: var(--lh-none);
     color: var(--color-text);
     margin: 0;
   }
 
 
-  @media (max-width: 560px) {
+  @media (max-width: 600px) {
     .mast-figures {
       grid-template-columns: repeat(2, 1fr);
       row-gap: var(--space-lg);

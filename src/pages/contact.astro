@@ -119,10 +119,15 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
      left margin and its fields keep to one column on the right, which
      Send and the links share. */
   @media (min-width: 761px) {
+    /* The margin's width, shared by the parts and by Send. */
+    .contact-page {
+      --label-col: 11rem;
+    }
+
     .form .part,
     .contact-page .elsewhere {
       display: grid;
-      grid-template-columns: 11rem minmax(0, 1fr);
+      grid-template-columns: var(--label-col) minmax(0, 1fr);
       column-gap: var(--space-2xl);
       row-gap: var(--space-md);
       align-items: start;
@@ -145,7 +150,7 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
     }
 
     .form .actions {
-      margin-left: calc(11rem + var(--space-2xl));
+      margin-left: calc(var(--label-col) + var(--space-2xl));
     }
   }
 
@@ -196,15 +201,15 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
   .part-head {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: var(--space-3);
     width: 100%;
     padding: 0;
     margin: 0;
     font-family: var(--font-display);
-    font-size: clamp(1.6rem, 3.4vw, 2.1rem);
-    font-weight: 300;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
+    font-size: var(--fs-h2);
+    font-weight: var(--fw-light);
+    letter-spacing: var(--track-snug);
+    line-height: var(--lh-tight);
     color: var(--color-text);
   }
 
@@ -214,7 +219,7 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
     flex: none;
     width: 22px;
     height: 3px;
-    border-radius: 3px;
+    border-radius: var(--radius);
     background: var(--color-accent);
   }
 
@@ -227,17 +232,17 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
   .field {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: var(--space-1);
   }
 
   .field label {
-    padding-left: 1.3rem;
+    padding-left: var(--space-5);
     font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--color-text-secondary);
-    transition: color 0.2s ease;
+    transition: color var(--dur-base) ease;
   }
 
   .field:focus-within label {
@@ -249,29 +254,29 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
   textarea {
     width: 100%;
     font-family: var(--font-display);
-    font-size: 1.35rem;
-    font-weight: 300;
-    letter-spacing: -0.01em;
-    line-height: 1.4;
+    font-size: var(--fs-lead);
+    font-weight: var(--fw-light);
+    letter-spacing: var(--track-snug);
+    line-height: var(--lh-snug);
     color: var(--color-text);
     background: var(--color-code-bg);
     border: 1px solid var(--color-text-muted);
-    border-radius: 999px;
-    padding: 0.75rem 1.3rem;
-    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    border-radius: var(--radius-pill);
+    padding: var(--space-3) var(--space-5);
+    transition: border-color var(--dur-base) ease, background var(--dur-base) ease, box-shadow var(--dur-base) ease;
   }
 
   textarea {
     font-family: var(--font-serif);
-    font-size: 1.08rem;
-    font-weight: 400;
-    letter-spacing: 0;
-    line-height: 1.65;
+    font-size: var(--fs-ui);
+    font-weight: var(--fw-regular);
+    letter-spacing: var(--track-normal);
+    line-height: var(--lh-body);
     min-height: 11rem;
     resize: vertical;
     border: 1px solid var(--color-text-muted);
-    border-radius: 24px;
-    padding: 1.1rem 1.3rem;
+    border-radius: var(--radius-xl);
+    padding: var(--space-4) var(--space-5);
     background: var(--color-code-bg);
   }
 
@@ -306,7 +311,7 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
   .reasons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--space-2);
   }
 
   .reason {
@@ -325,16 +330,16 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
     align-items: center;
     gap: 0.55em;
     font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.08em;
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-label);
     text-transform: uppercase;
     white-space: nowrap;
     color: var(--color-text);
-    padding: 0.8rem 0.95rem;
+    padding: var(--space-3) var(--space-4);
     border: 1px solid var(--color-text-muted);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--color-code-bg);
-    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    transition: color var(--dur-base) ease, border-color var(--dur-base) ease, background var(--dur-base) ease;
   }
 
   .reason span::before {
@@ -380,19 +385,19 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
     position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 0.9rem;
-    padding: 1.15rem 1.8rem 1.15rem 1.5rem;
+    gap: var(--space-4);
+    padding: var(--space-5) var(--space-8) var(--space-5) var(--space-6);
     font-family: var(--font-display);
-    font-size: clamp(1.3rem, 2.6vw, 1.6rem);
-    font-weight: 300;
-    letter-spacing: -0.01em;
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-light);
+    letter-spacing: var(--track-snug);
     color: #fff;
     background: var(--color-accent);
     border: none;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     overflow: hidden;
     cursor: pointer;
-    transition: background 0.25s ease, transform 0.2s ease;
+    transition: background var(--dur-base) ease, transform var(--dur-base) ease;
   }
 
   .send:hover {
@@ -411,7 +416,7 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
     stroke: currentColor;
     stroke-width: 1.5;
     stroke-linejoin: round;
-    transition: transform 0.35s var(--ease-out);
+    transition: transform var(--dur-slow) var(--ease-out);
   }
 
   .send:hover .envelope {
@@ -424,8 +429,8 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
 
   .send-arrow {
     font-family: var(--font-mono);
-    font-size: 1.1rem;
-    transition: transform 0.3s var(--ease-out);
+    font-size: var(--fs-body);
+    transition: transform var(--dur-base) var(--ease-out);
   }
 
   .send:hover .send-arrow {
@@ -453,7 +458,7 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
     margin: 0;
     font-family: var(--font-serif);
     font-style: italic;
-    font-size: 1rem;
+    font-size: var(--fs-ui);
     color: var(--color-text-secondary);
   }
 
@@ -470,7 +475,7 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
     list-style: none;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
+    gap: var(--space-2);
     padding: 0;
     margin: var(--space-lg) 0 0;
   }
@@ -478,19 +483,19 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
   .places a {
     display: inline-flex;
     align-items: center;
-    gap: 0.55rem;
-    padding: 0.8rem 1rem;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
     font-family: var(--font-mono);
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-label);
     white-space: nowrap;
     text-transform: uppercase;
     color: var(--color-text);
     text-decoration: none;
     background: var(--color-code-bg);
     border: 1px solid var(--color-text-muted);
-    border-radius: 999px;
-    transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    border-radius: var(--radius-pill);
+    transition: color var(--dur-base) ease, background var(--dur-base) ease, border-color var(--dur-base) ease, transform var(--dur-base) ease;
   }
 
   .places svg {
@@ -512,7 +517,7 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
 
   .places .mark {
     color: var(--color-text-muted);
-    transition: color 0.2s ease;
+    transition: color var(--dur-base) ease;
   }
 
   .places a:hover {

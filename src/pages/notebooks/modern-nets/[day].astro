@@ -121,23 +121,23 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 2rem;
-    padding-top: 1rem;
+    margin-top: var(--space-8);
+    padding-top: var(--space-4);
     border-top: 1px solid var(--color-border);
   }
 
   .day-nav-link {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: var(--space-1-5);
     font-family: var(--font-mono);
-    letter-spacing: 0.14em;
-    font-size: 0.66rem;
+    letter-spacing: var(--track-caps);
+    font-size: var(--fs-label);
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
     text-decoration: none;
-    transition: color 0.15s ease;
+    transition: color var(--dur-fast) ease;
   }
 
   .day-nav-link:hover {
@@ -145,60 +145,60 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   }
 
   .day-nav-arrow {
-    font-size: 1rem;
+    font-size: var(--fs-ui);
   }
 
   .day-nav-label {
     font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-size: var(--fs-small);
   }
 
   /* diagrams */
   .diagram-wrap {
-    margin: 1rem 0 0.5rem;
+    margin: var(--space-4) 0 var(--space-2);
     overflow-x: auto;
   }
 
   :global(.flow-h) {
     display: flex;
     align-items: flex-start;
-    gap: 0.4rem;
+    gap: var(--space-1-5);
     flex-wrap: wrap;
-    padding: 1rem;
+    padding: var(--space-4);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
   }
 
   :global(.d-node) {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    padding: 0.35rem 0.6rem;
+    font-size: var(--fs-label);
+    padding: var(--space-1-5) var(--space-2);
     border: 1px solid var(--color-accent);
-    border-radius: 4px;
+    border-radius: var(--radius);
     color: var(--color-text);
     text-align: center;
-    line-height: 1.4;
+    line-height: var(--lh-snug);
     white-space: nowrap;
   }
 
   :global(.d-arrow) {
-    font-size: 1rem;
+    font-size: var(--fs-ui);
     color: var(--color-text-muted);
     align-self: center;
-    padding: 0 0.1rem;
+    padding: 0 var(--space-0-5);
   }
 
   :global(.d-col) {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.3rem;
+    gap: var(--space-1);
   }
 
   :global(.d-sub) {
     font-family: var(--font-sans);
-    font-size: 0.65rem;
+    font-size: var(--fs-label);
     color: var(--color-text-muted);
     text-align: center;
   }
@@ -207,10 +207,10 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   :global(.arch-diagram) {
     display: flex;
     gap: 0;
-    padding: 1.25rem;
+    padding: var(--space-5);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     overflow-x: auto;
     justify-content: center;
     position: relative;
@@ -219,8 +219,8 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   :global(.arch-connector) {
     display: flex;
     align-items: center;
-    padding: 0 0.5rem;
-    padding-top: 7.9rem;
+    padding: 0 var(--space-2);
+    padding-top: calc(var(--space-18) + var(--space-14));
   }
 
   :global(.arch-connector svg) {
@@ -231,36 +231,36 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.3rem;
+    gap: var(--space-1);
     min-width: 140px;
   }
 
   :global(.arch-label) {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
-    font-weight: 600;
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.25rem;
+    letter-spacing: var(--track-label);
+    margin-bottom: var(--space-1);
   }
 
   :global(.arch-block) {
     border: 1.5px solid var(--color-accent);
-    border-radius: 6px;
-    padding: 0.4rem;
+    border-radius: var(--radius-lg);
+    padding: var(--space-1-5);
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--space-1);
     width: 100%;
   }
 
   :global(.arch-row) {
     font-family: var(--font-mono);
-    font-size: 0.68rem;
-    padding: 0.3rem 0.5rem;
+    font-size: var(--fs-label);
+    padding: var(--space-1) var(--space-2);
     border: 1px solid var(--color-border);
-    border-radius: 3px;
+    border-radius: var(--radius);
     text-align: center;
     background: var(--color-bg);
     color: var(--color-text);
@@ -274,51 +274,51 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   :global(.arch-io) {
     font-family: var(--font-sans);
-    font-size: 0.7rem;
+    font-size: var(--fs-label);
     color: var(--color-text-secondary);
     text-align: center;
   }
 
   :global(.arch-io.top) {
-    font-weight: 600;
+    font-weight: var(--fw-bold);
     color: var(--color-text);
   }
 
   :global(.arch-cross) {
     font-family: var(--font-sans);
-    font-size: 0.65rem;
+    font-size: var(--fs-label);
     color: var(--color-text-muted);
     font-style: italic;
   }
 
   :global(.arch-arrow) {
-    font-size: 0.75rem;
+    font-size: var(--fs-small);
     color: var(--color-text-muted);
     text-align: center;
-    line-height: 1;
+    line-height: var(--lh-none);
   }
 
   :global(.arch-row-arrow) {
-    font-size: 0.65rem;
+    font-size: var(--fs-label);
     color: var(--color-text-muted);
     text-align: center;
-    padding: 0.05rem 0;
-    line-height: 1;
+    padding: 1px 0;
+    line-height: var(--lh-none);
   }
 
   /* norm comparison diagram */
   :global(.norm-diagram) {
-    padding: 1.25rem;
+    padding: var(--space-5);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
   }
 
   :global(.norm-grid) {
     display: grid;
     grid-template-columns: auto repeat(4, 1fr);
-    gap: 2px;
-    margin-bottom: 1rem;
+    gap: var(--space-0-5);
+    margin-bottom: var(--space-4);
   }
 
   :global(.norm-label-corner) {
@@ -327,28 +327,28 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   :global(.norm-col-header) {
     font-family: var(--font-mono);
-    font-size: 0.62rem;
+    font-size: var(--fs-micro);
     color: var(--color-text-muted);
     text-align: center;
-    padding: 0.25rem 0.3rem;
+    padding: var(--space-1) var(--space-1);
   }
 
   :global(.norm-row-label) {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 600;
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
     display: flex;
     align-items: center;
-    padding-right: 0.5rem;
+    padding-right: var(--space-2);
   }
 
   :global(.norm-cell) {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    padding: 0.35rem 0.5rem;
+    font-size: var(--fs-label);
+    padding: var(--space-1-5) var(--space-2);
     border: 1px solid var(--color-border);
-    border-radius: 3px;
+    border-radius: var(--radius);
     text-align: center;
     background: var(--color-bg);
     color: var(--color-text);
@@ -357,31 +357,31 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   :global(.norm-annotations) {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    margin-bottom: 1rem;
+    gap: var(--space-1-5);
+    margin-bottom: var(--space-4);
   }
 
   :global(.norm-ann-row),
   :global(.norm-ann-col) {
     font-family: var(--font-sans);
-    font-size: 0.78rem;
+    font-size: var(--fs-small);
     color: var(--color-text-secondary);
   }
 
   :global(.norm-arrow-right),
   :global(.norm-arrow-down) {
     color: var(--color-accent);
-    font-weight: 700;
+    font-weight: var(--fw-bold);
   }
 
   :global(.norm-summary) {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--space-1);
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: var(--fs-label);
     color: var(--color-text-secondary);
-    padding-top: 0.75rem;
+    padding-top: var(--space-3);
     border-top: 1px solid var(--color-border);
   }
 </style>

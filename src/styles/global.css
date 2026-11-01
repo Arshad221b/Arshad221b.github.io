@@ -73,6 +73,96 @@
   --space-xl: 2.5rem;
   --space-2xl: 3.5rem;
   --space-3xl: 4.5rem;
+
+  /* ═══ THE DESIGN STANDARD ═══════════════════════════════════════
+     Every value on the site comes from this list. See DESIGN.md for the
+     rules on when to use which. Nothing in a component may use a raw
+     size, spacing, radius, layer, speed or breakpoint of its own. */
+
+  /* Type scale. Reading and interface sizes are fixed; headings and
+     display sizes are fluid, each between a floor and a ceiling. */
+  --fs-micro: 0.6rem;       /* mono captions, axis ticks, counters */
+  --fs-label: 0.68rem;      /* mono labels, eyebrows, nav, tags */
+  --fs-small: 0.82rem;      /* secondary text, notes, figure captions */
+  --fs-ui: 1rem;            /* buttons, inputs, list text */
+  /* --fs-body: 1.16rem;       reading text (defined above) */
+  --fs-lead: 1.3rem;        /* ledes, standfirsts, pull quotes */
+  --fs-h3: clamp(1.3rem, 2.2vw, 1.7rem);
+  --fs-h2: clamp(1.5rem, 3vw, 2.1rem);
+  --fs-h1: clamp(2.2rem, 5vw, 3.6rem);
+  --fs-display: clamp(3.4rem, 4.9vw, 6.4rem);
+  --fs-display-xl: clamp(3.4rem, 9vw, 8.4rem);
+
+  /* Weights. Newsreader runs 200–700; Plex Mono has 400 and 500. */
+  --fw-display: 200;        /* only the largest display titles */
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-bold: 600;
+
+  /* Leading. */
+  --lh-display: 0.92;       /* display titles */
+  --lh-none: 1;             /* single-line labels, icons, numerals */
+  --lh-tight: 1.1;          /* headings */
+  --lh-snug: 1.3;           /* sub-heads, captions, list titles */
+  --lh-ui: 1.5;             /* interface text, notes */
+  --lh-body: 1.7;           /* reading text */
+
+  /* Tracking. */
+  --track-tight: -0.03em;   /* display and large headings */
+  --track-snug: -0.015em;   /* headings */
+  --track-normal: 0;        /* everything set in the serif */
+  --track-label: 0.08em;    /* mono in mixed case */
+  --track-caps: 0.14em;     /* mono in capitals */
+
+  /* Spacing, on a 4px grid (2px steps below 8px). The named sizes above
+     (--space-xs … --space-3xl) are the page-level rhythm; these are the
+     steps inside components. */
+  --space-0-5: 0.125rem;    /*  2px */
+  --space-1: 0.25rem;       /*  4px */
+  --space-1-5: 0.375rem;    /*  6px */
+  --space-2: 0.5rem;        /*  8px */
+  --space-3: 0.75rem;       /* 12px */
+  --space-4: 1rem;          /* 16px */
+  --space-5: 1.25rem;       /* 20px */
+  --space-6: 1.5rem;        /* 24px */
+  --space-8: 2rem;          /* 32px */
+  --space-10: 2.5rem;       /* 40px */
+  --space-14: 3.5rem;       /* 56px */
+  --space-18: 4.5rem;       /* 72px */
+
+  /* Corners. Circles use 50%. */
+  --radius-sm: 2px;         /* tags, code, small chips */
+  /* --radius: 4px;            cards, inputs, figures (defined above) */
+  --radius-lg: 8px;         /* panels, callouts */
+  --radius-xl: 14px;        /* sheets, popovers */
+  --radius-pill: 999px;     /* pills and capsule buttons */
+
+  /* Layers. Inside a component, use 0–3 for local order only. */
+  --z-header: 100;          /* the site's sticky bar */
+  --z-float: 150;           /* fixed controls: back key, to-top, chips */
+  --z-veil: 155;            /* the dimmer behind an open sheet */
+  --z-sheet: 156;           /* an open sheet */
+  --z-sheet-chip: 157;      /* the control that opened it */
+  --z-overlay: 200;         /* skip link, toasts */
+  --z-intro: 300;           /* the home intro, above everything */
+
+  /* Motion. Interface feedback only; the signature animations keep
+     their own choreography. */
+  --dur-fast: 0.15s;        /* colour, opacity on hover */
+  --dur-base: 0.25s;        /* small movements, reveals */
+  --dur-slow: 0.4s;         /* panels, larger movements */
+
+  /* Elevation. */
+  --shadow-float: 0 6px 24px rgba(20, 18, 14, 0.08);    /* chips */
+  --shadow-sheet: 0 18px 50px rgba(20, 18, 14, 0.14);   /* sheets */
+  --ring-accent: 0 0 0 1px var(--color-accent);          /* focus, selected */
+
+  /* Breakpoints (CSS cannot read variables in @media, so they are fixed
+     numbers, and only these five may appear):
+       480px  small phone      760px  phone / tablet
+       600px  large phone      1100px tablet / desktop
+                               1240px wide (margin contents) */
 }
 
 html.dark {
@@ -144,9 +234,9 @@ body {
      the background competes with the type. */
   background-image: var(--grain);
   background-size: 200px 200px;
-  line-height: 1.7;
-  font-size: 1.12rem;
-  font-weight: 400;
+  line-height: var(--lh-body);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-regular);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -160,7 +250,7 @@ body {
 .viewfinder {
   position: fixed;
   inset: 10px;
-  z-index: 150;
+  z-index: var(--z-float);
   pointer-events: none;
 }
 
@@ -182,15 +272,15 @@ body {
   left: 24px;
   bottom: 2px;
   font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.06em;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-label);
   font-variant-numeric: tabular-nums;
   color: var(--color-text-muted);
   opacity: 0.8;
 }
 
 .vf-readout b {
-  font-weight: 400;
+  font-weight: var(--fw-regular);
   color: var(--color-accent);
 }
 
@@ -216,7 +306,7 @@ body {
   left: 0;
   right: 0;
   height: 2px;
-  z-index: 200;
+  z-index: var(--z-overlay);
   pointer-events: none;
   transform-origin: 0 50%;
   transform: scaleX(var(--read, 0));
@@ -234,7 +324,7 @@ body {
   bottom: 64px;
   left: 0;
   width: calc((100vw - 760px) / 2);
-  padding: 0 40px 0 34px;
+  padding: 0 var(--space-10) 0 var(--space-8);
   overflow-y: auto;
   flex-direction: column;
   justify-content: safe center;
@@ -256,12 +346,12 @@ body {
 .toc-title {
   display: block;
   font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--color-text-muted);
   margin-bottom: var(--space-sm);
-  padding-left: 0.95rem;
+  padding-left: var(--space-4);
 }
 
 .margin-toc ol {
@@ -285,7 +375,7 @@ body {
   width: 1px;
   background: var(--color-accent);
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--dur-base) ease;
 }
 
 .margin-toc li.active::before {
@@ -294,11 +384,11 @@ body {
 
 .margin-toc a {
   display: flex;
-  gap: 0.55rem;
-  padding: 0.32rem 0 0.32rem 0.95rem;
+  gap: var(--space-2);
+  padding: var(--space-1-5) 0 var(--space-1-5) var(--space-4);
   text-decoration: none;
   color: var(--color-text-muted);
-  transition: color 0.15s ease;
+  transition: color var(--dur-fast) ease;
 }
 
 .margin-toc a:hover {
@@ -313,15 +403,15 @@ body {
 .toc-num {
   flex-shrink: 0;
   font-family: var(--font-mono);
-  font-size: 0.6rem;
-  line-height: 2;
+  font-size: var(--fs-micro);
+  line-height: var(--lh-body);
   color: var(--color-accent);
 }
 
 .toc-text {
   font-family: var(--font-serif);
-  font-size: 0.92rem;
-  line-height: 1.35;
+  font-size: var(--fs-ui);
+  line-height: var(--lh-snug);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -331,9 +421,9 @@ body {
 /* ── Typography ──────────────────────────────────────── */
 h1, h2, h3, h4 {
   font-family: var(--font-serif);
-  font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: -0.015em;
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--track-snug);
   color: var(--color-text);
   text-wrap: balance;
 }
@@ -342,22 +432,22 @@ h1, h2, h3, h4 {
    the strokes go hairline thin. */
 h1 {
   font-family: var(--font-display);
-  font-weight: 300;
-  font-size: clamp(2.4rem, 5vw, 3.6rem);
-  line-height: 1.02;
-  letter-spacing: -0.03em;
+  font-weight: var(--fw-light);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
   margin-bottom: var(--space-md);
 }
 
 h2 {
-  font-size: 1.6rem;
+  font-size: var(--fs-h3);
   margin-top: var(--space-2xl);
   margin-bottom: var(--space-md);
   position: relative;
 }
 
 h3 {
-  font-size: 1.25rem;
+  font-size: var(--fs-lead);
   margin-top: var(--space-xl);
   margin-bottom: var(--space-sm);
 }
@@ -370,7 +460,7 @@ p {
 a {
   color: var(--color-accent);
   text-decoration: none;
-  transition: color 0.15s ease;
+  transition: color var(--dur-fast) ease;
 }
 
 a:hover {
@@ -386,14 +476,14 @@ code, pre {
 code {
   background: var(--color-code-bg);
   padding: 0.12em 0.38em;
-  border-radius: 3px;
+  border-radius: var(--radius);
 }
 
 pre {
   background: var(--color-code-bg);
   padding: var(--space-lg);
   border-radius: var(--radius);
-  line-height: 1.6;
+  line-height: var(--lh-ui);
   overflow-x: auto;
   margin: var(--space-lg) 0;
   border: 1px solid var(--color-border);
@@ -437,9 +527,9 @@ li {
    named rather than said: "FIG. 3", "19 ESSAYS", "APR 2026". */
 .label {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 400;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
@@ -452,8 +542,8 @@ li {
 body > header {
   position: sticky;
   top: 0;
-  z-index: 100;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  z-index: var(--z-header);
+  transition: background-color var(--dur-base) ease, box-shadow var(--dur-base) ease;
 }
 
 /* Once the page has moved, the header turns to frosted glass: mostly
@@ -469,7 +559,7 @@ body > header.scrolled {
 .site-head {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 1.15rem var(--gutter);
+  padding: var(--space-5) var(--gutter);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -479,7 +569,7 @@ body > header.scrolled {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.7rem;
+  gap: var(--space-3);
   color: var(--color-text);
   text-decoration: none;
 }
@@ -543,11 +633,11 @@ body > header.scrolled {
 .brand-name {
   font-family: 'Great Vibes', var(--font-serif);
   font-style: normal;
-  font-weight: 400;
+  font-weight: var(--fw-regular);
   font-synthesis: none;
-  font-size: 2.05rem;
-  letter-spacing: 0;
-  line-height: 1;
+  font-size: var(--fs-h2);
+  letter-spacing: var(--track-normal);
+  line-height: var(--lh-none);
   white-space: nowrap;
   /* A script sits low on its baseline; nudge it up to centre on the mark. */
   position: relative;
@@ -561,31 +651,31 @@ body > header.scrolled {
 
 .brand-role {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--color-text-muted);
-  padding-left: 0.7rem;
+  padding-left: var(--space-3);
   border-left: 1px solid var(--color-border);
-  line-height: 1.4;
+  line-height: var(--lh-snug);
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 0.15rem;
+  gap: var(--space-0-5);
 }
 
 .nav-link {
   position: relative;
   font-family: var(--font-mono);
-  font-size: 0.74rem;
-  letter-spacing: 0.04em;
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
   color: var(--color-text-secondary);
   text-decoration: none;
-  padding: 0.45rem 0.7rem;
+  padding: var(--space-2) var(--space-3);
   white-space: nowrap;
-  transition: color 0.2s ease;
+  transition: color var(--dur-base) ease;
 }
 
 .nav-link:hover {
@@ -605,7 +695,7 @@ body > header.scrolled {
   bottom: 0.1rem;
   width: 5px;
   height: 5px;
-  margin-left: -2.5px;
+  margin-left: calc(-1 * var(--space-0-5));
   border-radius: 50%;
   background: var(--color-accent);
 }
@@ -614,7 +704,7 @@ body > header.scrolled {
   width: 1px;
   height: 0.9rem;
   background: var(--color-border);
-  margin: 0 0.4rem;
+  margin: 0 var(--space-1-5);
 }
 
 .theme-toggle {
@@ -628,8 +718,8 @@ body > header.scrolled {
   align-items: center;
   justify-content: center;
   color: var(--color-text-secondary);
-  transition: color 0.2s ease, border-color 0.2s ease;
-  line-height: 1;
+  transition: color var(--dur-base) ease, border-color var(--dur-base) ease;
+  line-height: var(--lh-none);
 }
 
 .theme-toggle:hover {
@@ -647,28 +737,28 @@ body > header.scrolled {
 html.dark .theme-toggle .icon-sun { display: block; }
 html.dark .theme-toggle .icon-moon { display: none; }
 
-@media (max-width: 720px) {
+@media (max-width: 760px) {
   .brand-role { display: none; }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 600px) {
   /* Two slim rows: the mark and its name centred, and beneath them the
      links as a small instrument-style row, also centred. */
   .site-head {
     flex-wrap: wrap;
     justify-content: center;
-    row-gap: 0.3rem;
-    padding: 0.55rem var(--gutter) 0.2rem;
+    row-gap: var(--space-1);
+    padding: var(--space-2) var(--gutter) var(--space-1);
   }
 
   .brand {
     width: 100%;
     justify-content: center;
-    gap: 0.4rem;
+    gap: var(--space-1-5);
   }
 
   .brand-name {
-    font-size: 1.42rem;
+    font-size: var(--fs-lead);
   }
 
   .brand-mark {
@@ -682,7 +772,7 @@ html.dark .theme-toggle .icon-moon { display: none; }
 
   .nav-links {
     justify-content: center;
-    gap: 0.25rem;
+    gap: var(--space-1);
   }
 
   /* Each link is a full thumb-sized target, about 44px tall, even though
@@ -691,9 +781,9 @@ html.dark .theme-toggle .icon-moon { display: none; }
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    padding: 0 0.5rem;
-    font-size: 0.66rem;
-    letter-spacing: 0.1em;
+    padding: 0 var(--space-2);
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-label);
     text-transform: uppercase;
   }
 
@@ -707,7 +797,7 @@ html.dark .theme-toggle .icon-moon { display: none; }
   .nav-separator {
     display: block;
     height: 0.75rem;
-    margin: 0 0.25rem;
+    margin: 0 var(--space-1);
   }
 
   /* The toggle draws as a small ring but takes a full-size tap. */
@@ -764,8 +854,8 @@ main > :not(.wide) {
   font-family: var(--font-mono) !important;
   font-variant: normal !important;
   font-style: normal !important;
-  font-size: 0.66rem !important;
-  letter-spacing: 0.14em !important;
+  font-size: var(--fs-label) !important;
+  letter-spacing: var(--track-caps) !important;
   text-transform: uppercase !important;
   color: var(--color-text-muted);
   text-decoration: none;
@@ -778,7 +868,7 @@ main > :not(.wide) {
   display: inline-block;
   width: 6px;
   height: 6px;
-  margin-right: 0.6rem;
+  margin-right: var(--space-2);
   vertical-align: 0.05em;
   border-radius: 50%;
   background: var(--color-accent);
@@ -807,9 +897,9 @@ main > :not(.wide) {
 .page-subtitle {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 1.15rem;
+  font-size: var(--fs-body);
   color: var(--color-text-secondary);
-  line-height: 1.6;
+  line-height: var(--lh-ui);
   max-width: 600px;
 }
 
@@ -831,7 +921,7 @@ main > :not(.wide) {
   border-radius: var(--radius);
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.25s ease, box-shadow 0.35s var(--ease-out), transform 0.35s var(--ease-out);
+  transition: border-color var(--dur-base) ease, box-shadow var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
 }
 
 .post-card {
@@ -850,7 +940,7 @@ main > :not(.wide) {
   flex-shrink: 0;
   width: 160px;
   height: 100px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   background: var(--color-code-bg);
 }
@@ -863,23 +953,23 @@ main > :not(.wide) {
 
 .project-info h3,
 .post-card h3 {
-  font-size: 1.2rem;
+  font-size: var(--fs-body);
   margin: 0 0 var(--space-xs) 0;
   color: var(--color-text);
 }
 
 .project-info p,
 .post-card p {
-  font-size: 0.98rem;
+  font-size: var(--fs-ui);
   color: var(--color-text-secondary);
   margin: 0;
-  line-height: 1.55;
+  line-height: var(--lh-ui);
 }
 
 .post-card-meta {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: var(--color-text-muted);
   margin-bottom: var(--space-xs);
@@ -902,13 +992,13 @@ main > :not(.wide) {
 
 .tag {
   font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.04em;
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
   background: none;
   color: var(--color-tag-text);
   padding: 0.15em 0.55em;
   border: 1px solid var(--color-border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 
 /* ── Articles ─────────────────────────────────────────────
@@ -929,9 +1019,9 @@ main > .blog-post {
 }
 
 .blog-post-header h1 {
-  font-size: clamp(2.5rem, 6.2vw, 4.2rem);
-  line-height: 1;
-  letter-spacing: -0.035em;
+  font-size: var(--fs-h1);
+  line-height: var(--lh-none);
+  letter-spacing: var(--track-tight);
   margin: 0 0 var(--space-lg);
 }
 
@@ -940,10 +1030,10 @@ main > .blog-post {
 .blog-post-meta {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
+  gap: var(--space-3);
   font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--color-text-muted);
   margin-bottom: var(--space-lg);
@@ -959,37 +1049,37 @@ main > .blog-post {
 .blog-post-description {
   font-family: var(--font-serif);
   font-style: italic;
-  font-weight: 300;
-  font-size: 1.32rem;
+  font-weight: var(--fw-light);
+  font-size: var(--fs-lead);
   color: var(--color-text-secondary);
-  line-height: 1.5;
+  line-height: var(--lh-ui);
   margin-bottom: var(--space-md);
 }
 
 .blog-post-header .post-tags {
-  gap: 0.35rem;
+  gap: var(--space-1-5);
   margin-top: var(--space-md);
 }
 
 .blog-post-content {
-  line-height: 1.75;
+  line-height: var(--lh-body);
 }
 
 
 .blog-post-content h2 {
   position: relative;
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 1.9rem;
-  line-height: 1.12;
-  letter-spacing: -0.02em;
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-h2);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-snug);
   margin-top: var(--space-2xl);
   margin-bottom: var(--space-sm);
 }
 
 .blog-post-content h3 {
-  font-size: 1.32rem;
-  font-weight: 500;
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-medium);
   margin-top: var(--space-xl);
   margin-bottom: var(--space-sm);
 }
@@ -1001,7 +1091,7 @@ main > .blog-post {
 }
 
 /* Figures may run wider than the measure, centred on it. */
-@media (min-width: 900px) {
+@media (min-width: 1101px) {
   .blog-post .blog-post-content pre,
   .blog-post .blog-post-content table,
   .blog-post .blog-post-content .mini-diagram {
@@ -1014,7 +1104,7 @@ main > .blog-post {
 
 .blog-post-content p {
   font-size: var(--fs-body);
-  margin-bottom: 1.3rem;
+  margin-bottom: var(--space-5);
 }
 
 .blog-post-content ul,
@@ -1024,7 +1114,7 @@ main > .blog-post {
 
 .blog-post-content li {
   margin-bottom: var(--space-xs);
-  line-height: 1.7;
+  line-height: var(--lh-body);
   font-size: var(--fs-body);
 }
 
@@ -1040,7 +1130,7 @@ main > .blog-post {
   text-decoration-color: var(--color-accent);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.22em;
-  transition: color 0.15s ease;
+  transition: color var(--dur-fast) ease;
 }
 
 .blog-post-content a:hover {
@@ -1055,7 +1145,7 @@ main > .blog-post {
 .blog-post-content aside {
   position: relative;
   margin: var(--space-xl) 0;
-  padding: 1.6rem 0;
+  padding: var(--space-6) 0;
 }
 
 .blog-post-content blockquote::before,
@@ -1093,10 +1183,10 @@ main > .blog-post {
   margin: 0 0 var(--space-sm);
   font-family: var(--font-display);
   font-style: italic;
-  font-weight: 400;
+  font-weight: var(--fw-regular);
   font-size: calc(var(--fs-body) * 1.2);
-  line-height: 1.45;
-  letter-spacing: -0.005em;
+  line-height: var(--lh-ui);
+  letter-spacing: var(--track-snug);
   color: var(--color-text);
 }
 
@@ -1104,7 +1194,7 @@ main > .blog-post {
   .blog-post-content blockquote p,
   .blog-post-content aside p:not(.aside-label) {
     font-size: calc(var(--fs-body) * 1.06);
-    line-height: 1.55;
+    line-height: var(--lh-ui);
   }
 }
 
@@ -1120,12 +1210,12 @@ main > .blog-post {
 
 .blog-post-content aside > .aside-label {
   display: block;
-  margin: -0.15rem 0 1.05rem 2.6rem;
+  margin: calc(-1 * var(--space-0-5)) 0 var(--space-4) var(--space-10);
   font-family: var(--font-mono);
   font-style: normal;
-  font-size: 0.6rem;
-  line-height: 1;
-  letter-spacing: 0.16em;
+  font-size: var(--fs-micro);
+  line-height: var(--lh-none);
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
@@ -1135,8 +1225,8 @@ main > .blog-post {
   margin: calc(var(--space-xl) * -0.5) 0 var(--space-xl);
   padding-left: 0;
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
@@ -1148,8 +1238,8 @@ main > .blog-post {
 
 .blog-post-content p.caption {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: var(--color-text-muted);
   text-align: center;
@@ -1164,7 +1254,7 @@ main > .blog-post {
 
 .blog-post-content .recs li {
   font-style: italic;
-  padding-left: 1.4rem;
+  padding-left: var(--space-6);
   position: relative;
 }
 
@@ -1193,7 +1283,7 @@ main > .blog-post {
 }
 
 .blog-post-content strong {
-  font-weight: 600;
+  font-weight: var(--fw-bold);
 }
 
 /* Photographs are printed edge to edge on the page with a hairline and a
@@ -1205,7 +1295,7 @@ main > .blog-post {
   height: auto;
   object-fit: contain;
   border: none;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
   box-shadow: var(--shadow-lift);
   margin: var(--space-2xl) auto;
@@ -1220,8 +1310,8 @@ main > .blog-post {
 
 .back-link {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   text-decoration: none;
 }
@@ -1233,7 +1323,7 @@ main > .blog-post {
 
 @media (max-width: 600px) {
   .blog-post-description {
-    font-size: 1.14rem;
+    font-size: var(--fs-body);
   }
 }
 
@@ -1251,10 +1341,10 @@ body > footer {
 
 .foot-line {
   font-family: var(--font-display);
-  font-weight: 300;
-  font-size: clamp(2rem, 5vw, 3.4rem);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
+  font-weight: var(--fw-light);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
   color: var(--color-text);
   margin: 0 0 var(--space-2xl);
   max-width: 16ch;
@@ -1273,7 +1363,7 @@ body > footer {
 }
 
 .foot-col p {
-  margin: 0 0 0.7rem;
+  margin: 0 0 var(--space-3);
 }
 
 .foot-col ul {
@@ -1283,12 +1373,12 @@ body > footer {
 }
 
 .foot-col li {
-  margin: 0 0 0.25rem;
+  margin: 0 0 var(--space-1);
 }
 
 .foot-col a {
   font-family: var(--font-serif);
-  font-size: 1rem;
+  font-size: var(--fs-ui);
   color: var(--color-text-secondary);
   text-decoration: none;
 }
@@ -1299,8 +1389,8 @@ body > footer {
 }
 
 .foot-col .colophon {
-  font-size: 0.95rem;
-  line-height: 1.55;
+  font-size: var(--fs-ui);
+  line-height: var(--lh-ui);
   color: var(--color-text-muted);
 }
 
@@ -1311,7 +1401,7 @@ body > footer {
   margin-top: var(--space-2xl);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 600px) {
   .foot-cols {
     grid-template-columns: 1fr 1fr;
   }
@@ -1320,14 +1410,14 @@ body > footer {
   }
   .foot-meta {
     flex-direction: column;
-    gap: 0.3rem;
+    gap: var(--space-1);
   }
 }
 
 /* ── Responsive ──────────────────────────────────────── */
 @media (max-width: 600px) {
   body {
-    font-size: 1.06rem;
+    font-size: var(--fs-ui);
   }
 
   main {
@@ -1346,19 +1436,19 @@ body > footer {
 
 .experiment-intro h3 {
   font-family: var(--font-mono);
-  font-size: 0.66rem;
+  font-size: var(--fs-label);
     text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--track-caps);
   color: var(--color-accent);
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-2);
 }
 
 .experiment-intro p {
-  font-size: 1.12rem;
-  line-height: 1.8;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
   color: var(--color-text-secondary);
-  margin-bottom: 0.7rem;
+  margin-bottom: var(--space-3);
   max-width: 66ch;
 }
 
@@ -1401,11 +1491,11 @@ body > footer {
 .rules-list li {
   position: relative;
   font-family: var(--font-serif);
-  font-size: 1.06rem;
-  line-height: 1.7;
+  font-size: var(--fs-ui);
+  line-height: var(--lh-body);
   color: var(--color-text-secondary);
-  margin-bottom: 0.3rem;
-  padding-left: 1.1rem;
+  margin-bottom: var(--space-1);
+  padding-left: var(--space-4);
 }
 
 .rules-list li::before {
@@ -1422,20 +1512,20 @@ body > footer {
 .setup-steps {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  margin-top: 0.5rem;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
 }
 
 .setup-step {
   display: flex;
   align-items: baseline;
-  gap: 0.85rem;
+  gap: var(--space-3);
 }
 
 /* A numeral in the margin, not a filled dot. */
 .setup-number {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: var(--fs-label);
   color: var(--color-accent);
   background: none;
   min-width: 1.2rem;
@@ -1449,21 +1539,21 @@ body > footer {
 .setup-content {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: var(--space-0-5);
 }
 
 .setup-content strong {
   font-family: var(--font-serif);
-  font-size: 1.08rem;
-  font-weight: 600;
+  font-size: var(--fs-ui);
+  font-weight: var(--fw-bold);
   color: var(--color-text);
 }
 
 .setup-content span {
   font-family: var(--font-serif);
-  font-size: 1.02rem;
+  font-size: var(--fs-ui);
   color: var(--color-text-secondary);
-  line-height: 1.6;
+  line-height: var(--lh-ui);
 }
 
 /* ── Day entries, as ledger rows ─────────────────────── */
@@ -1504,20 +1594,20 @@ body > footer {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.2rem;
+  gap: var(--space-1);
   margin-bottom: 0;
 }
 
 .day-card-number {
   font-family: var(--font-mono);
-  font-size: 0.95rem;
-  font-weight: 400;
+  font-size: var(--fs-ui);
+  font-weight: var(--fw-regular);
   color: var(--color-text-muted);
   background: none;
   padding: 0;
   border-radius: 0;
   opacity: 0.7;
-  transition: color 0.15s ease, opacity 0.15s ease;
+  transition: color var(--dur-fast) ease, opacity var(--dur-fast) ease;
 }
 
 .day-card:hover .day-card-number {
@@ -1527,20 +1617,20 @@ body > footer {
 
 .day-card-date {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.08em;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-label);
   color: var(--color-text-muted);
 }
 
 .day-card-title {
   grid-column: 2;
   font-family: var(--font-serif);
-  font-size: 1.3rem;
-  font-weight: 600;
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
   color: var(--color-text);
-  margin-bottom: 0.3rem;
-  line-height: 1.35;
-  transition: color 0.15s ease;
+  margin-bottom: var(--space-1);
+  line-height: var(--lh-snug);
+  transition: color var(--dur-fast) ease;
 }
 
 .day-card:hover .day-card-title {
@@ -1551,20 +1641,20 @@ body > footer {
   grid-column: 2;
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 1.06rem;
+  font-size: var(--fs-ui);
   color: var(--color-text-muted);
-  line-height: 1.6;
-  margin-bottom: 0.4rem;
+  line-height: var(--lh-ui);
+  margin-bottom: var(--space-1-5);
   max-width: 62ch;
 }
 
 .day-card-link {
   grid-column: 2;
   font-family: var(--font-mono);
-  font-size: 0.66rem;
+  font-size: var(--fs-label);
     text-transform: uppercase;
-  font-weight: 400;
-  letter-spacing: 0.14em;
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--track-caps);
   color: var(--color-accent);
   text-decoration: none;
 }
@@ -1585,18 +1675,18 @@ body > footer {
 
 .experiment-conclusion h2 {
   font-family: var(--font-serif);
-  font-size: 1.3rem;
-  font-weight: 600;
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
   color: var(--color-text);
-  margin: 0 0 0.6rem;
-  line-height: 1.35;
+  margin: 0 0 var(--space-2);
+  line-height: var(--lh-snug);
 }
 
 .experiment-conclusion p {
-  font-size: 1.12rem;
-  line-height: 1.8;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
   color: var(--color-text-secondary);
-  margin-bottom: 0.7rem;
+  margin-bottom: var(--space-3);
   max-width: 66ch;
 }
 
@@ -1606,7 +1696,7 @@ body > footer {
 
 @media (max-width: 600px) {
   .setup-steps {
-    gap: 0.7rem;
+    gap: var(--space-3);
   }
 
   /* Single column on small screens, with the day label on one line. */
@@ -1620,8 +1710,8 @@ body > footer {
     grid-row: auto;
     flex-direction: row;
     align-items: baseline;
-    gap: 0.6rem;
-    margin-bottom: 0.35rem;
+    gap: var(--space-2);
+    margin-bottom: var(--space-1-5);
   }
 
   .day-card-title,
@@ -1631,7 +1721,7 @@ body > footer {
   }
 
   .day-card-title {
-    font-size: 1.18rem;
+    font-size: var(--fs-body);
   }
 }
 
@@ -1666,12 +1756,12 @@ body > footer {
 
 .experiment-status {
   font-family: var(--font-mono);
-  font-size: 0.66rem;
+  font-size: var(--fs-label);
     text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--track-caps);
   color: var(--color-text-muted);
   white-space: nowrap;
-  padding-bottom: 0.15rem;
+  padding-bottom: var(--space-0-5);
 }
 
 .experiment-status.active {
@@ -1680,8 +1770,8 @@ body > footer {
 
 .experiment-page-meta {
   font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.1em;
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
   color: var(--color-text-muted);
   margin-bottom: var(--space-xs);
 }
@@ -1689,10 +1779,10 @@ body > footer {
 .experiment-page-description {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 1.2rem;
+  font-size: var(--fs-body);
   max-width: 62ch;
   color: var(--color-text-secondary);
-  line-height: 1.7;
+  line-height: var(--lh-body);
   margin-bottom: 0;
 }
 
@@ -1713,7 +1803,7 @@ body > footer {
 .progress-track {
   display: flex;
   align-items: flex-end;
-  gap: 5px;
+  gap: var(--space-1-5);
 }
 
 .progress-dot {
@@ -1722,7 +1812,7 @@ body > footer {
   border-radius: 0;
   border: none;
   background: var(--color-border);
-  transition: background 0.2s ease;
+  transition: background var(--dur-base) ease;
 }
 
 .progress-dot.filled {
@@ -1732,7 +1822,7 @@ body > footer {
 
 .progress-label {
   font-family: var(--font-mono);
-  font-size: 0.66rem;
+  font-size: var(--fs-label);
   color: var(--color-text-muted);
   margin-left: auto;
 }
@@ -1750,8 +1840,8 @@ body > footer {
 
 .day-heading {
   font-family: var(--font-serif);
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
   color: var(--color-text);
   margin: 0 0 var(--space-md) 0;
 }
@@ -1763,7 +1853,7 @@ body > footer {
 
 .day-bullets li {
   font-size: var(--fs-body);
-  line-height: 1.75;
+  line-height: var(--lh-body);
   color: var(--color-text-secondary);
   margin-bottom: var(--space-sm);
 }
@@ -1789,7 +1879,7 @@ body > footer {
   border-collapse: collapse;
   margin-bottom: var(--space-md);
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: var(--fs-small);
 }
 
 .results-table th {
@@ -1797,7 +1887,7 @@ body > footer {
   padding: var(--space-sm) var(--space-md);
   color: var(--color-accent);
   border-bottom: 1px solid var(--color-border);
-  font-weight: 600;
+  font-weight: var(--fw-bold);
 }
 
 .results-table td {
@@ -1808,7 +1898,7 @@ body > footer {
 
 .results-table td:last-child {
   color: var(--color-accent);
-  font-weight: 600;
+  font-weight: var(--fw-bold);
 }
 
 .experiment-empty {
@@ -1841,7 +1931,7 @@ html.theme-swap body > header {
   view-transition-name: none;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 600px) {
   /* The second running head ("6 essays, 42 minutes") crowds the first on a
      narrow line; the page says it again below. */
   .folio-rule .folio-mark:last-child:not(:first-child) {
@@ -1888,7 +1978,7 @@ html,body{overflow-x:clip;}
   position: fixed;
   right: 34px;
   bottom: 34px;
-  z-index: 160;
+  z-index: var(--z-float);
   width: 48px;
   height: 48px;
   padding: 0;
@@ -1899,7 +1989,7 @@ html,body{overflow-x:clip;}
   opacity: 0;
   transform: translateY(14px) rotate(-90deg);
   pointer-events: none;
-  transition: opacity 0.4s ease, transform 0.6s var(--ease-out);
+  transition: opacity var(--dur-slow) ease, transform 0.6s var(--ease-out);
 }
 
 .to-top.on {
@@ -1938,12 +2028,12 @@ html,body{overflow-x:clip;}
   stroke-width: 1;
   opacity: 0.55;
   transform-origin: 24px 24px;
-  transition: transform 0.5s var(--ease-out), opacity 0.3s ease;
+  transition: transform var(--dur-slow) var(--ease-out), opacity var(--dur-base) ease;
 }
 
 .to-top .tt-arrow {
   stroke-width: 1.3;
-  transition: transform 0.5s var(--ease-out);
+  transition: transform var(--dur-slow) var(--ease-out);
 }
 
 .to-top .tt-label {
@@ -1951,14 +2041,14 @@ html,body{overflow-x:clip;}
   right: calc(100% + 0.6rem);
   top: 50%;
   font-family: var(--font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.16em;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--color-text-muted);
   white-space: nowrap;
   opacity: 0;
   transform: translate(6px, -50%);
-  transition: opacity 0.3s ease, transform 0.4s var(--ease-out);
+  transition: opacity var(--dur-base) ease, transform var(--dur-slow) var(--ease-out);
 }
 
 .to-top:hover .tt-ticks,
@@ -1998,7 +2088,7 @@ html,body{overflow-x:clip;}
   .to-top, .to-top * { transition: none !important; }
 }
 
-.margin-toc { transition: opacity 0.4s ease; }
+.margin-toc { transition: opacity var(--dur-slow) ease; }
 .margin-toc.under-cover { opacity: 0; pointer-events: none; }
 
 /* ── The way back ─────────────────────────────────────────
@@ -2008,11 +2098,11 @@ html,body{overflow-x:clip;}
    steps aside while you read on and returns as you look back. */
 .article-rule {
   position: fixed;
-  z-index: 160;
+  z-index: var(--z-float);
   left: 34px;
   top: calc(var(--head-h, 4.5rem) + 1.5rem);
   margin: 0 !important;
-  transition: opacity 0.3s ease, transform 0.5s var(--ease-out);
+  transition: opacity var(--dur-base) ease, transform var(--dur-slow) var(--ease-out);
 }
 
 .article-rule .rule-line,
@@ -2023,7 +2113,7 @@ html,body{overflow-x:clip;}
 .article-rule a {
   display: inline-flex !important;
   align-items: center;
-  gap: 0.55rem;
+  gap: var(--space-2);
   color: var(--color-text) !important;
 }
 
@@ -2049,17 +2139,17 @@ html,body{overflow-x:clip;}
   stroke-width: 1;
   opacity: 0.55;
   transform-origin: 24px 24px;
-  transition: transform 0.5s var(--ease-out), opacity 0.3s ease;
+  transition: transform var(--dur-slow) var(--ease-out), opacity var(--dur-base) ease;
 }
 
 .article-rule .ab-arrow {
   stroke-width: 1.3;
-  transition: transform 0.5s var(--ease-out), stroke 0.3s ease;
+  transition: transform var(--dur-slow) var(--ease-out), stroke var(--dur-base) ease;
 }
 
 .article-rule .ab-label {
   color: var(--color-text-muted);
-  transition: color 0.3s ease;
+  transition: color var(--dur-base) ease;
 }
 
 .article-rule a:hover .ab-ticks,
@@ -2125,7 +2215,7 @@ html,body{overflow-x:clip;}
 /* On the index pages the opening (title, figures, search and topics) is
    the whole first screen on anything wider than a phone, whatever the
    window, and the list begins below the fold, as About does. */
-@media (min-width: 720px) {
+@media (min-width: 760px) {
   .first-screen {
     display: flex;
     flex-direction: column;
@@ -2190,17 +2280,17 @@ pre,
     position: fixed;
     left: 50%;
     bottom: 22px;
-    z-index: 150;
+    z-index: var(--z-float);
     display: flex;
     align-items: baseline;
-    gap: 0.5rem;
+    gap: var(--space-2);
     max-width: min(calc(100vw - 160px), 360px);
-    padding: 0.5rem 1rem;
+    padding: var(--space-2) var(--space-4);
     border: 1px solid var(--color-border);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--color-bg);
     color: var(--color-text);
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-float);
     transform: translateX(-50%);
     cursor: pointer;
   }
@@ -2213,7 +2303,7 @@ pre,
   .toc-chip-text {
     overflow: hidden;
     font-family: var(--font-serif);
-    font-size: 0.9rem;
+    font-size: var(--fs-small);
     white-space: nowrap;
     text-overflow: ellipsis;
   }
@@ -2223,22 +2313,16 @@ pre,
     top: auto;
     left: 50%;
     bottom: 74px;
-    z-index: 151;
+    z-index: var(--z-sheet);
     width: min(92vw, 440px);
     max-height: 60vh;
-    padding: 1.1rem 1.2rem 0.9rem 0.6rem;
+    padding: var(--space-4) var(--space-5) var(--space-4) var(--space-2);
     border: 1px solid var(--color-border);
-    border-radius: 14px;
+    border-radius: var(--radius-xl);
     background: var(--color-bg);
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.14);
+    box-shadow: var(--shadow-sheet);
     transform: translateX(-50%);
   }
-}
-
-/* Whatever bleeds to the edge of the page (a plate, a figure) is cut at
-   the page's edge, so it can never widen the page, even in iOS Safari. */
-main {
-  overflow-x: clip;
 }
 
 /* The sheet's furniture: a list icon on the chip, a close button in the
@@ -2263,7 +2347,7 @@ main {
   .toc-veil {
     position: fixed;
     inset: 0;
-    z-index: 150;
+    z-index: var(--z-veil);
     background: color-mix(in srgb, var(--color-text) 18%, transparent);
   }
 
@@ -2272,8 +2356,8 @@ main {
   }
 
   .margin-toc.toc-open {
-    z-index: 152;
-    padding-top: 0.9rem;
+    z-index: var(--z-sheet);
+    padding-top: var(--space-4);
   }
 
   .margin-toc.toc-open .toc-close {
@@ -2284,7 +2368,7 @@ main {
     place-items: center;
     width: 36px;
     height: 36px;
-    margin: -0.4rem -0.6rem -1.6rem auto;
+    margin: calc(-1 * var(--space-1-5)) calc(-1 * var(--space-2)) calc(-1 * var(--space-6)) auto;
     padding: 0;
     border: 1px solid var(--color-border);
     border-radius: 50%;
@@ -2302,6 +2386,6 @@ main {
   }
 
   .margin-toc.toc-open + .toc-chip {
-    z-index: 153;
+    z-index: var(--z-sheet-chip);
   }
 }

@@ -196,45 +196,45 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
 <style>
   .day-page-header {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-6);
   }
 
   .day-page-number {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--fs-small);
     color: var(--color-accent);
-    font-weight: 600;
+    font-weight: var(--fw-bold);
   }
 
   .day-page-title {
     font-family: var(--font-serif);
-    font-size: 1.8rem;
-    font-weight: 700;
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-bold);
     color: var(--color-text);
-    margin-top: 0.25rem;
-    line-height: 1.3;
+    margin-top: var(--space-1);
+    line-height: var(--lh-snug);
   }
 
   .day-summary {
     font-family: var(--font-serif);
     font-style: italic;
     font-size: var(--fs-body);
-    line-height: 1.7;
+    line-height: var(--lh-body);
     color: var(--color-text-muted);
-    margin-bottom: 1.5rem;
-    padding: 0.8rem 1rem;
+    margin-bottom: var(--space-6);
+    padding: var(--space-3) var(--space-4);
     border-left: 1px solid var(--color-accent);
     background: none;
     border-radius: 0;
   }
 
   .top-bullets {
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-8);
   }
 
   .day-section {
-    margin-top: 2rem;
-    padding-top: 1.5rem;
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
     border-top: 1px solid var(--color-border);
   }
 
@@ -244,44 +244,44 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .section-heading {
     font-family: var(--font-serif);
-    font-size: 1.4rem;
+    font-size: var(--fs-lead);
     color: var(--color-accent);
-    margin-bottom: 0.3rem;
+    margin-bottom: var(--space-1);
   }
 
   .section-subtitle {
-    font-size: 1.12rem;
+    font-size: var(--fs-body);
     color: var(--color-text-muted);
-    margin-bottom: 1rem;
-    line-height: 1.5;
+    margin-bottom: var(--space-4);
+    line-height: var(--lh-ui);
   }
 
   .section-bullets li {
     font-size: var(--fs-body);
-    margin-bottom: 0.6rem;
+    margin-bottom: var(--space-2);
   }
 
   .day-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 2rem;
-    padding-top: 1rem;
+    margin-top: var(--space-8);
+    padding-top: var(--space-4);
     border-top: 1px solid var(--color-border);
   }
 
   .day-nav-link {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: var(--space-1-5);
     font-family: var(--font-mono);
-    letter-spacing: 0.14em;
-    font-size: 0.66rem;
+    letter-spacing: var(--track-caps);
+    font-size: var(--fs-label);
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
     text-decoration: none;
-    transition: color 0.15s ease;
+    transition: color var(--dur-fast) ease;
   }
 
   .day-nav-link:hover {
@@ -289,17 +289,17 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   }
 
   .day-nav-arrow {
-    font-size: 1rem;
+    font-size: var(--fs-ui);
   }
 
   .day-nav-label {
     font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-size: var(--fs-small);
   }
 
   /* Diagram styles */
   .mini-diagram {
-    margin: 1.2rem 0;
+    margin: var(--space-5) 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -313,10 +313,10 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   }
 
   .ekman-insight {
-    margin-top: 0.6rem;
-    padding: 0.5rem 0.8rem;
+    margin-top: var(--space-2);
+    padding: var(--space-2) var(--space-3);
     font-family: var(--font-sans);
-    font-size: 0.8rem;
+    font-size: var(--fs-small);
     color: var(--color-text-muted);
     border-left: 2px solid var(--color-accent);
     max-width: 480px;
@@ -324,8 +324,8 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 
   .ekman-label {
     font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 0.75rem;
+    font-weight: var(--fw-bold);
+    font-size: var(--fs-small);
     color: var(--color-accent);
   }
 </style>

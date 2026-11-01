@@ -130,28 +130,28 @@ const activeDays = days.filter(d => d.bullets.length > 0);
 
 <style>
   .intro-setup {
-    padding: 1rem 1.25rem;
+    padding: var(--space-4) var(--space-5);
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     border-left: none;
     background: var(--color-bg);
   }
 
   .intro-setup p {
-    font-size: 0.92rem;
-    line-height: 1.75;
+    font-size: var(--fs-ui);
+    line-height: var(--lh-body);
     color: var(--color-text-secondary);
-    margin-bottom: 0.75rem;
+    margin-bottom: var(--space-3);
   }
 
   .setup-questions h4 {
     font-family: var(--font-mono);
-    font-size: 0.78rem;
-    font-weight: 700;
+    font-size: var(--fs-small);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.03em;
-    margin-bottom: 0.5rem;
+    letter-spacing: var(--track-normal);
+    margin-bottom: var(--space-2);
   }
 
   .setup-questions ul {
@@ -162,10 +162,10 @@ const activeDays = days.filter(d => d.bullets.length > 0);
 
   .setup-questions li {
     font-family: var(--font-serif);
-    font-size: 0.85rem;
-    line-height: 1.65;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
     color: var(--color-text-secondary);
-    padding: 0.4rem 0;
+    padding: var(--space-1-5) 0;
     border-bottom: 1px solid var(--color-border);
   }
 

@@ -170,6 +170,17 @@
       start(en.target);
     });
   }, { rootMargin: '800px 0px' });
-  list.forEach(function (img) { io.observe(img); });
+  // A header plate is wanted at once, not when an observer gets round to
+  // it; the rest start as they near the screen.
+  list.forEach(function (img) {
+    if (img.getAttribute('fetchpriority') === 'high') start(img);
+    else io.observe(img);
+  });
+
+  // And whatever happens, a loaded plate is never left hidden: after two
+  // seconds it shows as it is.
+  setTimeout(function () {
+    list.forEach(function (img) { if (img.complete && img.naturalWidth) img.classList.add('ink-late'); });
+  }, 2000);
 })();
 </script>

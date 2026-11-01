@@ -113,23 +113,23 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 2rem;
-    padding-top: 1rem;
+    margin-top: var(--space-8);
+    padding-top: var(--space-4);
     border-top: 1px solid var(--color-border);
   }
 
   .day-nav-link {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: var(--space-1-5);
     font-family: var(--font-mono);
-    letter-spacing: 0.14em;
-    font-size: 0.66rem;
+    letter-spacing: var(--track-caps);
+    font-size: var(--fs-label);
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
     text-decoration: none;
-    transition: color 0.15s ease;
+    transition: color var(--dur-fast) ease;
   }
 
   .day-nav-link:hover {
@@ -137,11 +137,11 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
   }
 
   .day-nav-arrow {
-    font-size: 1rem;
+    font-size: var(--fs-ui);
   }
 
   .day-nav-label {
     font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-size: var(--fs-small);
   }
 </style>

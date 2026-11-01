@@ -195,29 +195,29 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   .tp-kicker {
     margin: 0 0 var(--space-md);
     font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.16em;
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--color-text-muted);
   }
 
   .tp-kicker span {
-    margin-left: 0.8rem;
+    margin-left: var(--space-3);
     color: var(--color-accent);
   }
 
   .tp-head h1 {
     margin: 0;
     font-family: var(--font-display);
-    font-weight: 300;
-    font-size: clamp(3.4rem, 9vw, 8.4rem);
-    line-height: 0.92;
-    letter-spacing: -0.045em;
+    font-weight: var(--fw-light);
+    font-size: var(--fs-display-xl);
+    line-height: var(--lh-display);
+    letter-spacing: var(--track-tight);
   }
 
   .tp-head h1 em {
     color: var(--color-accent);
-    font-weight: 300;
+    font-weight: var(--fw-light);
   }
 
   .tp-lede {
@@ -225,8 +225,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     margin: var(--space-lg) 0 0;
     font-family: var(--font-display);
     font-style: italic;
-    font-size: clamp(1.15rem, 1.6vw, 1.4rem);
-    line-height: 1.5;
+    font-size: var(--fs-h3);
+    line-height: var(--lh-ui);
     color: var(--color-text-secondary);
   }
 
@@ -234,24 +234,24 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     display: grid;
     grid-template-columns: repeat(2, auto);
     gap: var(--space-lg) var(--space-xl);
-    margin: 0 0 0.4rem;
+    margin: 0 0 var(--space-1-5);
   }
 
   .tp-figures dt {
     font-family: var(--font-mono);
-    font-size: 0.58rem;
-    letter-spacing: 0.16em;
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--color-text-muted);
   }
 
   .tp-figures dd {
-    margin: 0.3rem 0 0;
+    margin: var(--space-1) 0 0;
     font-family: var(--font-display);
-    font-weight: 300;
-    font-size: 2.2rem;
-    line-height: 1;
-    letter-spacing: -0.03em;
+    font-weight: var(--fw-light);
+    font-size: var(--fs-h2);
+    line-height: var(--lh-none);
+    letter-spacing: var(--track-tight);
   }
 
   /* Why I write these: folded until asked for. */
@@ -262,10 +262,10 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   .why summary {
     display: inline-flex;
     align-items: center;
-    gap: 0.55rem;
+    gap: var(--space-2);
     font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.14em;
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--color-text);
     cursor: pointer;
@@ -280,8 +280,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   .why summary::before {
     content: '+';
     color: var(--color-accent);
-    font-size: 0.9rem;
-    transition: transform 0.3s var(--ease-out);
+    font-size: var(--fs-small);
+    transition: transform var(--dur-base) var(--ease-out);
   }
 
   .why[open] summary::before {
@@ -298,8 +298,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   }
 
   .why-body p {
-    font-size: 1.06rem;
-    line-height: 1.75;
+    font-size: var(--fs-ui);
+    line-height: var(--lh-body);
     color: var(--color-text-secondary);
     margin: 0 0 var(--space-sm);
   }
@@ -316,16 +316,16 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   .seek input {
     width: 100%;
-    padding: 0.6rem 2.4rem 0.6rem 0;
+    padding: var(--space-2) var(--space-10) var(--space-2) 0;
     border: none;
     border-bottom: 1px solid var(--color-border);
     background: transparent;
     font-family: var(--font-display);
     font-style: italic;
-    font-size: clamp(1.3rem, 2vw, 1.7rem);
+    font-size: var(--fs-h3);
     color: var(--color-text);
     outline: none;
-    transition: border-color 0.3s ease;
+    transition: border-color var(--dur-base) ease;
   }
 
   .seek input::placeholder {
@@ -342,8 +342,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     right: 0;
     bottom: 0.85rem;
     font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.12em;
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--color-text-muted);
   }
@@ -363,14 +363,14 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: 0.4rem 1.2rem;
+    gap: var(--space-1-5) var(--space-5);
     margin-top: var(--space-lg);
   }
 
   .themes-name {
     font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.16em;
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--color-text-muted);
   }
@@ -385,9 +385,9 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     background: none;
     cursor: pointer;
     font-family: var(--font-display);
-    font-size: 1.08rem;
+    font-size: var(--fs-ui);
     color: var(--color-text-secondary);
-    transition: color 0.2s ease;
+    transition: color var(--dur-base) ease;
   }
 
   .idx:hover,
@@ -400,9 +400,9 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   }
 
   .idx-n {
-    margin-left: 0.2rem;
+    margin-left: var(--space-1);
     font-family: var(--font-mono);
-    font-size: 0.58rem;
+    font-size: var(--fs-micro);
     vertical-align: super;
     color: var(--color-accent);
   }
@@ -410,8 +410,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   .console-note {
     margin: var(--space-md) 0 0;
     font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.12em;
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--color-text-muted);
   }
@@ -487,11 +487,11 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.2rem;
+    gap: var(--space-1);
     margin: var(--space-3xl) 0 var(--space-xl);
-    padding: 0.6rem 1.4rem;
+    padding: var(--space-2) var(--space-6);
     background: var(--color-bg);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
   }
 
   .year-band:first-child {
@@ -500,17 +500,17 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   .year-num {
     font-family: var(--font-display);
-    font-weight: 300;
-    font-size: clamp(2.6rem, 4.6vw, 4rem);
-    line-height: 1;
-    letter-spacing: -0.04em;
+    font-weight: var(--fw-light);
+    font-size: var(--fs-h1);
+    line-height: var(--lh-none);
+    letter-spacing: var(--track-tight);
     color: var(--color-text);
   }
 
   .year-count {
     font-family: var(--font-mono);
-    font-size: 0.56rem;
-    letter-spacing: 0.16em;
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--color-text-muted);
   }
@@ -539,7 +539,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     position: relative;
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--space-2);
   }
 
   /* Each landing is an eight-pointed star, the Mughal tile's khatam, set
@@ -554,7 +554,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     border-radius: 50%;
     background: var(--color-bg);
     box-shadow: 0 0 0 4px var(--color-bg);
-    transition: transform 0.4s var(--ease-out);
+    transition: transform var(--dur-slow) var(--ease-out);
   }
 
   .node-dot::after {
@@ -575,8 +575,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   .node-date {
     font-family: var(--font-mono);
-    font-size: 0.58rem;
-    letter-spacing: 0.14em;
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--color-text-muted);
     white-space: nowrap;
@@ -587,24 +587,24 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     display: block;
     font-family: var(--font-display);
     font-style: italic;
-    font-size: 1rem;
-    line-height: 1.55;
+    font-size: var(--fs-ui);
+    line-height: var(--lh-ui);
     color: var(--color-text-secondary);
   }
 
   .entry-body {
     display: flex;
     flex-direction: column;
-    gap: 0.55rem;
+    gap: var(--space-2);
   }
 
   .entry-meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.3rem 0.9rem;
+    gap: var(--space-1) var(--space-4);
     font-family: var(--font-mono);
-    font-size: 0.58rem;
-    letter-spacing: 0.14em;
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--color-text-muted);
   }
@@ -614,13 +614,13 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   }
 
   .entry h3 {
-    margin: 0.1rem 0 0;
+    margin: var(--space-0-5) 0 0;
     font-family: var(--font-display);
-    font-weight: 400;
-    font-size: clamp(1.5rem, 2.2vw, 2rem);
-    line-height: 1.12;
-    letter-spacing: -0.02em;
-    transition: color 0.25s ease;
+    font-weight: var(--fw-regular);
+    font-size: var(--fs-h2);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--track-snug);
+    transition: color var(--dur-base) ease;
   }
 
   .entry-link:hover h3 {
@@ -629,15 +629,15 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   .entry p {
     margin: 0;
-    font-size: 1.02rem;
-    line-height: 1.65;
+    font-size: var(--fs-ui);
+    line-height: var(--lh-body);
     color: var(--color-text-secondary);
   }
 
   .entry-topic {
     font-family: var(--font-display);
     font-style: italic;
-    font-size: 0.95rem;
+    font-size: var(--fs-ui);
     color: var(--color-text-muted);
   }
 
@@ -720,13 +720,13 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   .entry:nth-child(5n of .entry) { --fw: 24rem; --fy: -1rem; --fx: 1rem; }
 
   /* ── Wide screens and iPads: both banks ─────────────── */
-  @media (min-width: 720px) {
+  @media (min-width: 760px) {
     .entry-link {
       grid-template-columns:
         [lside] minmax(0, 1fr) [lbody] minmax(0, 22rem)
         [river] var(--river)
         [rbody] minmax(0, 22rem) [rside] minmax(0, 1fr);
-      column-gap: 2.6rem;
+      column-gap: var(--space-10);
     }
 
     .entry-link > * {
@@ -736,7 +736,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     .entry-river {
       display: flex;
       flex-direction: column;
-      gap: 0.9rem;
+      gap: var(--space-4);
     }
 
     /* The left bank; its plate lies across the river. */
@@ -744,7 +744,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     .entry:nth-child(odd of .entry) .entry-body { grid-column: lbody; }
     .entry:nth-child(odd of .entry) .entry-fig { right: var(--fx); }
     .entry:nth-child(odd of .entry) .entry-node { transform: translateX(calc(var(--river) / 2 - var(--bend) - 9.5px)); }
-    .entry:nth-child(odd of .entry) .entry-quote { padding-left: calc(var(--river) / 2 - var(--bend) + 1.4rem); }
+    .entry:nth-child(odd of .entry) .entry-quote { padding-left: calc(var(--river) / 2 - var(--bend) + var(--space-5) + var(--space-0-5)); }
 
     /* The right bank, the river bending towards it; its plate lies across
        the river. */
@@ -753,7 +753,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     .entry:nth-child(even of .entry) .entry-fig { left: var(--fx); }
     .entry:nth-child(even of .entry) .entry-river { align-items: flex-end; text-align: right; }
     .entry:nth-child(even of .entry) .entry-node { flex-direction: row-reverse; transform: translateX(calc(var(--bend) - var(--river) / 2 + 9.5px)); }
-    .entry:nth-child(even of .entry) .entry-quote { padding-right: calc(var(--river) / 2 - var(--bend) + 1.4rem); }
+    .entry:nth-child(even of .entry) .entry-quote { padding-right: calc(var(--river) / 2 - var(--bend) + var(--space-5) + var(--space-0-5)); }
 
     /* The banks interleave rather than stepping like a ladder. */
     .entry-quote {
@@ -782,7 +782,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   /* An iPad: the same two banks, cut closer. A narrower channel, the
      essays taking most of each bank, the plates smaller and fainter. */
-  @media (min-width: 720px) and (max-width: 1099px) {
+  @media (min-width: 760px) and (max-width: 1099px) {
     .river-wrap {
       --river: 6rem;
       --bend: 1.4rem;
@@ -793,7 +793,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
         [lside] minmax(0, 0.12fr) [lbody] minmax(0, 1fr)
         [river] var(--river)
         [rbody] minmax(0, 1fr) [rside] minmax(0, 0.12fr);
-      column-gap: 1.6rem;
+      column-gap: var(--space-6);
     }
 
     .entry-quote {
@@ -811,7 +811,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   }
 
   /* ── Phones: one bank, the river down the left ───────── */
-  @media (max-width: 719px) {
+  @media (max-width: 759px) {
     .river-wrap {
       --river: 2.2rem;
       --bend: 0.35rem;
@@ -834,7 +834,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       grid-row: 2;
       align-self: start;
       justify-self: center;
-      margin-top: 0.5rem;
+      margin-top: var(--space-2);
     }
 
     .entry:nth-child(even of .entry) .entry-node { transform: translateX(var(--bend)); }
@@ -882,7 +882,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     .year-band {
       align-self: flex-start;
       align-items: flex-start;
-      margin-left: calc(var(--river) / 2 - 1.4rem);
+      margin-left: calc(var(--river) / 2 - var(--space-5) - var(--space-0-5));
     }
   }
 
@@ -900,7 +900,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     }
 
     .tp-figures dd {
-      font-size: 1.6rem;
+      font-size: var(--fs-h3);
     }
   }
 
@@ -932,7 +932,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     text-align: center;
     font-family: var(--font-display);
     font-style: italic;
-    font-size: 1.3rem;
+    font-size: var(--fs-lead);
     color: var(--color-text-muted);
   }
 

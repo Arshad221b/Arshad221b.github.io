@@ -226,7 +226,7 @@ function formatDate(dateStr: string): string {
      The title stands on the left third, on the paper where the plate fades
      out, with the date above and the readout below; the essay begins in its
      column just past the fold. */
-  @media (min-width: 1200px) {
+  @media (min-width: 1240px) {
     .blog-post-header.has-figure {
       --hero-h: max(34rem, 100vh);
       --img-w: max(calc(min(100vw, 2400px) * 1.05), calc(var(--hero-h) * 2.25));
@@ -249,9 +249,9 @@ function formatDate(dateStr: string): string {
     }
 
     .blog-post-header.has-figure h1 {
-      font-size: clamp(3.4rem, 4.9vw, 6.4rem);
-      line-height: 0.98;
-      letter-spacing: -0.03em;
+      font-size: var(--fs-display);
+      line-height: var(--lh-display);
+      letter-spacing: var(--track-tight);
     }
 
     .post-cover {
@@ -322,16 +322,16 @@ function formatDate(dateStr: string): string {
 
   .exif dt {
     font-family: var(--font-mono);
-    font-size: 0.58rem;
-    letter-spacing: 0.14em;
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--color-text-muted);
-    margin-bottom: 0.2rem;
+    margin-bottom: var(--space-1);
   }
 
   .exif dd {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--fs-small);
     color: var(--color-text);
     margin: 0;
     white-space: nowrap;
@@ -343,7 +343,7 @@ function formatDate(dateStr: string): string {
     color: var(--color-accent);
   }
 
-  @media (max-width: 560px) {
+  @media (max-width: 600px) {
     .exif {
       gap: var(--space-sm) var(--space-lg);
     }
@@ -362,8 +362,8 @@ function formatDate(dateStr: string): string {
 
   .kin-name {
     font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.14em;
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--color-text-secondary);
     white-space: nowrap;
@@ -394,7 +394,7 @@ function formatDate(dateStr: string): string {
     display: flex;
     align-items: baseline;
     gap: var(--space-md);
-    padding: 0.75rem 0;
+    padding: var(--space-3) 0;
     text-decoration: none;
     color: inherit;
   }
@@ -402,10 +402,10 @@ function formatDate(dateStr: string): string {
   .kin-title {
     flex: 1;
     font-family: var(--font-serif);
-    font-size: 1.18rem;
-    line-height: 1.35;
+    font-size: var(--fs-body);
+    line-height: var(--lh-snug);
     color: var(--color-text);
-    transition: color 0.15s ease;
+    transition: color var(--dur-fast) ease;
   }
 
   .kin-list a:hover .kin-title {
@@ -414,9 +414,9 @@ function formatDate(dateStr: string): string {
 
   .kin-sim {
     position: relative;
-    padding-left: 3.2rem;
+    padding-left: var(--space-14);
     font-family: var(--font-mono);
-    font-size: 0.62rem;
+    font-size: var(--fs-micro);
     font-variant-numeric: tabular-nums;
     color: var(--color-accent);
     white-space: nowrap;
@@ -429,7 +429,7 @@ function formatDate(dateStr: string): string {
     left: 0;
     top: 0.42em;
     height: 2px;
-    border-radius: 1px;
+    border-radius: var(--radius-sm);
   }
 
   .kin-sim::before {
@@ -444,7 +444,7 @@ function formatDate(dateStr: string): string {
 
   @media (max-width: 600px) {
       .kin-title {
-      font-size: 1.06rem;
+      font-size: var(--fs-ui);
     }
   }
 

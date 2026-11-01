@@ -372,59 +372,59 @@ print("AUC model2:", model2_auc)   # 0.77</code></pre>
   .objectives-box {
     background: var(--color-tag-bg);
     border: 1px solid var(--color-border);
-    border-radius: 10px;
-    padding: 1rem 1.4rem;
-    margin: 1.5rem 0;
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-6);
+    margin: var(--space-6) 0;
   }
 
   .objectives-title {
     font-family: var(--font-sans);
-    font-size: 0.82rem;
-    font-weight: 600;
+    font-size: var(--fs-small);
+    font-weight: var(--fw-bold);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin: 0 0 0.7rem 0;
+    letter-spacing: var(--track-label);
+    margin: 0 0 var(--space-3) 0;
   }
 
   .objectives-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
+    gap: var(--space-2);
   }
 
   .objectives-grid span {
     font-family: var(--font-sans);
-    font-size: 0.82rem;
+    font-size: var(--fs-small);
     color: var(--color-text-secondary);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 6px;
-    padding: 0.35rem 0.6rem;
+    border-radius: var(--radius-lg);
+    padding: var(--space-1-5) var(--space-2);
     text-align: center;
   }
 
   .four-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-    margin: 1.2rem 0;
+    gap: var(--space-3);
+    margin: var(--space-5) 0;
   }
 
   .four-card {
-    padding: 0.9rem 1rem;
-    border-radius: 8px;
+    padding: var(--space-4) var(--space-4);
+    border-radius: var(--radius-lg);
     font-family: var(--font-sans);
-    font-size: 0.82rem;
-    line-height: 1.5;
+    font-size: var(--fs-small);
+    line-height: var(--lh-ui);
     border: 1px solid var(--color-border);
     color: var(--color-text-secondary);
   }
 
   .four-card strong {
     display: block;
-    margin-bottom: 0.25rem;
-    font-size: 0.82rem;
+    margin-bottom: var(--space-1);
+    font-size: var(--fs-small);
     color: var(--color-text);
   }
 
@@ -437,71 +437,71 @@ print("AUC model2:", model2_auc)   # 0.77</code></pre>
     width: 100%;
     border-collapse: collapse;
     font-family: var(--font-sans);
-    font-size: 0.82rem;
-    margin: 1.2rem 0;
+    font-size: var(--fs-small);
+    margin: var(--space-5) 0;
   }
 
   .conf-matrix th, .conf-matrix td {
-    padding: 0.7rem 1rem;
+    padding: var(--space-3) var(--space-4);
     border: 1px solid var(--color-border);
     text-align: center;
   }
 
   .conf-matrix thead th {
     background: var(--color-tag-bg);
-    font-weight: 600;
+    font-weight: var(--fw-bold);
     color: var(--color-text-muted);
-    font-size: 0.78rem;
+    font-size: var(--fs-small);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--track-label);
   }
 
   .conf-matrix tbody th {
     background: var(--color-tag-bg);
-    font-weight: 600;
+    font-weight: var(--fw-bold);
     color: var(--color-text-muted);
-    font-size: 0.78rem;
+    font-size: var(--fs-small);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--track-label);
     text-align: left;
   }
 
-  .cell-tp { background: rgba(94, 122, 74, 0.12); font-weight: 600; }
-  .cell-tn { background: rgba(74, 96, 122, 0.12); font-weight: 600; }
+  .cell-tp { background: rgba(94, 122, 74, 0.12); font-weight: var(--fw-bold); }
+  .cell-tn { background: rgba(74, 96, 122, 0.12); font-weight: var(--fw-bold); }
   .cell-fp { background: rgba(168, 124, 54, 0.14); }
   .cell-fn { background: rgba(156, 81, 56, 0.15); }
 
   .auc-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-    margin: 1.2rem 0;
+    gap: var(--space-3);
+    margin: var(--space-5) 0;
   }
 
   .auc-card {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    padding: 1rem;
+    gap: var(--space-1-5);
+    padding: var(--space-4);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     font-family: var(--font-sans);
-    font-size: 0.82rem;
+    font-size: var(--fs-small);
     color: var(--color-text-secondary);
-    line-height: 1.5;
+    line-height: var(--lh-ui);
   }
 
   .auc-val {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
-    font-weight: 700;
+    font-size: var(--fs-small);
+    font-weight: var(--fw-bold);
     color: var(--color-accent);
   }
 
   .eq-block {
-    margin: 1.5rem 0;
-    padding: 0.6rem 1.5rem;
+    margin: var(--space-6) 0;
+    padding: var(--space-2) var(--space-6);
     background: none;
     border-left: 1px solid var(--color-accent);
     border-radius: 0;
@@ -510,19 +510,19 @@ print("AUC model2:", model2_auc)   # 0.77</code></pre>
   }
 
   .eq-note {
-    margin: 0.6rem 0 1.5rem 0;
-    padding: 0.7rem 1rem;
+    margin: var(--space-2) 0 var(--space-6) 0;
+    padding: var(--space-3) var(--space-4);
     background: var(--color-code-bg);
     border: 1px solid var(--color-border-light);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     font-family: var(--font-sans);
-    font-size: 0.82rem;
+    font-size: var(--fs-small);
     color: var(--color-text-secondary);
-    line-height: 1.6;
+    line-height: var(--lh-ui);
   }
 
   .threshold-table-wrap {
-    margin: 1.2rem 0;
+    margin: var(--space-5) 0;
     overflow-x: auto;
   }
 
@@ -530,11 +530,11 @@ print("AUC model2:", model2_auc)   # 0.77</code></pre>
     width: 100%;
     border-collapse: collapse;
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: var(--fs-small);
   }
 
   .threshold-table th, .threshold-table td {
-    padding: 0.5rem 1rem;
+    padding: var(--space-2) var(--space-4);
     border: 1px solid var(--color-border);
     text-align: center;
   }
@@ -542,10 +542,10 @@ print("AUC model2:", model2_auc)   # 0.77</code></pre>
   .threshold-table thead th {
     background: var(--color-tag-bg);
     font-family: var(--font-sans);
-    font-size: 0.82rem;
-    font-weight: 600;
+    font-size: var(--fs-small);
+    font-weight: var(--fw-bold);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--track-label);
     color: var(--color-text-muted);
   }
 
@@ -556,16 +556,16 @@ print("AUC model2:", model2_auc)   # 0.77</code></pre>
   .threshold-table .best-row td {
     background: var(--color-accent-soft);
     color: var(--color-accent);
-    font-weight: 700;
+    font-weight: var(--fw-bold);
     border-color: var(--color-accent);
   }
 
   .roc-chart {
-    margin: 1.5rem 0;
+    margin: var(--space-6) 0;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 10px;
-    padding: 1rem;
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
   }
 
   .roc-svg {

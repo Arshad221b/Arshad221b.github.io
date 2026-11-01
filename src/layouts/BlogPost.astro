@@ -182,7 +182,7 @@ function formatDate(dateStr: string): string {
      The title stands on the left third, on the paper where the plate fades
      out, with the date above and the readout below; the essay begins in its
      column just past the fold. */
-  @media (min-width: 1200px) {
+  @media (min-width: 1240px) {
     .blog-post-header.has-figure {
       --hero-h: max(34rem, 100vh);
       --img-w: max(calc(min(100vw, 2400px) * 1.05), calc(var(--hero-h) * 2.25));
@@ -205,9 +205,9 @@ function formatDate(dateStr: string): string {
     }
 
     .blog-post-header.has-figure h1 {
-      font-size: clamp(3.4rem, 4.9vw, 6.4rem);
-      line-height: 0.98;
-      letter-spacing: -0.03em;
+      font-size: var(--fs-display);
+      line-height: var(--lh-display);
+      letter-spacing: var(--track-tight);
     }
 
     .post-cover {
