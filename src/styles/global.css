@@ -2147,9 +2147,20 @@ html,body{overflow-x:clip;}
    headers still stick). Code wraps instead of running off; long
    equations and wide diagrams are scaled down to fit their column by the
    layout's script, never scrolled. */
-html,
+html {
+  /* At the window: iOS Safari honours this one. */
+  overflow-x: hidden;
+  /* No sideways rubber-band either. */
+  overscroll-behavior-x: none;
+}
+
 body {
+  /* Clip, not hidden, so the body does not become a scroller of its own
+     and sticky headers still stick. */
   overflow-x: clip;
+  /* A finger can scroll the page up and down and zoom it, never push it
+     sideways. */
+  touch-action: pan-y pinch-zoom;
 }
 
 pre,
@@ -2221,5 +2232,76 @@ pre,
     background: var(--color-bg);
     box-shadow: 0 18px 50px rgba(0, 0, 0, 0.14);
     transform: translateX(-50%);
+  }
+}
+
+/* Whatever bleeds to the edge of the page (a plate, a figure) is cut at
+   the page's edge, so it can never widen the page, even in iOS Safari. */
+main {
+  overflow-x: clip;
+}
+
+/* The sheet's furniture: a list icon on the chip, a close button in the
+   sheet's corner, and a veil behind it that closes it when touched. */
+.toc-close,
+.toc-veil {
+  display: none;
+}
+
+@media (max-width: 1239px) {
+  .toc-chip-icon {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    align-self: center;
+    stroke: var(--color-accent);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    fill: none;
+  }
+
+  .toc-veil {
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    background: color-mix(in srgb, var(--color-text) 18%, transparent);
+  }
+
+  .margin-toc.toc-open ~ .toc-veil {
+    display: block;
+  }
+
+  .margin-toc.toc-open {
+    z-index: 152;
+    padding-top: 0.9rem;
+  }
+
+  .margin-toc.toc-open .toc-close {
+    position: sticky;
+    top: 0;
+    align-self: flex-end;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin: -0.4rem -0.6rem -1.6rem auto;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-bg);
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  .toc-close svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+
+  .margin-toc.toc-open + .toc-chip {
+    z-index: 153;
   }
 }

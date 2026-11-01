@@ -214,16 +214,33 @@ const elsewhere = [
         chip.type = 'button';
         chip.className = 'toc-chip';
         chip.setAttribute('aria-label', 'Contents');
-        chip.innerHTML = '<span class="toc-num"></span><span class="toc-chip-text"></span>';
-        toc.after(chip);
-        var chipNum = chip.firstChild, chipText = chip.lastChild;
-        chip.addEventListener('click', function (e) {
-          e.stopPropagation();
-          toc.classList.toggle('toc-open');
-        });
-        document.addEventListener('click', function (e) {
-          if (!toc.contains(e.target)) toc.classList.remove('toc-open');
-        });
+        chip.setAttribute('aria-expanded', 'false');
+        chip.innerHTML = '<svg class="toc-chip-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h8"/></svg>' +
+          '<span class="toc-num"></span><span class="toc-chip-text"></span>';
+        // A veil behind the open sheet: touching it closes the sheet.
+        var veil = document.createElement('div');
+        veil.className = 'toc-veil';
+        toc.after(chip, veil);
+        var chipNum = chip.querySelector('.toc-num'), chipText = chip.querySelector('.toc-chip-text');
+        // And a plain close button in the sheet's corner.
+        var close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'toc-close';
+        close.setAttribute('aria-label', 'Close contents');
+        close.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>';
+        toc.insertBefore(close, toc.firstChild);
+        function setOpen(open) {
+          toc.classList.toggle('toc-open', open);
+          chip.setAttribute('aria-expanded', String(open));
+          if (!open) return;
+          // The section being read, in view in the list.
+          var on = list.querySelector('li.active');
+          if (on) toc.scrollTop = on.offsetTop - toc.clientHeight / 2 + on.offsetHeight / 2;
+        }
+        chip.addEventListener('click', function () { setOpen(!toc.classList.contains('toc-open')); });
+        close.addEventListener('click', function () { setOpen(false); });
+        veil.addEventListener('click', function () { setOpen(false); });
+        addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
 
         // whichever section heading was last passed; the headings are
         // measured whenever the page changes size, so a scroll only compares
@@ -333,7 +350,7 @@ const elsewhere = [
       // script after the page loads, so each is fitted as it appears, and
       // again whenever a font, a stylesheet or the window changes its size.
       (function () {
-        var sel = '.katex-display, .mini-diagram, .arch-diagram, [class*="table-wrap"]';
+        var sel = '.katex-display, .mini-diagram, .arch-diagram, [class*="table-wrap"], .blog-post-content table';
         var seen = window.WeakSet ? new WeakSet() : null, t = 0;
         var ro = window.ResizeObserver ? new ResizeObserver(soon) : null;
         function soon() { clearTimeout(t); t = setTimeout(fit, 60); }
@@ -341,7 +358,9 @@ const elsewhere = [
           document.querySelectorAll(sel).forEach(function (el) {
             if (ro && seen && !seen.has(el) && el.firstElementChild) { seen.add(el); ro.observe(el.firstElementChild); }
             el.style.zoom = '';
-            var over = el.scrollWidth / Math.max(1, el.clientWidth);
+            // Too wide for itself, or (a table) too wide for its column.
+            var room = el.tagName === 'TABLE' ? el.parentElement.clientWidth : el.clientWidth;
+            var over = (el.tagName === 'TABLE' ? el.offsetWidth : el.scrollWidth) / Math.max(1, room);
             if (over > 1.01) el.style.zoom = (1 / over).toFixed(3);
           });
         }

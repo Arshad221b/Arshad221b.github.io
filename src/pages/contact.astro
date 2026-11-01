@@ -158,12 +158,18 @@ const reasons = ['a job', 'a collaboration', 'something you wrote', 'just saying
     gap: var(--space-lg);
   }
 
+  /* The trap for bots: present, but a clipped pixel inside the page
+     rather than parked far off it, so nothing reaches past the screen. */
   .honey {
     position: absolute;
-    left: -9999px;
+    left: 0;
+    top: 0;
     width: 1px;
     height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
     opacity: 0;
+    pointer-events: none;
   }
 
   .sr {

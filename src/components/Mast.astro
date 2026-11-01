@@ -50,6 +50,15 @@ const { label, aside, title, accent, lede, figures = [] } = Astro.props;
     white-space: nowrap;
   }
 
+  /* On a narrow phone the two labels share the line by wrapping, not by
+     running off it. */
+  @media (max-width: 420px) {
+    .mast-rule {
+      flex-wrap: wrap;
+      row-gap: 0.3rem;
+    }
+  }
+
   .mast-line {
     flex: 1;
     height: 1px;

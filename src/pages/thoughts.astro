@@ -853,6 +853,9 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       width: min(100%, 32rem);
       margin: 0 0 var(--space-xs);
       overflow: hidden;
+      /* The plate is drawn larger than its box; the box clips it for good,
+         so Safari never counts the excess as page to scroll to. */
+      contain: paint;
     }
 
     /* Drawn in past the plate's blank margins and caption, so the drawing

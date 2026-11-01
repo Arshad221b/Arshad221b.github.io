@@ -13,10 +13,12 @@
 ---
 
 <style is:global>
-  /* Until its inked copy is ready, a plate shows at once, its paper
-     multiplied away into the page's. */
-  img[data-ink]:not(.inked) { mix-blend-mode: multiply; }
-  html.dark img[data-ink]:not(.inked) { mix-blend-mode: screen; }
+  /* A plate waits, unseen, the moment its inked copy takes, so it never
+     shows one picture and then another. Only if that runs late is the
+     original shown meanwhile, its paper multiplied away into the page's. */
+  img[data-ink]:not(.inked):not(.ink-late) { visibility: hidden; }
+  img[data-ink].ink-late:not(.inked) { mix-blend-mode: multiply; }
+  html.dark img[data-ink].ink-late:not(.inked) { mix-blend-mode: screen; }
 </style>
 
 <script is:inline>
@@ -137,6 +139,9 @@
   // A plate seen before comes straight from the store; a new one is drawn
   // from the copy the page already loaded and inked in the worker.
   function start(img) {
+    loaded(img).then(function () {
+      setTimeout(function () { img.classList.add('ink-late'); }, 400);
+    }, function () {});
     // data-ink may ask for 'gray', and for a 'feather' (the oval's solid
     // part, as a fraction) where the plate's own CSS would mask one.
     var opts = (img.getAttribute('data-ink') || '').split(' ');
