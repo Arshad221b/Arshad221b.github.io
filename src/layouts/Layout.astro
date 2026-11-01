@@ -195,6 +195,7 @@ const elsewhere = [
           a.querySelector('.toc-text').textContent = h.textContent.trim();
           a.addEventListener('click', function (e) {
             e.preventDefault();
+            toc.classList.remove('toc-open');
             h.scrollIntoView({ behavior: 'smooth', block: 'start' });
             history.replaceState(null, '', '#' + h.id);
           });
@@ -205,6 +206,24 @@ const elsewhere = [
 
         toc.appendChild(list);
         toc.classList.add('ready');
+
+        // Where the margin cannot hold the list (a phone, a tablet), a chip
+        // at the foot of the screen names the section being read; touched,
+        // it opens the whole list as a sheet above it.
+        var chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'toc-chip';
+        chip.setAttribute('aria-label', 'Contents');
+        chip.innerHTML = '<span class="toc-num"></span><span class="toc-chip-text"></span>';
+        toc.after(chip);
+        var chipNum = chip.firstChild, chipText = chip.lastChild;
+        chip.addEventListener('click', function (e) {
+          e.stopPropagation();
+          toc.classList.toggle('toc-open');
+        });
+        document.addEventListener('click', function (e) {
+          if (!toc.contains(e.target)) toc.classList.remove('toc-open');
+        });
 
         // whichever section heading was last passed; the headings are
         // measured whenever the page changes size, so a scroll only compares
@@ -225,6 +244,8 @@ const elsewhere = [
           items.forEach(function (it, i) {
             it.li.classList.toggle('active', i === current);
           });
+          chipNum.textContent = String(current + 1).padStart(2, '0');
+          chipText.textContent = items[current].h.textContent.trim();
           var active = items[current].li;
           // keep the marked entry in view when the list is long
           if (toc.scrollHeight > toc.clientHeight) {
