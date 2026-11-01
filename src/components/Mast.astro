@@ -14,9 +14,9 @@ const { label, aside, title, accent, lede, figures = [] } = Astro.props;
 ---
 
 <header class="mast">
-  <div class="mast-rule">
+  <div class="page-rule">
     <span>{label}</span>
-    <span class="mast-line"></span>
+    <span class="page-rule-line"></span>
     <span>{aside}</span>
   </div>
 
@@ -38,43 +38,11 @@ const { label, aside, title, accent, lede, figures = [] } = Astro.props;
     margin-bottom: var(--space-2xl);
   }
 
-  .mast-rule {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    font-family: var(--font-mono);
-    font-size: var(--fs-label);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-    white-space: nowrap;
-  }
-
-  /* On a narrow phone the two labels share the line by wrapping, not by
-     running off it. */
-  @media (max-width: 480px) {
-    .mast-rule {
-      flex-wrap: wrap;
-      row-gap: var(--space-1);
-    }
-  }
-
-  .mast-line {
-    flex: 1;
-    height: 1px;
-    background: var(--color-border);
-  }
-
-  /* The type is the shared page heading (.page-title); only the space
-     around it is the mast's own. */
-  .mast-title {
-    margin: var(--space-xl) 0 var(--space-md);
-  }
 
 
-  .mast-lede {
-    margin: 0;
-  }
+
+
+
 
   .mast-figures {
     display: grid;
@@ -87,7 +55,7 @@ const { label, aside, title, accent, lede, figures = [] } = Astro.props;
 
   .mast-figures > div {
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     gap: var(--space-1);
   }
 
@@ -131,7 +99,7 @@ const { label, aside, title, accent, lede, figures = [] } = Astro.props;
       align-items: end;
     }
 
-    .mast-rule { grid-area: rule; }
+    .mast > .page-rule { grid-area: rule; }
     .mast-title { grid-area: title; }
     .mast-lede { grid-area: lede; }
     .mast > :global(details) { grid-area: why; }

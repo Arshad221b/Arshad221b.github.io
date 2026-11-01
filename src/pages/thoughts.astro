@@ -73,9 +73,13 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
          The title large, a line of what this is, and the collection's
          figures standing to the right like a book's colophon. -->
     <div class="first-screen">
+    <div class="page-rule">
+      <span>Personal Thoughts</span>
+      <span class="page-rule-line"></span>
+      <span>{posts.length} essays · {firstYear}–{lastYear}</span>
+    </div>
     <header class="tp-head">
       <div class="tp-title">
-        <p class="tp-kicker page-label">Thoughts <span>{firstYear}–{lastYear}</span></p>
         <h1 class="page-title">Personal <em>Thoughts</em></h1>
         <p class="tp-lede page-lede">Personal writing. Things I am confused about, excited by, or trying to put into words.</p>
         <details class="why">
@@ -105,8 +109,9 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
         <span class="seek-key" aria-hidden="true">/</span>
         <button type="button" class="seek-clear" id="seek-clear" aria-label="Clear search">Clear</button>
       </div>
+      <p class="console-note" id="results-count"></p>
       <div class="themes">
-        <span class="themes-name">Or read about</span>
+        <span class="themes-name">Topics</span>
         <div class="theme-strip" id="theme-strip">
           {topics.map((t, k) => (
             <button class="idx" data-topic={k} type="button" title={t.words.join(', ')}>
@@ -115,7 +120,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
           ))}
         </div>
       </div>
-      <p class="console-note" id="results-count"></p>
     </div>
     </div>
 
@@ -194,20 +198,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     margin-bottom: var(--space-2xl);
   }
 
-  /* Type from the shared page heading (.page-label, .page-title,
-     .page-lede); only spacing here. */
-  .tp-kicker {
-    margin: 0 0 var(--space-md);
-  }
 
-  .tp-kicker span {
-    margin-left: var(--space-3);
-    color: var(--color-accent);
-  }
 
-  .tp-lede {
-    margin: var(--space-lg) 0 0;
-  }
 
   .tp-figures {
     display: grid;
@@ -238,136 +230,28 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     margin-top: var(--space-lg);
   }
 
-  .why summary {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-family: var(--font-mono);
-    font-size: var(--fs-label);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
-    color: var(--color-text);
-    cursor: pointer;
-    list-style: none;
-    user-select: none;
-  }
 
-  .why summary::-webkit-details-marker {
-    display: none;
-  }
 
-  .why summary::before {
-    content: '+';
-    color: var(--color-accent);
-    font-size: var(--fs-small);
-    transition: transform var(--dur-base) var(--ease-out);
-  }
 
-  .why[open] summary::before {
-    transform: rotate(45deg);
-  }
 
-  .why summary:hover {
-    color: var(--color-accent);
-  }
 
-  .why-body {
-    max-width: 38rem;
-    margin-top: var(--space-md);
-  }
 
-  .why-body p {
-    font-size: var(--fs-ui);
-    line-height: var(--lh-body);
-    color: var(--color-text-secondary);
-    margin: 0 0 var(--space-sm);
-  }
 
   /* ── Finding one ─────────────────────────────────────── */
   .console {
     padding: var(--space-lg) 0 var(--space-2xl);
   }
 
-  .seek {
-    position: relative;
-    max-width: 40rem;
-  }
 
-  .seek input {
-    width: 100%;
-    padding: var(--space-2) var(--space-10) var(--space-2) 0;
-    border: none;
-    border-bottom: 1px solid var(--color-border);
-    background: transparent;
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: var(--fs-h3);
-    color: var(--color-text);
-    outline: none;
-    transition: border-color var(--dur-base) ease;
-  }
 
-  .seek input::placeholder {
-    color: var(--color-text-muted);
-  }
 
-  .seek input:focus {
-    border-bottom-color: var(--color-accent);
-  }
 
-  .seek-key,
-  .seek-clear {
-    position: absolute;
-    right: 0;
-    bottom: 0.85rem;
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-  }
 
-  .seek-clear {
-    display: none;
-    border: 0;
-    background: none;
-    cursor: pointer;
-  }
 
-  .seek.has-value .seek-key { display: none; }
-  .seek.has-value .seek-clear { display: block; }
-  .seek-clear:hover { color: var(--color-accent); }
 
-  .themes {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: var(--space-1-5) var(--space-5);
-    margin-top: var(--space-lg);
-  }
 
-  .themes-name {
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-  }
 
-  .theme-strip {
-    display: contents;
-  }
 
-  .idx {
-    padding: 0;
-    border: 0;
-    background: none;
-    cursor: pointer;
-    font-family: var(--font-display);
-    font-size: var(--fs-ui);
-    color: var(--color-text-secondary);
-    transition: color var(--dur-base) ease;
-  }
 
   .idx:hover,
   .idx.active {
@@ -378,26 +262,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     font-style: italic;
   }
 
-  .idx-n {
-    margin-left: var(--space-1);
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    vertical-align: super;
-    color: var(--color-accent);
-  }
 
-  .console-note {
-    margin: var(--space-md) 0 0;
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-  }
 
-  .console-note:empty {
-    display: none;
-  }
 
   /* ── The river ───────────────────────────────────────────
      The essays come ashore on alternating banks of a line of thought that

@@ -223,6 +223,13 @@ screen; no frame loop runs forever.
   Above a phone the heading is one layout: label line across the top, then
   title, lede and its button on the left, the figures in a two-by-two block
   on the right.
+- **Everything in the opening is shared**, defined once in `global.css`
+  and never restyled by a page: `.page-rule` (name — hairline — what it
+  holds), `.page-title`, `.page-lede`, the figures (label above number),
+  `.why` (outlined pill, orange +/−, note at reading size behind a
+  hairline), and the console: `.seek` (search line, 40rem wide, `--fs-h3`
+  with an italic placeholder, `/` key that gives way to Clear),
+  `.console-note`, `.themes` ("Topics", serif words with orange counts).
 - **First screen** (Blogs, Thoughts) — from 761px wide, the opening fills
   exactly the screen and ends with the search and the topics. If a short
   window cannot hold it, the page title (and the lede with it) shrinks just

@@ -258,58 +258,12 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     margin-top: var(--space-lg);
   }
 
-  .why summary {
-    font-family: var(--font-mono);
-    font-size: var(--fs-label);
-    text-transform: uppercase;
-    letter-spacing: var(--track-caps);
-    color: var(--color-text);
-    cursor: pointer;
-    list-style: none;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-4);
-    border: 1px solid var(--color-text-muted);
-    border-radius: var(--radius-pill);
-    user-select: none;
-    transition: color var(--dur-base) ease, border-color var(--dur-base) ease;
-  }
 
-  .why summary::-webkit-details-marker {
-    display: none;
-  }
 
-  .why summary::before {
-    content: '+';
-    font-family: var(--font-mono);
-    font-size: var(--fs-small);
-    line-height: var(--lh-none);
-    color: var(--color-accent);
-  }
 
-  .why[open] summary::before {
-    content: '−';
-  }
 
-  .why summary:hover {
-    color: var(--color-accent);
-    border-color: var(--color-accent);
-  }
 
-  .why-body {
-    padding-top: var(--space-md);
-    max-width: 66ch;
-    border-left: 1px solid var(--color-border-light);
-    padding-left: var(--space-md);
-  }
 
-  .why-body p {
-    font-size: var(--fs-body);
-    line-height: var(--lh-body);
-    color: var(--color-text-secondary);
-    margin: 0 0 var(--space-md);
-  }
 
   /* ── The console ───────────────────────────────────
      One line to type on and one index of themes. Nothing here is a
@@ -318,38 +272,9 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     margin: 0 0 var(--space-2xl);
   }
 
-  .seek {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-md);
-    border-bottom: 1px solid var(--color-text);
-    padding: var(--space-1-5) 0 var(--space-2);
-    transition: border-color var(--dur-base) ease;
-  }
 
-  .seek:focus-within {
-    border-color: var(--color-accent);
-  }
 
-  #search-input {
-    flex: 1;
-    min-width: 0;
-    border: none;
-    background: none;
-    outline: none;
-    font-family: var(--font-serif);
-    font-size: var(--fs-h2);
-    font-weight: var(--fw-regular);
-    line-height: var(--lh-snug);
-    color: var(--color-text);
-    padding: 0;
-  }
 
-  #search-input::placeholder {
-    font-style: italic;
-    color: var(--color-text-muted);
-    opacity: 0.75;
-  }
 
   /* The one control on the right is the slash key while the line is empty
      and the way out of the search once it is not. */
@@ -365,31 +290,9 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     white-space: nowrap;
   }
 
-  .seek-clear {
-    display: none;
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-family: var(--font-mono);
-    font-size: var(--fs-label);
-    text-transform: uppercase;
-    letter-spacing: var(--track-caps);
-    color: var(--color-text-muted);
-    padding: 0;
-    white-space: nowrap;
-  }
 
-  .seek-clear:hover {
-    color: var(--color-accent);
-  }
 
-  .seek.has-value .seek-key {
-    display: none;
-  }
 
-  .seek.has-value .seek-clear {
-    display: block;
-  }
 
   /* Say what is on screen in words. This page is not a dashboard. */
   .console-note {
@@ -410,43 +313,8 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     margin-top: var(--space-lg);
   }
 
-  .themes-name {
-    font-family: var(--font-mono);
-    font-size: var(--fs-label);
-    text-transform: uppercase;
-    letter-spacing: var(--track-caps);
-    color: var(--color-text-muted);
-    white-space: nowrap;
-    padding-top: var(--space-0-5);
-  }
 
-  .theme-strip {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: var(--space-1-5) var(--space-5);
-  }
 
-  .idx {
-    display: inline-flex;
-    align-items: baseline;
-    gap: var(--space-1);
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    font-family: var(--font-serif);
-    font-size: var(--fs-ui);
-    line-height: var(--lh-ui);
-    color: var(--color-text-secondary);
-    text-decoration: underline;
-    text-decoration-color: transparent;
-    text-underline-offset: 0.2em;
-    text-decoration-thickness: 1px;
-    transition: color var(--dur-fast) ease, text-decoration-color var(--dur-fast) ease;
-  }
 
   /* The figure rides above the word, the way a footnote mark does. It is
      the live count, so it moves while you type. */
@@ -459,18 +327,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     transform: translateY(-0.5em);
   }
 
-  .idx:hover,
-  .idx:focus-visible {
-    color: var(--color-accent);
-    text-decoration-color: var(--color-accent);
-    outline: none;
-  }
 
-  .idx:hover .idx-n,
-  .idx:focus-visible .idx-n {
-    color: var(--color-accent);
-    opacity: 1;
-  }
 
   .idx.active {
     color: var(--color-accent);

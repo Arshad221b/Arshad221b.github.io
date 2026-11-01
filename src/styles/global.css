@@ -2415,7 +2415,7 @@ pre,
 }
 
 .page-title {
-  margin: 0;
+  margin: var(--space-xl) 0 0;
   font-family: var(--font-display);
   /* --fit is set by the first screen's script: below 1 when the screen is
      too short for the heading and the search and topics together. */
@@ -2433,9 +2433,234 @@ pre,
 
 .page-lede {
   max-width: 34rem;
+  margin: var(--space-md) 0 0;
   font-family: var(--font-display);
   font-style: italic;
   font-size: calc(var(--fs-h3) * max(0.8, var(--fit, 1)));
   line-height: var(--lh-ui);
+  color: var(--color-text-secondary);
+}
+
+/* The label line over every page heading: the page's name, a hairline,
+   and what it holds. */
+.page-rule {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.page-rule-line {
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+@media (max-width: 480px) {
+  .page-rule {
+    flex-wrap: wrap;
+    row-gap: var(--space-1);
+  }
+}
+
+/* ── The console ───────────────────────────────────────────────
+   Search and topics, the same on every index page: one line to search
+   on, a note of what it found, and the topics as words. */
+.console {
+  margin: var(--space-lg) 0 var(--space-2xl);
+}
+
+.seek {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-md);
+  max-width: 40rem;
+  padding: var(--space-1-5) 0 var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  transition: border-color var(--dur-base) ease;
+}
+
+.seek:focus-within {
+  border-color: var(--color-accent);
+}
+
+.seek input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  outline: none;
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  line-height: var(--lh-snug);
+  color: var(--color-text);
+}
+
+.seek input::placeholder {
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.seek-key,
+.seek-clear {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.seek-key {
+  padding: 1px var(--space-1-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  user-select: none;
+}
+
+.seek-clear {
+  display: none;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.seek-clear:hover {
+  color: var(--color-accent);
+}
+
+/* Once something is typed, the slash key gives way to the way out. */
+.seek.has-value .seek-key {
+  display: none;
+}
+
+.seek.has-value .seek-clear {
+  display: inline;
+}
+
+.console-note {
+  margin: var(--space-sm) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.console-note:empty {
+  display: none;
+}
+
+.themes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1-5) var(--space-5);
+  margin-top: var(--space-lg);
+}
+
+.themes-name {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.theme-strip {
+  display: contents;
+}
+
+.idx {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: var(--fs-ui);
+  line-height: var(--lh-ui);
+  color: var(--color-text-secondary);
+  transition: color var(--dur-fast) ease;
+}
+
+.idx:hover,
+.idx:focus-visible,
+.idx.active {
+  color: var(--color-accent);
+  outline: none;
+}
+
+.idx-n {
+  margin-left: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  vertical-align: super;
+  color: var(--color-accent);
+}
+
+/* ── "Why I write these" ───────────────────────────────────────
+   The same folded note under every page heading: an outlined pill with an
+   orange plus that turns to a minus, and the note at reading size behind
+   a hairline. */
+.why {
+  margin-top: var(--space-lg);
+}
+
+.why summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-text-muted);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--color-text);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+
+.why summary::-webkit-details-marker {
+  display: none;
+}
+
+.why summary::before {
+  content: '+';
+  font-size: var(--fs-small);
+  line-height: var(--lh-none);
+  color: var(--color-accent);
+}
+
+.why[open] summary::before {
+  content: '−';
+}
+
+.why summary:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.why-body {
+  max-width: 38rem;
+  margin-top: var(--space-md);
+  padding-left: var(--space-md);
+  border-left: 1px solid var(--color-border-light);
+}
+
+.why-body p {
+  margin: 0 0 var(--space-md);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
   color: var(--color-text-secondary);
 }
