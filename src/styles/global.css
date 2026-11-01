@@ -2216,12 +2216,23 @@ html,body{overflow-x:clip;}
    the whole first screen on anything wider than a phone, whatever the
    window, and the list begins below the fold, as About does. */
 @media (min-width: 760px) {
+  /* The opening sits low on the screen, its topics a short step above the
+     fold, so the space falls above the heading rather than under the
+     topics. */
   .first-screen {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-end;
     min-height: calc(100svh - var(--head-h, 4.5rem) - var(--main-pt, 2rem));
-    padding-bottom: var(--space-sm);
+    /* A step above the fold that grows a little with the screen's height,
+       so a tall screen still keeps some air under the topics. */
+    padding-bottom: clamp(var(--space-2xl), 9vh, calc(2 * var(--space-2xl)));
+  }
+
+  /* The step above the fold is the screen's own padding, the same on every
+     page, not whatever margin the last block happens to carry. */
+  main .first-screen > :last-child {
+    margin-bottom: 0;
   }
 }
 

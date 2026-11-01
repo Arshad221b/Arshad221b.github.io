@@ -384,13 +384,13 @@ const elsewhere = [
           fs.style.removeProperty('--fit');
           if (!wide.matches || !title) return;
           var end = fs.lastElementChild.getBoundingClientRect().bottom + scrollY;
-          var over = end - innerHeight + 24;
+          var over = end - innerHeight + 40;
           if (over <= 0) return;
           var h = title.getBoundingClientRect().height;
           var f = Math.max(0.45, 1 - over / Math.max(1, h));
           fs.style.setProperty('--fit', f.toFixed(3));
           // A second look, for the lede shrinking with it and for rounding.
-          over = fs.lastElementChild.getBoundingClientRect().bottom + scrollY - innerHeight + 24;
+          over = fs.lastElementChild.getBoundingClientRect().bottom + scrollY - innerHeight + 40;
           if (over > 0) fs.style.setProperty('--fit', Math.max(0.45, f - over / Math.max(1, h)).toFixed(3));
         }
         fit();
