@@ -183,12 +183,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
         </details>
     </Mast>
 
-    <!-- The two kinds, said once, so the timeline needs no more explaining. -->
-    <dl class="key">
-      <div><dt><span class="mark essay"></span>Essay</dt><dd>A single post.</dd></div>
-      <div><dt><span class="mark notebook"><i></i><i></i><i></i></span>Notebook</dt><dd>Daily notes on one topic, over a week or so.</dd></div>
-    </dl>
-
     <!-- The same console as Thoughts: one line to search on, one row of topics. -->
     <div class="console">
       <div class="seek">
@@ -211,6 +205,13 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
       </div>
     </div>
     </div>
+
+    <!-- The two kinds, said once, just above the list they explain, so the
+         first screen keeps to the heading, the search and the topics. -->
+    <dl class="key">
+      <div><dt><span class="mark essay"></span>Essay</dt><dd>A single post.</dd></div>
+      <div><dt><span class="mark notebook"><i></i><i></i><i></i></span>Notebook</dt><dd>Daily notes on one topic, over a week or so.</dd></div>
+    </dl>
 
     <div class="timeline" id="post-index">
       {years.map(year => (

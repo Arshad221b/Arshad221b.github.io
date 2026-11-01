@@ -2389,3 +2389,42 @@ pre,
     z-index: var(--z-sheet-chip);
   }
 }
+
+/* ── Page headings ─────────────────────────────────────────────
+   One heading for every index page (Blogs, Thoughts, Contact): a mono
+   label line, the title at the largest display size with its accent word
+   in italic orange, and a lede at sub-heading size. Pages set only their
+   own spacing around these, never the type. */
+.page-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.page-title {
+  margin: 0;
+  font-family: var(--font-display);
+  /* --fit is set by the first screen's script: below 1 when the screen is
+     too short for the heading and the search and topics together. */
+  font-size: calc(var(--fs-display-xl) * var(--fit, 1));
+  font-weight: var(--fw-light);
+  line-height: var(--lh-display);
+  letter-spacing: var(--track-tight);
+}
+
+.page-title em {
+  font-style: italic;
+  font-weight: var(--fw-light);
+  color: var(--color-accent);
+}
+
+.page-lede {
+  max-width: 34rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: calc(var(--fs-h3) * max(0.8, var(--fit, 1)));
+  line-height: var(--lh-ui);
+  color: var(--color-text-secondary);
+}

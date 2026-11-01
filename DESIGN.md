@@ -215,8 +215,20 @@ screen; no frame loop runs forever.
 ## 13. Components
 
 - **Site bar** — sticky, `--z-header`, frosts when scrolled.
-- **Mast** (page headings) — mono label line, display-xl title with an
-  italic accent word, lede in `--fs-lead`, figures in mono.
+- **Page heading** (Blogs, Thoughts, Contact) — one shared style in
+  `global.css`: `.page-label` (mono label line), `.page-title`
+  (`--fs-display-xl`, `--fw-light`, accent word in italic orange) and
+  `.page-lede` (`--fs-h3`, italic, secondary). Pages set only the spacing
+  around them, never their type; a new index page uses the same three.
+  Above a phone the heading is one layout: label line across the top, then
+  title, lede and its button on the left, the figures in a two-by-two block
+  on the right.
+- **First screen** (Blogs, Thoughts) — from 761px wide, the opening fills
+  exactly the screen and ends with the search and the topics. If a short
+  window cannot hold it, the page title (and the lede with it) shrinks just
+  enough to keep the topics in view, never below 45%. Anything that explains
+  the list (the Essay/Notebook key) sits just above the list, not in the
+  first screen.
 - **Essay header** — date, title (`--fs-h1`, `--fs-display` on wide
   screens), readout (number, words, read time), plate.
 - **Quotes and asides** — no side rules; three dots above and below,

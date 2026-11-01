@@ -75,9 +75,9 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     <div class="first-screen">
     <header class="tp-head">
       <div class="tp-title">
-        <p class="tp-kicker">Thoughts <span>{firstYear}–{lastYear}</span></p>
-        <h1>Personal <em>Thoughts</em></h1>
-        <p class="tp-lede">Personal writing. Things I am confused about, excited by, or trying to put into words.</p>
+        <p class="tp-kicker page-label">Thoughts <span>{firstYear}–{lastYear}</span></p>
+        <h1 class="page-title">Personal <em>Thoughts</em></h1>
+        <p class="tp-lede page-lede">Personal writing. Things I am confused about, excited by, or trying to put into words.</p>
         <details class="why">
         <summary>Why I write these</summary>
         <div class="why-body">
@@ -189,16 +189,15 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
     gap: var(--space-2xl);
-    padding: var(--space-2xl) 0 var(--space-xl);
+    /* The same space around the heading as the shared page heading. */
+    padding: 0;
+    margin-bottom: var(--space-2xl);
   }
 
+  /* Type from the shared page heading (.page-label, .page-title,
+     .page-lede); only spacing here. */
   .tp-kicker {
     margin: 0 0 var(--space-md);
-    font-family: var(--font-mono);
-    font-size: var(--fs-label);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
-    color: var(--color-text-muted);
   }
 
   .tp-kicker span {
@@ -206,28 +205,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     color: var(--color-accent);
   }
 
-  .tp-head h1 {
-    margin: 0;
-    font-family: var(--font-display);
-    font-weight: var(--fw-light);
-    font-size: var(--fs-display-xl);
-    line-height: var(--lh-display);
-    letter-spacing: var(--track-tight);
-  }
-
-  .tp-head h1 em {
-    color: var(--color-accent);
-    font-weight: var(--fw-light);
-  }
-
   .tp-lede {
-    max-width: 34rem;
     margin: var(--space-lg) 0 0;
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: var(--fs-h3);
-    line-height: var(--lh-ui);
-    color: var(--color-text-secondary);
   }
 
   .tp-figures {

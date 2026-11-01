@@ -371,6 +371,34 @@ const elsewhere = [
         if (window.MutationObserver) new MutationObserver(soon).observe(document.body, { childList: true, subtree: true });
       })();
     </script>
+    <script is:inline>
+      // The first screen of an index page ends with its search and topics,
+      // whatever the window: if they would fall below the fold, the page
+      // heading shrinks just enough to bring them up (never below 45%).
+      (function () {
+        var fs = document.querySelector('.first-screen');
+        if (!fs) return;
+        var wide = matchMedia('(min-width: 761px)');
+        var title = fs.querySelector('.page-title');
+        function fit() {
+          fs.style.removeProperty('--fit');
+          if (!wide.matches || !title) return;
+          var end = fs.lastElementChild.getBoundingClientRect().bottom + scrollY;
+          var over = end - innerHeight + 24;
+          if (over <= 0) return;
+          var h = title.getBoundingClientRect().height;
+          var f = Math.max(0.45, 1 - over / Math.max(1, h));
+          fs.style.setProperty('--fit', f.toFixed(3));
+          // A second look, for the lede shrinking with it and for rounding.
+          over = fs.lastElementChild.getBoundingClientRect().bottom + scrollY - innerHeight + 24;
+          if (over > 0) fs.style.setProperty('--fit', Math.max(0.45, f - over / Math.max(1, h)).toFixed(3));
+        }
+        fit();
+        if (document.fonts) document.fonts.ready.then(fit);
+        var t = 0;
+        addEventListener('resize', function () { clearTimeout(t); t = setTimeout(fit, 100); });
+      })();
+    </script>
     <InkPlates />
   </body>
 </html>
