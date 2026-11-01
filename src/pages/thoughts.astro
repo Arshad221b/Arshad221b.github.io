@@ -125,7 +125,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
          further up the bank, and its opening line drifts in the river
          beside the point where it lands. -->
     <div class="river-wrap">
-    <svg class="river" aria-hidden="true"><defs><symbol id="mughal-rosette" viewBox="-6 -6 12 12"><g><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(0)" /><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(90)" /><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(180)" /><path d="M0 -5.6C2 -3.4 2 -1.2 0 0C-2 -1.2 -2 -3.4 0 -5.6Z" transform="rotate(270)" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(45)" opacity="0.7" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(135)" opacity="0.7" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(225)" opacity="0.7" /><path d="M0 -3.6C1.1 -2.3 1.1 -0.8 0 0C-1.1 -0.8 -1.1 -2.3 0 -3.6Z" transform="rotate(315)" opacity="0.7" /><circle r="1.25" fill="var(--color-bg)" /><circle r="0.65" /></g></symbol></defs><path class="river-wash" /><path class="river-bank" /><path class="river-inlay" /><path class="river-water" /><path class="river-line" /><g class="river-flowers"></g></svg>
+    <svg class="river" aria-hidden="true"><path class="river-wash" /><path class="river-bank" /><path class="river-inlay" /><path class="river-line" /></svg>
     <ol class="ledger" id="post-index">
       {grouped.map(group => [
         <li class="year-band" data-year={group.year}>
@@ -447,42 +447,28 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     stroke-linejoin: round;
   }
 
-  /* The water swells where a long essay comes ashore and narrows to a
-     stream between short ones: its width is the length of the thinking. */
+  /* The river is drawn as an engraver draws water: two hairlines that
+     gather to a point at every essay and open between them into a slender
+     lens, a breath of tone inside, and a fainter pair of lines outside
+     like the ripples at its edge. The lens is wider before a longer
+     essay: its width is the length of the thinking. */
   .river .river-wash {
-    fill: color-mix(in srgb, #3f8f8a 8%, transparent);
+    fill: color-mix(in srgb, var(--color-text) 4%, transparent);
     stroke: none;
   }
 
-  /* The river runs as a Mughal garden's water channel: two fine edges of
-     stone with the water between, small fountains set along it like the
-     jets and inlaid flowers of a charbagh rill. The centre line is kept
-     only to measure the curve by. */
   .river .river-bank {
-    stroke: color-mix(in srgb, var(--color-text) 30%, transparent);
-    stroke-width: 6;
+    stroke: color-mix(in srgb, var(--color-text) 55%, transparent);
+    stroke-width: 0.8;
   }
 
-  .river .river-water {
-    stroke: var(--color-bg);
-    stroke-width: 3.8;
+  .river .river-inlay {
+    stroke: color-mix(in srgb, var(--color-text) 22%, transparent);
+    stroke-width: 0.5;
   }
 
   .river .river-line {
-    stroke: transparent;
-  }
-
-  /* Inlay along the channel's floor, as in pietra dura. */
-  .river .river-inlay {
-    fill: none;
-    stroke: color-mix(in srgb, var(--color-accent) 55%, transparent);
-    stroke-width: 1.5;
-    stroke-linecap: round;
-    stroke-dasharray: 0.1 10;
-  }
-
-  .river-flowers :global(use) {
-    fill: color-mix(in srgb, var(--color-accent) 60%, transparent);
+    stroke: none;
   }
 
   .ledger {
@@ -560,12 +546,23 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
      on a small disc of paper that parts the channel around it. */
   .node-dot {
     flex: none;
-    width: 19px;
-    height: 19px;
+    position: relative;
+    width: 11px;
+    height: 11px;
+    box-sizing: border-box;
+    border: 1px solid var(--color-accent);
     border-radius: 50%;
-    background: var(--color-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cg fill='%23e5461c'%3E%3Crect x='-6' y='-6' width='12' height='12'/%3E%3Crect x='-6' y='-6' width='12' height='12' transform='rotate(45)'/%3E%3C/g%3E%3C/svg%3E") center / 17px no-repeat;
-    box-shadow: 0 0 0 3px var(--color-bg);
+    background: var(--color-bg);
+    box-shadow: 0 0 0 4px var(--color-bg);
     transition: transform 0.4s var(--ease-out);
+  }
+
+  .node-dot::after {
+    content: '';
+    position: absolute;
+    inset: 2.5px;
+    border-radius: 50%;
+    background: var(--color-accent);
   }
 
   .entry-link:hover .node-dot {
@@ -1315,8 +1312,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     var line = svg.querySelector('.river-line');
     var wash = svg.querySelector('.river-wash');
     var bank = svg.querySelector('.river-bank');
-    var water = svg.querySelector('.river-water');
-    var flowers = svg.querySelector('.river-flowers');
     var ledger = wrap.querySelector('.ledger');
     var length = 0, height = 0, queued = false;
 
@@ -1342,65 +1337,41 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       pts.sort(function (a, b) { return a[1] - b[1]; });
       pts.unshift([pts[0][0], 0, 2]);
       pts.push([pts[pts.length - 1][0], height, 2]);
-      // Between landings the water meanders a little, as a stream does:
-      // a bend or two to either side, the same on every visit.
-      var marks = pts.slice(), bent = [pts[0]];
-      for (var m = 1; m < pts.length; m++) {
-        var a = pts[m - 1], b = pts[m], dy = b[1] - a[1], k = dy > 520 ? 2 : dy > 160 ? 1 : 0;
-        for (var j = 1; j <= k; j++) {
-          var t = j / (k + 1), side = (m + j) % 2 ? 1 : -1;
-          var amp = Math.min(42, dy * 0.09) * (0.7 + 0.3 * Math.abs(Math.sin(m * 1.7 + j)));
-          bent.push([a[0] + (b[0] - a[0]) * t + side * amp, a[1] + dy * t, a[2] + (b[2] - a[2]) * t]);
-        }
-        bent.push(b);
+      // The course of the water. From each landing it leaves heading
+      // straight down, sweeps out in one soft bow towards where it is going,
+      // and settles back into the next landing heading straight down again,
+      // so the line never kinks: an easing carries it across, and a bow
+      // that is zero, and flat, at both ends swells it out between.
+      // The hairlines either side gather to nothing at each landing and
+      // open into a lens between, wider before a longer essay.
+      var c = [], L = [], R = [], LO = [], RO = [];
+      function at(x, y, w) {
+        c.push([x, y]); L.push([x - w, y]); R.push([x + w, y]); LO.push([x - w * 1.9, y]); RO.push([x + w * 1.9, y]);
       }
-      pts = bent;
-
-      // Catmull-Rom through the points, as cubic Béziers: a curve that
-      // passes through every landing and never kinks.
-      var d = 'M' + pts[0][0].toFixed(1) + ' ' + pts[0][1].toFixed(1);
-      for (var i = 0; i < pts.length - 1; i++) {
-        var p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
-        d += ' C' + (p1[0] + (p2[0] - p0[0]) / 6).toFixed(1) + ' ' + (p1[1] + (p2[1] - p0[1]) / 6).toFixed(1) +
-             ' ' + (p2[0] - (p3[0] - p1[0]) / 6).toFixed(1) + ' ' + (p2[1] - (p3[1] - p1[1]) / 6).toFixed(1) +
-             ' ' + p2[0].toFixed(1) + ' ' + p2[1].toFixed(1);
+      at(pts[0][0], 0, 0);
+      for (var m = 1; m < pts.length; m++) {
+        var a = pts[m - 1], b = pts[m], dy = b[1] - a[1], dx = b[0] - a[0];
+        if (dy <= 0) continue;
+        var side = dx ? (dx > 0 ? 1 : -1) : (m % 2 ? 1 : -1);
+        // The bow turns towards whichever side has room, never off the page.
+        function room(sd) { return sd < 0 ? Math.min(a[0], b[0]) - 14 : box.width - Math.max(a[0], b[0]) - 14; }
+        if (room(side) < 20) side = -side;
+        var amp = side * Math.max(0, Math.min(34, dy * 0.06, room(side))), n = Math.max(2, Math.ceil(dy / 8));
+        var lens = Math.min(8, Math.max(2.5, b[2] * 0.6), dy * 0.03);
+        for (var q = 1; q <= n; q++) {
+          var t = q / n, ease = t * t * (3 - 2 * t), bow = Math.sin(Math.PI * t);
+          at(a[0] + dx * ease + amp * bow * bow, a[1] + dy * t, lens * bow);
+        }
+      }
+      function trace(list) {
+        return list.map(function (p, i) { return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
       }
       svg.setAttribute('viewBox', '0 0 ' + box.width.toFixed(0) + ' ' + height);
-      line.setAttribute('d', d);
+      line.setAttribute('d', trace(c));
       length = line.getTotalLength();
-      svg.querySelector('.river-inlay').setAttribute('d', d);
-      [line, bank, water].forEach(function (el) { el.setAttribute('d', d); });
-
-      // Fountains along the channel, kept clear of the landings.
-      flowers.innerHTML = '';
-      for (var f = 90; f < length - 60; f += 170) {
-        var fp = line.getPointAtLength(f);
-        if (marks.some(function (p) { return Math.abs(p[1] - fp.y) < 46; })) continue;
-        var use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-        use.setAttribute('href', '#mughal-rosette');
-        use.setAttribute('x', (fp.x - 8).toFixed(1));
-        use.setAttribute('y', (fp.y - 8).toFixed(1));
-        use.setAttribute('width', '16');
-        use.setAttribute('height', '16');
-        flowers.appendChild(use);
-      }
-
-      // The water: a ribbon either side of the line, its half-width eased
-      // between the landings by height down the page.
-      var left = [], right = [], k = 0;
-      function halfAt(y) {
-        while (k < pts.length - 2 && pts[k + 1][1] < y) k++;
-        var a = pts[k], b = pts[k + 1], t = Math.min(1, Math.max(0, (y - a[1]) / Math.max(1, b[1] - a[1])));
-        t = t * t * (3 - 2 * t);
-        return a[2] + (b[2] - a[2]) * t;
-      }
-      for (var s = 0; s <= length; s += 6) {
-        var p = line.getPointAtLength(s), q = line.getPointAtLength(Math.min(length, s + 1));
-        var dx = q.x - p.x, dy = q.y - p.y, n = Math.hypot(dx, dy) || 1, h = halfAt(p.y);
-        left.push((p.x - dy / n * h).toFixed(1) + ' ' + (p.y + dx / n * h).toFixed(1));
-        right.push((p.x + dy / n * h).toFixed(1) + ' ' + (p.y - dx / n * h).toFixed(1));
-      }
-      wash.setAttribute('d', 'M' + left.join(' L') + ' L' + right.reverse().join(' L') + ' Z');
+      bank.setAttribute('d', trace(L) + ' ' + trace(R));
+      svg.querySelector('.river-inlay').setAttribute('d', trace(LO) + ' ' + trace(RO));
+      wash.setAttribute('d', trace(L) + ' ' + trace(R.slice().reverse()).replace(/^M/, 'L') + ' Z');
     }
 
     function later() {
