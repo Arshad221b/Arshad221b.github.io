@@ -22,8 +22,14 @@ const id = (path: string) => {
   return 'site/' + (replaced[name] ?? name);
 };
 
-/* For the page: in whatever format the browser reads best. */
-export const img = (path: string) => `${CLOUD}/f_auto,q_auto/${id(path)}`;
+/* For the page: in whatever format the browser reads best, and no wider
+   than it is shown when a width is given. */
+export const img = (path: string, w?: number) =>
+  `${CLOUD}/f_auto,q_auto${w ? `,w_${w},c_limit` : ''}/${id(path)}`;
+
+/* The same picture at a few widths, for a srcset. */
+export const widths = (path: string, ws = [800, 1200, 1600]) =>
+  ws.map(w => `${img(path, w)} ${w}w`).join(', ');
 
 /* For a shared link's card: always a JPEG, as some chat apps want. */
 export const share = (path: string) => `${CLOUD}/f_jpg,q_auto,w_1200/${id(path)}.jpg`;

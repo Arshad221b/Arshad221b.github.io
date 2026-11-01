@@ -1,5 +1,5 @@
 ---
-import { img, share, has } from '../lib/media';
+import { img, share, has, widths } from '../lib/media';
 interface Props {
   title: string;
   date: string;
@@ -45,6 +45,7 @@ for (const [path, raw] of Object.entries(sources)) {
 // Each essay's plate lives in Cloudinary as thoughts/<slug> (see lib/media): shown under the
 // title, and the picture its shared link carries.
 const figure = slug && has(`/images/thoughts/${slug}.jpg`) ? img(`/images/thoughts/${slug}.jpg`) : null;
+const figureSet = figure ? widths(`/images/thoughts/${slug}.jpg`) : undefined;
 if (figure) shareImage = share(`/images/thoughts/${slug}.jpg`);
 
 function formatDate(dateStr: string): string {
@@ -84,7 +85,7 @@ function formatDate(dateStr: string): string {
     <header class={`blog-post-header ${figure ? 'has-figure' : ''}`}>
       {figure && (
         <figure class="post-cover" aria-hidden="true">
-          <span class="plate-ink"><img src={figure} data-ink="gray" crossorigin="anonymous" alt="" width="1600" height="840" decoding="async" fetchpriority="high" /></span>
+          <span class="plate-ink"><img src={figure} srcset={figureSet} sizes="(max-width: 760px) 100vw, 110vw" data-ink="gray" crossorigin="anonymous" alt="" width="1600" height="840" decoding="async" fetchpriority="high" /></span>
         </figure>
       )}
       <div class="blog-post-meta">
@@ -481,7 +482,15 @@ function formatDate(dateStr: string): string {
       window.DISQUS.reset({ reload: true, config: disqus_config });
     }
   }
-  loadDisqus();
+  // Disqus is heavy, so it loads only as the reader nears the comments.
+  (function () {
+    var thread = document.getElementById('disqus_thread');
+    if (!thread || !window.IntersectionObserver) return loadDisqus();
+    var io = new IntersectionObserver(function (es) {
+      if (es[0].isIntersecting) { io.disconnect(); loadDisqus(); }
+    }, { rootMargin: '800px 0px' });
+    io.observe(thread);
+  })();
   var observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(m) {
       if (m.attributeName === 'class') syncDisqusTheme();

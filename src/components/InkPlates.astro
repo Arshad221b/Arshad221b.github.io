@@ -108,6 +108,8 @@
     var u = URL.createObjectURL(blob), pre = new Image();
     pre.src = u;
     (pre.decode ? pre.decode() : Promise.resolve()).catch(function () {}).then(function () {
+      // A srcset would win over the new src, so it goes.
+      img.removeAttribute('srcset');
       img.src = u;
       show(img);
     });

@@ -20,7 +20,7 @@ import { notebooks } from '../lib/notebooks';
 // Behind the head of the page: Leonardo's studies of flight, water, the horse
 // and the measured body, turn about with Michelangelo's figure studies,
 // drawing themselves in.
-const sketches = ['flying', 'sibyl', 'water', 'nude', 'vitruvian', 'horse'].map(n => img(`/images/contact/${n}.jpg`));
+const sketches = ['flying', 'sibyl', 'water', 'nude', 'vitruvian', 'horse'].map(n => img(`/images/contact/${n}.jpg`, 1000));
 const title = "Technical Blogs — Arshad Kazi";
 
 // `contents` mirrors the section headings inside each post, so the index says
@@ -123,12 +123,12 @@ type Item =
 const items: Item[] = [
   ...posts.map(p => ({
     kind: 'essay' as const, date: p.date, title: p.title, description: p.description,
-    href: p.href || `/blog/${p.slug}`, image: img(`/images/blog/${p.slug}.jpg`),
+    href: p.href || `/blog/${p.slug}`, image: img(`/images/blog/${p.slug}.jpg`, 1000),
     minutes: p.minutes, tags: p.tags, contents: p.contents,
   })),
   ...notebooks.map(nb => ({
     kind: 'notebook' as const, date: nb.endDate, title: nb.title, description: nb.description,
-    href: `/notebooks/${nb.slug}`, image: img(`/images/blog/notebook-${nb.slug}.jpg`),
+    href: `/notebooks/${nb.slug}`, image: img(`/images/blog/notebook-${nb.slug}.jpg`, 1000),
     minutes: nb.minutes, tags: nb.tags, nb,
   })),
 ].sort((a, b) => b.date.localeCompare(a.date));

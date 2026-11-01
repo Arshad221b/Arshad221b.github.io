@@ -14,7 +14,7 @@ import { posts, pageModel, topicName } from '../lib/thoughts-data';
 const title = "Thoughts — Arshad Kazi";
 
 // Behind the page: Michelangelo, Piranesi and Palladio's architect drawing themselves in.
-const sketches = ['sangiovanni1', 'carceri-title', 'rotonda', 'carceri-xiv', 'sangiovanni2'].map(n => img(`/images/thoughts-bg/${n}.jpg`));
+const sketches = ['sangiovanni1', 'carceri-title', 'rotonda', 'carceri-xiv', 'sangiovanni2'].map(n => img(`/images/thoughts-bg/${n}.jpg`, 1000));
 const { topics, theta, edges, stats, projection } = pageModel;
 
 // Every essay carries its number in the body of work, counted from the
@@ -140,7 +140,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
                 data-description={post.description.toLowerCase()}
                 data-topics={membership[i].map(t => t.k).join(',')}
                 data-p={membership[i].map(t => t.p.toFixed(4)).join(',')}>
-              <a href={`/thoughts/${post.slug}`} class="entry-link" data-peek="" data-no={post.no}>
+              <a href={`/thoughts/${post.slug}`} class="entry-link" data-no={post.no}>
                 <span class="entry-river">
                   <span class="entry-node"><span class="node-dot"></span><span class="node-date">{shortDate(post.date)}</span></span>
                   <span class="entry-quote">{opening(post.text)}</span>
@@ -156,7 +156,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
                   <p>{post.description}</p>
                   <span class="entry-topic">{topicName(topics[topTopic[i].k].words)}</span>
                 </span>
-                <span class="entry-fig"><span class="fig-ink"><img src={img(`/images/thoughts/${post.slug}.jpg`)} data-ink="gray feather-88@719" crossorigin="anonymous" alt="" width="1600" height="840" loading="lazy" decoding="async" /></span></span>
+                <span class="entry-fig"><span class="fig-ink"><img src={img(`/images/thoughts/${post.slug}.jpg`, 800)} data-ink="gray feather-88@719" crossorigin="anonymous" alt="" width="1600" height="840" loading="lazy" decoding="async" /></span></span>
               </a>
             </li>
           );
@@ -167,7 +167,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
     <p class="no-results" id="no-results">Nothing here matches that. Try a shorter word.</p>
 
-    <div class="peek" id="peek" aria-hidden="true"><img alt="" /><span class="peek-no"></span></div>
   </div>
 </Layout>
 
@@ -573,71 +572,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     transform: scale(1.5);
   }
 
-  /* When the river reaches a drop it ripples once, like water: two thin
-     rings spreading and fading, a beat after the line arrives. */
-  .node-dot {
-    position: relative;
-  }
-
-  .node-dot::before,
-  .node-dot::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border: 1px solid var(--color-accent);
-    border-radius: 50%;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .entry.reached .node-dot::before {
-    animation: drop-ripple 1.8s cubic-bezier(0.2, 0.6, 0.3, 1) 0.75s 1;
-  }
-
-  .entry.reached .node-dot::after {
-    animation: drop-ripple 1.8s cubic-bezier(0.2, 0.6, 0.3, 1) 1.1s 1;
-  }
-
-  /* An essay's words fade in as it comes into view and out as it leaves:
-     only their opacity changes. Only with the script, so without it
-     everything simply shows. */
-  .ledger.fading .entry-body,
-  .ledger.fading .entry-quote {
-    opacity: 0;
-    transition: opacity 0.7s ease;
-  }
-
-  .ledger.fading .entry.seen .entry-body,
-  .ledger.fading .entry.seen .entry-quote {
-    opacity: 1;
-  }
-
-  /* On a phone the ink follows the finger directly, and nothing ripples. */
-  @media (max-width: 719px) {
-    .river-wrap .river .river-line,
-    .river-wrap .river .river-bank,
-    .river-wrap .river .river-water,
-    .river-wrap .river-flowers :global(use) {
-      transition: none;
-    }
-
-    .entry.reached .node-dot::before,
-    .entry.reached .node-dot::after {
-      animation: none;
-    }
-  }
-
-  @keyframes drop-ripple {
-    0% { transform: scale(1); opacity: 0.55; }
-    100% { transform: scale(4.2); opacity: 0; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .entry.reached .node-dot::before,
-    .entry.reached .node-dot::after {
-      animation: none;
-    }
-  }
 
 
 
@@ -1002,14 +936,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     color: var(--color-text-muted);
   }
 
-  :global(.month-rider) {
-    display: none !important;
-  }
-
-  .peek {
-    display: none;
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .entry-fig img,
     .entry h3,
@@ -1028,59 +954,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
 <script is:inline>
 
-/* One month marker rides down the margin beside the whole list, and turns
-   to the next month as you cross into it, so a month's label stays with
-   all of its pieces, not just the first. */
-(function () {
-  var list = document.getElementById('post-index');
-  // The river carries the dates now; the old margin rider is not built, so
-  // nothing measures the rows on every scroll.
-  return;
-  var rider = document.createElement('div');
-  rider.className = 'month-rider';
-  rider.setAttribute('aria-hidden', 'true');
-  rider.innerHTML = '<span class="dd"></span><span class="mm"></span>';
-  list.parentNode.insertBefore(rider, list);
-  var dd = rider.querySelector('.dd'), mm = rider.querySelector('.mm'), shown = '', off = 0;
-  var LINE = 140;
-  function update() {
-    var ranked = list.classList.contains('ranked');
-    var rows = [].slice.call(list.querySelectorAll('[data-month]')).filter(function (r) {
-      return !r.classList.contains('hidden') && r.offsetParent !== null;
-    });
-    // Sit level with the first piece (below the year heading) until it is
-    // reached, then hold at the top: an offset on the marker's own content,
-    // so no margin of the page around it is touched.
-    if (rows.length) {
-      off = Math.max(0, Math.round(rows[0].getBoundingClientRect().top + 28 - (rider.getBoundingClientRect().top - off)));
-      rider.style.transform = 'translateY(' + off + 'px)';
-    }
-    var cur = null;
-    for (var i = 0; i < rows.length; i++) {
-      var b = rows[i].getBoundingClientRect();
-      if (b.top <= LINE + 40) cur = rows[i];
-      if (b.top > LINE + 40) break;
-    }
-    if (!cur && rows.length && rows[0].getBoundingClientRect().top < innerHeight) cur = rows[0];
-    var first = rows.length ? rows[0].getBoundingClientRect().top : Infinity;
-    rider.classList.toggle('on', !ranked && !!cur && first < innerHeight * 0.8);
-    if (!cur) return;
-    var label = cur.querySelector('time');
-    var key = cur.dataset.month;
-    if (key !== shown) {
-      shown = key;
-      rider.classList.remove('turn'); void rider.offsetWidth; rider.classList.add('turn');
-      dd.textContent = label.querySelector('.dd').textContent;
-      mm.textContent = label.querySelector('.mm').textContent;
-    }
-  }
-  var queued = false;
-  function queue() { if (!queued) { queued = true; requestAnimationFrame(function () { queued = false; update(); }); } }
-  addEventListener('scroll', queue, { passive: true });
-  addEventListener('resize', queue);
-  new MutationObserver(queue).observe(list, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true });
-  update();
-})();
 (function() {
   /* The site's bar is sticky and sits above everything, so the year has to
      know how tall it is to come to rest just underneath it rather than
@@ -1428,56 +1301,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   render();
 })();
 
-(function() {
-  /* ── The picture, lifted off the line ──────────────────────────
-     The ledger is a column of type. The photograph an essay carries
-     is not printed into that column at size, it is picked up off the
-     line you are pointing at and held next to the cursor, so the list
-     stays a list and the picture still gets to be a picture.
-     Pointer only: on a touch screen the thumbnail on the line is it. */
-
-  const peek = document.getElementById('peek');
-  if (!peek) return;
-  if (!window.matchMedia('(min-width: 1100px) and (hover: hover) and (pointer: fine)').matches) return;
-
-  const img = peek.querySelector('img');
-  const cap = peek.querySelector('.peek-no');
-  const PW = 300, PH = 240, GAP = 26;
-  let shown = false;
-  let x = 0, y = 0;
-
-  function place(ev) {
-    // Flip to the other side of the cursor rather than run off the screen.
-    const right = ev.clientX + GAP;
-    x = right + PW > window.innerWidth - 12 ? ev.clientX - GAP - PW : right;
-    y = Math.min(Math.max(ev.clientY - PH / 2, 12), window.innerHeight - PH - 12);
-    peek.style.left = x.toFixed(0) + 'px';
-    peek.style.top = y.toFixed(0) + 'px';
-  }
-
-  document.querySelectorAll('.entry-link').forEach(link => {
-    const src = link.dataset.peek;
-    if (!src) return;
-
-    link.addEventListener('mouseenter', ev => {
-      img.src = src;
-      cap.textContent = 'No. ' + link.dataset.no;
-      peek.style.display = 'block';
-      place(ev);
-      // One frame with it placed but transparent, so it fades in where it
-      // belongs instead of sliding over from wherever it was last.
-      requestAnimationFrame(() => { peek.classList.add('on'); shown = true; });
-    });
-
-    link.addEventListener('mousemove', ev => { if (shown) place(ev); });
-
-    link.addEventListener('mouseleave', () => {
-      shown = false;
-      peek.classList.remove('on');
-      setTimeout(() => { if (!shown) peek.style.display = 'none'; }, 200);
-    });
-  });
-})();
 
 </script>
 
@@ -1519,6 +1342,19 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       pts.sort(function (a, b) { return a[1] - b[1]; });
       pts.unshift([pts[0][0], 0, 2]);
       pts.push([pts[pts.length - 1][0], height, 2]);
+      // Between landings the water meanders a little, as a stream does:
+      // a bend or two to either side, the same on every visit.
+      var marks = pts.slice(), bent = [pts[0]];
+      for (var m = 1; m < pts.length; m++) {
+        var a = pts[m - 1], b = pts[m], dy = b[1] - a[1], k = dy > 520 ? 2 : dy > 160 ? 1 : 0;
+        for (var j = 1; j <= k; j++) {
+          var t = j / (k + 1), side = (m + j) % 2 ? 1 : -1;
+          var amp = Math.min(42, dy * 0.09) * (0.7 + 0.3 * Math.abs(Math.sin(m * 1.7 + j)));
+          bent.push([a[0] + (b[0] - a[0]) * t + side * amp, a[1] + dy * t, a[2] + (b[2] - a[2]) * t]);
+        }
+        bent.push(b);
+      }
+      pts = bent;
 
       // Catmull-Rom through the points, as cubic Béziers: a curve that
       // passes through every landing and never kinks.
@@ -1539,7 +1375,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       flowers.innerHTML = '';
       for (var f = 90; f < length - 60; f += 170) {
         var fp = line.getPointAtLength(f);
-        if (pts.some(function (p) { return Math.abs(p[1] - fp.y) < 46; })) continue;
+        if (marks.some(function (p) { return Math.abs(p[1] - fp.y) < 46; })) continue;
         var use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
         use.setAttribute('href', '#mughal-rosette');
         use.setAttribute('x', (fp.x - 8).toFixed(1));
@@ -1569,15 +1405,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
     function later() {
       if (!queued) { queued = true; requestAnimationFrame(draw); }
-    }
-
-    // The words of each essay fade in as it comes into view, out as it goes.
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches && window.IntersectionObserver) {
-      var seen = new IntersectionObserver(function (es) {
-        es.forEach(function (e) { e.target.classList.toggle('seen', e.isIntersecting); });
-      }, { rootMargin: '-8% 0px -8% 0px' });
-      ledger.querySelectorAll('.entry').forEach(function (e) { seen.observe(e); });
-      ledger.classList.add('fading');
     }
 
     new ResizeObserver(later).observe(ledger);
