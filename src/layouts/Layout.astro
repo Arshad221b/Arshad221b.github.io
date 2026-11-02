@@ -371,6 +371,30 @@ const elsewhere = [
         if (window.MutationObserver) new MutationObserver(soon).observe(document.body, { childList: true, subtree: true });
       })();
     </script>
+    <script is:inline>
+      // "Why I write these" unfolds: the note grows from nothing to its
+      // height and fades in, and folds back the same way, instead of
+      // appearing or vanishing at once.
+      (function () {
+        var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        document.querySelectorAll('details.why').forEach(function (d) {
+          var body = d.querySelector('.why-body'), run = null;
+          if (!body || reduce || !body.animate) return;
+          d.querySelector('summary').addEventListener('click', function (e) {
+            e.preventDefault();
+            if (run) run.cancel();
+            var closing = d.open;
+            if (!closing) d.open = true;
+            var h = body.scrollHeight + 'px';
+            run = body.animate(
+              closing ? [{ height: h, opacity: 1 }, { height: '0px', opacity: 0 }] : [{ height: '0px', opacity: 0 }, { height: h, opacity: 1 }],
+              { duration: 420, easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)' }
+            );
+            run.onfinish = function () { run = null; if (closing) d.open = false; };
+          });
+        });
+      })();
+    </script>
     <InkPlates />
   </body>
 </html>

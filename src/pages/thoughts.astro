@@ -32,8 +32,6 @@ const grouped = years.map(year => ({
 const totalWords = posts.reduce((sum, p) => sum + p.words, 0);
 /* The middle essay, not the average one: two or three long book pieces
    pull a mean upwards and stop it describing anything. */
-const lengths = posts.map(p => p.words).sort((a, b) => a - b);
-const medianWords = lengths[Math.floor(lengths.length / 2)];
 
 /* The essay's own first words, as a pull quote: the first sentence long
    enough to say something, cut gently if it runs on. */
@@ -73,15 +71,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
          figures standing to the right like a book's colophon. -->
     <div class="first-screen">
     <Mast
-      title="Personal"
-      accent="Thoughts"
-      lede="Personal writing. Things I am confused about, excited by, or trying to put into words."
-      figures={[
-        { k: 'Essays', v: posts.length },
-        { k: 'Words', v: `${Math.round(totalWords / 1000)}k` },
-        { k: 'Hours of reading', v: (totalWords / 230 / 60).toFixed(1) },
-        { k: 'Median essay', v: `${(medianWords / 1000).toFixed(1)}k` },
-      ]}
+      name="Personal Thoughts"
+      statement={`<em>${posts.length} essays</em>, ${Math.round(totalWords / 1000)}k words, on things I am confused about, excited by, or trying to put into words.`}
     >
         <details class="why">
         <summary>Why I write these</summary>
@@ -99,7 +90,8 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
          after it as words rather than boxes. -->
     <div class="console">
       <div class="seek">
-        <input type="text" id="search-input" placeholder="Search essays by meaning" autocomplete="off" />
+        <span class="seek-lead">Find the one about</span>
+        <input type="text" id="search-input" placeholder="anything" autocomplete="off" />
         <span class="seek-key" aria-hidden="true">/</span>
         <button type="button" class="seek-clear" id="seek-clear" aria-label="Clear search">Clear</button>
       </div>
@@ -179,11 +171,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     width: 100%;
     max-width: 1640px;
     margin: 0 auto;
-  }
-
-  /* Why I write these: folded until asked for. */
-  .why {
-    margin-top: var(--space-lg);
   }
 
 

@@ -1,121 +1,25 @@
 ---
-/* The head of an index page, in the About page's hand: the title at the hero's weight with its last word in the accent, written
-   settling in as the page opens, a lede, and the figures of the collection. Anything else (a folded note) goes in the slot. */
+/* The head of an index page, said as one sentence rather than shown as a
+   title and a table of numbers: the page's name small above, then what
+   the collection is, its counts in the accent, at a reading-display size.
+   On Blogs and Thoughts the sentence runs on into the search below it
+   ("Find the one about …"). Anything else (a folded note) goes in the
+   slot. The statement may carry <em> for the counts. */
 interface Props {
-  title: string;
-  accent: string;
-  lede: string;
-  figures?: { k: string; v: string | number }[];
+  name: string;
+  statement: string;
 }
-const { title, accent, lede, figures = [] } = Astro.props;
+const { name, statement } = Astro.props;
 ---
 
 <header class="mast">
-  <h1 class="mast-title page-title">{title} <em>{accent}</em></h1>
-
-  <p class="mast-lede page-lede">{lede}</p>
-
-  {figures.length > 0 && (
-    <dl class="mast-figures">
-      {figures.map(f => <div><dt>{f.k}</dt><dd>{f.v}</dd></div>)}
-    </dl>
-  )}
-
+  <h1 class="page-name">{name}</h1>
+  <p class="page-statement" set:html={statement} />
   <slot />
 </header>
 
 <style>
   .mast {
     margin-bottom: var(--space-2xl);
-  }
-
-
-
-
-
-
-
-  .mast-figures {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-md);
-    margin: var(--space-xl) 0 0;
-    padding: var(--space-md) 0 0;
-    border-top: 1px solid var(--color-border);
-  }
-
-  .mast-figures > div {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-  }
-
-  .mast-figures > div:nth-child(1) { animation-delay: 0.35s; }
-  .mast-figures > div:nth-child(2) { animation-delay: 0.4s; }
-  .mast-figures > div:nth-child(3) { animation-delay: 0.45s; }
-  .mast-figures > div:nth-child(4) { animation-delay: 0.5s; }
-
-  .mast-figures dt {
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-  }
-
-  .mast-figures dd {
-    font-family: var(--font-display);
-    font-size: var(--fs-h2);
-    font-weight: var(--fw-display);
-    letter-spacing: var(--track-tight);
-    line-height: var(--lh-none);
-    color: var(--color-text);
-    margin: 0;
-  }
-
-
-  /* Above a phone, the same layout as the Thoughts heading: the title,
-     lede and its button on the left, the figures in a two-by-two block on
-     the right, level with the foot of the lede. */
-  @media (min-width: 761px) {
-    .mast {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      grid-template-areas:
-        "title figs"
-        "lede  figs"
-        "why   figs";
-      column-gap: var(--space-2xl);
-      align-items: end;
-    }
-
-    .mast-title { grid-area: title; }
-    .mast-lede { grid-area: lede; }
-    .mast > :global(details) { grid-area: why; }
-
-    .mast-figures {
-      grid-area: figs;
-      grid-template-columns: repeat(2, auto);
-      gap: var(--space-lg) var(--space-xl);
-      align-self: end;
-      margin: 0 0 var(--space-1-5);
-      padding: 0;
-      border-top: 0;
-    }
-
-    .mast-figures dd {
-      font-weight: var(--fw-light);
-    }
-  }
-
-  @media (max-width: 600px) {
-    .mast-figures {
-      grid-template-columns: repeat(2, 1fr);
-      row-gap: var(--space-lg);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .mast-title, .mast-lede, .mast-figures > div { animation: none; }
   }
 </style>

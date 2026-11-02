@@ -92,6 +92,7 @@
   --fs-h1: clamp(2.2rem, 5vw, 3.6rem);
   --fs-display: clamp(3.4rem, 4.9vw, 6.4rem);
   --fs-display-xl: clamp(3.4rem, 9vw, 8.4rem);
+  --fs-statement: clamp(1.9rem, 1.6vw + 1.3rem, 3.2rem); /* index page headings, said as a sentence */
 
   /* Weights. Newsreader runs 200–700; Plex Mono has 400 and 500. */
   --fw-display: 200;        /* only the largest display titles */
@@ -2216,20 +2217,70 @@ html,body{overflow-x:clip;}
    the whole first screen on anything wider than a phone, whatever the
    window, and the list begins below the fold, as About does. */
 @media (min-width: 760px) {
-  /* The opening is the whole first screen: the heading starts at the same
-     height on every page, so the titles stand level, and the search sits
-     at the foot of the screen, the last thing on it; the list begins
-     below the fold. */
+  /* The opening is the whole first screen, set like a page: the page's
+     name at the head with "Why I write these" across from it, the middle
+     left open for the sketch, and at the foot the sentence with the
+     search straight after it, read as one passage. The note, opened,
+     unfolds full width into the open middle. The list begins below the
+     fold. */
   .first-screen {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto 1fr auto auto;
     min-height: calc(100svh - var(--head-h, 4.5rem) - var(--main-pt, 2rem));
-    padding-top: var(--space-2xl);
+    padding-top: var(--space-xl);
     padding-bottom: var(--space-2xl);
   }
 
+  .first-screen > .mast {
+    display: contents;
+  }
+
+  /* The name and the note's button share the head line; the button
+     never moves, and the note unfolds under the line into the open
+     middle. */
+  .first-screen .page-name {
+    grid-area: 1 / 1;
+    align-self: start;
+    padding-top: var(--space-2);
+  }
+
+  .first-screen .mast > .why {
+    grid-area: 1 / 1 / 2 / 3;
+    margin: 0;
+    pointer-events: none;
+  }
+
+  .first-screen .mast > .why summary {
+    display: flex;
+    width: max-content;
+    margin-left: auto;
+  }
+
+  .first-screen .mast > .why summary,
+  .first-screen .mast > .why .why-body {
+    pointer-events: auto;
+  }
+
+  .first-screen .mast > .why .why-body {
+    margin-top: var(--space-lg);
+  }
+
+  /* While the note is open, the sketch behind steps back for the reading. */
+  body:has(.first-screen .why[open]) .sketch-bg {
+    opacity: 0.12;
+    transition: opacity var(--dur-base) ease;
+  }
+
+  .first-screen .page-statement {
+    grid-area: 3 / 1 / 4 / 3;
+    align-self: end;
+    margin-top: var(--space-2xl);
+  }
+
   .first-screen > .console {
-    margin-top: auto;
+    grid-area: 4 / 1 / 5 / 3;
+    margin: var(--space-lg) 0 0;
   }
 
   /* The step above the fold is the screen's own padding, the same on every
@@ -2405,67 +2456,63 @@ pre,
 }
 
 /* ── Page headings ─────────────────────────────────────────────
-   One heading for every index page (Blogs, Thoughts, Contact): a mono
-   label line, the title at the largest display size with its accent word
-   in italic orange, and a lede at sub-heading size. Pages set only their
-   own spacing around these, never the type. */
-.page-label {
+   One heading for every index page (Blogs, Thoughts, Contact), said as a
+   sentence: the page's name small in the accent, then what the collection
+   is at a reading-display size, its counts in italic orange. On Blogs and
+   Thoughts the search below continues the sentence at the same size.
+   Pages set only their own spacing around these, never the type. */
+.page-name {
+  margin: 0;
   font-family: var(--font-mono);
   font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
-  color: var(--color-text-muted);
-}
-
-.page-title {
-  margin: var(--space-xl) 0 0;
-  font-family: var(--font-display);
-  font-size: calc(var(--fs-display-xl) * 1.2);
-  font-weight: var(--fw-light);
-  line-height: var(--lh-display);
-  letter-spacing: var(--track-tight);
-}
-
-.page-title em {
-  font-style: italic;
-  font-weight: var(--fw-light);
   color: var(--color-accent);
 }
 
-.page-lede {
-  max-width: 40rem;
+.page-statement {
+  max-width: 21em;
   margin: var(--space-md) 0 0;
   font-family: var(--font-display);
+  font-size: var(--fs-statement);
+  font-weight: var(--fw-light);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+  color: var(--color-text);
+}
+
+.page-statement em {
   font-style: italic;
-  font-size: calc(var(--fs-h3) * 1.2);
-  line-height: var(--lh-ui);
+  color: var(--color-accent);
+}
+
+/* The search, as the end of the heading's sentence: "Find the one
+   about", then the field, at the statement's own size. */
+.seek-lead {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: var(--fs-statement);
+  font-weight: var(--fw-light);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
   color: var(--color-text-secondary);
 }
 
-/* The label line over every page heading: the page's name, a hairline,
-   and what it holds. */
-.page-rule {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  font-family: var(--font-mono);
-  font-size: var(--fs-label);
-  letter-spacing: var(--track-caps);
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-  white-space: nowrap;
+.seek:has(.seek-lead) input {
+  font-size: var(--fs-statement);
+  font-weight: var(--fw-light);
+  line-height: var(--lh-tight);
 }
 
-.page-rule-line {
-  flex: 1;
-  height: 1px;
-  background: var(--color-border);
-}
-
-@media (max-width: 480px) {
-  .page-rule {
+/* On a phone the lead takes its own line, the field the whole next one. */
+@media (max-width: 760px) {
+  .seek:has(.seek-lead) {
     flex-wrap: wrap;
-    row-gap: var(--space-1);
+  }
+
+  .seek-lead {
+    flex-basis: 100%;
   }
 }
 
@@ -2667,7 +2714,10 @@ pre,
   border-color: var(--color-accent);
 }
 
+/* Opened and closed by the layout's script, the note unfolds and folds
+   rather than appearing at once. */
 .why-body {
+  overflow: hidden;
   max-width: 38rem;
   margin-top: var(--space-md);
   padding-left: var(--space-md);

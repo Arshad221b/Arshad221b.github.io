@@ -215,17 +215,14 @@ screen; no frame loop runs forever.
 ## 13. Components
 
 - **Site bar** — sticky, `--z-header`, frosts when scrolled.
-- **Page heading** (Blogs, Thoughts, Contact) — one shared style in
-  `global.css`: `.page-label` (mono label line), `.page-title`
-  (`--fs-display-xl`, `--fw-light`, accent word in italic orange) and
-  `.page-lede` (`--fs-h3`, italic, secondary). Pages set only the spacing
-  around them, never their type; a new index page uses the same three.
-  Above a phone the heading is one layout: label line across the top, then
-  title, lede and its button on the left, the figures in a two-by-two block
-  on the right.
+- **Page heading** (Blogs, Thoughts, Contact) — said as a sentence, one
+  shared style in `global.css`: `.page-name` (the h1: mono, small, accent)
+  and `.page-statement` (`--fs-statement`, light, the counts in italic
+  orange). On Blogs and Thoughts the search continues the sentence:
+  `.seek-lead` ("Find the one about") and the field at the same size.
+  Pages set only the spacing around them, never their type.
 - **Everything in the opening is shared**, defined once in `global.css`
-  and never restyled by a page: `.page-rule` (name — hairline — what it
-  holds), `.page-title`, `.page-lede`, the figures (label above number),
+  and never restyled by a page: `.page-name`, `.page-statement`,
   `.why` (outlined pill, orange +/−, note at reading size behind a
   hairline), and the console: `.seek` (search line, 40rem wide, `--fs-h3`
   with an italic placeholder, `/` key that gives way to Clear),
