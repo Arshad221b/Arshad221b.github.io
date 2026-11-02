@@ -1,8 +1,8 @@
 ---
 /* Sketches behind a page, one at a time, each drawing itself the way a
    sketch is built: the darkest strokes first, then the lighter lines and
-   the shading. It holds, fades, and the next begins. It fills about half
-   the screen on the right and dissolves at its edges into the paper.
+   the shading. It holds, fades, and the next begins. It fills about three
+   quarters of the screen from the right and dissolves at its edges into the paper.
 
    Each sketch is split once, when it loads, into a few sheets by how dark
    its ink is, darkest first, with the soft edge already drawn in. The
@@ -25,7 +25,7 @@ const { sketches, place = 'fixed' } = Astro.props;
     position: fixed;
     top: 0;
     right: 0;
-    width: 54vw;
+    width: 72vw;
     height: 100vh;
     opacity: 0.55;
     pointer-events: none;
@@ -87,7 +87,7 @@ const { sketches, place = 'fixed' } = Astro.props;
   // the darkness of the drawing reaches it.
   var BANDS = [1.01, 0.8, 0.62, 0.46, 0.32, 0.18, 0.04];
   // The soft ellipse it fades into the paper through.
-  var E = top ? [0.62, 0.52, 0.58, 0.42, 0.4] : [0.62, 0.58, 0.58, 0.5, 0.45];
+  var E = top ? [0.78, 0.7, 0.55, 0.45, 0.55] : [0.62, 0.58, 0.58, 0.5, 0.45];
   var idx = 0, img = null, stack = null, timer = 0;
 
   // Half a pixel per CSS pixel: a faint background, scaled up, no one can

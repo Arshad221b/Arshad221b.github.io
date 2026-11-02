@@ -205,7 +205,7 @@ function formatDate(dateStr: string): string {
 
   :global(html.dark) .post-cover img {
     opacity: 0.4;
-    filter: grayscale(1) invert(1) contrast(1.5) brightness(0.9);
+    filter: grayscale(1) invert(1) contrast(1.5) brightness(0.8) sepia(1) saturate(1.5);
   }
 
   /* Once inked, the grey and the contrast are in the image itself. */
@@ -213,8 +213,16 @@ function formatDate(dateStr: string): string {
     filter: none;
   }
 
+  /* On the dark page the plate is gold ink on black lacquer, never its
+     negative: one warm gold, its depth from the ink's density. */
   :global(html.dark) .post-cover img:global(.inked) {
-    filter: invert(1) contrast(1.5) brightness(0.9);
+    filter: brightness(0) invert(0.72) sepia(1) saturate(1.5);
+  }
+
+  /* A photograph stays a photograph: the right way round, toned warm and
+     low, as an old print seen in a dark room. */
+  :global(html.dark) .post-cover img:global(.inked.photo) {
+    filter: grayscale(1) sepia(0.6) brightness(0.75) contrast(1.1);
   }
 
   /* On a wide screen the header is a full-bleed hero composed on thirds.

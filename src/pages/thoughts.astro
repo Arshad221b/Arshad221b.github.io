@@ -9,6 +9,7 @@ import { img, share, has } from '../lib/media';
 
 import Layout from '../layouts/Layout.astro';
 import SketchBackdrop from '../components/SketchBackdrop.astro';
+import Mast from '../components/Mast.astro';
 import { posts, pageModel, topicName } from '../lib/thoughts-data';
 
 const title = "Thoughts — Arshad Kazi";
@@ -28,8 +29,6 @@ const grouped = years.map(year => ({
   items: numbered.filter(p => p.date.slice(0, 4) === year),
 }));
 
-const firstYear = posts[posts.length - 1].date.slice(0, 4);
-const lastYear = posts[0].date.slice(0, 4);
 const totalWords = posts.reduce((sum, p) => sum + p.words, 0);
 /* The middle essay, not the average one: two or three long book pieces
    pull a mean upwards and stop it describing anything. */
@@ -73,15 +72,17 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
          The title large, a line of what this is, and the collection's
          figures standing to the right like a book's colophon. -->
     <div class="first-screen">
-    <div class="page-rule">
-      <span>Personal Thoughts</span>
-      <span class="page-rule-line"></span>
-      <span>{posts.length} essays · {firstYear}–{lastYear}</span>
-    </div>
-    <header class="tp-head">
-      <div class="tp-title">
-        <h1 class="page-title">Personal <em>Thoughts</em></h1>
-        <p class="tp-lede page-lede">Personal writing. Things I am confused about, excited by, or trying to put into words.</p>
+    <Mast
+      title="Personal"
+      accent="Thoughts"
+      lede="Personal writing. Things I am confused about, excited by, or trying to put into words."
+      figures={[
+        { k: 'Essays', v: posts.length },
+        { k: 'Words', v: `${Math.round(totalWords / 1000)}k` },
+        { k: 'Hours of reading', v: (totalWords / 230 / 60).toFixed(1) },
+        { k: 'Median essay', v: `${(medianWords / 1000).toFixed(1)}k` },
+      ]}
+    >
         <details class="why">
         <summary>Why I write these</summary>
         <div class="why-body">
@@ -91,21 +92,14 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
           <p class="substack-line">These are also published on <a href="https://substack.com/@arshadkazi" target="_blank" rel="noopener">Substack</a>.</p>
         </div>
         </details>
-      </div>
-      <dl class="tp-figures">
-        <div><dt>Essays</dt><dd>{posts.length}</dd></div>
-        <div><dt>Words</dt><dd>{Math.round(totalWords / 1000)}k</dd></div>
-        <div><dt>Hours of reading</dt><dd>{(totalWords / 230 / 60).toFixed(1)}</dd></div>
-        <div><dt>Median essay</dt><dd>{(medianWords / 1000).toFixed(1)}k</dd></div>
-      </dl>
-    </header>
+    </Mast>
 
     <!-- ── Finding one ────────────────────────────────────
          One quiet line to search by meaning, and the themes running on
          after it as words rather than boxes. -->
     <div class="console">
       <div class="seek">
-        <input type="text" id="search-input" placeholder={`Search ${posts.length} essays by meaning`} autocomplete="off" />
+        <input type="text" id="search-input" placeholder="Search essays by meaning" autocomplete="off" />
         <span class="seek-key" aria-hidden="true">/</span>
         <button type="button" class="seek-clear" id="seek-clear" aria-label="Clear search">Clear</button>
       </div>
@@ -187,70 +181,13 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     margin: 0 auto;
   }
 
-  /* ── Opening ─────────────────────────────────────────── */
-  .tp-head {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
-    gap: var(--space-2xl);
-    /* The same space around the heading as the shared page heading. */
-    padding: 0;
-    margin-bottom: var(--space-2xl);
-  }
-
-
-
-
-  .tp-figures {
-    display: grid;
-    grid-template-columns: repeat(2, auto);
-    gap: var(--space-lg) var(--space-xl);
-    margin: 0 0 var(--space-1-5);
-  }
-
-  .tp-figures dt {
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-  }
-
-  .tp-figures dd {
-    margin: var(--space-1) 0 0;
-    font-family: var(--font-display);
-    font-weight: var(--fw-light);
-    font-size: var(--fs-h2);
-    line-height: var(--lh-none);
-    letter-spacing: var(--track-tight);
-  }
-
   /* Why I write these: folded until asked for. */
   .why {
     margin-top: var(--space-lg);
   }
 
 
-
-
-
-
-
-
   /* ── Finding one ─────────────────────────────────────── */
-  .console {
-    padding: var(--space-lg) 0 var(--space-2xl);
-  }
-
-
-
-
-
-
-
-
-
-
 
 
   .idx:hover,
@@ -261,8 +198,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   .idx.active .idx-name {
     font-style: italic;
   }
-
-
 
 
   /* ── The river ───────────────────────────────────────────
@@ -415,9 +350,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   }
 
 
-
-
-
   .node-date {
     font-family: var(--font-mono);
     font-size: var(--fs-micro);
@@ -542,13 +474,23 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
     mask-image: none;
   }
 
+  /* On the dark page a plate is gold ink on black lacquer: every line
+     takes one warm gold, its depth from how dense the ink was, so the
+     drawing is never turned into its negative. */
   :global(html.dark) .entry .entry-fig img.inked,
   :global(html.dark) .entry .entry-link:hover .entry-fig img.inked {
-    filter: invert(1) contrast(1.4) brightness(0.9);
+    filter: brightness(0) invert(0.72) sepia(1) saturate(1.5);
+  }
+
+  /* A photograph stays a photograph: the right way round, toned warm and
+     low, as an old print seen in a dark room. */
+  :global(html.dark) .entry .entry-fig img.inked.photo,
+  :global(html.dark) .entry .entry-link:hover .entry-fig img.inked.photo {
+    filter: grayscale(1) sepia(0.6) brightness(0.75) contrast(1.1);
   }
 
   :global(html.dark) .entry-fig img {
-    filter: grayscale(1) invert(1) contrast(1.4) brightness(0.9);
+    filter: grayscale(1) invert(1) contrast(1.4) brightness(0.8) sepia(1) saturate(1.5);
     opacity: 0.32;
   }
 
@@ -728,30 +670,6 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
       align-self: flex-start;
       align-items: flex-start;
       margin-left: calc(var(--river) / 2 - var(--space-5) - var(--space-0-5));
-    }
-  }
-
-  @media (max-width: 760px) {
-    .tp-head {
-      grid-template-columns: 1fr;
-      gap: var(--space-xl);
-      padding-top: var(--space-lg);
-    }
-
-    .tp-figures {
-      grid-template-columns: repeat(4, auto);
-      justify-content: start;
-      gap: var(--space-md) var(--space-lg);
-    }
-
-    .tp-figures dd {
-      font-size: var(--fs-h3);
-    }
-  }
-
-  @media (max-width: 480px) {
-    .tp-figures {
-      grid-template-columns: repeat(2, auto);
     }
   }
 

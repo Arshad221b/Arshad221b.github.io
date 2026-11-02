@@ -160,8 +160,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   <div class="blog-page free">
     <div class="first-screen">
     <Mast
-      label="Technical Blogs"
-      aside={`${posts.length} essays · ${notebooks.length} notebooks`}
       title="Technical"
       accent="Blogs"
       lede="What I have learned about computer vision, the brain and machine learning, written down while I was learning it."
@@ -186,7 +184,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     <!-- The same console as Thoughts: one line to search on, one row of topics. -->
     <div class="console">
       <div class="seek">
-        <input type="text" id="search-input" placeholder={`Search ${items.length} essays and notebooks`} autocomplete="off" aria-label="Search the blogs" />
+        <input type="text" id="search-input" placeholder="Search essays and notebooks" autocomplete="off" aria-label="Search the blogs" />
         <span class="seek-key" aria-hidden="true">/</span>
         <button type="button" class="seek-clear" id="seek-clear" aria-label="Clear search">Clear</button>
       </div>
@@ -205,13 +203,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
       </div>
     </div>
     </div>
-
-    <!-- The two kinds, said once, just above the list they explain, so the
-         first screen keeps to the heading, the search and the topics. -->
-    <dl class="key">
-      <div><dt><span class="mark essay"></span>Essay</dt><dd>A single post.</dd></div>
-      <div><dt><span class="mark notebook"><i></i><i></i><i></i></span>Notebook</dt><dd>Daily notes on one topic, over a week or so.</dd></div>
-    </dl>
 
     <div class="timeline" id="post-index">
       {years.map(year => (
@@ -259,21 +250,9 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   }
 
 
-
-
-
-
-
-
   /* ── The console ───────────────────────────────────
      One line to type on and one index of themes. Nothing here is a
      widget: it is a ruled line and a page of set words. */
-  .console {
-    margin: 0 0 var(--space-2xl);
-  }
-
-
-
 
 
   /* The one control on the right is the slash key while the line is empty
@@ -291,9 +270,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
   }
 
 
-
-
-
   /* Say what is on screen in words. This page is not a dashboard. */
   .console-note {
     font-family: var(--font-serif);
@@ -306,14 +282,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 
   /* One strip, on one or two lines, that recounts itself against what is
      on screen. Nothing here is a list of everything that exists. */
-  .themes {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-md);
-    margin-top: var(--space-lg);
-  }
-
-
 
 
   /* The figure rides above the word, the way a footnote mark does. It is
@@ -326,7 +294,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     opacity: 0.7;
     transform: translateY(-0.5em);
   }
-
 
 
   .idx.active {
@@ -392,40 +359,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 
   .meta .k {
     color: var(--color-accent);
-  }
-
-  /* ── The key ──────────────────────────────────────── */
-  .key {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    margin: 0 0 var(--space-xl);
-  }
-
-  .key > div {
-    display: grid;
-    grid-template-columns: 9rem minmax(0, 1fr);
-    align-items: baseline;
-    gap: var(--space-md);
-  }
-
-  .key dt {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
-    color: var(--color-text);
-  }
-
-  .key dd {
-    margin: 0;
-    font-family: var(--font-serif);
-    font-size: var(--fs-ui);
-    line-height: var(--lh-ui);
-    color: var(--color-text-secondary);
   }
 
   /* An essay is one block; a notebook is a run of days. */
@@ -927,11 +860,6 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 
     .row-date {
       order: -1;
-    }
-
-    .key > div {
-      grid-template-columns: 1fr;
-      gap: var(--space-1);
     }
 
     .topics {

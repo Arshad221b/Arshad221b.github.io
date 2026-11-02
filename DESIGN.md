@@ -230,12 +230,11 @@ screen; no frame loop runs forever.
   hairline), and the console: `.seek` (search line, 40rem wide, `--fs-h3`
   with an italic placeholder, `/` key that gives way to Clear),
   `.console-note`, `.themes` ("Topics", serif words with orange counts).
-- **First screen** (Blogs, Thoughts) — from 761px wide, the opening fills
-  exactly the screen and ends with the search and the topics. If a short
-  window cannot hold it, the page title (and the lede with it) shrinks just
-  enough to keep the topics in view, never below 45%. Anything that explains
-  the list (the Essay/Notebook key) sits just above the list, not in the
-  first screen.
+- **First screen** (Blogs, Thoughts) — from 761px wide, the opening is the
+  whole first screen: the heading starts at the same height on every page
+  (titles level) and the search sits at the foot of the screen; the list
+  begins below the fold. The topics show only once
+  the reader goes to the search.
 - **Essay header** — date, title (`--fs-h1`, `--fs-display` on wide
   screens), readout (number, words, read time), plate.
 - **Quotes and asides** — no side rules; three dots above and below,

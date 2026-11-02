@@ -1,25 +1,16 @@
 ---
-/* The head of an index page, in the About page's hand: the running head,
-   the title at the hero's weight with its last word in the accent, written
+/* The head of an index page, in the About page's hand: the title at the hero's weight with its last word in the accent, written
    settling in as the page opens, a lede, and the figures of the collection. Anything else (a folded note) goes in the slot. */
 interface Props {
-  label: string;
-  aside: string;
   title: string;
   accent: string;
   lede: string;
   figures?: { k: string; v: string | number }[];
 }
-const { label, aside, title, accent, lede, figures = [] } = Astro.props;
+const { title, accent, lede, figures = [] } = Astro.props;
 ---
 
 <header class="mast">
-  <div class="page-rule">
-    <span>{label}</span>
-    <span class="page-rule-line"></span>
-    <span>{aside}</span>
-  </div>
-
   <h1 class="mast-title page-title">{title} <em>{accent}</em></h1>
 
   <p class="mast-lede page-lede">{lede}</p>
@@ -91,7 +82,6 @@ const { label, aside, title, accent, lede, figures = [] } = Astro.props;
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       grid-template-areas:
-        "rule  rule"
         "title figs"
         "lede  figs"
         "why   figs";
@@ -99,7 +89,6 @@ const { label, aside, title, accent, lede, figures = [] } = Astro.props;
       align-items: end;
     }
 
-    .mast > .page-rule { grid-area: rule; }
     .mast-title { grid-area: title; }
     .mast-lede { grid-area: lede; }
     .mast > :global(details) { grid-area: why; }

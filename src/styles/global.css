@@ -2216,17 +2216,20 @@ html,body{overflow-x:clip;}
    the whole first screen on anything wider than a phone, whatever the
    window, and the list begins below the fold, as About does. */
 @media (min-width: 760px) {
-  /* The opening sits low on the screen, its topics a short step above the
-     fold, so the space falls above the heading rather than under the
-     topics. */
+  /* The opening is the whole first screen: the heading starts at the same
+     height on every page, so the titles stand level, and the search sits
+     at the foot of the screen, the last thing on it; the list begins
+     below the fold. */
   .first-screen {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
     min-height: calc(100svh - var(--head-h, 4.5rem) - var(--main-pt, 2rem));
-    /* A step above the fold that grows a little with the screen's height,
-       so a tall screen still keeps some air under the topics. */
-    padding-bottom: clamp(var(--space-2xl), 9vh, calc(2 * var(--space-2xl)));
+    padding-top: var(--space-2xl);
+    padding-bottom: var(--space-2xl);
+  }
+
+  .first-screen > .console {
+    margin-top: auto;
   }
 
   /* The step above the fold is the screen's own padding, the same on every
@@ -2417,9 +2420,7 @@ pre,
 .page-title {
   margin: var(--space-xl) 0 0;
   font-family: var(--font-display);
-  /* --fit is set by the first screen's script: below 1 when the screen is
-     too short for the heading and the search and topics together. */
-  font-size: calc(var(--fs-display-xl) * var(--fit, 1));
+  font-size: calc(var(--fs-display-xl) * 1.2);
   font-weight: var(--fw-light);
   line-height: var(--lh-display);
   letter-spacing: var(--track-tight);
@@ -2432,11 +2433,11 @@ pre,
 }
 
 .page-lede {
-  max-width: 34rem;
+  max-width: 40rem;
   margin: var(--space-md) 0 0;
   font-family: var(--font-display);
   font-style: italic;
-  font-size: calc(var(--fs-h3) * max(0.8, var(--fit, 1)));
+  font-size: calc(var(--fs-h3) * 1.2);
   line-height: var(--lh-ui);
   color: var(--color-text-secondary);
 }
@@ -2564,6 +2565,21 @@ pre,
   align-items: baseline;
   gap: var(--space-1-5) var(--space-5);
   margin-top: var(--space-lg);
+}
+
+/* The topics stay folded away until the reader goes to the search: they
+   show while the search has focus or words in it, while a topic is
+   chosen, and while the pointer is on them (so a click lands even where
+   the search loses focus first). */
+.console .themes {
+  display: none;
+}
+
+.console:focus-within .themes,
+.console:has(.seek.has-value) .themes,
+.console:has(.idx.active) .themes,
+.console .themes:hover {
+  display: flex;
 }
 
 .themes-name {

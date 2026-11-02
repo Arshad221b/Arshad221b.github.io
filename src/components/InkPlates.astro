@@ -33,7 +33,7 @@
   if (!window.Worker || !window.OffscreenCanvas || !window.createImageBitmap) { imgs.forEach(show); return; }
 
   // Bump the version whenever the inking changes, to drop old results.
-  var STORE = 'ink-v3';
+  var STORE = 'ink-v5';
 
   var work = function () {
     var STORE = '__STORE__';
@@ -49,7 +49,7 @@
       var c = new OffscreenCanvas(w, h), x = c.getContext('2d', { willReadFrequently: true });
       x.drawImage(bmp, 0, 0, w, h);
       bmp.close();
-      var d = x.getImageData(0, 0, w, h), p = d.data, n = 0;
+      var d = x.getImageData(0, 0, w, h), p = d.data, n = 0, clear = 0;
       var hr = new Uint32Array(256), hg = new Uint32Array(256), hb = new Uint32Array(256);
       for (var i = 0; i < p.length; i += 32, n++) { hr[p[i]]++; hg[p[i + 1]]++; hb[p[i + 2]]++; }
       // Each channel measured against its paper, as a table, once.
@@ -65,7 +65,7 @@
       for (var j = 0, q = 0; j < p.length; j += 4, q++) {
         var r = lr[p[j]], g = lg[p[j + 1]], b = lb[p[j + 2]];
         var m = r < g ? (r < b ? r : b) : (g < b ? g : b), al = 255 - m;
-        if (al < 13) { p[j + 3] = 0; continue; }
+        if (al < 13) { p[j + 3] = 0; clear++; continue; }
         var k = inv[al];
         r = 255 - (255 - r) * k; g = 255 - (255 - g) * k; b = 255 - (255 - b) * k;
         if (gray) {
@@ -81,6 +81,9 @@
         p[j + 3] = al;
       }
       x.putImageData(d, 0, 0);
+      // A photograph has little paper to lift: a drawing clears four
+      // fifths of itself or more, a photograph well under that.
+      c.photo = clear < p.length / 4 * 0.7;
       return c;
     }
 
@@ -89,12 +92,12 @@
     // the smaller WebP is made after, and kept for the next visit.
     onmessage = async function (e) {
       var c;
-      try { c = ink(e.data.bmp, e.data.width, e.data.gray, e.data.feather); postMessage({ id: e.data.id, blob: await c.convertToBlob({ type: 'image/png' }) }); }
+      try { c = ink(e.data.bmp, e.data.width, e.data.gray, e.data.feather); postMessage({ id: e.data.id, photo: c.photo, blob: await c.convertToBlob({ type: 'image/png' }) }); }
       catch (err) { return postMessage({ id: e.data.id, blob: null }); }
       try {
         var keep = await c.convertToBlob({ type: 'image/webp', quality: 0.9 });
         var store = await caches.open(STORE);
-        await store.put(e.data.key, new Response(keep, { headers: { 'content-type': keep.type } }));
+        await store.put(e.data.key, new Response(keep, { headers: { 'content-type': keep.type, 'x-photo': c.photo ? '1' : '0' } }));
       } catch (_) {}
     };
   };
@@ -108,8 +111,11 @@
 
   // The new image is decoded before it goes in, so the plate never shows
   // an empty frame between the two (Safari does, otherwise).
-  function swap(img, blob) {
+  // A photograph is marked, so a dark page can show it as a photograph
+  // rather than as ink.
+  function swap(img, blob, photo) {
     if (!blob) return show(img);
+    if (photo) img.classList.add('photo');
     var u = URL.createObjectURL(blob), pre = new Image();
     pre.src = u;
     (pre.decode ? pre.decode() : Promise.resolve()).catch(function () {}).then(function () {
@@ -119,7 +125,7 @@
       show(img);
     });
   }
-  worker.onmessage = function (e) { swap(list[e.data.id], e.data.blob); };
+  worker.onmessage = function (e) { swap(list[e.data.id], e.data.blob, e.data.photo); };
 
   // The width it is shown at, in device pixels, rounded up to a few
   // steps so the stored results are shared between nearby screen sizes.
@@ -156,7 +162,7 @@
       ? caches.open(STORE).then(function (s) { return s.match(key); }).catch(function () {})
       : Promise.resolve();
     stored.then(function (hit) {
-      if (hit) return hit.blob().then(function (b) { swap(img, b); });
+      if (hit) return hit.blob().then(function (b) { swap(img, b, hit.headers.get('x-photo') === '1'); });
       return loaded(img)
         .then(function () { return createImageBitmap(img); })
         .then(function (bmp) { worker.postMessage({ id: id, key: key, width: w, gray: gray, feather: feather, bmp: bmp }, [bmp]); });
