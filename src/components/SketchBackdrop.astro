@@ -111,7 +111,9 @@ const { sketches, place = 'fixed' } = Astro.props;
   // the darkness of the drawing reaches it.
   var BANDS = [1.01, 0.8, 0.62, 0.46, 0.32, 0.18, 0.04];
   // The soft ellipse it fades into the paper through.
-  var E = top ? [0.6, 0.46, 0.62, 0.34, 0.5] : [0.62, 0.58, 0.58, 0.5, 0.45];
+  // Behind an opening, centred in the open middle of the screen, between
+  // the name above and the sentence below.
+  var E = top ? [0.5, 0.42, 0.5, 0.4, 0.5] : [0.62, 0.58, 0.58, 0.5, 0.45];
   var idx = 0, img = null, stack = null, timer = 0;
 
   // Behind an opening, where the sketch is the picture, a full pixel per
@@ -121,9 +123,9 @@ const { sketches, place = 'fixed' } = Astro.props;
   function build(im) {
     var W = Math.round(box.offsetWidth * RES), H = Math.round(box.offsetHeight * RES);
     if (!W || !H) return null;
-    var k = Math.min(W / im.width, H / im.height);
+    var k = Math.min(W / im.width, H / im.height) * (top ? 0.86 : 1);
     var w = Math.round(im.width * k), h = Math.round(im.height * k);
-    var ox = Math.round((W - w) / 2), oy = Math.round((H - h) / 2);
+    var ox = Math.round((W - w) / 2), oy = Math.round(top ? H * E[3] - h / 2 : (H - h) / 2);
     var o = document.createElement('canvas'); o.width = w; o.height = h;
     var g = o.getContext('2d', { willReadFrequently: true });
     // Trim the scan's edges, where the old paper darkens into a frame.

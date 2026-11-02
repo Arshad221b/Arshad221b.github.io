@@ -130,7 +130,7 @@ const links = [
 
 ---
 
-<Layout title={title} activeNav="/" description="Arshad Kazi. Notebooks, technical writing and personal essays." ogImage={share("/images/share-about.jpg")}>
+<Layout title={title} activeNav="/" description="Arshad Kazi is an engineer in computer vision. Notebooks and technical writing on vision, the brain and machine learning, and personal essays." ogImage={share("/images/share-about.jpg")}>
   <script is:inline slot="head">
     /* The intro plays once. After that it waits sixty days before it will
        welcome the same browser back, and it never plays for anyone who has
@@ -190,7 +190,8 @@ const links = [
         </span>
         <h1><span class="w"><span>Arshad</span></span> <span class="w"><em>Kazi</em></span></h1>
         <p class="hero-role">Engineer in computer vision; I also write essays.</p>
-        <p class="hero-links">
+        <!-- Kept out of search results: a list of links reads as noise there. -->
+        <p class="hero-links" data-nosnippet>
           {links.map(l => {
             const mail = l.href.startsWith('mailto');
             return (
