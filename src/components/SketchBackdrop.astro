@@ -34,8 +34,23 @@ const { sketches, place = 'fixed' } = Astro.props;
     animation: sketch-drift 16s ease-in-out infinite alternate;
   }
 
+  /* Behind an index page's opening, where the middle of the screen is
+     left to it: the whole width, darker, and breathing deeper. */
   .sketch-bg.at-top {
     position: absolute;
+    width: 100%;
+    opacity: 0.78;
+    animation-name: sketch-drift-deep;
+    animation-duration: 22s;
+  }
+
+  html.dark .sketch-bg.at-top {
+    opacity: 0.5;
+  }
+
+  @keyframes sketch-drift-deep {
+    from { transform: scale(1) translate(0, 0) rotate(0deg); }
+    to   { transform: scale(1.1) translate(-2vw, 1.5vh) rotate(-0.6deg); }
   }
 
   .sketch-bg > div,
@@ -69,6 +84,15 @@ const { sketches, place = 'fixed' } = Astro.props;
     html.dark .sketch-bg {
       opacity: 0.16;
     }
+
+    /* On a phone the words stand over the sketch, so it stays quiet. */
+    .sketch-bg.at-top {
+      opacity: 0.3;
+    }
+
+    html.dark .sketch-bg.at-top {
+      opacity: 0.2;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -87,13 +111,15 @@ const { sketches, place = 'fixed' } = Astro.props;
   // the darkness of the drawing reaches it.
   var BANDS = [1.01, 0.8, 0.62, 0.46, 0.32, 0.18, 0.04];
   // The soft ellipse it fades into the paper through.
-  var E = top ? [0.78, 0.7, 0.55, 0.45, 0.55] : [0.62, 0.58, 0.58, 0.5, 0.45];
+  var E = top ? [0.6, 0.46, 0.62, 0.34, 0.5] : [0.62, 0.58, 0.58, 0.5, 0.45];
   var idx = 0, img = null, stack = null, timer = 0;
 
-  // Half a pixel per CSS pixel: a faint background, scaled up, no one can
-  // tell, and a quarter of the work.
+  // Behind an opening, where the sketch is the picture, a full pixel per
+  // CSS pixel, so its lines stay crisp; elsewhere, faint, half a pixel is
+  // enough and a quarter of the work.
+  var RES = top ? 1 : 0.5;
   function build(im) {
-    var W = Math.round(box.offsetWidth * 0.5), H = Math.round(box.offsetHeight * 0.5);
+    var W = Math.round(box.offsetWidth * RES), H = Math.round(box.offsetHeight * RES);
     if (!W || !H) return null;
     var k = Math.min(W / im.width, H / im.height);
     var w = Math.round(im.width * k), h = Math.round(im.height * k);
