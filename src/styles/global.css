@@ -2335,8 +2335,18 @@ pre,
 
 /* ── Contents on a phone or a tablet ─────────────────────────────
    No margin to hold the list, so a chip at the foot of the screen names
-   the section being read, and opens the whole list as a sheet. */
-.toc-chip {
+   the section being read, with a hairline of how far through you are.
+   Touched, it raises the whole list as a sheet from the bottom edge: a
+   grip, "Contents", where you are (03 of 09) and a plain Close, then the
+   sections as large rows, the one being read marked in the accent. The
+   sheet closes from Close, the veil, Escape, or by pulling it down; the
+   page behind holds still while it is open. Only transform and opacity
+   move. */
+.toc-chip,
+.toc-veil,
+.toc-grip,
+.toc-count,
+.toc-close {
   display: none;
 }
 
@@ -2344,13 +2354,14 @@ pre,
   .toc-chip {
     position: fixed;
     left: 50%;
-    bottom: 22px;
+    bottom: calc(var(--space-5) + env(safe-area-inset-bottom));
     z-index: var(--z-float);
     display: flex;
     align-items: baseline;
     gap: var(--space-2);
     max-width: min(calc(100vw - 160px), 360px);
     padding: var(--space-2) var(--space-4);
+    overflow: hidden;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-pill);
     background: var(--color-bg);
@@ -2358,46 +2369,9 @@ pre,
     box-shadow: var(--shadow-float);
     transform: translateX(-50%);
     cursor: pointer;
+    transition: opacity var(--dur-base) ease, transform var(--dur-base) ease;
   }
 
-  .margin-toc.under-cover + .toc-chip {
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .toc-chip-text {
-    overflow: hidden;
-    font-family: var(--font-serif);
-    font-size: var(--fs-small);
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  .margin-toc.ready.toc-open {
-    display: block;
-    top: auto;
-    left: 50%;
-    bottom: 74px;
-    z-index: var(--z-sheet);
-    width: min(92vw, 440px);
-    max-height: 60vh;
-    padding: var(--space-4) var(--space-5) var(--space-4) var(--space-2);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-sheet);
-    transform: translateX(-50%);
-  }
-}
-
-/* The sheet's furniture: a list icon on the chip, a close button in the
-   sheet's corner, and a veil behind it that closes it when touched. */
-.toc-close,
-.toc-veil {
-  display: none;
-}
-
-@media (max-width: 1239px) {
   .toc-chip-icon {
     flex: none;
     width: 14px;
@@ -2409,49 +2383,175 @@ pre,
     fill: none;
   }
 
-  .toc-veil {
+  .toc-chip-text {
+    overflow: hidden;
+    font-family: var(--font-serif);
+    font-size: var(--fs-small);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* How far through the piece: a hairline along the chip's foot. */
+  .toc-chip-progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-accent);
+    transform: scaleX(var(--read, 0));
+    transform-origin: left;
+  }
+
+  .margin-toc.under-cover + .toc-chip,
+  .margin-toc.toc-open + .toc-chip {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(var(--space-3));
+  }
+
+  /* The sheet: always laid out, held below the screen until raised. */
+  .margin-toc.ready {
     position: fixed;
-    inset: 0;
-    z-index: var(--z-veil);
-    background: color-mix(in srgb, var(--color-text) 18%, transparent);
-  }
-
-  .margin-toc.toc-open ~ .toc-veil {
-    display: block;
-  }
-
-  .margin-toc.toc-open {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
     z-index: var(--z-sheet);
-    padding-top: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: auto;
+    max-height: min(72svh, 560px);
+    padding: 0 0 env(safe-area-inset-bottom);
+    overflow: hidden;
+    border-top: 1px solid var(--color-border);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    background: var(--color-bg);
+    box-shadow: var(--shadow-sheet);
+    opacity: 1;
+    visibility: hidden;
+    transform: translateY(100%);
+    transition: transform var(--dur-slow) var(--ease-out), visibility 0s linear var(--dur-slow);
   }
 
-  .margin-toc.toc-open .toc-close {
-    position: sticky;
-    top: 0;
-    align-self: flex-end;
-    display: grid;
-    place-items: center;
+  .margin-toc.ready.toc-open {
+    visibility: visible;
+    transform: translateY(0);
+    transition: transform var(--dur-slow) var(--ease-out), visibility 0s;
+  }
+
+  .margin-toc.toc-drag {
+    transition: none;
+  }
+
+  .toc-head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-6) var(--space-5) var(--space-3);
+    border-bottom: 1px solid var(--color-border-light);
+    touch-action: none;
+  }
+
+  .toc-grip {
+    position: absolute;
+    top: var(--space-2);
+    left: 50%;
+    display: block;
     width: 36px;
-    height: 36px;
-    margin: calc(-1 * var(--space-1-5)) calc(-1 * var(--space-2)) calc(-1 * var(--space-6)) auto;
+    height: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--color-border);
+    transform: translateX(-50%);
+  }
+
+  .toc-head .toc-title {
+    margin: 0;
     padding: 0;
+  }
+
+  .toc-count {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
+    color: var(--color-accent);
+  }
+
+  .toc-close {
+    display: block;
+    min-height: 44px;
+    margin-left: auto;
+    padding: 0 var(--space-4);
     border: 1px solid var(--color-border);
-    border-radius: 50%;
-    background: var(--color-bg);
+    border-radius: var(--radius-pill);
+    background: none;
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-caps);
+    text-transform: uppercase;
     color: var(--color-text);
     cursor: pointer;
   }
 
-  .toc-close svg {
-    width: 14px;
-    height: 14px;
-    stroke: currentColor;
-    stroke-width: 1.5;
-    stroke-linecap: round;
+  .margin-toc.ready ol {
+    flex: 1;
+    min-height: 0;
+    padding: var(--space-2) var(--space-5) var(--space-4);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-left: 0;
   }
 
-  .margin-toc.toc-open + .toc-chip {
-    z-index: var(--z-sheet-chip);
+  .margin-toc.ready li::before {
+    left: calc(-1 * var(--space-5));
+    width: 3px;
+    top: var(--space-2);
+    bottom: var(--space-2);
+  }
+
+  .margin-toc.ready a {
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    font-size: var(--fs-ui);
+    line-height: var(--lh-snug);
+    color: var(--color-text-secondary);
+  }
+
+  .margin-toc.ready li + li a {
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .margin-toc.ready li.active a {
+    color: var(--color-text);
+  }
+
+  .margin-toc.ready li.active .toc-num {
+    color: var(--color-accent);
+  }
+
+  .toc-veil {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-veil);
+    display: block;
+    background: color-mix(in srgb, var(--color-text) 22%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-base) ease;
+  }
+
+  .margin-toc.toc-open ~ .toc-veil {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* The page holds still under an open sheet. */
+  html.toc-locked,
+  html.toc-locked body {
+    overflow: hidden;
   }
 }
 

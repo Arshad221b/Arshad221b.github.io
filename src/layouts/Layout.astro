@@ -177,10 +177,14 @@ const elsewhere = [
 
         if (!toc || headings.length < 2) return;
 
-        var title = document.createElement('span');
-        title.className = 'toc-title';
-        title.textContent = 'Contents';
-        toc.appendChild(title);
+        // The head of the list: its name, and on a phone or tablet where it
+        // opens as a sheet, a grip, where you are (03 of 09) and Close.
+        var head = document.createElement('div');
+        head.className = 'toc-head';
+        head.innerHTML = '<span class="toc-grip" aria-hidden="true"></span><span class="toc-title">Contents</span>' +
+          '<span class="toc-count"></span><button type="button" class="toc-close">Close</button>';
+        toc.appendChild(head);
+        var count = head.querySelector('.toc-count'), close = head.querySelector('.toc-close');
 
         var list = document.createElement('ol');
         var items = [];
@@ -195,7 +199,7 @@ const elsewhere = [
           a.querySelector('.toc-text').textContent = h.textContent.trim();
           a.addEventListener('click', function (e) {
             e.preventDefault();
-            toc.classList.remove('toc-open');
+            setOpen(false);
             h.scrollIntoView({ behavior: 'smooth', block: 'start' });
             history.replaceState(null, '', '#' + h.id);
           });
@@ -208,39 +212,51 @@ const elsewhere = [
         toc.classList.add('ready');
 
         // Where the margin cannot hold the list (a phone, a tablet), a chip
-        // at the foot of the screen names the section being read; touched,
-        // it opens the whole list as a sheet above it.
+        // at the foot of the screen names the section being read, with a
+        // hairline of how far through the piece you are; touched, it opens
+        // the whole list as a sheet from the bottom edge.
         var chip = document.createElement('button');
         chip.type = 'button';
         chip.className = 'toc-chip';
         chip.setAttribute('aria-label', 'Contents');
         chip.setAttribute('aria-expanded', 'false');
         chip.innerHTML = '<svg class="toc-chip-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h8"/></svg>' +
-          '<span class="toc-num"></span><span class="toc-chip-text"></span>';
+          '<span class="toc-num"></span><span class="toc-chip-text"></span><span class="toc-chip-progress" aria-hidden="true"></span>';
         // A veil behind the open sheet: touching it closes the sheet.
         var veil = document.createElement('div');
         veil.className = 'toc-veil';
         toc.after(chip, veil);
         var chipNum = chip.querySelector('.toc-num'), chipText = chip.querySelector('.toc-chip-text');
-        // And a plain close button in the sheet's corner.
-        var close = document.createElement('button');
-        close.type = 'button';
-        close.className = 'toc-close';
-        close.setAttribute('aria-label', 'Close contents');
-        close.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>';
-        toc.insertBefore(close, toc.firstChild);
         function setOpen(open) {
           toc.classList.toggle('toc-open', open);
+          document.documentElement.classList.toggle('toc-locked', open);
           chip.setAttribute('aria-expanded', String(open));
+          toc.style.transform = '';
           if (!open) return;
           // The section being read, in view in the list.
           var on = list.querySelector('li.active');
-          if (on) toc.scrollTop = on.offsetTop - toc.clientHeight / 2 + on.offsetHeight / 2;
+          if (on) list.scrollTop = on.offsetTop - list.clientHeight / 2 + on.offsetHeight / 2;
+          close.focus({ preventScroll: true });
         }
         chip.addEventListener('click', function () { setOpen(!toc.classList.contains('toc-open')); });
         close.addEventListener('click', function () { setOpen(false); });
         veil.addEventListener('click', function () { setOpen(false); });
         addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+        // The sheet follows a finger pulling its head down, and closes if
+        // pulled far enough; otherwise it springs back.
+        var y0 = null;
+        head.addEventListener('touchstart', function (e) { y0 = e.touches[0].clientY; toc.classList.add('toc-drag'); }, { passive: true });
+        head.addEventListener('touchmove', function (e) {
+          if (y0 === null) return;
+          toc.style.transform = 'translateY(' + Math.max(0, e.touches[0].clientY - y0) + 'px)';
+        }, { passive: true });
+        head.addEventListener('touchend', function (e) {
+          if (y0 === null) return;
+          var d = e.changedTouches[0].clientY - y0;
+          y0 = null;
+          toc.classList.remove('toc-drag');
+          if (d > 70) setOpen(false); else toc.style.transform = '';
+        });
 
         // whichever section heading was last passed; the headings are
         // measured whenever the page changes size, so a scroll only compares
@@ -263,15 +279,21 @@ const elsewhere = [
           });
           chipNum.textContent = String(current + 1).padStart(2, '0');
           chipText.textContent = items[current].h.textContent.trim();
+          count.textContent = String(current + 1).padStart(2, '0') + ' of ' + String(items.length).padStart(2, '0');
+          // Keep the marked entry in view in the margin, where the list is
+          // seen while reading; the sheet places it when it opens.
           var active = items[current].li;
-          // keep the marked entry in view when the list is long
-          if (toc.scrollHeight > toc.clientHeight) {
-            var top = active.offsetTop - toc.clientHeight / 2 + active.offsetHeight / 2;
-            toc.scrollTo({ top: top, behavior: 'smooth' });
+          if (!toc.classList.contains('toc-open') && toc.scrollHeight > toc.clientHeight) {
+            toc.scrollTo({ top: active.offsetTop - toc.clientHeight / 2 + active.offsetHeight / 2, behavior: 'smooth' });
           }
         }
+        // How far through the piece, for the chip's hairline.
+        function progress() {
+          var max = document.documentElement.scrollHeight - innerHeight;
+          chip.style.setProperty('--read', max > 0 ? Math.min(1, scrollY / max).toFixed(3) : 0);
+        }
         function onScroll() {
-          if (!ticking) { ticking = true; requestAnimationFrame(mark); }
+          if (!ticking) { ticking = true; requestAnimationFrame(function () { mark(); progress(); }); }
         }
 
         addEventListener('scroll', onScroll, { passive: true });
