@@ -16,6 +16,7 @@ const replaced: Record<string, string> = {
   'thoughts/drive-my-car-a-movie-about-love-and-disconnect': 'thoughts/drive-my-car-a-movie-about-love-and-disconnect-poster',
   'thoughts/steve-jobs-by-walter-isaacson': 'thoughts/steve-jobs-by-walter-isaacson-poster',
   'thoughts/dabholkar-on-scientific-thinking': 'thoughts/dabholkar-on-scientific-thinking-photo',
+  'blog/notebook-3d-reconstruction': 'blog/notebook-3d-reconstruction-sfm',
 };
 const id = (path: string) => {
   const name = rel(path).replace(/\.[a-z]+$/i, '');

@@ -1,0 +1,387 @@
+---
+import { img } from '../../../lib/media';
+import Layout from '../../../layouts/Layout.astro';
+import { experiment, days } from '../../../data/3d-reconstruction-days';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = () => {
+  return days
+    .filter(d => d.bullets.length > 0)
+    .map(d => ({ params: { day: `day-${d.day}` }, props: { dayData: d } }));
+};
+
+const { dayData: day } = Astro.props;
+
+const title = `Day ${day.day}: ${day.curiosityTitle} — 3D Reconstruction — Arshad Kazi`;
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+const activeDays = days.filter(d => d.bullets.length > 0);
+const currentIndex = activeDays.findIndex(d => d.day === day.day);
+const prevDay = currentIndex > 0 ? activeDays[currentIndex - 1] : null;
+const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex + 1] : null;
+---
+
+<Layout title={title} activeNav="/blog" description={`Day ${day.day}: ${day.curiosityTitle}`} ogImage={img("/images/blog/notebook-3d-reconstruction.jpg")}>
+  <div class="experiment-page">
+    <a href="/notebooks/3d-reconstruction" class="back-link">&larr; All Days</a>
+
+    <div class="day-page-header">
+      <span class="day-page-number">Day {day.day} &mdash; {formatDate(day.date)}</span>
+      <h1 class="day-page-title">{day.curiosityTitle}</h1>
+    </div>
+
+    <div class="day-entry">
+      {day.bullets && day.bullets.length > 0 && (
+        <ul class="day-bullets">
+          {day.bullets.map(bullet => (
+            <li set:html={bullet} />
+          ))}
+        </ul>
+      )}
+
+      {day.diagram && (
+        <div class="diagram-wrap" set:html={day.diagram} />
+      )}
+
+      {day.sections && day.sections.map(section => (
+        <div class="day-section">
+          <h4 class="section-heading">{section.title}</h4>
+          {section.subtitle && <p class="section-subtitle">{section.subtitle}</p>}
+
+          {section.table && (
+            <table class="results-table">
+              <thead>
+                <tr>
+                  {section.table.headers.map(h => <th>{h}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {section.table.rows.map(row => (
+                  <tr>
+                    {row.map(cell => <td>{cell}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {section.bullets.length > 0 && (
+            <ul class="day-bullets">
+              {section.bullets.map(bullet => (
+                <li set:html={bullet} />
+              ))}
+            </ul>
+          )}
+
+          {section.diagram && (
+            <div class="diagram-wrap" set:html={section.diagram} />
+          )}
+        </div>
+      ))}
+    </div>
+
+    <nav class="day-nav">
+      {prevDay ? (
+        <a href={`/notebooks/3d-reconstruction/day-${prevDay.day}`} class="day-nav-link prev">
+          <span class="day-nav-arrow">&larr;</span>
+          <span class="day-nav-label">Day {prevDay.day}</span>
+        </a>
+      ) : <span />}
+      {nextDay ? (
+        <a href={`/notebooks/3d-reconstruction/day-${nextDay.day}`} class="day-nav-link next">
+          <span class="day-nav-label">Day {nextDay.day}</span>
+          <span class="day-nav-arrow">&rarr;</span>
+        </a>
+      ) : <span />}
+    </nav>
+  </div>
+</Layout>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+<script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script is:inline>
+  document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.querySelector(".day-entry"), {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false }
+      ],
+      throwOnError: false
+    });
+  });
+</script>
+
+<style>
+  .day-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-8);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .day-nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    font-family: var(--font-mono);
+    letter-spacing: var(--track-caps);
+    font-size: var(--fs-label);
+    text-transform: uppercase;
+    font-weight: var(--fw-bold);
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color var(--dur-fast) ease;
+  }
+
+  .day-nav-link:hover {
+    color: var(--color-text);
+  }
+
+  .day-nav-arrow {
+    font-size: var(--fs-ui);
+  }
+
+  .day-nav-label {
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+  }
+
+  /* diagrams */
+  .diagram-wrap {
+    margin: var(--space-4) 0 var(--space-2);
+    overflow-x: auto;
+  }
+
+  :global(.flow-h) {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-1-5);
+    flex-wrap: wrap;
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  :global(.d-node) {
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    padding: var(--space-1-5) var(--space-2);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius);
+    color: var(--color-text);
+    text-align: center;
+    line-height: var(--lh-snug);
+    white-space: nowrap;
+  }
+
+  :global(.d-arrow) {
+    font-size: var(--fs-ui);
+    color: var(--color-text-muted);
+    align-self: center;
+    padding: 0 var(--space-0-5);
+  }
+
+  :global(.d-col) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  :global(.d-sub) {
+    font-family: var(--font-sans);
+    font-size: var(--fs-label);
+    color: var(--color-text-muted);
+    text-align: center;
+  }
+
+  /* transformer architecture diagram */
+  :global(.arch-diagram) {
+    display: flex;
+    gap: 0;
+    padding: var(--space-5);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow-x: auto;
+    justify-content: center;
+    position: relative;
+  }
+
+  :global(.arch-connector) {
+    display: flex;
+    align-items: center;
+    padding: 0 var(--space-2);
+    padding-top: calc(var(--space-18) + var(--space-14));
+  }
+
+  :global(.arch-connector svg) {
+    display: block;
+  }
+
+  :global(.arch-col) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    min-width: 140px;
+  }
+
+  :global(.arch-label) {
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: var(--track-label);
+    margin-bottom: var(--space-1);
+  }
+
+  :global(.arch-block) {
+    border: 1.5px solid var(--color-accent);
+    border-radius: var(--radius-lg);
+    padding: var(--space-1-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    width: 100%;
+  }
+
+  :global(.arch-row) {
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    text-align: center;
+    background: var(--color-bg);
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+
+  :global(.arch-row.hl) {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  :global(.arch-io) {
+    font-family: var(--font-sans);
+    font-size: var(--fs-label);
+    color: var(--color-text-secondary);
+    text-align: center;
+  }
+
+  :global(.arch-io.top) {
+    font-weight: var(--fw-bold);
+    color: var(--color-text);
+  }
+
+  :global(.arch-cross) {
+    font-family: var(--font-sans);
+    font-size: var(--fs-label);
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  :global(.arch-arrow) {
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+    text-align: center;
+    line-height: var(--lh-none);
+  }
+
+  :global(.arch-row-arrow) {
+    font-size: var(--fs-label);
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: 1px 0;
+    line-height: var(--lh-none);
+  }
+
+  /* norm comparison diagram */
+  :global(.norm-diagram) {
+    padding: var(--space-5);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  :global(.norm-grid) {
+    display: grid;
+    grid-template-columns: auto repeat(4, 1fr);
+    gap: var(--space-0-5);
+    margin-bottom: var(--space-4);
+  }
+
+  :global(.norm-label-corner) {
+    width: 2.5rem;
+  }
+
+  :global(.norm-col-header) {
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: var(--space-1) var(--space-1);
+  }
+
+  :global(.norm-row-label) {
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-bold);
+    color: var(--color-accent);
+    display: flex;
+    align-items: center;
+    padding-right: var(--space-2);
+  }
+
+  :global(.norm-cell) {
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    padding: var(--space-1-5) var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    text-align: center;
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  :global(.norm-annotations) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1-5);
+    margin-bottom: var(--space-4);
+  }
+
+  :global(.norm-ann-row),
+  :global(.norm-ann-col) {
+    font-family: var(--font-sans);
+    font-size: var(--fs-small);
+    color: var(--color-text-secondary);
+  }
+
+  :global(.norm-arrow-right),
+  :global(.norm-arrow-down) {
+    color: var(--color-accent);
+    font-weight: var(--fw-bold);
+  }
+
+  :global(.norm-summary) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    color: var(--color-text-secondary);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+</style>

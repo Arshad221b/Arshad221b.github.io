@@ -6,6 +6,7 @@ import { days as neuroscienceDays } from '../data/neuroscience-days';
 import { days as emotionDays } from '../data/emotion-days';
 import { days as modernNetsDays } from '../data/modern-nets-days';
 import { days as vlmSearchDays } from '../data/vlm-search-days';
+import { days as reconstructionDays } from '../data/3d-reconstruction-days';
 
 export interface NotebookDay {
   day: number;
@@ -25,9 +26,22 @@ export interface Notebook {
   tags: string[];
   days: NotebookDay[];
   minutes: number;
+  inProgress?: boolean;
 }
 
 const meta = [
+  {
+    title: '3D Reconstruction',
+    slug: '3d-reconstruction',
+    commitment: '',
+    startDate: '2026-11-03',
+    endDate: '2026-11-03',
+    description: 'Geometry-based 3D reconstruction from images: camera models, epipolar geometry, triangulation and structure from motion.',
+    conclusion: '',
+    tags: ['computer vision', '3D vision'],
+    inProgress: true,
+    data: reconstructionDays,
+  },
   {
     title: 'Overview of Modern Nets',
     slug: 'modern-nets',

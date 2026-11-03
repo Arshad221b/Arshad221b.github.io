@@ -1,0 +1,67 @@
+---
+import { img } from '../../../lib/media';
+import Layout from '../../../layouts/Layout.astro';
+import { experiment, days } from '../../../data/3d-reconstruction-days';
+
+const title = "3D Reconstruction | Notebooks | Arshad Kazi";
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function formatDateLong(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+const activeDays = days.filter(d => d.bullets.length > 0);
+---
+
+<Layout title={title} activeNav="/blog" description="Geometry-based 3D reconstruction from images: camera models, epipolar geometry, triangulation and structure from motion." ogImage={img("/images/blog/notebook-3d-reconstruction.jpg")}>
+  <div class="experiment-page">
+    <a href="/blog" class="back-link">&larr; Blogs</a>
+
+    <div class="experiment-page-header">
+      <div class="experiment-title-row">
+        <h1>{experiment.title}</h1>
+        <span class={`experiment-status ${experiment.status}`}>
+          {experiment.status === 'active' ? 'In Progress' : 'Completed'}
+        </span>
+      </div>
+      <p class="experiment-page-meta">
+        Started {formatDateLong(experiment.startDate)}
+      </p>
+    </div>
+
+    <div class="experiment-intro">
+      <div class="intro-origin">
+        <h3>The Spark</h3>
+        <p>Just starting. Notes land here as the days go.</p>
+      </div>
+    </div>
+
+    <div class="day-list">
+      {activeDays.map(day => (
+        <a href={`/notebooks/3d-reconstruction/day-${day.day}`} class="day-card">
+          <div class="day-card-header">
+            <span class="day-card-number">Day {day.day}</span>
+            <span class="day-card-date">{formatDate(day.date)}</span>
+          </div>
+          <h3 class="day-card-title">{day.curiosityTitle}</h3>
+          <p class="day-card-summary">{day.summary}</p>
+          <span class="day-card-link">Read more &rarr;</span>
+        </a>
+      ))}
+    </div>
+
+    {activeDays.length === 0 && (
+      <div class="experiment-empty">
+        <p>No entries yet. Day 1 starts tomorrow.</p>
+      </div>
+    )}
+  </div>
+</Layout>
+
+<style>
+</style>
