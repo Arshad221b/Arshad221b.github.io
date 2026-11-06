@@ -1,0 +1,48 @@
+---
+/* One step's blocks: notes, prose, equations, figures and tangents. */
+import type { Block } from '../../data/3d-reconstruction-days';
+const { blocks } = Astro.props as { blocks: Block[] };
+const display = (tex: string) => '$$' + tex + '$$';
+---
+{blocks.map(b =>
+  b.kind === 'board' ? (
+    <div class="r-notes">
+      <ul>{b.lines.map(l => <li set:html={l} />)}</ul>
+    </div>
+  ) : b.kind === 'ai' ? (
+    <div class="r-notes">
+      <ul>{b.lines.map(l => <li set:html={l} />)}</ul>
+    </div>
+  ) : b.kind === 'eq' ? (
+    <div class="r-eq">
+      <div set:html={display(b.tex)} />
+    </div>
+  ) : b.kind === 'table' ? (
+    <div class="r-table">
+      <table>
+        <thead><tr>{b.headers.map(h => <th set:html={h} />)}</tr></thead>
+        <tbody>{b.rows.map(r => <tr>{r.map(c => <td set:html={c} />)}</tr>)}</tbody>
+      </table>
+    </div>
+  ) : b.kind === 'question' ? (
+    <p class="r-question"><span>Question</span>{b.text}</p>
+  ) : b.kind === 'figure' ? (
+    <figure class="r-fig">
+      <Fragment set:html={b.svg} />
+      <figcaption><Fragment set:html={b.caption ?? ''} /></figcaption>
+    </figure>
+  ) : b.kind === 'tangent' ? (
+    <details class="r-tangent">
+      <summary><span class="r-tag">Tangent</span><span class="r-tangent-t">{b.title}</span></summary>
+      <div class="r-tangent-body"><Astro.self blocks={b.blocks} /></div>
+    </details>
+  ) : b.kind === 'explain' ? (
+    <div class="r-prose">
+      {b.paras.map(t => <p set:html={t} />)}
+    </div>
+  ) : b.kind === 'p' ? (
+    <p set:html={b.text} />
+  ) : (
+    <Fragment set:html={b.html} />
+  )
+)}

@@ -1,7 +1,8 @@
 ---
 import { img } from '../../../lib/media';
 import Layout from '../../../layouts/Layout.astro';
-import { experiment, days } from '../../../data/3d-reconstruction-days';
+import { days, STAGES } from '../../../data/3d-reconstruction-days';
+import Blocks from '../../../components/recon/Blocks.astro';
 import type { GetStaticPaths } from 'astro';
 
 export const getStaticPaths: GetStaticPaths = () => {
@@ -23,65 +24,73 @@ const activeDays = days.filter(d => d.bullets.length > 0);
 const currentIndex = activeDays.findIndex(d => d.day === day.day);
 const prevDay = currentIndex > 0 ? activeDays[currentIndex - 1] : null;
 const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex + 1] : null;
+
+// Steps grouped by act, in the order they were worked out.
+const acts: { name: string; steps: typeof day.steps }[] = [];
+for (const st of day.steps) {
+  const last = acts[acts.length - 1];
+  if (last && last.name === st.act) last.steps.push(st);
+  else acts.push({ name: st.act, steps: [st] });
+}
+const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 ---
 
-<Layout title={title} activeNav="/blog" description={`Day ${day.day}: ${day.curiosityTitle}`} ogImage={img("/images/blog/notebook-3d-reconstruction.jpg")}>
-  <div class="experiment-page">
+<Layout title={title} activeNav="/blog" description={`Day ${day.day}: ${day.curiosityTitle}`}>
+  <div class="experiment-page recon">
     <a href="/notebooks/3d-reconstruction" class="back-link">&larr; All Days</a>
 
-    <div class="day-page-header">
-      <span class="day-page-number">Day {day.day} &mdash; {formatDate(day.date)}</span>
-      <h1 class="day-page-title">{day.curiosityTitle}</h1>
-    </div>
+    <header class="r-head">
+      <p class="r-kicker">Day {day.day} · {formatDate(day.date)}</p>
+      <h1 class="r-title">{day.curiosityTitle}</h1>
+      <p class="r-summary">{day.summary}</p>
+    </header>
 
-    <div class="day-entry">
-      {day.bullets && day.bullets.length > 0 && (
-        <ul class="day-bullets">
-          {day.bullets.map(bullet => (
-            <li set:html={bullet} />
-          ))}
-        </ul>
-      )}
+    {day.intro && <div class="r-intro"><Blocks blocks={day.intro} /></div>}
 
-      {day.diagram && (
-        <div class="diagram-wrap" set:html={day.diagram} />
-      )}
+    <ol class="r-track" aria-label="Where this day sits in the reconstruction pipeline">
+      {STAGES.map((s, i) => (
+        <li class:list={{ on: day.stages.includes(i) }}><span>{i + 1}</span>{s}</li>
+      ))}
+    </ol>
 
-      {day.sections && day.sections.map(section => (
-        <div class="day-section">
-          <h4 class="section-heading">{section.title}</h4>
-          {section.subtitle && <p class="section-subtitle">{section.subtitle}</p>}
 
-          {section.table && (
-            <table class="results-table">
-              <thead>
-                <tr>
-                  {section.table.headers.map(h => <th>{h}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {section.table.rows.map(row => (
-                  <tr>
-                    {row.map(cell => <td>{cell}</td>)}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-
-          {section.bullets.length > 0 && (
-            <ul class="day-bullets">
-              {section.bullets.map(bullet => (
-                <li set:html={bullet} />
-              ))}
-            </ul>
-          )}
-
-          {section.diagram && (
-            <div class="diagram-wrap" set:html={section.diagram} />
-          )}
+    <nav class="r-toc" aria-label="Contents">
+      {acts.map((a, i) => (
+        <div class="r-toc-act">
+          <p class="r-toc-h">{roman[i]} · {a.name}</p>
+          <ol>
+            {a.steps.map(st => <li><a href={`#step-${st.n}`}><span>{st.n}</span>{st.title}</a></li>)}
+          </ol>
         </div>
       ))}
+    </nav>
+
+    <div class="day-entry">
+      {acts.map((a, i) => (
+        <section class="r-act">
+          <h2 class="r-act-h"><span>Part {roman[i]}</span>{a.name}</h2>
+          {a.steps.map(st => (
+            <article class="r-step" id={`step-${st.n}`}>
+              <header class="r-step-head">
+                <span class="r-step-n">{st.n}</span>
+                <div>
+                  <h3 class="r-step-t">{st.title}</h3>
+                  {st.subtitle && <p class="r-step-sub">{st.subtitle}</p>}
+                </div>
+              </header>
+              <Blocks blocks={st.blocks} />
+            </article>
+          ))}
+        </section>
+      ))}
+
+      {day.questions.length > 0 && (
+        <section class="r-act">
+          <h2 class="r-act-h"><span>Next</span>Open questions</h2>
+          <p class="r-label">Not answered yet</p>
+          <ol class="r-qs">{day.questions.map(q => <li set:html={q} />)}</ol>
+        </section>
+      )}
     </div>
 
     <nav class="day-nav">
@@ -106,7 +115,7 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
 <script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 <script is:inline>
   document.addEventListener("DOMContentLoaded", function() {
-    renderMathInElement(document.querySelector(".day-entry"), {
+    renderMathInElement(document.querySelector(".recon"), {
       delimiters: [
         { left: "$$", right: "$$", display: true },
         { left: "$", right: "$", display: false }
@@ -383,5 +392,250 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     color: var(--color-text-secondary);
     padding-top: var(--space-3);
     border-top: 1px solid var(--color-border);
+  }
+</style>
+
+
+<style is:global>
+  /* ── Head ── */
+  .recon .r-head { margin: var(--space-6) 0 var(--space-6); }
+  .recon .r-kicker,
+  .recon .r-label,
+  .recon .r-toc-h,
+  .recon .r-act-h span,
+  .recon .r-question span {
+    font-family: var(--font-sans);
+    font-size: var(--fs-small);
+    text-transform: uppercase;
+    letter-spacing: var(--track-label);
+    color: var(--color-text-muted);
+  }
+  .recon .r-title {
+    margin: var(--space-2) 0 var(--space-4);
+    font-family: var(--font-display);
+    font-weight: var(--fw-regular);
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.1;
+    color: var(--color-text);
+  }
+  .recon .r-summary {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.15em;
+    line-height: var(--lh-body);
+    color: var(--color-text-secondary);
+    max-width: 40em;
+  }
+
+  /* ── Pipeline track ── */
+  .recon .r-track {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    margin: 0 0 var(--space-4);
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-sans);
+    font-size: var(--fs-small);
+  }
+  .recon .r-track li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    color: var(--color-text-muted);
+  }
+  .recon .r-track li span { opacity: 0.6; }
+  .recon .r-track li.on {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background: var(--color-surface);
+  }
+
+  /* ── Contents ── */
+  .recon .r-toc {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .recon .r-toc-h { margin: 0 0 var(--space-1); color: var(--color-accent); }
+  .recon .r-toc ol { margin: 0; padding: 0; list-style: none; }
+  .recon .r-toc a {
+    display: flex;
+    gap: var(--space-2);
+    padding: 2px 0;
+    font-size: var(--fs-small);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+  }
+  .recon .r-toc a:hover { color: var(--color-accent); }
+  .recon .r-toc a span { color: var(--color-text-muted); min-width: 1.2em; }
+
+  /* ── Parts and steps ── */
+  .recon .r-act { margin-top: var(--space-8); }
+  .recon .r-act-h {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin: 0 0 var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+    font-family: var(--font-display);
+    font-weight: var(--fw-regular);
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    line-height: 1.1;
+    color: var(--color-text);
+  }
+  .recon .r-act-h span { color: var(--color-accent); }
+  /* The contents list already closes with a rule. */
+  .recon .r-act:first-child .r-act-h { border-top: none; padding-top: 0; }
+  .recon .r-step { margin: var(--space-6) 0 var(--space-8); scroll-margin-top: 5rem; }
+  .recon .r-step-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding-bottom: var(--space-2);
+    margin-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .recon .r-step-n {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    line-height: 1;
+    color: var(--color-accent);
+  }
+  .recon .r-step-t {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: var(--fw-regular);
+    font-size: clamp(1.35rem, 3vw, 1.6rem);
+    line-height: 1.2;
+    color: var(--color-text);
+  }
+  .recon .r-step-sub {
+    margin: var(--space-1) 0 0;
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--color-text-muted);
+  }
+
+  /* ── Blocks ── */
+  .recon .r-notes { margin: var(--space-4) 0; }
+  .recon .r-notes ul { margin: 0; padding-left: var(--space-5); }
+  .recon .r-notes li { margin-bottom: var(--space-2); line-height: var(--lh-body); }
+  .recon .r-label { margin: 0 0 var(--space-2); }
+
+  .recon .r-eq { position: relative; margin: var(--space-4) 0; overflow-x: auto; text-align: center; }
+  .recon .r-tag {
+    display: inline-block;
+    padding: 0 var(--space-1-5);
+    border: 1px solid var(--color-accent);
+    border-radius: 999px;
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: var(--track-label);
+    color: var(--color-accent);
+  }
+
+  .recon .r-table { margin: var(--space-4) 0; overflow-x: auto; }
+  .recon .r-table table { margin: 0 auto; border-collapse: collapse; font-family: var(--font-sans); font-size: var(--fs-small); }
+  .recon .r-table th,
+  .recon .r-table td { padding: var(--space-1-5) var(--space-4); border-bottom: 1px solid var(--color-border); text-align: center; }
+  .recon .r-table th { color: var(--color-text-muted); }
+
+  .recon .r-question {
+    margin: var(--space-6) 0 var(--space-4);
+    padding-left: var(--space-4);
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    line-height: 1.25;
+    color: var(--color-text);
+  }
+  .recon .r-question span { display: block; margin-bottom: var(--space-1); color: var(--color-accent); }
+
+  /* ── Figures ── */
+  .recon .r-fig {
+    margin: var(--space-6) 0;
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+  .recon .r-fig svg { display: block; width: 100%; height: auto; }
+  .recon .r-fig figcaption {
+    margin-top: var(--space-2);
+    font-family: var(--font-sans);
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+    text-align: center;
+  }
+  .recon .r-fig .layer { fill: var(--color-tag-bg); stroke: var(--color-border); }
+  .recon .r-fig .nbr path { fill: var(--color-accent); fill-opacity: 0.25; stroke: var(--color-accent); }
+  .recon .r-fig .centre { fill: var(--color-accent); }
+  .recon .r-fig .axis { stroke: var(--color-accent); stroke-dasharray: 3 3; }
+  .recon .r-fig .patch { fill: var(--color-tag-bg); stroke: var(--color-border); }
+  .recon .r-fig .dark { fill: var(--color-text-muted); fill-opacity: 0.55; }
+  .recon .r-fig .arrow-line { stroke: var(--color-accent); stroke-width: 2; stroke-dasharray: 4 4; }
+  .recon .r-fig .fine path { stroke: var(--color-border); stroke-width: 0.6; fill: none; }
+  .recon .r-fig .coarse path { stroke: var(--color-text-muted); stroke-width: 1.4; fill: none; }
+  .recon .r-fig .vanes path { stroke: var(--color-accent); stroke-width: 2; stroke-linecap: round; fill: none; }
+  .recon .r-fig text { fill: var(--color-text-secondary); font-family: var(--font-mono); }
+  .recon .r-fig .fig-label { font-size: 13px; }
+  .recon .r-fig .fig-big { font-size: 22px; fill: var(--color-text); }
+  .recon .r-fig .mid { text-anchor: middle; }
+  .recon .r-fig .accent { fill: var(--color-accent); }
+  .recon .r-fig .sig { fill: none; stroke: var(--color-text); stroke-width: 1.6; }
+  .recon .r-fig .lap { fill: none; stroke: var(--color-accent); stroke-width: 1.8; }
+  .recon .r-fig .zero { stroke: var(--color-border); stroke-dasharray: 4 4; }
+
+  /* ── Tangents ── */
+  .recon .r-tangent {
+    margin: var(--space-6) 0;
+    border: 1px dashed var(--color-accent);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+  }
+  .recon .r-tangent summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1-5);
+    padding: var(--space-3) var(--space-4);
+    cursor: pointer;
+    list-style: none;
+  }
+  .recon .r-tangent summary::-webkit-details-marker { display: none; }
+  .recon .r-tangent-t { font-family: var(--font-display); font-size: 1.2rem; color: var(--color-text); }
+  .recon .r-tangent summary::after { content: "Open ↓"; font-family: var(--font-sans); font-size: var(--fs-small); color: var(--color-accent); }
+  .recon .r-tangent[open] summary::after { content: "Close ↑"; }
+  .recon .r-tangent-body { padding: 0 var(--space-4) var(--space-4); border-top: 1px dashed var(--color-border); }
+  .recon .r-tangent-body p { color: var(--color-text-secondary); }
+  .recon .r-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin: var(--space-4) 0; }
+  .recon .r-card { padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow-x: auto; font-size: var(--fs-small); }
+  .recon .r-card p { font-size: var(--fs-small); }
+  .recon .r-card-t { color: var(--color-accent); font-family: var(--font-sans); text-transform: uppercase; letter-spacing: var(--track-label); }
+
+  .recon .r-prose { margin: var(--space-4) 0; }
+  .recon .r-prose p {
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-serif);
+    line-height: var(--lh-body);
+    color: var(--color-text);
+  }
+  .recon .r-prose p:last-child { margin-bottom: 0; }
+
+  /* ── Open questions ── */
+  .recon .r-qs { padding-left: var(--space-5); }
+  .recon .r-qs li { margin-bottom: var(--space-2); color: var(--color-text-secondary); }
+
+  @media (max-width: 760px) {
+    .recon .r-pair { grid-template-columns: 1fr; }
+    
   }
 </style>
