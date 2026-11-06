@@ -2087,6 +2087,14 @@ pre,
   overflow-x: hidden !important;
 }
 
+/* Hidden on one axis makes the other a scroll box, and tall maths (a
+   fraction, a matrix) then scrolls by a few pixels. Clip instead: it hides
+   sideways overflow and leaves the height alone. */
+.katex-display {
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+}
+
 
 /* ── Contents on a phone or a tablet ─────────────────────────────
    No margin to hold the list, so a chip at the foot of the screen names
