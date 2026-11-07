@@ -372,7 +372,7 @@ import PlateCredit from './PlateCredit.astro';
       var al = ca[i];
       if (al > 0.04) {
         var bx = px[i] + fx[i], by = py[i] + fy[i], A = al * (dpr > 1 ? 255 : 225);
-        plot(bx, by, A);
+        dot(bx, by, A);
         if (echo) {
           var ea = A * 0.5;
           plot(bx + (e1x[i] * c1 - e1y[i] * s1) * spx, by + (e1x[i] * s1 + e1y[i] * c1) * spy, ea);
@@ -393,6 +393,17 @@ import PlateCredit from './PlateCredit.astro';
       ctx.drawImage(curT.ink, curT.ix, curT.iy, curT.iw, curT.ih);
       ctx.globalAlpha = 1;
     }
+  }
+
+  // A particle: a 2x2 block on a dense screen, the dot and its right
+  // neighbour on a plain one, so it reads at a glance; echoes stay single pixels.
+  function dot(x, y, A) {
+    var ix = (x * dpr) | 0, iy = (y * dpr) | 0;
+    if (ix < 0 || iy < 0 || ix >= BW - 1 || iy >= BH - 1) return;
+    var q = iy * BW + ix, a = A | 0, v = ((a << 24) | RGB) >>> 0;
+    if ((p32[q] >>> 24) < a) p32[q] = v;
+    if ((p32[q + 1] >>> 24) < a) p32[q + 1] = v;
+    if (dpr > 1) { if ((p32[q + BW] >>> 24) < a) p32[q + BW] = v; if ((p32[q + BW + 1] >>> 24) < a) p32[q + BW + 1] = v; }
   }
 
   // One dot, darkest wins where two land on the same pixel.
