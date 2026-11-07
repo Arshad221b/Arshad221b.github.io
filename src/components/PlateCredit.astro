@@ -77,7 +77,13 @@ const { credits } = Astro.props;
   }
   /* Each line keeps its height while empty, so the credit is measured at full size. */
   .plate-title,
-  .plate-by { min-height: 1.35em; transition: opacity 0.5s ease; }
+  .plate-by {
+    min-height: 1.35em;
+    transition: opacity 0.5s ease;
+    /* A soft halo of paper, so the credit reads over the ink behind it. */
+    text-shadow: 0 0 4px var(--color-bg), 0 0 8px var(--color-bg), 0 0 14px var(--color-bg);
+  }
+  .plate-dots { filter: drop-shadow(0 0 3px var(--color-bg)) drop-shadow(0 0 6px var(--color-bg)); }
   .swap .plate-title,
   .swap .plate-by { opacity: 0; }
 

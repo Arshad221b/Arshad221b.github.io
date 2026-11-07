@@ -132,6 +132,26 @@ const elsewhere = [
         </nav>
       </div>
     </header>
+    <script is:inline>
+      // The ink bottle in the header plays the intro: from another page it
+      // leaves a note for this tab and goes home, where the intro reads it;
+      // on home it replays at once. The name beside it is a plain link home.
+      (function () {
+        var mark = document.querySelector('.brand .brand-mark');
+        if (!mark) return;
+        mark.style.cursor = 'pointer';
+        mark.addEventListener('click', function (e) {
+          var replay = document.getElementById('replay');
+          if (replay && location.pathname === '/') {
+            e.preventDefault();
+            scrollTo({ top: 0 });
+            replay.click();
+            return;
+          }
+          try { sessionStorage.setItem('intro-play', '1'); } catch (err) {}
+        });
+      })();
+    </script>
 
     <main>
       <slot />

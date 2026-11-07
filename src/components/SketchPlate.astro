@@ -63,7 +63,6 @@ import PlateCredit from './PlateCredit.astro';
   }
 
   @media (max-width: 759px) {
-    .plate { height: calc(var(--head-h, 5.4rem) + 40svh); }
     .plate-art { top: calc(var(--head-h, 5.4rem) + 0.5rem); width: calc(100% - 2rem); height: 29svh; }
   }
 
@@ -155,7 +154,6 @@ import PlateCredit from './PlateCredit.astro';
     art.style.top = Math.round(from) + 'px';
     art.style.height = h + 'px';
     meta.style.top = Math.round(to - ch) + 'px';
-    if (innerWidth < 760) plate.style.height = Math.round(to + 4) + 'px';
     return true;
   }
   // The words come after this script in the page, so fit once they exist,
@@ -237,7 +235,8 @@ import PlateCredit from './PlateCredit.astro';
     });
   }
 
-  function begin(now) { aim(); mark(); phase = 'gather'; t0 = now; }
+  var wind = 1;   // which way the ink drifts along the screen's long side; new each transition
+  function begin(now) { aim(); mark(); phase = 'gather'; t0 = now; wind = Math.random() < 0.5 ? -1 : 1; }
   function smooth(u) { u = u < 0 ? 0 : u > 1 ? 1 : u; return u * u * u * (u * (u * 6 - 15) + 10); }
 
   // ── The current: curl noise ──
@@ -267,9 +266,12 @@ import PlateCredit from './PlateCredit.astro';
   function grid(now) {
     var gx = Math.ceil(W / CELL) + 2, gy = Math.ceil(H / CELL) + 2;
     if (gx !== GX || gy !== GY) { GX = gx; GY = gy; gu = new Float32Array(GX * GY); gv = new Float32Array(GX * GY); }
-    var sc = 1 / 260, t = now * 0.00009, ep = 0.35;
+    // Swirls stretched along the screen's long side, so the ink streams
+    // across a wide screen and rises along a tall one.
+    var asp = W / Math.max(1, H), scx = 1 / (260 * Math.pow(Math.max(1, asp), 0.7)), scy = 1 / (260 * Math.pow(Math.max(1, 1 / asp), 0.7));
+    var t = now * 0.00009, ep = 0.35;
     for (var j = 0, q = 0; j < GY; j++) for (var i = 0; i < GX; i++, q++) {
-      var x = i * CELL * sc, y = j * CELL * sc;
+      var x = i * CELL * scx, y = j * CELL * scy;
       gu[q] = (psi(x, y + ep, t) - psi(x, y - ep, t)) / (2 * ep);
       gv[q] = -(psi(x + ep, y, t) - psi(x - ep, y, t)) / (2 * ep);
     }
@@ -314,7 +316,10 @@ import PlateCredit from './PlateCredit.astro';
     // Echoes: each particle's two companions fan out as the pull lets go and
     // fold back as it returns, so the ink in the air triples without any
     // more particles to move. Not drawn at all while the drawing holds.
-    var spread = (1 - hold) * (1 - hold) * Math.min(W, H) * 0.16, echo = spread > 0.6;
+    // In transition the ink spreads across the whole window, behind the words
+    // too, in the screen's own proportions.
+    var lg = (1 - hold) * (1 - hold), spx = lg * W * 0.42, spy = lg * H * 0.42, echo = lg * Math.min(W, H) > 1;
+    var wx = W >= H ? wind * 0.03 * lg * dt : 0, wy = W < H ? wind * 0.03 * lg * dt : 0;
     // The halo turns slowly, each echo its own way, so the cloud shimmers.
     var q1 = now * 0.00031, q2 = -now * 0.00023, q3 = now * 0.00017;
     var c1 = Math.cos(q1), s1 = Math.sin(q1), c2 = Math.cos(q2), s2 = Math.sin(q2), c3 = Math.cos(q3), s3 = Math.sin(q3);
@@ -326,8 +331,8 @@ import PlateCredit from './PlateCredit.astro';
       // own strength, with a fine tremor while the drawing is let go.
       at(px[i] + nox[i], py[i] + noy[i]);
       var dm = drift * mul[i], ri2 = (base + i * 31) & 8191;
-      vx[i] += (tx[i] - px[i]) * kf + fu * dm + RT[ri2] * trem;
-      vy[i] += (ty[i] - py[i]) * kf + fv * dm + RT[(ri2 + 4099) & 8191] * trem - 0.005 * (1 - hold) * dt;
+      vx[i] += (tx[i] - px[i]) * kf + fu * dm + RT[ri2] * trem + wx * mul[i];
+      vy[i] += (ty[i] - py[i]) * kf + fv * dm + RT[(ri2 + 4099) & 8191] * trem + wy * mul[i] - 0.005 * (1 - hold) * dt;
       vx[i] *= damp; vy[i] *= damp;
       px[i] += vx[i] * dt; py[i] += vy[i] * dt;
       ca[i] += (ta[i] * (0.6 + 0.4 * hold) - ca[i]) * Math.min(1, 0.045 * dt);
@@ -341,9 +346,9 @@ import PlateCredit from './PlateCredit.astro';
         plot(bx, by, A);
         if (echo) {
           var ea = A * 0.5;
-          plot(bx + (e1x[i] * c1 - e1y[i] * s1) * spread, by + (e1x[i] * s1 + e1y[i] * c1) * spread, ea);
-          plot(bx + (e2x[i] * c2 - e2y[i] * s2) * spread, by + (e2x[i] * s2 + e2y[i] * c2) * spread, ea);
-          plot(bx + (e3x[i] * c3 - e3y[i] * s3) * spread, by + (e3x[i] * s3 + e3y[i] * c3) * spread, ea * 0.7);
+          plot(bx + (e1x[i] * c1 - e1y[i] * s1) * spx, by + (e1x[i] * s1 + e1y[i] * c1) * spy, ea);
+          plot(bx + (e2x[i] * c2 - e2y[i] * s2) * spx, by + (e2x[i] * s2 + e2y[i] * c2) * spy, ea);
+          plot(bx + (e3x[i] * c3 - e3y[i] * s3) * spx, by + (e3x[i] * s3 + e3y[i] * c3) * spy, ea * 0.7);
         }
       }
     }

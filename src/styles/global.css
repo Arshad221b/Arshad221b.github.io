@@ -1976,7 +1976,7 @@ html,body{overflow-x:clip;}
 /* On a phone the opening's sketch has a band of its own at the top, and
    the words begin below it. */
 @media (max-width: 759px) {
-  .first-screen { padding-top: 38svh; }
+  .first-screen { padding-top: 46svh; }
 }
 
 /* On the index pages the opening (title, figures, search and topics) is
@@ -1995,7 +1995,7 @@ html,body{overflow-x:clip;}
     grid-template-rows: auto 1fr auto auto;
     min-height: calc(100svh - var(--head-h, 4.5rem) - var(--main-pt, 2rem));
     padding-top: var(--space-xl);
-    padding-bottom: var(--space-2xl);
+    padding-bottom: var(--space-lg);
   }
 
   .first-screen > .mast {
@@ -2364,7 +2364,7 @@ pre,
 .seek-lead {
   flex: none;
   font-family: var(--font-display);
-  font-size: var(--fs-statement);
+  font-size: var(--fs-h3);
   font-weight: var(--fw-light);
   line-height: var(--lh-tight);
   letter-spacing: var(--track-tight);
@@ -2372,7 +2372,7 @@ pre,
 }
 
 .seek:has(.seek-lead) input {
-  font-size: var(--fs-statement);
+  font-size: var(--fs-h3);
   font-weight: var(--fw-light);
   line-height: var(--lh-tight);
 }
@@ -2564,6 +2564,15 @@ pre,
   list-style: none;
   user-select: none;
   transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+
+/* On a phone the button is a quieter, smaller pill. */
+@media (max-width: 759px) {
+  .why summary {
+    gap: var(--space-1-5);
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--fs-micro);
+  }
 }
 
 .why summary::-webkit-details-marker {
