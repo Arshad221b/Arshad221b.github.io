@@ -94,7 +94,7 @@ import PlateCredit from './PlateCredit.astro';
   var tick = 0;
   var images = [], targets = [], idx = 0, phase = 'form', t0 = 0;
   var mx = -1e4, my = -1e4, INK = [34, 28, 22], RGB = 0;
-  var buf, bctx, pix, p32;
+  var buf, bctx, pix, p32, BW = 0, BH = 0;
 
   function size() {
     dpr = Math.min(2, devicePixelRatio || 1);
@@ -104,9 +104,11 @@ import PlateCredit from './PlateCredit.astro';
     ctx.imageSmoothingEnabled = false;
     // Particles are plotted straight into a pixel buffer and drawn up in one
     // call: the cost hardly grows with the number of dots.
-    buf = document.createElement('canvas'); buf.width = W; buf.height = H;
-    bctx = buf.getContext('2d'); pix = bctx.createImageData(W, H); p32 = new Uint32Array(pix.data.buffer);
-    var n = W < 760 ? 9000 : W < 1500 ? 18000 : 28000;
+    // At the screen's own density (up to 2x), so a phone's dots stay fine.
+    BW = Math.round(W * dpr); BH = Math.round(H * dpr);
+    buf = document.createElement('canvas'); buf.width = BW; buf.height = BH;
+    bctx = buf.getContext('2d'); pix = bctx.createImageData(BW, BH); p32 = new Uint32Array(pix.data.buffer);
+    var n = W < 760 ? 14000 : W < 1500 ? 18000 : 28000;
     if (n !== N) {
       N = n;
       var F = function () { return new Float32Array(N); };
@@ -176,7 +178,7 @@ import PlateCredit from './PlateCredit.astro';
   // placed in the drawing's area and fading out towards its edge.
   function sample(im) {
     var a = art.getBoundingClientRect(), c = canvas.getBoundingClientRect();
-    var k = Math.min(a.width / im.width, a.height / im.height) * 0.5;   // read at half size
+    var k = Math.min(a.width / im.width, a.height / im.height) * (W < 760 ? 1 : 0.5);   // small screens read at full size
     var w = Math.max(1, Math.round(im.width * k)), h = Math.max(1, Math.round(im.height * k));
     var o = document.createElement('canvas'); o.width = w; o.height = h;
     var g = o.getContext('2d', { willReadFrequently: true });
@@ -193,13 +195,13 @@ import PlateCredit from './PlateCredit.astro';
       v *= r <= 0.62 ? 1 : r >= 1 ? 0 : 1 - (r - 0.62) / 0.38;
       if (v > 0.22) { cx.push(x); cy.push(y); cv.push(Math.min(1, v)); }
     }
-    var s = 1 / (k * 2), ox = a.left - c.left + (a.width - w * 2) / 2, oy = a.top - c.top + (a.height - h * 2) / 2;
+    var up = W < 760 ? 1 : 2, ox = a.left - c.left + (a.width - w * up) / 2, oy = a.top - c.top + (a.height - h * up) / 2;
     var T = { x: new Float32Array(N), y: new Float32Array(N), a: new Float32Array(N) };
     for (var j = 0, tries = 0; j < N && cx.length && tries < N * 40; tries++) {
       var r2 = (Math.random() * cx.length) | 0;
       if (Math.random() > cv[r2]) continue;
-      T.x[j] = ox + (cx[r2] + Math.random()) * 2;
-      T.y[j] = oy + (cy[r2] + Math.random()) * 2;
+      T.x[j] = ox + (cx[r2] + Math.random()) * up;
+      T.y[j] = oy + (cy[r2] + Math.random()) * up;
       T.a[j] = 0.35 + cv[r2] * 0.65;
       j++;
     }
@@ -342,7 +344,7 @@ import PlateCredit from './PlateCredit.astro';
       fx[i] *= 0.9; fy[i] *= 0.9;
       var al = ca[i];
       if (al > 0.04) {
-        var bx = px[i] + fx[i], by = py[i] + fy[i], A = al * 225;
+        var bx = px[i] + fx[i], by = py[i] + fy[i], A = al * (dpr > 1 ? 255 : 225);
         plot(bx, by, A);
         if (echo) {
           var ea = A * 0.5;
@@ -359,9 +361,9 @@ import PlateCredit from './PlateCredit.astro';
 
   // One dot, darkest wins where two land on the same pixel.
   function plot(x, y, A) {
-    var ix = x | 0, iy = y | 0;
-    if (ix < 0 || iy < 0 || ix >= W || iy >= H) return;
-    var q = iy * W + ix, a = A | 0;
+    var ix = (x * dpr) | 0, iy = (y * dpr) | 0;
+    if (ix < 0 || iy < 0 || ix >= BW || iy >= BH) return;
+    var q = iy * BW + ix, a = A | 0;
     if ((p32[q] >>> 24) < a) p32[q] = ((a << 24) | RGB) >>> 0;
   }
 
