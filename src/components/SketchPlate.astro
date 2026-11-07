@@ -384,8 +384,9 @@ import PlateCredit from './PlateCredit.astro';
     bctx.putImageData(pix, 0, 0);
     ctx.clearRect(0, 0, W, H);
     ctx.drawImage(buf, 0, 0, W, H);
-    // The clean lines, washed in under the settling dots and out as they let go.
-    var wash = hold * hold * hold * 0.62;
+    // The clean lines: only once the dots have fully settled, faint enough
+    // that it still reads as dots, and gone soon after they let go.
+    var wash = phase === 'hold' ? smooth(e / 1200) * 0.36 : phase === 'let' ? (1 - smooth(e / 700)) * 0.36 : 0;
     if (curT && wash > 0.01) {
       if (!curT.ink) inkOf(curT);
       ctx.globalAlpha = wash;
