@@ -1,118 +1,77 @@
 ---
-import { img } from '../../../lib/media';
-import Layout from '../../../layouts/Layout.astro';
+import NotebookFront from '../../../components/NotebookFront.astro';
 import { experiment, days } from '../../../data/neuroscience-days';
+import { notebooks } from '../../../lib/notebooks';
 
-const title = "Understanding the Visual Cortex | Notebooks | Arshad Kazi";
+const base = '/notebooks/neuroscience';
 
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00');
-  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-}
+// The strands this notebook runs along, and which days cover each.
+const STAGES = [
+  {
+    "name": "Retina and LGN",
+    "io": "light → signals"
+  },
+  {
+    "name": "Edges in V1",
+    "io": "signals → edges"
+  },
+  {
+    "name": "Context",
+    "io": "neighbours shape responses"
+  },
+  {
+    "name": "Two streams",
+    "io": "where vs what"
+  },
+  {
+    "name": "Depth",
+    "io": "two eyes → distance"
+  },
+  {
+    "name": "Recognition",
+    "io": "seeing → knowing"
+  },
+  {
+    "name": "The whole system",
+    "io": "how it all connects"
+  }
+];
+const nb = notebooks.find(n => n.slug === 'neuroscience')!;
+const written = nb.days.filter(d => d.href);
+const SYLLABUS: { topic: string; day?: number }[][] = [
+  [{"topic": "How the brain begins processing vision", "day": 1}],
+  [{"topic": "V1 — First Step of Intermediate Visual Processing", "day": 3}, {"topic": "Three Signals That Resolve Visual Ambiguity", "day": 3}, {"topic": "Evolution of Edge Detection Across Species", "day": 3}, {"topic": "The Brain Only Responds to Edges", "day": 5}],
+  [{"topic": "Contextual Modulation", "day": 4}, {"topic": "Inhibitory Surround — End-Stopping", "day": 4}, {"topic": "Moving Stimuli & Saccades", "day": 4}, {"topic": "Classical vs Non-Classical Receptive Fields", "day": 5}, {"topic": "Horizontal Connections & Feedback", "day": 5}, {"topic": "Colour & Brightness Are Not Fixed", "day": 5}],
+  [{"topic": "Dorsal Stream — \"Where / How\"", "day": 2}, {"topic": "Ventral Stream — \"What\"", "day": 2}, {"topic": "Dorsal Stream — Complete Architecture", "day": 7}, {"topic": "Ventral Stream — Complete Architecture", "day": 7}],
+  [{"topic": "Three Types of Depth Neurons", "day": 5}, {"topic": "The Occlusion Problem — Amodal Completion", "day": 5}, {"topic": "Kanizsa Triangles — Seeing Edges That Don't Exist", "day": 5}, {"topic": "Global Correspondence Problem — V1 to V2", "day": 5}, {"topic": "Disparity Capture — Depth Propagates Across Surfaces", "day": 5}, {"topic": "Da Vinci Stereopsis", "day": 5}, {"topic": "Monocular Cues — Depth With One Eye", "day": 5}, {"topic": "Border Ownership — Image Segmentation in V2", "day": 5}],
+  [{"topic": "The High-Level Visual Pipeline", "day": 6}, {"topic": "V4 — Shape, Colour Constancy & the Beginning of Invariance", "day": 6}, {"topic": "Posterior IT — Complete Object Representation (Perception)", "day": 6}, {"topic": "IT Cortical Columns — The Architecture of Object Knowledge", "day": 6}, {"topic": "Population Coding — How IT Actually Recognises Objects", "day": 6}, {"topic": "Damage to Posterior IT — Apperceptive Agnosia", "day": 6}, {"topic": "Anterior IT — Where Percepts Connect to Meaning", "day": 6}, {"topic": "Prosopagnosia — The Face Case", "day": 6}, {"topic": "Category-Specific Agnosias", "day": 6}, {"topic": "Amygdala & Hippocampus — Vision Becomes Cognition", "day": 6}],
+  [{"topic": "Perceptual Learning", "day": 5}, {"topic": "Pop-Out & Visual Search", "day": 5}, {"topic": "Attention — The Final Gate", "day": 5}, {"topic": "Reflections — What the Brain Teaches Us About Computer Vision", "day": 7}],
+];
+// A day covers every strand it wrote a topic in.
+const DAY_STAGES: Record<number, number[]> = {};
+SYLLABUS.forEach((g, i) => g.forEach(t => { if (t.day) (DAY_STAGES[t.day] ??= []).includes(i) || DAY_STAGES[t.day].push(i); }));
+const dateOf = Object.fromEntries(days.map(d => [d.day, d.date]));
+const sectionsOf = Object.fromEntries(days.map(d => [d.day, (d as { sections?: { title: string }[] }).sections ?? []]));
 
-function formatDateLong(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00');
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-}
-
-const activeDays = days.filter(d => d.bullets.length > 0);
+const frontDays = written.map(d => ({ day: d.day, date: dateOf[d.day], title: d.title, minutes: d.minutes, href: d.href!, stages: DAY_STAGES[d.day] ?? [] }));
+const index = written.flatMap(d => [
+  { term: d.title, kind: 'step' as const, day: d.day, href: d.href! },
+  ...sectionsOf[d.day].map(sec => ({ term: sec.title, kind: 'step' as const, day: d.day, href: d.href! })),
+]);
 ---
 
-<Layout title={title} activeNav="/blog" description="Curiosity-driven daily study of neuroscience. 7-day tiny experiment." ogImage={img("/images/blog/notebook-neuroscience.jpg")}>
-  <div class="experiment-page">
-    <a href="/blog" class="back-link">&larr; Blogs</a>
-
-    <div class="experiment-page-header">
-      <div class="experiment-title-row">
-        <h1>{experiment.title}</h1>
-        <span class={`experiment-status ${experiment.status}`}>
-          {experiment.status === 'active' ? 'In Progress' : 'Completed'}
-        </span>
-      </div>
-      <p class="experiment-page-meta">
-        {experiment.duration} &middot; {experiment.commitment} &middot; Started {formatDateLong(experiment.startDate)}
-      </p>
-    </div>
-
-    <div class="experiment-intro">
-      <div class="intro-origin">
-        <h3>The Spark</h3>
-        <p>
-          I read <a href="https://en.wikipedia.org/wiki/Phantoms_in_the_Brain" target="_blank"><em>Phantoms in the Brain</em></a> by V.S. Ramachandran and was blown away. Phantom limbs, visual agnosias, the fact that perception is essentially a controlled hallucination. His <a href="https://youtu.be/Rl2LwnaUA-k?si=cSQDHEfYbyC-7N1D" target="_blank">TED talk</a> made me want to dig deeper into the visual cortex specifically, since that's the part of the brain closest to what I work on in computer vision.
-        </p>
-        <p>
-          The question that started it all: <strong>how does the brain process what the eye sees?</strong>
-        </p>
-      </div>
-
-      <div class="intro-rules">
-        <h3>The Rules</h3>
-        <ul class="rules-list">
-          <li>1 hour/day, 1 topic, 1 question</li>
-          <li>Each day's question comes from the previous day's gaps</li>
-          <li>No syllabus, follow whatever is most interesting</li>
-        </ul>
-      </div>
-
-      <div class="intro-setup">
-        <h3>Experimental Setup</h3>
-        <div class="setup-steps">
-          <div class="setup-step">
-            <span class="setup-number">1</span>
-            <div class="setup-content">
-              <strong>Ask the question</strong>
-              <span>Start with whatever I was most curious about, then ask AI models to get a high-level map of the key concepts. Claude was significantly more useful than ChatGPT here, better at distilling complex neuroscience into clear mental models</span>
-            </div>
-          </div>
-          <div class="setup-step">
-            <span class="setup-number">2</span>
-            <div class="setup-content">
-              <strong>Go to the source</strong>
-              <span>Dive deep into the textbook, <em>Principles of Neural Science</em>, chapters 23 &amp; 24 on intermediate and high-level visual processing. The textbook language was dense, so I used AI to distil difficult passages into something I could actually absorb in an hour</span>
-            </div>
-          </div>
-          <div class="setup-step">
-            <span class="setup-number">3</span>
-            <div class="setup-content">
-              <strong>Write by hand</strong>
-              <span>Handwritten notes in an A5 notebook with a fountain pen (black ink, fine nib). No AI, no typing. ~13 pages of rather small handwriting by the end. Forces real understanding, not just pattern matching</span>
-            </div>
-          </div>
-          <div class="setup-step">
-            <span class="setup-number">4</span>
-            <div class="setup-content">
-              <strong>Publish</strong>
-              <span>Upload the handwritten notes to AI to structure them for the website. The writing and understanding is mine. This entire website section was designed and built by agentic models (entirely vibe coded)</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="experiment-progress">
-      <div class="progress-track">
-        {Array.from({ length: 7 }, (_, i) => {
-          const hasEntry = days.some(d => d.day === i + 1 && d.bullets.length > 0);
-          return <div class={`progress-dot ${hasEntry ? 'filled' : ''}`} />;
-        })}
-      </div>
-      <span class="progress-label">{activeDays.length} / 7 days</span>
-    </div>
-
-    <div class="day-list">
-      {activeDays.map(day => (
-        <a href={`/notebooks/neuroscience/day-${day.day}`} class="day-card">
-          <div class="day-card-header">
-            <span class="day-card-number">Day {day.day}</span>
-            <span class="day-card-date">{formatDate(day.date)}</span>
-          </div>
-          <h3 class="day-card-title">{day.curiosityTitle}</h3>
-          <p class="day-card-summary">{day.summary}</p>
-          <span class="day-card-link">Read more &rarr;</span>
-        </a>
-      ))}
-    </div>
-
+<NotebookFront
+  title={experiment.title}
+  description="Curiosity-driven daily study of neuroscience. 7-day tiny experiment."
+  status={experiment.status === 'active' ? 'active' : 'complete'}
+  startDate={experiment.startDate}
+  lede="After Ramachandran's Phantoms in the Brain, I wanted to know how the brain turns light on the retina into what we see. The visual pathway from eye to cortex, the part of the brain closest to my work in computer vision."
+  days={frontDays}
+  stages={STAGES}
+  syllabus={SYLLABUS.map(g => g.map(t => ({ topic: t.topic, href: t.day ? `${base}/day-${t.day}` : undefined })))}
+  index={index}
+>
+  <Fragment slot="conclusion">
     <div class="experiment-conclusion">
       <h2>So, how does the brain process what the eye sees?</h2>
       <p>
@@ -125,14 +84,8 @@ const activeDays = days.filter(d => d.bullets.length > 0);
         The whole journey, from photon hitting the retina to a fully contextualised, emotionally-tagged memory, takes roughly 150 milliseconds.
       </p>
     </div>
-
-    {activeDays.length === 0 && (
-      <div class="experiment-empty">
-        <p>No entries yet. Day 1 starts today.</p>
-      </div>
-    )}
-  </div>
-</Layout>
+  </Fragment>
+</NotebookFront>
 
 <style>
 </style>

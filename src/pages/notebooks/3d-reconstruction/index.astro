@@ -1,67 +1,119 @@
 ---
-import { img } from '../../../lib/media';
-import Layout from '../../../layouts/Layout.astro';
-import { experiment, days } from '../../../data/3d-reconstruction-days';
+/* 3D Reconstruction: the notebook's front page, on the shared layout.
+   Everything is read from the day data except the syllabus below, which
+   lists what each stage involves; a topic gets a day once it's written. */
+import NotebookFront from '../../../components/NotebookFront.astro';
+import type { IndexEntry } from '../../../components/NotebookFront.astro';
+import { experiment, days, STAGES } from '../../../data/3d-reconstruction-days';
+import type { Block } from '../../../data/3d-reconstruction-days';
+import { notebooks } from '../../../lib/notebooks';
 
-const title = "3D Reconstruction | Notebooks | Arshad Kazi";
+const base = '/notebooks/3d-reconstruction';
 
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00');
-  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-}
+// What each stage takes in and gives back.
+const STAGE_IO = [
+  "photos → keypoints",
+  "keypoints → matches",
+  "matches → relative pose",
+  "poses + matches → 3D points",
+  "more photos → all cameras",
+  "rough model → refined model",
+  "refined model → surfaces",
+];
 
-function formatDateLong(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00');
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-}
+// What each stage involves. A topic with a day has been written up there.
+const SYLLABUS: { topic: string; day?: number; step?: number }[][] = [
+  [
+    { topic: "Gaussian scale space and DoG", day: 1, step: 1 },
+    { topic: "Extrema across space and scale", day: 1, step: 2 },
+    { topic: "Sub-pixel localisation", day: 1, step: 3 },
+    { topic: "Edge rejection with the Hessian", day: 1, step: 4 },
+    { topic: "Orientation assignment", day: 1, step: 5 },
+    { topic: "The SIFT descriptor", day: 1, step: 6 },
+    { topic: "Harris corners and the structure tensor" },
+    { topic: "Binary features: ORB" },
+    { topic: "Learned features: SuperPoint" },
+  ],
+  [
+    { topic: "Nearest neighbours and the ratio test", day: 1, step: 7 },
+    { topic: "RANSAC", day: 1, step: 7 },
+    { topic: "Approximate search: k-d trees, FLANN" },
+    { topic: "Learned matching: SuperGlue, LightGlue" },
+  ],
+  [
+    { topic: "The pinhole camera and intrinsics K" },
+    { topic: "Epipolar geometry" },
+    { topic: "Fundamental matrix and the 8-point algorithm" },
+    { topic: "Essential matrix and the 5-point algorithm" },
+    { topic: "Homographies and degenerate scenes" },
+    { topic: "Recovering R and t from E" },
+  ],
+  [
+    { topic: "Linear triangulation (DLT)" },
+    { topic: "The midpoint method" },
+    { topic: "Reprojection error" },
+    { topic: "Points in front of both cameras" },
+  ],
+  [
+    { topic: "Building tracks across many views" },
+    { topic: "Incremental SfM" },
+    { topic: "Registering new cameras: PnP" },
+    { topic: "Global SfM" },
+  ],
+  [
+    { topic: "Reprojection error as the objective" },
+    { topic: "Levenberg–Marquardt" },
+    { topic: "Sparsity and the Schur complement" },
+    { topic: "Robust losses" },
+  ],
+  [
+    { topic: "Plane-sweep stereo" },
+    { topic: "PatchMatch multi-view stereo" },
+    { topic: "Depth-map fusion" },
+    { topic: "Meshing: Poisson reconstruction" },
+  ],
+];
 
-const activeDays = days.filter(d => d.bullets.length > 0);
+const minutesOf = Object.fromEntries(
+  (notebooks.find(n => n.slug === '3d-reconstruction')?.days ?? []).map(d => [d.day, d.minutes]),
+);
+const tangents = (blocks: Block[] = []): string[] =>
+  blocks.flatMap(b => (b.kind === 'tangent' ? [b.title, ...tangents(b.blocks)] : []));
+const written = days.filter(d => d.steps.length > 0);
+
+const frontDays = written.map(d => {
+  const parts: string[] = [];
+  for (const st of d.steps) if (parts[parts.length - 1] !== st.act) parts.push(st.act);
+  return { day: d.day, date: d.date, title: d.curiosityTitle, minutes: minutesOf[d.day] ?? 0, href: `${base}/day-${d.day}`, parts, stages: d.stages };
+});
+
+const index: IndexEntry[] = written.flatMap(d => [
+  ...tangents(d.intro).map(t => ({ term: t, kind: 'tangent' as const, day: d.day, href: `${base}/day-${d.day}` })),
+  ...d.steps.flatMap(st => [
+    { term: st.title, kind: 'step' as const, day: d.day, href: `${base}/day-${d.day}#step-${st.n}` },
+    ...tangents(st.blocks).map(t => ({ term: t, kind: 'tangent' as const, day: d.day, href: `${base}/day-${d.day}#step-${st.n}` })),
+  ]),
+]);
+
+const formulas = written.flatMap(d => d.steps.flatMap(st =>
+  st.blocks.filter(b => b.kind === 'eq').map(b => ({
+    tex: (b as { tex: string }).tex,
+    label: `${d.day}.${st.n} · ${st.title}`,
+    href: `${base}/day-${d.day}#step-${st.n}`,
+  })),
+));
 ---
 
-<Layout title={title} activeNav="/blog" description="Geometry-based 3D reconstruction from images: camera models, epipolar geometry, triangulation and structure from motion." ogImage={img("/images/blog/notebook-3d-reconstruction.jpg")}>
-  <div class="experiment-page">
-    <a href="/blog" class="back-link">&larr; Blogs</a>
-
-    <div class="experiment-page-header">
-      <div class="experiment-title-row">
-        <h1>{experiment.title}</h1>
-        <span class={`experiment-status ${experiment.status}`}>
-          {experiment.status === 'active' ? 'In Progress' : 'Completed'}
-        </span>
-      </div>
-      <p class="experiment-page-meta">
-        Started {formatDateLong(experiment.startDate)}
-      </p>
-    </div>
-
-    <div class="experiment-intro">
-      <div class="intro-origin">
-        <h3>The Spark</h3>
-        <p>Just starting. Notes land here as the days go.</p>
-      </div>
-    </div>
-
-    <div class="day-list">
-      {activeDays.map(day => (
-        <a href={`/notebooks/3d-reconstruction/day-${day.day}`} class="day-card">
-          <div class="day-card-header">
-            <span class="day-card-number">Day {day.day}</span>
-            <span class="day-card-date">{formatDate(day.date)}</span>
-          </div>
-          <h3 class="day-card-title">{day.curiosityTitle}</h3>
-          <p class="day-card-summary">{day.summary}</p>
-          <span class="day-card-link">Read more &rarr;</span>
-        </a>
-      ))}
-    </div>
-
-    {activeDays.length === 0 && (
-      <div class="experiment-empty">
-        <p>No entries yet. Day 1 starts tomorrow.</p>
-      </div>
-    )}
-  </div>
-</Layout>
-
-<style>
-</style>
+<NotebookFront
+  title={experiment.title}
+  description={experiment.description}
+  status={experiment.status === 'active' ? 'active' : 'complete'}
+  startDate={experiment.startDate}
+  lede="How do overlapping photos become a 3D model with geometry alone? Working through the classical pipeline one stage at a time: features, matching, two-view geometry, triangulation, structure from motion, bundle adjustment, dense reconstruction."
+  days={frontDays}
+  stages={STAGES.map((name, i) => ({ name, io: STAGE_IO[i] }))}
+  syllabus={SYLLABUS.map(g => g.map(t => ({ topic: t.topic, href: t.day ? `${base}/day-${t.day}${t.step ? `#step-${t.step}` : ''}` : undefined })))}
+  formulas={formulas}
+  index={index}
+  open={written.flatMap(d => d.questions.map(q => ({ q, day: d.day, href: `${base}/day-${d.day}` })))}
+/>

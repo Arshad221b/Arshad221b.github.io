@@ -1,0 +1,511 @@
+---
+/* The front page every notebook shares.
+
+   A notebook is a run of days on one subject. The page shows how far it
+   has got (coverage of its stages, when it has stages), what it involves
+   (a syllabus, when it has one), the equations so far, an A to Z index of
+   everything written, and the questions still open. Each section appears
+   only when the notebook has something for it. The notebook's own words,
+   why it began and what it concluded, come in through the intro and
+   conclusion slots. */
+import Layout from '../layouts/Layout.astro';
+
+export interface FrontDay {
+  day: number;
+  date: string;
+  title: string;
+  minutes: number;
+  href: string;
+  parts?: string[];
+  stages?: number[];
+}
+export interface IndexEntry { term: string; kind: 'step' | 'tangent'; day: number; href: string }
+
+interface Props {
+  title: string;
+  description: string;
+  status: 'active' | 'complete';
+  startDate: string;
+  lede: string;
+  days: FrontDay[];
+  stages?: { name: string; io?: string }[];
+  syllabus?: { topic: string; href?: string }[][];
+  formulas?: { tex: string; label: string; href: string }[];
+  index: IndexEntry[];
+  open?: { q: string; day: number; href: string }[];
+}
+const { title, description, status, startDate, lede, days, stages = [], syllabus = [], formulas = [], index, open = [] } = Astro.props;
+
+const formatDate = (d: string) =>
+  new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const formatLong = (d: string) =>
+  new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+const covered = stages.map((_, i) => days.some(d => d.stages?.includes(i)));
+const reached = covered.filter(Boolean).length;
+const next = status === 'active' ? covered.findIndex(c => !c) : -1;
+const totalMinutes = days.reduce((n, d) => n + d.minutes, 0);
+const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+
+const sortKey = (t: string) => t.replace(/^(what|why|wait|how)\b[^a-z]*/i, '').replace(/^(is|on earth is|there are|the|a|an)\s+/i, '').replace(/^(the|a|an|two)\s+/i, '');
+const entries = [...index].sort((a, b) => sortKey(a.term).localeCompare(sortKey(b.term)));
+const letterOf = (t: string) => { const c = sortKey(t).replace(/^[^a-z0-9]+/i, '')[0] ?? '#'; return /[a-z]/i.test(c) ? c.toUpperCase() : '#'; };
+const letters = [...new Set(entries.map(e => letterOf(e.term)))];
+const topics = syllabus.flat();
+const hasIntro = Astro.slots.has('intro');
+const hasConclusion = Astro.slots.has('conclusion');
+---
+
+<Layout title={`${title} | Notebooks | Arshad Kazi`} activeNav="/blog" description={description}>
+  <div class="experiment-page nb">
+    <a href="/blog" class="back-link">&larr; Blogs</a>
+
+    <header class="nb-head">
+      <p class="nb-kicker">
+        <span class="nb-live">{status === 'active' ? 'In progress' : 'Complete'}</span>
+        <span>Since {formatLong(startDate)}</span>
+        <span>{days.length} {days.length === 1 ? 'day' : 'days'} · {totalMinutes} min</span>
+      </p>
+      <h1 class="nb-title">{title}</h1>
+      <p class="nb-lede">{lede}</p>
+    </header>
+
+    <nav class="nb-nav" aria-label="On this page">
+      {hasIntro && <a href="#intro-h">Why</a>}
+      <a href="#map-h">{stages.length ? 'Coverage' : 'Days'}</a>
+      {topics.length > 0 && <a href="#syl-h">Syllabus</a>}
+      {formulas.length > 0 && <a href="#eq-h">Formulas</a>}
+      {entries.length > 0 && <a href="#index-h">Index</a>}
+      {open.length > 0 && <a href="#open-h">Open</a>}
+      {hasConclusion && <a href="#end-h">Conclusion</a>}
+    </nav>
+
+    {hasIntro && (
+      <section class="nb-section nb-slot" aria-labelledby="intro-h">
+        <div class="nb-h"><h2 id="intro-h">Why</h2><p>How this notebook started</p></div>
+        <slot name="intro" />
+      </section>
+    )}
+
+    <section class="nb-section" aria-labelledby="map-h">
+      <div class="nb-h">
+        <h2 id="map-h">{stages.length ? 'Coverage' : 'Days'}</h2>
+        {stages.length
+          ? <p>{reached} of {stages.length} {stages.length && status === 'active' ? 'stages' : 'strands'} covered{next >= 0 && <> · next: <strong>{stages[next].name}</strong></>}</p>
+          : <p>{days.length} {days.length === 1 ? 'day' : 'days'}, in the order they were written</p>}
+      </div>
+
+      <div class="map" style={`--n: ${stages.length}`}>
+        {stages.length > 0 && (
+          <div class="map-head">
+            <div class="map-corner">Day</div>
+            {stages.map((s, i) => (
+              <div class:list={['map-stage', { done: covered[i], next: i === next }]} title={s.io}>
+                <span class="map-num">{i + 1}</span>
+                <span class="map-name">{s.name}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {days.map(d => (
+          <a class:list={['map-row', { 'no-stages': !stages.length }]} href={d.href}>
+            <div class="map-day">
+              <span class="map-day-n">{String(d.day).padStart(2, '0')}</span>
+              <span class="map-day-meta">{formatDate(d.date)} · {d.minutes} min</span>
+              <span class="map-day-t">{d.title}</span>
+              {d.parts && d.parts.length > 0 && (
+                <span class="map-day-parts">{d.parts.map((p, i) => <span>{roman[i]} {p}</span>)}</span>
+              )}
+            </div>
+            {stages.map((_, i) => (
+              <div class:list={['map-cell', { on: d.stages?.includes(i) }]}></div>
+            ))}
+          </a>
+        ))}
+
+        {next >= 0 && (
+          <div class="map-row map-row-next">
+            <div class="map-day">
+              <span class="map-day-n">{String(days.length + 1).padStart(2, '0')}</span>
+              <span class="map-day-t">Not written yet</span>
+            </div>
+            {stages.map((_, i) => <div class:list={['map-cell', { next: i === next }]}></div>)}
+          </div>
+        )}
+      </div>
+    </section>
+
+    {topics.length > 0 && (
+      <section class="nb-section" aria-labelledby="syl-h">
+        <div class="nb-h">
+          <h2 id="syl-h">Syllabus</h2>
+          <p>{topics.filter(t => t.href).length} of {topics.length} topics written up</p>
+        </div>
+        <ol class="syl">
+          {syllabus.map((group, i) => (
+            <li class:list={['syl-stage', { next: i === next }]}>
+              <div class="syl-head">
+                <span class="syl-n">{i + 1}</span>
+                <span class="syl-name">{stages[i]?.name}</span>
+                <span class="syl-count">{group.filter(t => t.href).length}/{group.length}</span>
+              </div>
+              <ul class="syl-topics">
+                {group.map(t => (
+                  <li class:list={{ done: !!t.href }}>
+                    {t.href ? <a href={t.href}>{t.topic}</a> : <span>{t.topic}</span>}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
+
+    {formulas.length > 0 && (
+      <section class="nb-section" aria-labelledby="eq-h">
+        <div class="nb-h">
+          <h2 id="eq-h">Formulas</h2>
+          <p>Every equation so far, in the order it came up</p>
+        </div>
+        <ol class="eqs">
+          {formulas.map(f => (
+            <li>
+              <a class="eq-src" href={f.href}>{f.label}</a>
+              <div class="eq-tex" set:html={'$$' + f.tex + '$$'} />
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
+
+    {entries.length > 0 && (
+      <section class="nb-section" aria-labelledby="index-h">
+        <div class="nb-h">
+          <h2 id="index-h">Index</h2>
+          <p>Everything written, <span class="ix-t-key">tangents</span> included, A to Z</p>
+        </div>
+        <div class="ix">
+          {letters.map(L => (
+            <div class="ix-group">
+              <p class="ix-letter">{L}</p>
+              <ul>
+                {entries.filter(e => letterOf(e.term) === L).map(e => (
+                  <li class:list={{ 'ix-t': e.kind === 'tangent' }}>
+                    <a href={e.href}>{e.term}</a>
+                    <span class="ix-day">{e.day}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {open.length > 0 && (
+      <section class="nb-section" aria-labelledby="open-h">
+        <div class="nb-h">
+          <h2 id="open-h">Open</h2>
+          <p>Questions the notes haven't answered yet</p>
+        </div>
+        <ol class="open">
+          {open.map(o => <li><span set:html={o.q} /> <a href={o.href}>day {o.day}</a></li>)}
+        </ol>
+      </section>
+    )}
+
+    {hasConclusion && (
+      <section class="nb-section nb-slot" aria-labelledby="end-h">
+        <div class="nb-h"><h2 id="end-h">Conclusion</h2><p>Where it ended up</p></div>
+        <slot name="conclusion" />
+      </section>
+    )}
+  </div>
+</Layout>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+<script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script is:inline>
+  document.addEventListener("DOMContentLoaded", function () {
+    renderMathInElement(document.querySelector(".nb"), {
+      delimiters: [{ left: "$$", right: "$$", display: true }, { left: "$", right: "$", display: false }],
+      throwOnError: false,
+    });
+  });
+</script>
+
+<style>
+  .nb { --line: var(--color-border); }
+
+  /* ── Head ── */
+  .nb-head { margin-bottom: var(--space-8); }
+  .nb-kicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: var(--fs-label);
+    text-transform: uppercase;
+    letter-spacing: var(--track-label);
+    color: var(--color-text-muted);
+  }
+  .nb-live {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    color: var(--color-accent);
+  }
+  .nb-live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--color-accent); }
+  .nb-title {
+    margin: var(--space-4) 0 var(--space-4);
+    font-family: var(--font-display);
+    font-weight: var(--fw-display);
+    font-size: var(--fs-display);
+    line-height: var(--lh-display);
+    color: var(--color-text);
+  }
+  .nb-lede {
+    max-width: 30em;
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-ui);
+    color: var(--color-text-secondary);
+  }
+
+  /* ── Section heads: name left, a line of context right ── */
+  .nb-section { margin-top: var(--space-8); }
+  .nb-h {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-2) var(--space-4);
+    padding-bottom: var(--space-2);
+    margin-bottom: var(--space-4);
+    border-bottom: 1px solid var(--line);
+  }
+  .nb-h h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: var(--fw-regular);
+    font-size: var(--fs-h2);
+    line-height: var(--lh-tight);
+    color: var(--color-text);
+  }
+  .nb-h p { margin: 0; font-family: var(--font-sans); font-size: var(--fs-small); color: var(--color-text-muted); }
+  .nb-h strong { font-weight: var(--fw-regular); color: var(--color-accent); }
+
+  /* ── Coverage map ── */
+  .map { display: grid; font-family: var(--font-sans); }
+  .map-head,
+  .map-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) repeat(var(--n), 3.4rem);
+  }
+  .map-head { border-bottom: 1px solid var(--line); }
+  .map-corner {
+    align-self: end;
+    padding: 0 0 var(--space-2);
+    font-size: var(--fs-label);
+    text-transform: uppercase;
+    letter-spacing: var(--track-label);
+    color: var(--color-text-muted);
+  }
+  .map-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    padding: 0 0 var(--space-2);
+    border-left: 1px solid var(--line);
+    color: var(--color-text-muted);
+  }
+  .map-num { font-family: var(--font-display); font-size: var(--fs-lead); line-height: var(--lh-none); }
+  .map-name {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    height: 11.5rem;
+    font-size: var(--fs-label);
+    line-height: var(--lh-snug);
+    white-space: nowrap;
+    color: var(--color-text-secondary);
+  }
+  .map-stage.done .map-num { color: var(--color-accent); }
+  .map-stage.done .map-name { color: var(--color-text); }
+  .map-stage.next .map-num { color: var(--color-accent); opacity: 0.6; }
+
+  .map-row {
+    border-bottom: 1px solid var(--line);
+    color: inherit;
+    text-decoration: none;
+  }
+  a.map-row:hover .map-day-t { color: var(--color-accent); }
+  a.map-row:hover .map-cell.on { opacity: 0.85; }
+  .map-day {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4) var(--space-4) var(--space-4) 0;
+  }
+  .map-day-n { font-family: var(--font-display); font-size: var(--fs-h1); line-height: var(--lh-none); color: var(--color-accent); }
+  .map-day-meta { font-size: var(--fs-label); text-transform: uppercase; letter-spacing: var(--track-label); color: var(--color-text-muted); }
+  .map-day-t { font-family: var(--font-display); font-size: var(--fs-h3); line-height: var(--lh-snug); color: var(--color-text); }
+  .map-day-parts { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); font-size: var(--fs-label); color: var(--color-text-muted); }
+  .map-cell { position: relative; border-left: 1px solid var(--line); }
+  .map-cell.on { background: var(--color-accent); }
+  .map-row.no-stages,
+  .map-head.no-stages { grid-template-columns: 1fr; }
+  .nb-slot { margin-top: var(--space-8); }
+  .map-cell.next {
+    background: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--color-accent) 35%, transparent) 6px 7px);
+  }
+  .map-row-next .map-day-n { opacity: 0.4; }
+  .map-row-next .map-day-t { font-style: italic; color: var(--color-text-muted); }
+
+  /* ── Contents strip ── */
+  .nb-nav {
+    position: sticky;
+    top: 4.5rem;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    margin: calc(-1 * var(--space-4)) 0 0;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--color-bg);
+    font-family: var(--font-sans);
+    font-size: var(--fs-label);
+    text-transform: uppercase;
+    letter-spacing: var(--track-label);
+  }
+  .nb-nav a { color: var(--color-text-muted); text-decoration: none; }
+  .nb-nav a:hover { color: var(--color-accent); }
+  .nb-section h2 { scroll-margin-top: 8rem; }
+
+  /* ── Syllabus ── */
+  .syl {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: var(--space-6) var(--space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .syl-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding-bottom: var(--space-1-5);
+    margin-bottom: var(--space-2);
+    border-bottom: 1px solid var(--line);
+  }
+  .syl-n { font-family: var(--font-display); font-size: var(--fs-lead); line-height: var(--lh-none); color: var(--color-text-muted); }
+  .syl-name { flex: 1; font-family: var(--font-display); font-size: var(--fs-lead); line-height: var(--lh-snug); color: var(--color-text); }
+  .syl-count { font-family: var(--font-sans); font-size: var(--fs-label); color: var(--color-text-muted); }
+  .syl-stage.next .syl-head { border-bottom-color: var(--color-accent); }
+  .syl-stage.next .syl-n { color: var(--color-accent); }
+  .syl-topics { margin: 0; padding: 0; list-style: none; }
+  .syl-topics li {
+    position: relative;
+    padding: 3px 0 3px var(--space-5);
+    font-family: var(--font-sans);
+    font-size: var(--fs-small);
+    line-height: var(--lh-snug);
+    color: var(--color-text-muted);
+  }
+  .syl-topics li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 0.6em;
+    height: 0.6em;
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+  }
+  .syl-topics li.done::before { border-color: var(--color-accent); background: var(--color-accent); }
+  .syl-topics li.done a { color: var(--color-text); text-decoration: none; }
+  .syl-topics li.done a:hover { color: var(--color-accent); }
+
+  /* ── Formula sheet ── */
+  .eqs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+  .eqs li {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .eq-src {
+    font-family: var(--font-sans);
+    font-size: var(--fs-label);
+    text-transform: uppercase;
+    letter-spacing: var(--track-label);
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+  .eq-src:hover { color: var(--color-accent); }
+  .eq-tex { font-size: var(--fs-small); text-align: center; }
+  .eq-tex :global(.katex-display) { margin: 0; }
+
+  /* ── Index ── */
+  .ix { columns: 2; column-gap: var(--space-8); }
+  .ix-group { break-inside: avoid; margin-bottom: var(--space-4); }
+  .ix-letter {
+    margin: 0 0 var(--space-1);
+    font-family: var(--font-display);
+    font-size: var(--fs-h3);
+    line-height: var(--lh-none);
+    color: var(--color-accent);
+  }
+  .ix ul { margin: 0; padding: 0; list-style: none; }
+  .ix li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding: 3px 0;
+    font-family: var(--font-serif);
+    font-size: var(--fs-ui);
+    line-height: var(--lh-snug);
+  }
+  .ix li::after { content: ""; order: 1; flex: 1; border-bottom: 1px dotted var(--line); transform: translateY(-0.25em); }
+  .ix a { color: var(--color-text); text-decoration: none; }
+  .ix a:hover { color: var(--color-accent); }
+  .ix-t a,
+  .ix-t-key { font-style: italic; }
+  .ix-t a { color: var(--color-text-secondary); }
+  .ix-day { order: 2; font-family: var(--font-sans); font-size: var(--fs-label); color: var(--color-text-muted); }
+
+  /* ── Open ── */
+  .open { margin: 0; padding-left: var(--space-5); }
+  .open li { margin-bottom: var(--space-3); font-family: var(--font-serif); font-size: var(--fs-body); line-height: var(--lh-ui); color: var(--color-text-secondary); }
+  .open a { font-family: var(--font-sans); font-size: var(--fs-label); color: var(--color-text-muted); white-space: nowrap; }
+
+  @media (max-width: 760px) {
+    .map-head,
+    .map-row { grid-template-columns: minmax(0, 1fr) repeat(var(--n), 1.4rem); }
+    .map-name { height: 9rem; font-size: var(--fs-micro); }
+    .map-day-parts { display: none; }
+    .map-num { font-size: var(--fs-ui); }
+    .ix { columns: 1; }
+  }
+</style>
