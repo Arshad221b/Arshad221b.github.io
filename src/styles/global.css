@@ -191,7 +191,6 @@ html.dark {
 }
 
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: 5rem;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -2057,6 +2056,13 @@ html,body{overflow-x:clip;}
    headers still stick). Code wraps instead of running off; long
    equations and wide diagrams are scaled down to fit their column by the
    layout's script, never scrolled. */
+/* Smooth only for a jump the reader asked for: a clicked link has focus.
+   On load, on restoring a position, or on a link from another page, the
+   browser lands at once instead of gliding there by itself. */
+@media (prefers-reduced-motion: no-preference) {
+  html:focus-within { scroll-behavior: smooth; }
+}
+
 html {
   /* At the window: iOS Safari honours this one. */
   overflow-x: hidden;
@@ -2085,6 +2091,9 @@ pre,
 .arch-diagram,
 [class*="table-wrap"] {
   overflow-x: hidden !important;
+  /* Clip where supported: hidden would make the other axis a scroll box. */
+  overflow-x: clip !important;
+  overflow-y: visible !important;
 }
 
 /* Hidden on one axis makes the other a scroll box, and tall maths (a

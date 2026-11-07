@@ -18,7 +18,7 @@ const display = (tex: string) => '$$' + tex + '$$';
       <div set:html={display(b.tex)} />
     </div>
   ) : b.kind === 'table' ? (
-    <div class="r-table">
+    <div class="r-table-wrap">
       <table>
         <thead><tr>{b.headers.map(h => <th set:html={h} />)}</tr></thead>
         <tbody>{b.rows.map(r => <tr>{r.map(c => <td set:html={c} />)}</tr>)}</tbody>
