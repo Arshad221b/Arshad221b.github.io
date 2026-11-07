@@ -1,69 +1,60 @@
 ---
-/* Sketches behind a page, one at a time, each drawing itself the way a
-   sketch is built: the darkest strokes first, then the lighter lines and
-   the shading. It holds, fades, and the next begins. It fills about three
-   quarters of the screen from the right and dissolves at its edges into the paper.
+/* Sketches drawing themselves, the way a sketch is built: the darkest
+   strokes first, then the lighter lines and the shading. Each holds,
+   fades, and the next begins.
+
+   'fixed' (Contact): one sketch behind the whole page, faint, filling
+   three quarters of the screen from the right.
+
+   'top' (Blogs, Thoughts): the head of an index page, laid out like an
+   open notebook. One sketch draws in the open middle of the first screen,
+   between the page's name and its sentence; on a wide screen two smaller
+   ones draw beside it, each at its own pace, so the spread fills the
+   width the way a page of Leonardo's would. On a phone it has a band of
+   its own above the words instead of hiding behind them. Scrolling away
+   lifts and fades it, so the list below reads on clean paper.
 
    Each sketch is split once, when it loads, into a few sheets by how dark
-   its ink is, darkest first, with the soft edge already drawn in. The
-   drawing-in is those sheets fading up one after another, and the fade
-   out is the stack fading: only opacity and transform ever change, so the
-   graphics card does all of it and no frame is painted by script. */
+   its ink is, darkest first, with the soft edge already drawn in. Only
+   opacity and transform ever change. */
 interface Props {
   sketches: string[];
-  /* 'top': behind the head of the page only, scrolling away with it, so a
-     long list below reads on clean paper. */
   place?: 'fixed' | 'top';
 }
 const { sketches, place = 'fixed' } = Astro.props;
+const slots = place === 'top' ? ['c', 'l', 'r'] : ['full'];
 ---
 
-<div class={`sketch-bg ${place === 'top' ? 'at-top' : ''}`} aria-hidden="true" data-sketches={JSON.stringify(sketches)}></div>
+<div class={`sketch-bg ${place === 'top' ? 'at-top' : ''}`} aria-hidden="true" data-sketches={JSON.stringify(sketches)}>
+  {slots.map(s => <div class={`sk-slot sk-${s}`}></div>)}
+</div>
 
 <style is:global>
   .sketch-bg {
+    --o: 0.55;
     position: fixed;
     top: 0;
     right: 0;
     width: 72vw;
     height: 100vh;
-    opacity: 0.55;
+    opacity: var(--o);
     pointer-events: none;
     z-index: 0;
+  }
+  .sketch-bg .sk-slot {
+    position: absolute;
+    inset: 0;
     will-change: transform;
     animation: sketch-drift 16s ease-in-out infinite alternate;
   }
-
-  /* Behind an index page's opening, where the middle of the screen is
-     left to it: the whole width, darker, and breathing deeper. */
-  .sketch-bg.at-top {
-    position: absolute;
-    width: 100%;
-    opacity: 0.78;
-    animation-name: sketch-drift-deep;
-    animation-duration: 22s;
-  }
-
-  html.dark .sketch-bg.at-top {
-    opacity: 0.5;
-  }
-
-  @keyframes sketch-drift-deep {
-    from { transform: scale(1) translate(0, 0) rotate(0deg); }
-    to   { transform: scale(1.1) translate(-2vw, 1.5vh) rotate(-0.6deg); }
-  }
-
-  .sketch-bg > div,
+  .sketch-bg .sk-slot > div,
   .sketch-bg canvas {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
   }
-
-  .sketch-bg canvas {
-    opacity: 0;
-  }
+  .sketch-bg canvas { opacity: 0; }
 
   /* A slow breath, so the page never sits quite still. */
   @keyframes sketch-drift {
@@ -71,32 +62,75 @@ const { sketches, place = 'fixed' } = Astro.props;
     to   { transform: scale(1.05) translate(-1.2vw, 0.8vh); }
   }
 
-  html.dark .sketch-bg {
-    opacity: 0.32;
+  html.dark .sketch-bg { --o: 0.32; }
+
+  /* ── The head of an index page ── */
+  .sketch-bg.at-top {
+    --o: 0.8;
+    --scroll: 0;
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    /* Free of the column's measure: the spread is the whole window. */
+    max-width: none;
+    margin: 0;
+    height: 100svh;
+    opacity: calc(var(--o) * (1 - var(--scroll)));
+    transform: translateY(calc(var(--scroll) * -6svh));
+  }
+  html.dark .sketch-bg.at-top { --o: 0.5; }
+
+  /* The centre sheet: the open middle, between the name and the sentence. */
+  .sketch-bg.at-top .sk-c {
+    inset: auto;
+    top: 8svh;
+    left: 50%;
+    width: min(64vw, 110svh);
+    height: 58svh;
+    margin-left: calc(min(64vw, 110svh) / -2);
+    animation-duration: 22s;
+  }
+  /* The facing pages, only where the screen is wide enough for a spread. */
+  .sketch-bg.at-top .sk-l,
+  .sketch-bg.at-top .sk-r {
+    display: none;
+    inset: auto;
+    width: 24vw;
+    height: 40svh;
+    opacity: 0.6;
+  }
+  .sketch-bg.at-top .sk-l { top: 20svh; left: 1vw; animation-duration: 19s; animation-direction: alternate-reverse; }
+  .sketch-bg.at-top .sk-r { top: 12svh; right: 1vw; animation-duration: 25s; }
+  @media (min-width: 1400px) {
+    .sketch-bg.at-top .sk-l,
+    .sketch-bg.at-top .sk-r { display: block; }
+    .sketch-bg.at-top .sk-c { width: min(46vw, 100svh); margin-left: calc(min(46vw, 100svh) / -2); }
   }
 
-  @media (max-width: 760px) {
-    .sketch-bg {
-      width: 100vw;
-      opacity: 0.24;
-    }
+  /* While the note is open, the sketch steps back for the reading. */
+  body:has(.first-screen .why[open]) .sketch-bg.at-top { --o: 0.12; }
 
-    html.dark .sketch-bg {
-      opacity: 0.16;
-    }
+  @media (max-width: 759px) {
+    .sketch-bg { width: 100vw; --o: 0.24; }
+    html.dark .sketch-bg { --o: 0.16; }
 
-    /* On a phone the words stand over the sketch, so it stays quiet. */
-    .sketch-bg.at-top {
-      opacity: 0.3;
-    }
-
-    html.dark .sketch-bg.at-top {
-      opacity: 0.2;
+    /* A band of its own above the words. */
+    .sketch-bg.at-top { --o: 0.85; height: calc(var(--head-h, 5.4rem) + 40svh); }
+    html.dark .sketch-bg.at-top { --o: 0.55; }
+    /* Below the header, down to where the words begin. */
+    .sketch-bg.at-top .sk-c {
+      top: calc(var(--head-h, 5.4rem) + 0.5rem);
+      left: 0;
+      width: 100%;
+      height: 38svh;
+      margin-left: 0;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .sketch-bg { animation: none; }
+    .sketch-bg .sk-slot { animation: none; }
+    .sketch-bg.at-top { transform: none; }
   }
 </style>
 
@@ -107,38 +141,31 @@ const { sketches, place = 'fixed' } = Astro.props;
   var list = JSON.parse(box.dataset.sketches), top = box.classList.contains('at-top');
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var DRAW = 5000, HOLD = 2500, FADE = 1000, GAP = 300;
-  // The sheets, by ink, darkest first; each fades up as the sweep through
-  // the darkness of the drawing reaches it.
+  // The sheets, by ink, darkest first.
   var BANDS = [1.01, 0.8, 0.62, 0.46, 0.32, 0.18, 0.04];
-  // The soft ellipse it fades into the paper through.
-  // Behind an opening, centred in the open middle of the screen, between
-  // the name above and the sentence below.
-  var E = top ? [0.5, 0.42, 0.5, 0.4, 0.5] : [0.62, 0.58, 0.58, 0.5, 0.45];
-  var idx = 0, img = null, stack = null, timer = 0;
-
-  // Behind an opening, where the sketch is the picture, a full pixel per
-  // CSS pixel, so its lines stay crisp; elsewhere, faint, half a pixel is
-  // enough and a quarter of the work.
+  // The soft ellipse each sketch fades into the paper through:
+  // [rx, ry, cx, cy, where the fade begins].
+  var E = top ? [0.5, 0.5, 0.5, 0.5, 0.5] : [0.62, 0.58, 0.58, 0.5, 0.45];
+  // Crisp where the sketch is the picture; half resolution where faint.
   var RES = top ? 1 : 0.5;
-  function build(im) {
-    var W = Math.round(box.offsetWidth * RES), H = Math.round(box.offsetHeight * RES);
+
+  function build(el, im) {
+    var W = Math.round(el.offsetWidth * RES), H = Math.round(el.offsetHeight * RES);
     if (!W || !H) return null;
-    var k = Math.min(W / im.width, H / im.height) * (top ? 0.86 : 1);
+    var k = Math.min(W / im.width, H / im.height) * (top ? 0.94 : 1);
     var w = Math.round(im.width * k), h = Math.round(im.height * k);
-    var ox = Math.round((W - w) / 2), oy = Math.round(top ? H * E[3] - h / 2 : (H - h) / 2);
+    var ox = Math.round((W - w) / 2), oy = Math.round((H - h) / 2);
     var o = document.createElement('canvas'); o.width = w; o.height = h;
     var g = o.getContext('2d', { willReadFrequently: true });
     // Trim the scan's edges, where the old paper darkens into a frame.
     var m = 0.07, sx = im.width * m, sy = im.height * m;
     g.drawImage(im, sx, sy, im.width - 2 * sx, im.height - 2 * sy, 0, 0, w, h);
     var p = g.getImageData(0, 0, w, h).data;
-    // The paper's tone is the common one (the median), not the lightest
-    // speck; ink is anything clearly darker than it.
+    // The paper's tone is the common one; ink is anything clearly darker.
     var lums = [];
     for (var i = 0; i < p.length; i += 64) lums.push(0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2]);
     lums.sort(function (a, b) { return a - b; });
     var hi = Math.max(1, lums[Math.floor(lums.length * 0.6)]);
-    // The ink is drawn in the theme's own colour, so nothing is filtered.
     var ink = document.documentElement.classList.contains('dark') ? [215, 225, 235] : [40, 30, 20];
     var sheets = BANDS.slice(1).map(function () { return g.createImageData(w, h); });
     for (var y = 0, q = 0; y < h; y++) {
@@ -165,59 +192,72 @@ const { sketches, place = 'fixed' } = Astro.props;
     return s;
   }
 
-  // When the sweep through the darkness reaches a given ink: the same pace
-  // the drawing always had.
+  // When the sweep through the darkness reaches a given ink.
   function at(v) { return DRAW * Math.pow(Math.max(0, (1 - v) / 1.05), 1.25); }
 
-  function play(s) {
-    if (stack) stack.remove();
-    stack = s;
-    box.appendChild(s);
-    var cs = s.children;
-    if (reduce) { for (var j = 0; j < cs.length; j++) cs[j].style.opacity = 1; return; }
-    for (var i = 0; i < cs.length; i++) {
-      var t0 = at(Math.min(1, BANDS[i])), t1 = at(Math.max(0, BANDS[i + 1] - 0.12));
-      cs[i].animate([{ opacity: 0 }, { opacity: 1 }], { delay: t0, duration: Math.max(300, t1 - t0), easing: 'ease-out', fill: 'forwards' });
-    }
-    s.animate([{ opacity: 1 }, { opacity: 0 }], { delay: DRAW + HOLD, duration: FADE, easing: 'ease-in', fill: 'forwards' });
-    timer = setTimeout(next, DRAW + HOLD + FADE + GAP);
-  }
+  // Each sheet of the spread runs on its own: its own drawing, its own
+  // start, and never the same sketch as another sheet at once.
+  var slots = [].slice.call(box.querySelectorAll('.sk-slot'));
+  var runs = slots.map(function (el, n) {
+    var run = { el: el, idx: n % list.length, img: null, stack: null, timer: 0 };
+    run.play = function (s) {
+      if (run.stack) run.stack.remove();
+      run.stack = s;
+      el.appendChild(s);
+      var cs = s.children;
+      if (reduce) { for (var j = 0; j < cs.length; j++) cs[j].style.opacity = 1; return; }
+      for (var i = 0; i < cs.length; i++) {
+        var t0 = at(Math.min(1, BANDS[i])), t1 = at(Math.max(0, BANDS[i + 1] - 0.12));
+        cs[i].animate([{ opacity: 0 }, { opacity: 1 }], { delay: t0, duration: Math.max(300, t1 - t0), easing: 'ease-out', fill: 'forwards' });
+      }
+      s.animate([{ opacity: 1 }, { opacity: 0 }], { delay: DRAW + HOLD, duration: FADE, easing: 'ease-in', fill: 'forwards' });
+      run.timer = setTimeout(run.next, DRAW + HOLD + FADE + GAP);
+    };
+    run.show = function (im) {
+      run.img = im;
+      var s = build(el, im);
+      if (s) run.play(s);
+      else run.timer = setTimeout(function () { run.show(im); }, 1500); // hidden for now; look again
+    };
+    run.next = function () { run.idx = (run.idx + slots.length) % list.length; run.load(); };
+    run.load = function () {
+      var im = new Image();
+      im.crossOrigin = 'anonymous';
+      im.onload = function () { run.show(im); };
+      im.onerror = function () { setTimeout(run.next, GAP); };
+      im.src = list[run.idx];
+    };
+    run.redo = function () { clearTimeout(run.timer); if (run.img) run.show(run.img); };
+    return run;
+  });
+  runs.forEach(function (run, n) { setTimeout(run.load, n * 1800); });
 
-  function show(im) {
-    img = im;
-    var s = build(im);
-    if (s) play(s);
-  }
-
-  function next() {
-    idx = (idx + 1) % list.length;
-    load(idx);
-  }
-
-  function load(n) {
-    var im = new Image();
-    im.crossOrigin = 'anonymous';
-    im.onload = function () { show(im); };
-    im.onerror = function () { setTimeout(next, GAP); };
-    im.src = list[n];
-  }
-
-  // A new size or theme draws the current sketch again, from the start.
-  function redo() { clearTimeout(timer); if (img) show(img); }
+  // A new size or theme draws the current sketches again.
   var rt = 0, size = box.offsetWidth + 'x' + box.offsetHeight;
   addEventListener('resize', function () {
     clearTimeout(rt);
     rt = setTimeout(function () {
       // A phone's bar sliding away is not a new size for the sketch.
       var now = box.offsetWidth + 'x' + box.offsetHeight;
-      if (now !== size) { size = now; redo(); }
+      if (now !== size) { size = now; runs.forEach(function (r) { r.redo(); }); }
     }, 250);
   });
   new MutationObserver(function (ms) {
     var dark = document.documentElement.classList.contains('dark');
-    if (ms.some(function (m) { return (m.oldValue || '').indexOf('dark') !== -1 !== dark; })) redo();
+    if (ms.some(function (m) { return (m.oldValue || '').indexOf('dark') !== -1 !== dark; })) runs.forEach(function (r) { r.redo(); });
   }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
 
-  load(0);
+  // Scrolling away lifts the head of the page and lets it fade.
+  if (top && !reduce) {
+    var ticking = false;
+    addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        ticking = false;
+        box.style.setProperty('--scroll', Math.min(1, scrollY / (innerHeight * 0.85)).toFixed(3));
+      });
+    }, { passive: true });
+  }
 })();
 </script>

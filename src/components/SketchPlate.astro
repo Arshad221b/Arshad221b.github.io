@@ -1,0 +1,423 @@
+---
+/* The head of an index page: each drawing rebuilt from thousands of
+   particles of ink. They drift in as scattered dust and settle into the
+   strokes, denser where the ink is darker; the drawing holds and
+   breathes; then it lets go into a slow current, and the same particles
+   gather into the next drawing. A pointer moving through parts the ink,
+   and it closes again behind it. A small index names the drawing, with a
+   row of segments for where it sits in the set. On a phone it has a band
+   of its own above the words; scrolling away lifts it and lets it fade.
+
+   Each scan is read once: its paper dropped, and points sampled from its
+   ink in proportion to how dark it is. Drawn on one canvas, in the
+   theme's ink, and paused whenever it is out of sight. */
+interface Props { sketches: string[]; credits: { title: string; by: string }[] }
+const { sketches, credits } = Astro.props;
+import PlateCredit from './PlateCredit.astro';
+---
+
+<div class="plate" data-sketches={JSON.stringify(sketches)} data-credits={JSON.stringify(credits)}>
+  <canvas class="plate-canvas" aria-hidden="true"></canvas>
+  <div class="plate-art" aria-hidden="true"></div>
+  <PlateCredit credits={credits} />
+</div>
+
+<style is:global>
+  .plate {
+    --scroll: 0;
+    --cycle: 9s;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    /* The whole window, free of the reading column's measure. */
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    height: 100svh;
+    pointer-events: none;
+    z-index: 0;
+    opacity: calc(1 - var(--scroll));
+    transform: translateY(calc(var(--scroll) * -6svh));
+  }
+  .plate .plate-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; max-width: none !important; }
+
+  /* Where the drawing forms: the open middle, between the name and the sentence. */
+  .plate-art {
+    position: absolute;
+    top: calc(var(--head-h, 4.5rem) + 1.5svh);
+    left: 50%;
+    width: min(70vw, 110svh);
+    height: 46svh;
+    transform: translateX(-50%);
+  }
+
+  /* While the note is open, the drawing steps back for the reading. */
+  body:has(.first-screen .why[open]) .plate { opacity: 0.1; transition: opacity var(--dur-base) ease; }
+
+  @media (min-width: 760px) and (max-height: 900px) {
+    .plate-art { height: 32svh; }
+  }
+  @media (min-width: 760px) and (max-height: 700px) {
+    .plate-art { height: 27svh; }
+  }
+
+  @media (max-width: 759px) {
+    .plate { height: calc(var(--head-h, 5.4rem) + 40svh); }
+    .plate-art { top: calc(var(--head-h, 5.4rem) + 0.5rem); width: calc(100% - 2rem); height: 29svh; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .plate { transform: none; }
+  }
+</style>
+
+<script is:inline>
+(function () {
+  var plate = document.querySelector('.plate');
+  if (!plate) return;
+  var canvas = plate.querySelector('canvas'), ctx = canvas.getContext('2d');
+  var art = plate.querySelector('.plate-art');
+  var list = JSON.parse(plate.dataset.sketches), credits = JSON.parse(plate.dataset.credits);
+  var dots = plate.querySelectorAll('.plate-dots button');
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var FORM = 3400, HOLD = 4200, LET = 2600;
+  plate.style.setProperty('--cycle', (FORM + HOLD + LET) / 1000 + 's');
+
+  var W = 0, H = 0, dpr = 1, N = 0;
+  var px, py, vx, vy, tx, ty, ta;                // position, drift, target
+  var sx, sy, dl, sw, ar, ph, ca, oa, fx, fy;     // start, delay, swirl, arc, phase, alpha, pointer offset
+  var e1x, e1y, e2x, e2y, e3x, e3y;               // where each particle's three echoes sit, relative to it
+  var nox, noy, mul;                              // each particle's own offset into the current, and its own drift strength
+  // A table of random numbers, read in a shifting order: tremor without
+  // calling the random generator for every particle on every frame.
+  var RT = new Float32Array(8192); for (var ri = 0; ri < RT.length; ri++) RT[ri] = Math.random() * 2 - 1;
+  var tick = 0;
+  var images = [], targets = [], idx = 0, phase = 'form', t0 = 0;
+  var mx = -1e4, my = -1e4, INK = [34, 28, 22], RGB = 0;
+  var buf, bctx, pix, p32;
+
+  function size() {
+    dpr = Math.min(2, devicePixelRatio || 1);
+    W = canvas.offsetWidth; H = canvas.offsetHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.imageSmoothingEnabled = false;
+    // Particles are plotted straight into a pixel buffer and drawn up in one
+    // call: the cost hardly grows with the number of dots.
+    buf = document.createElement('canvas'); buf.width = W; buf.height = H;
+    bctx = buf.getContext('2d'); pix = bctx.createImageData(W, H); p32 = new Uint32Array(pix.data.buffer);
+    var n = W < 760 ? 9000 : W < 1500 ? 18000 : 28000;
+    if (n !== N) {
+      N = n;
+      var F = function () { return new Float32Array(N); };
+      px = F(); py = F(); vx = F(); vy = F(); tx = F(); ty = F(); ta = F();
+      sx = F(); sy = F(); dl = F(); sw = F(); ar = F(); ph = F(); ca = F(); oa = F(); fx = F(); fy = F();
+      e1x = F(); e1y = F(); e2x = F(); e2y = F(); e3x = F(); e3y = F(); nox = F(); noy = F(); mul = F();
+      // The first arrival: a soft cloud of dust around where the drawing will form.
+      var a = art.getBoundingClientRect(), c = canvas.getBoundingClientRect();
+      var cx = a.left - c.left + a.width / 2, cy = a.top - c.top + a.height / 2;
+      for (var i = 0; i < N; i++) {
+        var g1 = Math.sqrt(-2 * Math.log(Math.random() + 1e-9)), g2 = Math.random() * 6.283;
+        px[i] = cx + Math.cos(g2) * g1 * a.width * 0.45;
+        py[i] = cy + Math.sin(g2) * g1 * a.height * 0.6;
+        dl[i] = Math.random() * 0.4;
+        sw[i] = Math.random() * 6.283;
+        ar[i] = 20 + Math.random() * 70;
+        ph[i] = Math.random() * 6.283;
+        // Two echoes at fixed random offsets, mostly near, a few far.
+        var r1 = Math.pow(Math.random(), 1.6), a1 = Math.random() * 6.283, r2 = Math.pow(Math.random(), 1.6), a2 = Math.random() * 6.283;
+        e1x[i] = Math.cos(a1) * r1; e1y[i] = Math.sin(a1) * r1; e2x[i] = Math.cos(a2) * r2; e2y[i] = Math.sin(a2) * r2;
+        var r3 = Math.pow(Math.random(), 1.3), a3 = Math.random() * 6.283;
+        e3x[i] = Math.cos(a3) * r3 * 1.3; e3y[i] = Math.sin(a3) * r3 * 1.3;
+        nox[i] = (Math.random() - 0.5) * 160; noy[i] = (Math.random() - 0.5) * 160;
+        mul[i] = 0.5 + Math.pow(Math.random(), 1.5) * 1.2;
+      }
+    }
+    targets = [];
+  }
+  // Fit the drawing to the free space of the opening: from under the
+  // header to just above the words (the sentence on a wide screen, the
+  // page's name on a phone). The credit sits at the foot of that space and
+  // the drawing takes everything above it. CSS places them until this runs.
+  var meta = plate.querySelector('.plate-meta'), fitted = '';
+  function layout() {
+    var head = document.querySelector('header'), below = document.querySelector(innerWidth < 760 ? '.first-screen .page-name' : '.first-screen .page-statement');
+    if (!head || !below) return false;
+    var top0 = plate.getBoundingClientRect().top;
+    var from = head.getBoundingClientRect().bottom - top0 + 12;
+    var to = below.getBoundingClientRect().top - top0 - (innerWidth < 760 ? 14 : 22);
+    var ch = meta.offsetHeight, h = Math.round(to - from - ch - 10);
+    if (h < 120) return false;                                      // too little room: keep the CSS layout
+    var key = from + ':' + h + ':' + to;
+    if (key === fitted) return false;
+    fitted = key;
+    art.style.top = Math.round(from) + 'px';
+    art.style.height = h + 'px';
+    meta.style.top = Math.round(to - ch) + 'px';
+    if (innerWidth < 760) plate.style.height = Math.round(to + 4) + 'px';
+    return true;
+  }
+  // The words come after this script in the page, so fit once they exist,
+  // again when the fonts settle, and whenever the opening changes size.
+  function refit() { if (layout() && images[idx]) { targets = []; size(); aim(); if (reduce) still(); } }
+  function watch() {
+    refit();
+    if (document.fonts) document.fonts.ready.then(refit);
+    var fs = document.querySelector('.first-screen');
+    if (fs && window.ResizeObserver) new ResizeObserver(refit).observe(fs);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch();
+
+  function ink() {
+    INK = document.documentElement.classList.contains('dark') ? [225, 228, 232] : [34, 28, 22];
+    RGB = (INK[2] << 16) | (INK[1] << 8) | INK[0];
+  }
+
+  // Points of ink from a scan, sampled in proportion to how dark it is,
+  // placed in the drawing's area and fading out towards its edge.
+  function sample(im) {
+    var a = art.getBoundingClientRect(), c = canvas.getBoundingClientRect();
+    var k = Math.min(a.width / im.width, a.height / im.height) * 0.5;   // read at half size
+    var w = Math.max(1, Math.round(im.width * k)), h = Math.max(1, Math.round(im.height * k));
+    var o = document.createElement('canvas'); o.width = w; o.height = h;
+    var g = o.getContext('2d', { willReadFrequently: true });
+    var m = 0.07;
+    g.drawImage(im, im.width * m, im.height * m, im.width * (1 - 2 * m), im.height * (1 - 2 * m), 0, 0, w, h);
+    var p = g.getImageData(0, 0, w, h).data, lums = [];
+    for (var i = 0; i < p.length; i += 64) lums.push(0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2]);
+    lums.sort(function (x, y) { return x - y; });
+    var hi = Math.max(1, lums[Math.floor(lums.length * 0.6)]);
+    var cx = [], cy = [], cv = [];
+    for (var y = 0, q = 0; y < h; y++) for (var x = 0; x < w; x++, q += 4) {
+      var v = (0.86 - (0.299 * p[q] + 0.587 * p[q + 1] + 0.114 * p[q + 2]) / hi) / 0.55;
+      var nx = (x / w - 0.5) * 2, ny = (y / h - 0.5) * 2, r = Math.sqrt(nx * nx + ny * ny);
+      v *= r <= 0.62 ? 1 : r >= 1 ? 0 : 1 - (r - 0.62) / 0.38;
+      if (v > 0.22) { cx.push(x); cy.push(y); cv.push(Math.min(1, v)); }
+    }
+    var s = 1 / (k * 2), ox = a.left - c.left + (a.width - w * 2) / 2, oy = a.top - c.top + (a.height - h * 2) / 2;
+    var T = { x: new Float32Array(N), y: new Float32Array(N), a: new Float32Array(N) };
+    for (var j = 0, tries = 0; j < N && cx.length && tries < N * 40; tries++) {
+      var r2 = (Math.random() * cx.length) | 0;
+      if (Math.random() > cv[r2]) continue;
+      T.x[j] = ox + (cx[r2] + Math.random()) * 2;
+      T.y[j] = oy + (cy[r2] + Math.random()) * 2;
+      T.a[j] = 0.35 + cv[r2] * 0.65;
+      j++;
+    }
+    for (var filled = j; j < N; j++) { var r3 = (Math.random() * Math.max(1, filled)) | 0; T.x[j] = T.x[r3]; T.y[j] = T.y[r3]; T.a[j] = filled ? T.a[r3] * 0.6 : 0; }
+    return T;
+  }
+
+  // Pair particles with the new drawing's points along a sweep at a random
+  // angle: neighbours go to neighbours, so the ink flows across like a tide
+  // instead of criss-crossing, and each change runs in a new direction.
+  function aim() {
+    var T = targets[idx] || (targets[idx] = sample(images[idx]));
+    var th = Math.random() * 6.283, c = Math.cos(th), sn = Math.sin(th);
+    var P = new Uint32Array(N), Q = new Uint32Array(N), kp = new Float32Array(N), kq = new Float32Array(N);
+    for (var i = 0; i < N; i++) { P[i] = Q[i] = i; kp[i] = px[i] * c + py[i] * sn; kq[i] = T.x[i] * c + T.y[i] * sn; }
+    P.sort(function (a, b) { return kp[a] - kp[b]; });
+    Q.sort(function (a, b) { return kq[a] - kq[b]; });
+    for (var r = 0; r < N; r++) { var a = P[r], b = Q[r]; tx[a] = T.x[b]; ty[a] = T.y[b]; ta[a] = T.a[b]; }
+  }
+
+  // The credit fades out, changes, and fades back in with the new drawing.
+  function mark() {
+    plate.classList.add('swap');
+    setTimeout(function () {
+      plate.querySelector('.plate-title').textContent = credits[idx].title;
+      plate.querySelector('.plate-by').textContent = credits[idx].by;
+      plate.classList.remove('swap');
+    }, 500);
+    dots.forEach(function (b, i) {
+      b.classList.remove('on');
+      b.setAttribute('aria-current', i === idx ? 'true' : 'false');
+      if (i === idx) { void b.offsetWidth; b.classList.add('on'); }
+    });
+  }
+
+  function begin(now) { aim(); mark(); phase = 'gather'; t0 = now; }
+  function smooth(u) { u = u < 0 ? 0 : u > 1 ? 1 : u; return u * u * u * (u * (u * 6 - 15) + 10); }
+
+  // ── The current: curl noise ──
+  // A smooth 3D value noise (x, y, time), two octaves, seeded fresh on
+  // every visit. The flow is its curl, so it is divergence-free: the ink
+  // swirls and folds like smoke, never bunching up or tearing open.
+  // Computed on a coarse grid once a frame; particles read it bilinearly.
+  var perm = new Uint8Array(512);
+  (function () {
+    var p0 = []; for (var i = 0; i < 256; i++) p0[i] = i;
+    for (i = 255; i > 0; i--) { var r = (Math.random() * (i + 1)) | 0, t = p0[i]; p0[i] = p0[r]; p0[r] = t; }
+    for (i = 0; i < 512; i++) perm[i] = p0[i & 255];
+  })();
+  function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+  function h(x, y, z) { return perm[perm[perm[x & 255] + (y & 255)] + (z & 255)] / 255; }
+  function noise(x, y, z) {
+    var X = Math.floor(x), Y = Math.floor(y), Z = Math.floor(z), u = fade(x - X), v = fade(y - Y), w = fade(z - Z);
+    var a = h(X, Y, Z), b = h(X + 1, Y, Z), c = h(X, Y + 1, Z), d = h(X + 1, Y + 1, Z);
+    var e = h(X, Y, Z + 1), f = h(X + 1, Y, Z + 1), g = h(X, Y + 1, Z + 1), k = h(X + 1, Y + 1, Z + 1);
+    var l1 = a + (b - a) * u, l2 = c + (d - c) * u, l3 = e + (f - e) * u, l4 = g + (k - g) * u;
+    var m1 = l1 + (l2 - l1) * v, m2 = l3 + (l4 - l3) * v;
+    return m1 + (m2 - m1) * w;
+  }
+  function psi(x, y, t) { return noise(x, y, t) + 0.5 * noise(x * 2.03 + 17.1, y * 2.03 - 9.4, t * 1.7); }
+
+  var CELL = 40, GX = 0, GY = 0, gu = null, gv = null;
+  function grid(now) {
+    var gx = Math.ceil(W / CELL) + 2, gy = Math.ceil(H / CELL) + 2;
+    if (gx !== GX || gy !== GY) { GX = gx; GY = gy; gu = new Float32Array(GX * GY); gv = new Float32Array(GX * GY); }
+    var sc = 1 / 260, t = now * 0.00009, ep = 0.35;
+    for (var j = 0, q = 0; j < GY; j++) for (var i = 0; i < GX; i++, q++) {
+      var x = i * CELL * sc, y = j * CELL * sc;
+      gu[q] = (psi(x, y + ep, t) - psi(x, y - ep, t)) / (2 * ep);
+      gv[q] = -(psi(x + ep, y, t) - psi(x - ep, y, t)) / (2 * ep);
+    }
+  }
+  var fu = 0, fv = 0;
+  function at(x, y) {
+    var gx = x / CELL, gy = y / CELL;
+    if (gx < 0) gx = 0; else if (gx > GX - 1.001) gx = GX - 1.001;
+    if (gy < 0) gy = 0; else if (gy > GY - 1.001) gy = GY - 1.001;
+    var i = gx | 0, j = gy | 0, a = gx - i, b = gy - j, q = j * GX + i;
+    fu = (gu[q] * (1 - a) + gu[q + 1] * a) * (1 - b) + (gu[q + GX] * (1 - a) + gu[q + GX + 1] * a) * b;
+    fv = (gv[q] * (1 - a) + gv[q + 1] * a) * (1 - b) + (gv[q + GX] * (1 - a) + gv[q + GX + 1] * a) * b;
+  }
+
+  var visible = true, last = 0;
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (!visible || document.hidden || !tx) return;
+    var dt = last ? Math.min(2, Math.max(0.4, (now - last) / 16.667)) : 1; last = now;
+    var e = now - t0;
+    if (phase === 'gather' && e > FORM) {
+      phase = 'hold'; t0 = now; e = 0;
+      // Read the next drawing's ink now, while this one holds still, so the
+      // handover costs nothing extra.
+      var nx = (idx + 1) % list.length;
+      if (images[nx] && !targets[nx]) setTimeout(function () { if (!targets[nx]) targets[nx] = sample(images[nx]); }, 50);
+    }
+    else if (phase === 'hold' && e > HOLD) { phase = 'let'; t0 = now; e = 0; }
+    else if (phase === 'let' && e > LET) {
+      idx = (idx + 1) % images.length;
+      if (!images[idx]) { idx = 0; }
+      begin(now);
+    }
+
+    ctx.clearRect(0, 0, W, H);
+    // One motion throughout: a pull towards the drawing that eases down to
+    // nothing as it lets go and back up as the next gathers, and a slow
+    // current that takes over in between. Velocity is never reset.
+    var hold = phase === 'gather' ? smooth(e / FORM) : phase === 'hold' ? 1 : 1 - smooth(e / LET);
+    var damp = Math.pow(0.968 - 0.07 * hold, dt), pull = 0.0042 * hold * hold * dt, drift = (0.16 * (1 - hold) * (1 - hold) + 0.004) * dt;
+    grid(now);
+    // Echoes: each particle's two companions fan out as the pull lets go and
+    // fold back as it returns, so the ink in the air triples without any
+    // more particles to move. Not drawn at all while the drawing holds.
+    var spread = (1 - hold) * (1 - hold) * Math.min(W, H) * 0.16, echo = spread > 0.6;
+    // The halo turns slowly, each echo its own way, so the cloud shimmers.
+    var q1 = now * 0.00031, q2 = -now * 0.00023, q3 = now * 0.00017;
+    var c1 = Math.cos(q1), s1 = Math.sin(q1), c2 = Math.cos(q2), s2 = Math.sin(q2), c3 = Math.cos(q3), s3 = Math.sin(q3);
+    var trem = 0.22 * (1 - hold) * dt, base = (tick = (tick + 7919) & 8191);
+    p32.fill(0);
+    for (var i = 0; i < N; i++) {
+      var kf = pull * (0.6 + ph[i] / 6.283 * 0.8);
+      // Each particle reads the current from its own offset and drifts at its
+      // own strength, with a fine tremor while the drawing is let go.
+      at(px[i] + nox[i], py[i] + noy[i]);
+      var dm = drift * mul[i], ri2 = (base + i * 31) & 8191;
+      vx[i] += (tx[i] - px[i]) * kf + fu * dm + RT[ri2] * trem;
+      vy[i] += (ty[i] - py[i]) * kf + fv * dm + RT[(ri2 + 4099) & 8191] * trem - 0.005 * (1 - hold) * dt;
+      vx[i] *= damp; vy[i] *= damp;
+      px[i] += vx[i] * dt; py[i] += vy[i] * dt;
+      ca[i] += (ta[i] * (0.6 + 0.4 * hold) - ca[i]) * Math.min(1, 0.045 * dt);
+      // The pointer parts the ink; it closes again behind it.
+      var qx = px[i] + fx[i], qy = py[i] + fy[i], ex = qx - mx, ey = qy - my, d2 = ex * ex + ey * ey;
+      if (d2 < 10000) { var f = (10000 - d2) / 10000 * 2.2, d = Math.sqrt(d2) || 1; fx[i] += ex / d * f; fy[i] += ey / d * f; }
+      fx[i] *= 0.9; fy[i] *= 0.9;
+      var al = ca[i];
+      if (al > 0.04) {
+        var bx = px[i] + fx[i], by = py[i] + fy[i], A = al * 225;
+        plot(bx, by, A);
+        if (echo) {
+          var ea = A * 0.5;
+          plot(bx + (e1x[i] * c1 - e1y[i] * s1) * spread, by + (e1x[i] * s1 + e1y[i] * c1) * spread, ea);
+          plot(bx + (e2x[i] * c2 - e2y[i] * s2) * spread, by + (e2x[i] * s2 + e2y[i] * c2) * spread, ea);
+          plot(bx + (e3x[i] * c3 - e3y[i] * s3) * spread, by + (e3x[i] * s3 + e3y[i] * c3) * spread, ea * 0.7);
+        }
+      }
+    }
+    bctx.putImageData(pix, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(buf, 0, 0, W, H);
+  }
+
+  // One dot, darkest wins where two land on the same pixel.
+  function plot(x, y, A) {
+    var ix = x | 0, iy = y | 0;
+    if (ix < 0 || iy < 0 || ix >= W || iy >= H) return;
+    var q = iy * W + ix, a = A | 0;
+    if ((p32[q] >>> 24) < a) p32[q] = ((a << 24) | RGB) >>> 0;
+  }
+
+  // Still, for those who'd rather not have motion: the drawing, in dots.
+  function still() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(' + INK.join(',') + ',0.6)';
+    for (var i = 0; i < N; i++) if (ta[i] > 0) ctx.fillRect(tx[i], ty[i], 1.25, 1.25);
+  }
+
+  function load(n, done) {
+    var im = new Image();
+    im.crossOrigin = 'anonymous';
+    im.onload = function () { images[n] = im; done && done(); };
+    im.src = list[n];
+  }
+
+  layout(); ink(); size();
+  load(0, function () {
+    begin(performance.now());
+    if (reduce) { still(); return; }
+    requestAnimationFrame(frame);
+    for (var n = 1; n < list.length; n++) load(n);
+  });
+
+  dots.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var n = +b.dataset.i;
+      if (n === idx) return;
+      var go = function () { idx = n; begin(performance.now()); if (reduce) still(); };
+      images[n] ? go() : load(n, go);
+    });
+  });
+
+  var rt = 0;
+  addEventListener('resize', function () {
+    clearTimeout(rt);
+    rt = setTimeout(function () {
+      if (canvas.offsetWidth === W && canvas.offsetHeight === H) return;  // a phone's bar sliding away
+      layout(); size(); if (images[idx]) { aim(); if (reduce) still(); }
+    }, 250);
+  });
+  new MutationObserver(function () { ink(); if (reduce && tx) still(); })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+  addEventListener('pointermove', function (e) {
+    var r = canvas.getBoundingClientRect();
+    mx = e.clientX - r.left; my = e.clientY - r.top;
+  }, { passive: true });
+  addEventListener('pointerleave', function () { mx = my = -1e4; });
+
+  var ticking = false;
+  addEventListener('scroll', function () {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () {
+      ticking = false;
+      var s = Math.min(1, scrollY / (innerHeight * 0.8));
+      plate.style.setProperty('--scroll', s.toFixed(3));
+      visible = s < 1;
+    });
+  }, { passive: true });
+})();
+</script>

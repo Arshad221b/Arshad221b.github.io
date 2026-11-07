@@ -1967,6 +1967,18 @@ html,body{overflow-x:clip;}
   z-index: 1;
 }
 
+/* The opening's empty space lets the pointer through to the drawing
+   behind it (its dots can be clicked); its words and controls still take it. */
+.first-screen { pointer-events: none; }
+.first-screen > *,
+.first-screen > .mast > * { pointer-events: auto; }
+
+/* On a phone the opening's sketch has a band of its own at the top, and
+   the words begin below it. */
+@media (max-width: 759px) {
+  .first-screen { padding-top: 38svh; }
+}
+
 /* On the index pages the opening (title, figures, search and topics) is
    the whole first screen on anything wider than a phone, whatever the
    window, and the list begins below the fold, as About does. */

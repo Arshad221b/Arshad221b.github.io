@@ -8,14 +8,16 @@ import { img, share, has } from '../lib/media';
    is dropping a file in that folder. */
 
 import Layout from '../layouts/Layout.astro';
-import SketchBackdrop from '../components/SketchBackdrop.astro';
+import SketchPlate from '../components/SketchPlate.astro';
 import Mast from '../components/Mast.astro';
 import { posts, pageModel, topicName } from '../lib/thoughts-data';
 
 const title = "Thoughts — Arshad Kazi";
 
-// Behind the page: Michelangelo, Piranesi and Palladio's architect drawing themselves in.
-const sketches = ['sangiovanni1', 'carceri-title', 'rotonda', 'carceri-xiv', 'sangiovanni2'].map(n => img(`/images/thoughts-bg/${n}.jpg`, 2000));
+// At the head of the page, in particles of ink: thought, reason, grief, anxiety and the self,
+// as Dürer, Goya, Van Gogh, Munch and Schiele drew them.
+const sketches = ['melencolia', 'sleep-of-reason', 'sorrow', 'the-scream', 'schiele-self-portrait'].map(n => img(`/images/thoughts-bg/${n}.jpg`, 1600));
+const credits = [{"title": "Melencolia I, 1514", "by": "Albrecht Dürer"}, {"title": "The Sleep of Reason Produces Monsters, 1799", "by": "Francisco Goya"}, {"title": "Sorrow, 1882", "by": "Vincent van Gogh"}, {"title": "The Scream, 1895", "by": "Edvard Munch"}, {"title": "Self-Portrait, 1912", "by": "Egon Schiele"}];
 const { topics, theta, edges, stats, projection } = pageModel;
 
 // Every essay carries its number in the body of work, counted from the
@@ -63,7 +65,7 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 ---
 
 <Layout title={title} activeNav="/thoughts" description="Personal writing by Arshad Kazi. Things I am confused about, excited by, or trying to put into words. Published on Substack." ogImage={share("/images/share-thoughts.jpg")}>
-  <SketchBackdrop sketches={sketches} place="top" />
+  <SketchPlate sketches={sketches} credits={credits} />
   <div class="thoughts-page wide free">
 
     <!-- ── The opening ────────────────────────────────────
@@ -77,9 +79,11 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
         <details class="why">
         <summary>Why I write these</summary>
         <div class="why-body">
-          <p>Most of the time I don't know what I think about something until I write it down and read it back, which is probably the most honest reason I do this at all. Writing is the only place where I can hold a thought long enough to actually examine it, because in conversation the thought moves too fast or the other person needs a response before I've finished figuring out what I'm trying to say.</p>
-          <p>A lot of what I write about is things I find genuinely confusing, which includes most of human behaviour, my own reactions to things, and the gap between what people say and what they seem to actually mean. I don't have answers to most of this. I just try to describe the problem clearly enough that maybe someone reading it can see what I'm missing.</p>
-          <p>Some of it is about being autistic, not the internet version where it's a personality trait you put in your bio, but the actual daily experience of being simultaneously too much for some people and not enough for others. And some of it is just me being excited about an idea, a paper, a connection between two things that nobody told me were connected.</p>
+          <p>The technical notes are about how things work. These are about how I work, and how the people around me do, which I understand far less.</p>
+          <p>I grew up with a lot of answers handed to me: what a good son does, what a respectable career looks like, what to believe, who to love and how. Some of them hold up when I look at them closely. Many don't. Writing is where I take one apart and check what it's actually made of, instead of carrying it around because everyone else does.</p>
+          <p>Being autistic is part of why. A lot of social life runs on rules nobody states, and I've had to work most of them out deliberately, often after getting them wrong. That makes me notice things other people never question, and it makes me slow at things they find easy. Both end up here.</p>
+          <p>Some essays are about people: family, someone I loved, the people I grew up around, the gap between how I meant something and how it landed. Some are about a book or a film that changed how I see something. Some are just a question I got stuck on long enough that I had to write it out.</p>
+          <p>I don't write these to sound wise. Most of them end with me less sure than when I started, and that's usually the honest place to stop. If you've thought about the same thing and landed somewhere else, I'd like to know.</p>
           <p class="substack-line">These are also published on <a href="https://substack.com/@arshadkazi" target="_blank" rel="noopener">Substack</a>.</p>
         </div>
         </details>

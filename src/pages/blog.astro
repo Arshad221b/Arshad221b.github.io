@@ -1,6 +1,6 @@
 ---
 import { img, share } from '../lib/media';
-import SketchBackdrop from '../components/SketchBackdrop.astro';
+import SketchPlate from '../components/SketchPlate.astro';
 /* Blogs: the essays and the notebooks, on one page.
 
    One timeline, newest first, under clear year headings. Every piece is the
@@ -20,7 +20,8 @@ import { notebooks } from '../lib/notebooks';
 // Behind the head of the page: Leonardo's studies of flight, water, the horse
 // and the measured body, turn about with Michelangelo's figure studies,
 // drawing themselves in.
-const sketches = ['flying', 'sibyl', 'water', 'nude', 'vitruvian', 'horse'].map(n => img(`/images/contact/${n}.jpg`, 2000));
+const sketches = ['flying', 'sibyl', 'water', 'nude', 'vitruvian', 'horse'].map(n => img(`/images/contact/${n}.jpg`, 1600));
+const credits = [{"title": "Flying machine", "by": "Leonardo da Vinci"}, {"title": "Studies for the Libyan Sibyl", "by": "Michelangelo"}, {"title": "Studies of water", "by": "Leonardo da Vinci"}, {"title": "Figure study", "by": "Michelangelo"}, {"title": "Vitruvian Man", "by": "Leonardo da Vinci"}, {"title": "Study of a horse", "by": "Leonardo da Vinci"}];
 const title = "Technical Blogs — Arshad Kazi";
 
 // `contents` mirrors the section headings inside each post, so the index says
@@ -154,7 +155,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
 ---
 
 <Layout title={title} activeNav="/blog" description="Essays and day-by-day notebooks on computer vision, the brain and machine learning. Notes on things I finally understood, not tutorials." ogImage={share("/images/share-blog.jpg")}>
-  <SketchBackdrop sketches={sketches} place="top" />
+  <SketchPlate sketches={sketches} credits={credits} />
   <div class="blog-page free">
     <div class="first-screen">
     <Mast
@@ -164,10 +165,10 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
       <details class="why">
           <summary>Why I write these</summary>
           <div class="why-body">
-            <p>Transfer learning works in brains too. The prefrontal cortex builds schema, mental frameworks that compress patterns from one domain and apply them to another. The more domains you feed it, the richer the schema. Convolutions in V1 and convolutions in CNNs are the same idea discovered independently. Attention in the parietal cortex and attention in transformers solve the same resource allocation problem. These are not metaphors. They are convergent solutions.</p>
-            <p>Leonardo studied anatomy to paint better and painted to understand anatomy better. Feynman learned to pick locks to understand information theory. Ramanujan found number theory in temple floor patterns. Cross-domain learning is not a distraction from depth. It is how depth actually works.</p>
-            <p>The time box is the point. Retrieval under pressure consolidates memory faster than passive review, and the hippocampus encodes better when a session has a clear boundary. You cannot passively read for sixty minutes and pretend you understood it. You have to write what you know, find the gaps, and come back the next day to fill them.</p>
-            <p>I am a Leonardo fanboy, not because I think I am smart like him because I am really not, but because the man had no formal education past age 14 and still taught himself anatomy and optics and geology and engineering from whatever books and mentors he could get his hands on, and that is the only way I have ever been able to learn anything either. He kept notebooks his entire life, thousands of pages, anatomy next to fluid dynamics next to machine designs, not organized by subject but by date, and he called himself "discepolo della esperienza" which means disciple of experience, and I think the notebook was never documentation for him, it was the actual thinking tool, the place where looking at something carefully enough turns into understanding it.</p>
+            <p>I write these to check whether I actually understand something. If I can explain it from the start, with the reasoning and not just the result, I do. If I can't, the gap shows up on the page.</p>
+            <p>I'm mostly self-taught, so I don't always know what I'm missing. Writing is how I find out.</p>
+            <p>I move between subjects because that's how my curiosity works, and because an idea often makes more sense once I've seen it somewhere else.</p>
+            <p>These are working notes, not tutorials. Some of it will be wrong. Where I'm not sure, I say so.</p>
           </div>
         </details>
     </Mast>
