@@ -196,7 +196,7 @@ import PlateCredit from './PlateCredit.astro';
       if (v > 0.22) { cx.push(x); cy.push(y); cv.push(Math.min(1, v)); }
     }
     var up = W < 760 ? 1 : 2, ox = a.left - c.left + (a.width - w * up) / 2, oy = a.top - c.top + (a.height - h * up) / 2;
-    var T = { x: new Float32Array(N), y: new Float32Array(N), a: new Float32Array(N) };
+    var T = { x: new Float32Array(N), y: new Float32Array(N), a: new Float32Array(N), im: im, ink: null };
     for (var j = 0, tries = 0; j < N && cx.length && tries < N * 40; tries++) {
       var r2 = (Math.random() * cx.length) | 0;
       if (Math.random() > cv[r2]) continue;
@@ -212,8 +212,35 @@ import PlateCredit from './PlateCredit.astro';
   // Pair particles with the new drawing's points along a sweep at a random
   // angle: neighbours go to neighbours, so the ink flows across like a tide
   // instead of criss-crossing, and each change runs in a new direction.
+  // The drawing's own ink as one clean image, built once: it fades in under
+  // the dots as they settle, so the finished drawing reads clearly.
+  var curT = null;
+  function inkOf(T) {
+    var im = T.im, a = art.getBoundingClientRect(), c = canvas.getBoundingClientRect();
+    var k = Math.min(a.width / im.width, a.height / im.height), w = im.width * k, h = im.height * k;
+    var o = document.createElement('canvas'); o.width = Math.max(1, Math.round(w * dpr)); o.height = Math.max(1, Math.round(h * dpr));
+    var g = o.getContext('2d', { willReadFrequently: true }), m = 0.07;
+    g.drawImage(im, im.width * m, im.height * m, im.width * (1 - 2 * m), im.height * (1 - 2 * m), 0, 0, o.width, o.height);
+    var d = g.getImageData(0, 0, o.width, o.height), p = d.data, lums = [];
+    for (var i = 0; i < p.length; i += 64) lums.push(0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2]);
+    lums.sort(function (x, y) { return x - y; });
+    var hi = Math.max(1, lums[Math.floor(lums.length * 0.6)]);
+    for (var y = 0, q = 0; y < o.height; y++) {
+      var ny = (y / o.height - 0.5) * 2;
+      for (var x = 0; x < o.width; x++, q += 4) {
+        var v = (0.86 - (0.299 * p[q] + 0.587 * p[q + 1] + 0.114 * p[q + 2]) / hi) / 0.55;
+        var nx = (x / o.width - 0.5) * 2, r = Math.sqrt(nx * nx + ny * ny);
+        v *= r <= 0.62 ? 1 : r >= 1 ? 0 : 1 - (r - 0.62) / 0.38;
+        p[q] = INK[0]; p[q + 1] = INK[1]; p[q + 2] = INK[2]; p[q + 3] = v <= 0.05 ? 0 : Math.min(1, v) * 255;
+      }
+    }
+    g.putImageData(d, 0, 0);
+    T.ink = o; T.ix = a.left - c.left + (a.width - w) / 2; T.iy = a.top - c.top + (a.height - h) / 2; T.iw = w; T.ih = h;
+  }
+
   function aim() {
     var T = targets[idx] || (targets[idx] = sample(images[idx]));
+    curT = T;
     var th = Math.random() * 6.283, c = Math.cos(th), sn = Math.sin(th);
     var P = new Uint32Array(N), Q = new Uint32Array(N), kp = new Float32Array(N), kq = new Float32Array(N);
     for (var i = 0; i < N; i++) { P[i] = Q[i] = i; kp[i] = px[i] * c + py[i] * sn; kq[i] = T.x[i] * c + T.y[i] * sn; }
@@ -357,6 +384,14 @@ import PlateCredit from './PlateCredit.astro';
     bctx.putImageData(pix, 0, 0);
     ctx.clearRect(0, 0, W, H);
     ctx.drawImage(buf, 0, 0, W, H);
+    // The clean lines, washed in under the settling dots and out as they let go.
+    var wash = hold * hold * hold * 0.62;
+    if (curT && wash > 0.01) {
+      if (!curT.ink) inkOf(curT);
+      ctx.globalAlpha = wash;
+      ctx.drawImage(curT.ink, curT.ix, curT.iy, curT.iw, curT.ih);
+      ctx.globalAlpha = 1;
+    }
   }
 
   // One dot, darkest wins where two land on the same pixel.
@@ -406,7 +441,7 @@ import PlateCredit from './PlateCredit.astro';
       layout(); size(); if (images[idx]) { aim(); if (reduce) still(); }
     }, 250);
   });
-  new MutationObserver(function () { ink(); if (reduce && tx) still(); })
+  new MutationObserver(function () { ink(); targets.forEach(function (T) { if (T) T.ink = null; }); if (reduce && tx) still(); })
     .observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
   addEventListener('pointermove', function (e) {
