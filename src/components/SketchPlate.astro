@@ -82,7 +82,7 @@ import PlateCredit from './PlateCredit.astro';
   var list = JSON.parse(plate.dataset.sketches), credits = JSON.parse(plate.dataset.credits);
   // Ask for each drawing at the width this screen needs, not the largest.
   (function () {
-    var need = Math.min(1600, Math.ceil(Math.min(innerWidth * 0.75, innerHeight * 1.2) * Math.min(2, devicePixelRatio || 1) / 200) * 200);
+    var need = Math.min(1600, Math.ceil(Math.max(innerWidth * 0.95, innerHeight * 0.6) * Math.min(2, devicePixelRatio || 1) / 200) * 200);
     list = list.map(function (u) { return u.replace('w_1600', 'w_' + need); });
   })();
   // A different order on every visit, alternating one Indian drawing and
@@ -170,11 +170,14 @@ import PlateCredit from './PlateCredit.astro';
     var to = below.getBoundingClientRect().top - top0 - (innerWidth < 760 ? 14 : 22);
     var ch = meta.offsetHeight, h = Math.round(to - from - ch - 10);
     if (h < 120) return false;                                      // too little room: keep the CSS layout
-    var key = from + ':' + h + ':' + to;
+    var key = from + ':' + h + ':' + to + ':' + innerWidth;
     if (key === fitted) return false;
     fitted = key;
     art.style.top = Math.round(from) + 'px';
     art.style.height = h + 'px';
+    // Nearly the whole width: a wide drawing spreads across the screen, a
+    // tall one takes the full height; each keeps its own proportions.
+    art.style.width = Math.round(innerWidth - (innerWidth < 760 ? 32 : Math.max(48, innerWidth * 0.04))) + 'px';
     meta.style.top = Math.round(to - ch) + 'px';
     return true;
   }
