@@ -4,7 +4,7 @@
    like ink drying, and dissolves when the ink lets go. The whole credit is
    a quiet button: pressing it moves on to the next drawing. The page's
    drawing script fills it in. */
-interface Props { credits: { title: string; by: string }[] }
+interface Props { credits: { title: string; by: string; india?: boolean }[] }
 const { credits } = Astro.props;
 ---
 

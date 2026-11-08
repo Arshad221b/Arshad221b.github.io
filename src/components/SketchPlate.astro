@@ -11,7 +11,7 @@
    Each scan is read once: its paper dropped, and points sampled from its
    ink in proportion to how dark it is. Drawn on one canvas, in the
    theme's ink, and paused whenever it is out of sight. */
-interface Props { sketches: string[]; credits: { title: string; by: string }[] }
+interface Props { sketches: string[]; credits: { title: string; by: string; india?: boolean }[] }
 const { sketches, credits } = Astro.props;
 import PlateCredit from './PlateCredit.astro';
 ---
@@ -85,10 +85,16 @@ import PlateCredit from './PlateCredit.astro';
     var need = Math.min(1600, Math.ceil(Math.min(innerWidth * 0.75, innerHeight * 1.2) * Math.min(2, devicePixelRatio || 1) / 200) * 200);
     list = list.map(function (u) { return u.replace('w_1600', 'w_' + need); });
   })();
-  // A different order on every visit.
+  // A different order on every visit, alternating one Indian drawing and
+  // one from elsewhere: each group shuffled, then interleaved, starting
+  // with either.
   (function () {
-    var o = list.map(function (_, i) { return i; });
-    for (var i = o.length - 1; i > 0; i--) { var r = (Math.random() * (i + 1)) | 0, t = o[i]; o[i] = o[r]; o[r] = t; }
+    function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var r = (Math.random() * (i + 1)) | 0, t = a[i]; a[i] = a[r]; a[r] = t; } return a; }
+    var ind = [], oth = [];
+    credits.forEach(function (c, i) { (c.india ? ind : oth).push(i); });
+    shuffle(ind); shuffle(oth);
+    var first = Math.random() < 0.5 ? ind : oth, second = first === ind ? oth : ind, o = [];
+    for (var k = 0; k < Math.max(ind.length, oth.length); k++) { if (k < first.length) o.push(first[k]); if (k < second.length) o.push(second[k]); }
     list = o.map(function (i) { return list[i]; }); credits = o.map(function (i) { return credits[i]; });
   })();
   var nextBtn = plate.querySelector('.plate-meta');
