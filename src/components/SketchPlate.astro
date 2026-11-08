@@ -387,6 +387,14 @@ import PlateCredit from './PlateCredit.astro';
     // too, in the screen's own proportions.
     var lg = (1 - hold) * (1 - hold), spx = lg * Math.min(W, H) * 0.06, spy = spx, echo = spx > 0.6;
     var going = phase === 'let', kd = going ? 0.0026 * smooth(e / (LET * 0.7)) * dt : 0;
+    // On the way out, damping rises to critical as the particles near their
+    // spots, so they ease in without overshooting, and the stir fades, so
+    // the cloud is calm (still drifting a little) when the next gather begins.
+    if (going) {
+      var calm = smooth(e / LET);
+      damp = Math.pow(0.9 + 0.06 * (1 - smooth(e / (LET * 0.5))), dt);
+      drift *= 1 - 0.85 * calm;
+    }
     // Loosening without walls: each particle breathes outward from the
     // drawing, strongest near it and fading with distance (measured in the
     // screen's own proportions), so the ink thins into an open field; the
@@ -395,7 +403,7 @@ import PlateCredit from './PlateCredit.astro';
     // The halo turns slowly, each echo its own way, so the cloud shimmers.
     var q1 = now * 0.00031, q2 = -now * 0.00023, q3 = now * 0.00017;
     var c1 = Math.cos(q1), s1 = Math.sin(q1), c2 = Math.cos(q2), s2 = Math.sin(q2), c3 = Math.cos(q3), s3 = Math.sin(q3);
-    var trem = 0.22 * (1 - hold) * dt, base = (tick = (tick + 7919) & 8191);
+    var trem = 0.22 * (1 - hold) * dt * (going ? 1 - calm : 1), base = (tick = (tick + 7919) & 8191);
     p32.fill(0);
     for (var i = 0; i < N; i++) {
       var kf = pull * (0.6 + ph[i] / 6.283 * 0.8);
