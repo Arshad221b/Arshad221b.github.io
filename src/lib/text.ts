@@ -113,3 +113,13 @@ export function proseOf(raw: string): string {
        .replace(/&(?:gt|#62);/g, '>');
   return s.replace(/\s+/g, ' ').trim();
 }
+
+/* Words a reader reads in one page's source: markup, code blocks and maths
+   left out. */
+export function wordsIn(raw: string): number {
+  // Some pages keep their body in a template string up in the frontmatter.
+  const kept = raw.match(/const content = `([\s\S]*?)`;/)?.[1] ?? '';
+  const prose = proseOf((raw + '\n---\n' + kept).replace(/<(pre|code)[\s\S]*?<\/\1>/g, ' '))
+    .replace(/\$\$[\s\S]*?\$\$|\$[^$]*\$/g, ' ');
+  return (prose.match(/[A-Za-z'’]+/g) ?? []).length;
+}

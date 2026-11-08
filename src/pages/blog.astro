@@ -14,8 +14,16 @@ import SketchPlate from '../components/SketchPlate.astro';
    single list, newest first, with every reading time stated. */
 
 import Layout from '../layouts/Layout.astro';
+import { wordsIn } from '../lib/text';
+
 import Mast from '../components/Mast.astro';
 import { notebooks } from '../lib/notebooks';
+
+/* Words in each essay, from its own source: markup, code and maths out. */
+const essaySources = import.meta.glob('./blog/*.astro', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+const essayWords: Record<string, number> = Object.fromEntries(Object.entries(essaySources).map(([path, raw]) =>
+  [path.split('/').pop()!.replace('.astro', ''), wordsIn(raw)]));
+const wordsLabel = (n: number) => (n > 0 ? `${n.toLocaleString('en-US')} words · ` : '');
 
 // At the head of the page, in particles of ink: Leonardo's flight, water and
 // the measured body, Michelangelo's figures and plan, Palladio's villa and
@@ -119,14 +127,14 @@ const posts = ([
 ]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
 type Item =
-  | { kind: 'essay'; date: string; title: string; description: string; href: string; image: string; minutes: number; tags: string[]; contents: string[] }
+  | { kind: 'essay'; date: string; title: string; description: string; href: string; image: string; minutes: number; words: number; tags: string[]; contents: string[] }
   | { kind: 'notebook'; date: string; title: string; description: string; href: string; image: string; minutes: number; tags: string[]; nb: (typeof notebooks)[number] };
 
 const items: Item[] = [
   ...posts.map(p => ({
     kind: 'essay' as const, date: p.date, title: p.title, description: p.description,
     href: p.href || `/blog/${p.slug}`, image: img(`/images/blog/${p.slug}.jpg`, 1000),
-    minutes: p.minutes, tags: p.tags, contents: p.contents,
+    minutes: essayWords[p.slug] ? Math.max(1, Math.round(essayWords[p.slug] / 230)) : p.minutes, words: essayWords[p.slug] ?? 0, tags: p.tags, contents: p.contents,
   })),
   ...notebooks.map(nb => ({
     kind: 'notebook' as const, date: nb.endDate, title: nb.title, description: nb.description,
@@ -211,7 +219,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
                   <div class="row-fig"><img src={it.image} data-ink crossorigin="anonymous" alt="" width="1600" height="840" loading="lazy" decoding="async" /></div>
                   <p class="meta">
                     <span class="k">{it.kind === 'essay' ? 'Essay' : 'Notebook'}</span>
-                    <span>{it.kind === 'essay' ? `${it.minutes} min read` : (it.nb.inProgress ? 'In progress · ' : '') + `${it.nb.days.length} days · ${it.minutes} min in all`}</span>
+                    <span>{it.kind === 'essay' ? `${wordsLabel(it.words)}${it.minutes} min read` : (it.nb.inProgress ? 'In progress · ' : '') + `${it.nb.days.length} days · ${wordsLabel(it.nb.words)}${it.minutes} min in all`}</span>
                   </p>
                   <h3><a href={it.href} class="stretch">{it.title}</a></h3>
                   <p class="desc">{it.description}</p>

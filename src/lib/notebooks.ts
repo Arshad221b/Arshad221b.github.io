@@ -13,6 +13,7 @@ export interface NotebookDay {
   title: string;
   href: string | null;
   minutes: number;
+  words: number;
 }
 
 export interface Notebook {
@@ -26,6 +27,7 @@ export interface Notebook {
   tags: string[];
   days: NotebookDay[];
   minutes: number;
+  words: number;
   inProgress?: boolean;
 }
 
@@ -88,11 +90,17 @@ const meta = [
   },
 ];
 
-// Words in a day: every string in it, at an unhurried 220 words a minute.
+// Words in a day: the prose a reader reads. Figure code, display maths and
+// block kinds aren't words; inline maths and markup are dropped too.
+const SKIP = new Set(['svg', 'tex', 'kind', 'date', 'day', 'n', 'stages']);
 function words(v: unknown): number {
-  if (typeof v === 'string') return v.split(/\s+/).filter(Boolean).length;
+  if (typeof v === 'string') {
+    const prose = v.replace(/\$\$[\s\S]*?\$\$|\$[^$]*\$/g, ' ').replace(/<[^>]+>/g, ' ');
+    return (prose.match(/[A-Za-z'’]+/g) ?? []).length;
+  }
   if (Array.isArray(v)) return v.reduce((n, x) => n + words(x), 0);
-  if (v && typeof v === 'object') return Object.values(v).reduce((n: number, x) => n + words(x), 0);
+  if (v && typeof v === 'object')
+    return Object.entries(v).reduce((n: number, [k, x]) => n + (SKIP.has(k) ? 0 : words(x)), 0);
   return 0;
 }
 
@@ -104,7 +112,8 @@ export const notebooks: Notebook[] = meta.map(({ data, ...m }) => {
       title: d.curiosityTitle as string,
       // A day page is only built when there is something written on it.
       href: (d.bullets?.length ?? 0) > 0 ? `/notebooks/${m.slug}/day-${d.day}` : null,
+      words: words(d),
       minutes: Math.max(2, Math.round(words(d) / 220)),
     }));
-  return { ...m, days, minutes: days.reduce((n, d) => n + d.minutes, 0) };
+  return { ...m, days, minutes: days.reduce((n, d) => n + d.minutes, 0), words: days.reduce((n, d) => n + d.words, 0) };
 });

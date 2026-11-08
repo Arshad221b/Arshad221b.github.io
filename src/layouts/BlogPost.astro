@@ -10,6 +10,7 @@ interface Props {
 const { title, date, description, tags = [] } = Astro.props;
 
 import Layout from './Layout.astro';
+import { wordsIn } from '../lib/text';
 
 const siteUrl = 'https://arshad-kazi.com';
 const articleUrl = new URL(Astro.url.pathname, siteUrl).href;
@@ -19,6 +20,10 @@ const articleUrl = new URL(Astro.url.pathname, siteUrl).href;
 const slug = Astro.url.pathname.replace(/\/$/, '').split('/').pop();
 const figure = has(`/images/blog/${slug}.jpg`) ? img(`/images/blog/${slug}.jpg`) : null;
 const figureSet = figure ? widths(`/images/blog/${slug}.jpg`) : undefined;
+/* Words in this post, from its own source: markup, code and maths out. */
+const sources = import.meta.glob('../pages/blog/*.astro', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+const raw = Object.entries(sources).find(([path]) => path.endsWith(`/${slug}.astro`))?.[1] ?? '';
+const wordCount = wordsIn(raw);
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
@@ -50,6 +55,7 @@ function formatDate(dateStr: string): string {
       )}
       <div class="blog-post-meta">
         <time>{formatDate(date)}</time>
+        {wordCount > 0 && <span> · {wordCount.toLocaleString('en-US')} words · {Math.max(1, Math.round(wordCount / 230))} min read</span>}
       </div>
       <h1>{title}</h1>
       <p class="blog-post-description">{description}</p>

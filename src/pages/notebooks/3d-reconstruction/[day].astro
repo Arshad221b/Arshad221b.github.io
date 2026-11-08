@@ -1,5 +1,6 @@
 ---
 import { img, share } from '../../../lib/media';
+import { notebooks } from '../../../lib/notebooks';
 import Layout from '../../../layouts/Layout.astro';
 import { days, STAGES } from '../../../data/3d-reconstruction-days';
 import Blocks from '../../../components/recon/Blocks.astro';
@@ -12,6 +13,7 @@ export const getStaticPaths: GetStaticPaths = () => {
 };
 
 const { dayData: day } = Astro.props;
+const dayInfo = notebooks.find(n => n.slug === '3d-reconstruction')?.days.find(d => d.day === day.day);
 
 const title = `Day ${day.day}: ${day.curiosityTitle} — 3D Reconstruction — Arshad Kazi`;
 
@@ -40,7 +42,7 @@ const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
     <a href="/notebooks/3d-reconstruction" class="back-link">&larr; All Days</a>
 
     <header class="r-head">
-      <p class="r-kicker">Day {day.day} · {formatDate(day.date)}</p>
+      <p class="r-kicker">Day {day.day} · {formatDate(day.date)}{dayInfo && <> · {dayInfo.words.toLocaleString('en-US')} words · {dayInfo.minutes} min</>}</p>
       <h1 class="r-title">{day.curiosityTitle}</h1>
       <p class="r-summary">{day.summary}</p>
     </header>
