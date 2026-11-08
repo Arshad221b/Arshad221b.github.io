@@ -35,7 +35,7 @@ const meta = [
     slug: '3d-reconstruction',
     commitment: '',
     startDate: '2026-11-03',
-    endDate: '2026-11-06',
+    endDate: '2026-11-08',
     description: 'Geometry-based 3D reconstruction from images: camera models, epipolar geometry, triangulation and structure from motion.',
     conclusion: '',
     tags: ['computer vision', '3D vision'],
