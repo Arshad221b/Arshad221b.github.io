@@ -9,6 +9,7 @@
    why it began and what it concluded, come in through the intro and
    conclusion slots. */
 import Layout from '../layouts/Layout.astro';
+import { share } from '../lib/media';
 
 export interface FrontDay {
   day: number;
@@ -35,6 +36,8 @@ interface Props {
   open?: { q: string; day: number; href: string }[];
 }
 const { title, description, status, startDate, lede, days, stages = [], syllabus = [], formulas = [], index, open = [] } = Astro.props;
+// The notebook's cover, for a shared link's card: /notebooks/<slug>.
+const slug = Astro.url.pathname.split('/').filter(Boolean)[1];
 
 const formatDate = (d: string) =>
   new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -56,7 +59,7 @@ const hasIntro = Astro.slots.has('intro');
 const hasConclusion = Astro.slots.has('conclusion');
 ---
 
-<Layout title={`${title} | Notebooks | Arshad Kazi`} activeNav="/blog" description={description}>
+<Layout title={`${title} | Notebooks | Arshad Kazi`} activeNav="/blog" description={description} ogImage={share(`/images/blog/notebook-${slug}.jpg`)}>
   <div class="experiment-page nb">
     <a href="/blog" class="back-link">&larr; Blogs</a>
 

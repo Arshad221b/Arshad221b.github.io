@@ -1,5 +1,5 @@
 ---
-import { img } from '../../../lib/media';
+import { img, share } from '../../../lib/media';
 import Layout from '../../../layouts/Layout.astro';
 import { days, STAGES } from '../../../data/3d-reconstruction-days';
 import Blocks from '../../../components/recon/Blocks.astro';
@@ -35,7 +35,7 @@ for (const st of day.steps) {
 const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 ---
 
-<Layout title={title} activeNav="/blog" description={`Day ${day.day}: ${day.curiosityTitle}`}>
+<Layout title={title} activeNav="/blog" description={`Day ${day.day}: ${day.curiosityTitle}`} ogImage={share("/images/blog/notebook-3d-reconstruction.jpg")}>
   <div class="experiment-page recon">
     <a href="/notebooks/3d-reconstruction" class="back-link">&larr; All Days</a>
 
