@@ -1969,9 +1969,22 @@ html,body{overflow-x:clip;}
 
 /* The opening's empty space lets the pointer through to the drawing
    behind it (its dots can be clicked); its words and controls still take it. */
+.free { pointer-events: none; }
+.free > *:not(.first-screen) { pointer-events: auto; }
 .first-screen { pointer-events: none; }
 .first-screen > *,
 .first-screen > .mast > * { pointer-events: auto; }
+
+/* The page's name stays in the document (screen readers, search) but is
+   not shown: the drawing and the sentence say what the page is. */
+.first-screen .page-name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
 
 /* On a phone the opening's sketch has a band of its own at the top, and
    the words begin below it. */
@@ -1991,10 +2004,11 @@ html,body{overflow-x:clip;}
      fold. */
   .first-screen {
     display: grid;
+    /* The whole top is the drawing's. Below it, the sentence with the
+       note's button in the space to its right, then the search. */
     grid-template-columns: minmax(0, 1fr) auto;
-    /* The open top for the drawing, then a caption line (the page's name,
-       and the note's button across from it), the sentence, the search. */
-    grid-template-rows: 1fr auto auto auto;
+    grid-template-rows: 1fr auto auto;
+    column-gap: var(--space-6);
     min-height: calc(100svh - var(--head-h, 4.5rem) - var(--main-pt, 2rem));
     padding-top: var(--space-xl);
     padding-bottom: var(--space-lg);
@@ -2007,15 +2021,12 @@ html,body{overflow-x:clip;}
   /* The name and the note's button share the head line; the button
      never moves, and the note unfolds under the line into the open
      middle. */
-  .first-screen .page-name {
-    grid-area: 2 / 1;
-    align-self: center;
-    margin: 0;
-  }
+
 
   .first-screen .mast > .why {
-    grid-area: 2 / 1 / 3 / 3;
-    align-self: center;
+    position: relative;
+    grid-area: 2 / 2 / 3 / 3;
+    align-self: end;
     margin: 0;
     pointer-events: none;
   }
@@ -2023,7 +2034,6 @@ html,body{overflow-x:clip;}
   .first-screen .mast > .why summary {
     display: flex;
     width: max-content;
-    margin-left: auto;
   }
 
   .first-screen .mast > .why summary,
@@ -2031,8 +2041,21 @@ html,body{overflow-x:clip;}
     pointer-events: auto;
   }
 
+  /* The note opens as a panel over the drawing, not into the page. */
   .first-screen .mast > .why .why-body {
-    margin-top: var(--space-lg);
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + var(--space-3));
+    width: min(62ch, 70vw);
+    max-height: 60svh;
+    overflow-y: auto;
+    margin: 0;
+    padding: var(--space-5);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    z-index: 5;
   }
 
   /* While the note is open, the sketch behind steps back for the reading. */
@@ -2042,13 +2065,13 @@ html,body{overflow-x:clip;}
   }
 
   .first-screen .page-statement {
-    grid-area: 3 / 1 / 4 / 3;
+    grid-area: 2 / 1 / 3 / 2;
     align-self: end;
-    margin-top: var(--space-md);
+    margin-top: 0;
   }
 
   .first-screen > .console {
-    grid-area: 4 / 1 / 5 / 3;
+    grid-area: 3 / 1 / 4 / 3;
     margin: var(--space-lg) 0 0;
   }
 

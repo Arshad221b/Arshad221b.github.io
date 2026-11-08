@@ -1,6 +1,7 @@
 ---
-/* The credit under a drawing at the head of an index page: which drawing
-   this is out of how many, what it is, and who drew it. The whole credit is
+/* The credit under a drawing at the head of an index page: what it is,
+   and who drew it. It comes into focus only once the drawing has settled,
+   like ink drying, and dissolves when the ink lets go. The whole credit is
    a quiet button: pressing it moves on to the next drawing. The page's
    drawing script fills it in. */
 interface Props { credits: { title: string; by: string }[] }
@@ -8,7 +9,6 @@ const { credits } = Astro.props;
 ---
 
 <button type="button" class="plate-meta" aria-label="Next drawing">
-  <span class="plate-count"><span class="plate-n">01</span><span class="plate-of"> / {String(credits.length).padStart(2, '0')}</span></span>
   <span class="plate-title"></span>
   <span class="plate-by"></span>
 </button>
@@ -38,14 +38,6 @@ const { credits } = Astro.props;
     cursor: pointer;
     pointer-events: auto;
   }
-  .plate-count {
-    font-family: var(--font-sans);
-    font-size: var(--fs-label);
-    letter-spacing: var(--track-label);
-    color: var(--color-text-muted);
-    text-shadow: 0 0 4px var(--color-bg), 0 0 8px var(--color-bg);
-  }
-  .plate-n { color: var(--color-accent); }
   .plate-meta:hover .plate-title { color: var(--color-accent); }
   .plate-title, .plate-by { display: block; }
   .plate-title {
@@ -86,4 +78,6 @@ const { credits } = Astro.props;
     .plate-meta { top: calc(var(--head-h, 5.4rem) + 30svh); gap: 2px; width: max-content; max-width: calc(100vw - 2rem); white-space: normal; }
     .plate-title { text-wrap: balance; }
   }
+  .plate-meta { transition: opacity 0.9s ease, filter 0.9s ease; }
+  .plate:not(.settled) .plate-meta { opacity: 0; filter: blur(6px); pointer-events: none; }
 </style>

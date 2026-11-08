@@ -44,6 +44,8 @@ import PlateCredit from './PlateCredit.astro';
 
   /* Where the drawing forms: the open middle, between the name and the sentence. */
   .plate-art {
+    pointer-events: auto;
+    cursor: pointer;
     position: absolute;
     top: calc(var(--head-h, 4.5rem) + 1.5svh);
     left: 50%;
@@ -149,7 +151,7 @@ import PlateCredit from './PlateCredit.astro';
   // the drawing takes everything above it. CSS places them until this runs.
   var meta = plate.querySelector('.plate-meta'), fitted = '';
   function layout() {
-    var head = document.querySelector('header'), below = document.querySelector('.first-screen .page-name');
+    var head = document.querySelector('header'), below = document.querySelector('.first-screen .page-statement');
     if (!head || !below) return false;
     var top0 = plate.getBoundingClientRect().top;
     var from = head.getBoundingClientRect().bottom - top0 + 12;
@@ -263,7 +265,6 @@ import PlateCredit from './PlateCredit.astro';
       plate.querySelector('.plate-by').textContent = credits[idx].by;
       plate.classList.remove('swap');
     }, 500);
-    plate.querySelector('.plate-n').textContent = String(idx + 1).padStart(2, '0');
   }
 
   var wind = 1;   // which way the ink drifts along the screen's long side; new each transition
@@ -324,13 +325,13 @@ import PlateCredit from './PlateCredit.astro';
     var dt = last ? Math.min(2, Math.max(0.4, (now - last) / 16.667)) : 1; last = now;
     var e = now - t0;
     if (phase === 'gather' && e > FORM) {
-      phase = 'hold'; t0 = now; e = 0;
+      phase = 'hold'; t0 = now; e = 0; plate.classList.add('settled');
       // Read the next drawing's ink now, while this one holds still, so the
       // handover costs nothing extra.
       var nx = (idx + 1) % list.length;
       if (images[nx] && !targets[nx]) setTimeout(function () { if (!targets[nx]) targets[nx] = sample(images[nx]); }, 50);
     }
-    else if (phase === 'hold' && e > HOLD) { phase = 'let'; t0 = now; e = 0; }
+    else if (phase === 'hold' && e > HOLD) { phase = 'let'; t0 = now; e = 0; plate.classList.remove('settled'); }
     else if (phase === 'let' && e > LET) {
       idx = (idx + 1) % images.length;
       if (!images[idx]) { idx = 0; }
@@ -438,12 +439,16 @@ import PlateCredit from './PlateCredit.astro';
     for (var n = 1; n < list.length; n++) load(n);
   });
 
-  // Pressing the credit moves on to the next drawing.
-  nextBtn.addEventListener('click', function () {
+  // The drawing is the control: pressing it (or its credit) scatters the ink
+  // into the next one.
+  function next() {
     var n = (idx + 1) % list.length;
     var go = function () { idx = n; begin(performance.now()); if (reduce) still(); };
+    plate.classList.remove('settled');
     images[n] ? go() : load(n, go);
-  });
+  }
+  nextBtn.addEventListener('click', next);
+  art.addEventListener('click', next);
 
   var rt = 0;
   addEventListener('resize', function () {
