@@ -25,7 +25,7 @@ const display = (tex: string) => '$$' + tex + '$$';
       </table>
     </div>
   ) : b.kind === 'question' ? (
-    <p class="r-question"><span>Question</span>{b.text}</p>
+    <p class="r-question"><span class="r-q-label">Question</span><Fragment set:html={b.text} /></p>
   ) : b.kind === 'figure' ? (
     <figure class="r-fig">
       <Fragment set:html={b.svg} />
