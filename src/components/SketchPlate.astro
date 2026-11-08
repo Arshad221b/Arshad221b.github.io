@@ -93,7 +93,7 @@ import PlateCredit from './PlateCredit.astro';
   })();
   var nextBtn = plate.querySelector('.plate-meta');
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var FORM = 3400, HOLD = 4200, LET = 2600;
+  var FORM = 3400, HOLD = 4200, LET = 3600;
   plate.style.setProperty('--cycle', (FORM + HOLD + LET) / 1000 + 's');
 
   var W = 0, H = 0, dpr = 1, N = 0;
@@ -291,47 +291,25 @@ import PlateCredit from './PlateCredit.astro';
     }
   }
 
-  // Where the ink goes between drawings, a different shape each time, laid
-  // out inside the screen from its own size: an even scatter with clouds, a
-  // vortex, streaming bands, tight clusters, or the whole cloud drifting off
-  // one way. sx/sy hold each particle's destination.
-  var scattered = false;
+  // How the ink leaves a drawing: one of four behaviours, each a coherent
+  // motion with its own character and random particulars:
+  //   0 murmuration: it lifts and follows a leader tracing a figure-eight,
+  //     a ribbon swooping across the screen like starlings;
+  //   1 smoke: it rises from the drawing, curling into plumes;
+  //   2 gust: wind takes it one way along the screen's long side, streaked;
+  //   3 vortex: it is drawn into a whirlpool round a point and spun.
+  // How the water is stirred between drawings: one physical way each time,
+  // with random particulars. 0 a vortex round a point, spinning either way;
+  // 1 a gust along the screen's long side; 2 a plume, the ink rising on its
+  // own buoyancy; 3 eddies, turbulence alone. BEH.curl scales the eddies.
+  var scattered = false, BEH = { kind: 3, curl: 1 };
   function scatter() {
     scattered = true;
-    var m = 0.05, x0 = W * m, y0 = H * m, w = W * (1 - 2 * m), h = H * (1 - 2 * m), R = Math.min(w, h);
-    function inside(i, x, y) {
-      if (x < x0 || x > x0 + w || y < y0 || y > y0 + h) { x = x0 + Math.random() * w; y = y0 + Math.random() * h; }
-      sx[i] = x; sy[i] = y;
-    }
-    function gauss() { return Math.sqrt(-2 * Math.log(Math.random() + 1e-9)) * Math.cos(Math.random() * 6.283); }
-    var shape = (Math.random() * 5) | 0, i;
-    if (shape === 0) {                                   // even scatter with a few clouds
-      var K = 2 + ((Math.random() * 5) | 0), cs = [], even = 0.3 + Math.random() * 0.5;
-      for (var k = 0; k < K; k++) cs.push([x0 + Math.random() * w, y0 + Math.random() * h, R * (0.08 + Math.random() * 0.22)]);
-      for (i = 0; i < N; i++) {
-        if (Math.random() < even) { sx[i] = x0 + Math.random() * w; sy[i] = y0 + Math.random() * h; continue; }
-        var cc = cs[(Math.random() * K) | 0]; inside(i, cc[0] + gauss() * cc[2], cc[1] + gauss() * cc[2]);
-      }
-    } else if (shape === 1) {                            // a vortex: spiral arms round a random point
-      var vx0 = x0 + w * (0.25 + Math.random() * 0.5), vy0 = y0 + h * (0.25 + Math.random() * 0.5);
-      var arms = 2 + ((Math.random() * 3) | 0), turns = 0.8 + Math.random() * 1.4, sgn = Math.random() < 0.5 ? -1 : 1;
-      for (i = 0; i < N; i++) {
-        var t = Math.random(), a = sgn * t * turns * 6.283 + ((i % arms) / arms) * 6.283 + gauss() * 0.25, r = (0.08 + 0.92 * Math.sqrt(t)) * R * 0.55;
-        inside(i, vx0 + Math.cos(a) * r * (w / R), vy0 + Math.sin(a) * r * (h / R));
-      }
-    } else if (shape === 2) {                            // streaming bands at a random angle
-      var nb = 2 + ((Math.random() * 3) | 0), ang = Math.random() * 3.1416, ca = Math.cos(ang), sa = Math.sin(ang), L = Math.sqrt(w * w + h * h);
-      for (i = 0; i < N; i++) {
-        var b = (i % nb) - (nb - 1) / 2, along = (Math.random() - 0.5) * L, across = b * R * 0.22 + gauss() * R * 0.035;
-        inside(i, x0 + w / 2 + ca * along - sa * across, y0 + h / 2 + sa * along + ca * across);
-      }
-    } else if (shape === 3) {                            // tight clusters
-      var K2 = 3 + ((Math.random() * 6) | 0), cs2 = [];
-      for (var k2 = 0; k2 < K2; k2++) cs2.push([x0 + Math.random() * w, y0 + Math.random() * h, R * (0.03 + Math.random() * 0.07)]);
-      for (i = 0; i < N; i++) { var c2 = cs2[(Math.random() * K2) | 0]; inside(i, c2[0] + gauss() * c2[2], c2[1] + gauss() * c2[2]); }
-    } else {                                             // the whole cloud drifts off one way
-      var da = Math.random() * 6.283, dist = R * (0.25 + Math.random() * 0.25), ddx = Math.cos(da) * dist * (w / R), ddy = Math.sin(da) * dist * (h / R);
-      for (i = 0; i < N; i++) inside(i, px[i] + ddx + gauss() * R * 0.12, py[i] + ddy + gauss() * R * 0.12);
+    var kind = (Math.random() * 4) | 0;
+    BEH = { kind: kind, curl: [0.5, 0.7, 1.2, 1.6][kind], cx: W * (0.3 + Math.random() * 0.4), cy: H * (0.3 + Math.random() * 0.35), spin: Math.random() < 0.5 ? -1 : 1 };
+    if (kind === 1) {
+      var ga = (W >= H ? 0 : Math.PI / 2) + (Math.random() - 0.5) * 0.6 + (Math.random() < 0.5 ? 0 : Math.PI);
+      BEH.gx = Math.cos(ga); BEH.gy = Math.sin(ga);
     }
     order(dl);
   }
@@ -419,52 +397,54 @@ import PlateCredit from './PlateCredit.astro';
     // One motion throughout: a pull towards the drawing that eases down to
     // nothing as it lets go and back up as the next gathers, and a slow
     // current that takes over in between. Velocity is never reset.
+    // ── Ink in water ──
+    // Every particle is a small mass in a fluid. It is carried towards the
+    // fluid's local velocity by Stokes drag (one constant, always), held to
+    // its place in the drawing by a spring that the same drag damps
+    // critically, and jostled by faint Brownian motion. The fluid is
+    // incompressible (the curl of a noise field) and, between drawings, is
+    // stirred in one physical way: a vortex, a gust, a plume or eddies.
+    // Springs let go and take hold one by one, and the stirring rises and
+    // falls smoothly, so it is one equation of motion throughout.
     var hold = phase === 'gather' ? smooth(e / FORM) : phase === 'hold' ? 1 : 1 - smooth(e / LET);
-    var damp = Math.pow(0.982 - 0.084 * hold, dt), pull = 0.0042 * hold * hold * dt, drift = (0.1 * (1 - hold) * (1 - hold) + 0.004) * dt;
+    var G = 0.11, KMAX = G * G / 4;                 // drag; the spring it damps critically
+    var ue = phase === 'let' ? e / LET : 0, ug = phase === 'gather' ? e / FORM : 0;
+    // How hard the water is stirred: rises over the first third of the
+    // release, falls over the last third, then a faint residue fading away.
+    var stir = phase === 'let' ? smooth(ue / 0.3) * (1 - smooth((ue - 0.7) / 0.3))
+      : 0;
+    var still = phase === 'let' ? 0.18 : phase === 'gather' ? 0.18 * (1 - smooth(ug / 0.6)) : 0;
     grid(now);
-    // Echoes: each particle's two companions fan out as the pull lets go and
-    // fold back as it returns, so the ink in the air triples without any
-    // more particles to move. Not drawn at all while the drawing holds.
-    // In transition the ink spreads across the whole window, behind the words
-    // too, in the screen's own proportions.
-    var lg = (1 - hold) * (1 - hold), spx = lg * Math.min(W, H) * 0.06, spy = spx, echo = spx > 0.6;
-    var going = phase === 'let', kd = going ? 0.0026 * smooth(e / (LET * 0.7)) * dt : 0;
-    // On the way out, damping rises to critical as the particles near their
-    // spots, so they ease in without overshooting, and the stir fades, so
-    // the cloud is calm (still drifting a little) when the next gather begins.
-    if (going) {
-      var calm = smooth(e / LET);
-      damp = Math.pow(0.9 + 0.06 * (1 - smooth(e / (LET * 0.5))), dt);
-      drift *= 1 - 0.85 * calm;
-    } else if (phase === 'gather' && scattered) {
-      // Everything carries on from where the release left it: same damping,
-      // the same calm current, the scatter pull fading out, so the only new
-      // force is the next drawing's pull, growing from nothing.
-      damp = Math.pow(0.9, dt);
-      drift *= 0.15;
-      kd = 0.0026 * (1 - smooth(e / (FORM * 0.35))) * dt;
-    }
-    // Loosening without walls: each particle breathes outward from the
-    // drawing, strongest near it and fading with distance (measured in the
-    // screen's own proportions), so the ink thins into an open field; the
-    // current may carry it past the edges, and nothing collects there.
-    var wx = W >= H ? wind * 0.03 * lg * dt : 0, wy = W < H ? wind * 0.03 * lg * dt : 0;
-    // The halo turns slowly, each echo its own way, so the cloud shimmers.
-    var q1 = now * 0.00031, q2 = -now * 0.00023, q3 = now * 0.00017;
-    var c1 = Math.cos(q1), s1 = Math.sin(q1), c2 = Math.cos(q2), s2 = Math.sin(q2), c3 = Math.cos(q3), s3 = Math.sin(q3);
-    var trem = 0.22 * (1 - hold) * dt * (going ? 1 - calm : phase === 'gather' && scattered ? 0 : 1), base = (tick = (tick + 7919) & 8191);
+    var kind = BEH.kind, S = Math.min(W, H);
+    var brown = (0.025 + 0.06 * stir) * Math.sqrt(dt), base = (tick = (tick + 7919) & 8191);
+    var gdt = 1 - Math.pow(1 - G, dt);              // drag applied over this frame
+    var lg = 0, spx = 0, spy = 0, echo = false;
     p32.fill(0);
     for (var i = 0; i < N; i++) {
-      var kf = pull * (0.6 + ph[i] / 6.283 * 0.8), kdi = kd;
-      if (phase === 'gather' && gl) { var ug = (e / FORM - gl[i]) / 0.5; kf *= ug <= 0 ? 0 : ug >= 1 ? 1 : ug * ug * (3 - 2 * ug); }
-      else if (going) { var ul = (e / LET - dl[i]) / 0.5; kdi *= ul <= 0 ? 0 : ul >= 1 ? 1 : ul * ul * (3 - 2 * ul); }
-      // Each particle reads the current from its own offset and drifts at its
-      // own strength, with a fine tremor while the drawing is let go.
+      // The spring: full while the drawing holds; letting go and taking hold
+      // one particle at a time, in the order chosen for this transition.
+      var kk = KMAX * (0.75 + ph[i] / 6.283 * 0.5);
+      if (phase === 'let') { var ul = (ue - dl[i]) / 0.5; kk *= 1 - (ul <= 0 ? 0 : ul >= 1 ? 1 : ul * ul * (3 - 2 * ul)); }
+      else if (phase === 'gather') { var ug2 = (ug - (gl ? gl[i] : 0)) / 0.5; kk *= ug2 <= 0 ? 0 : ug2 >= 1 ? 1 : ug2 * ug2 * (3 - 2 * ug2); }
+      // The water's velocity here: its eddies, plus how it is being stirred.
       at(px[i] + nox[i], py[i] + noy[i]);
-      var dm = drift * mul[i], ri2 = (base + i * 31) & 8191;
-      vx[i] += (tx[i] - px[i]) * kf + (sx[i] - px[i]) * kdi * mul[i] + fu * dm + wx * mul[i] + RT[ri2] * trem;
-      vy[i] += (ty[i] - py[i]) * kf + (sy[i] - py[i]) * kdi * mul[i] + fv * dm + wy * mul[i] + RT[(ri2 + 4099) & 8191] * trem;
-      vx[i] *= damp; vy[i] *= damp;
+      var ux = fu * 2.4 * (stir * BEH.curl + still), uy = fv * 2.4 * (stir * BEH.curl + still);
+      if (stir > 0) {
+        if (kind === 0) {                           // vortex (Rankine): solid core, free swirl outside
+          var vdx = px[i] - BEH.cx, vdy = py[i] - BEH.cy, r2 = vdx * vdx + vdy * vdy, R = S * 0.18;
+          var vt = BEH.spin * 3.2 * stir * R / (r2 + R * R) * R;
+          ux += -vdy / R * vt; uy += vdx / R * vt;
+        } else if (kind === 1) {                    // gust: the water moves one way
+          ux += BEH.gx * 3 * stir; uy += BEH.gy * 3 * stir;
+        }
+      }
+      // Forces → velocity → position (semi-implicit Euler).
+      var ri2 = (base + i * 31) & 8191;
+      var ax2 = (tx[i] - px[i]) * kk + RT[ri2] * brown;
+      var ay2 = (ty[i] - py[i]) * kk + RT[(ri2 + 4099) & 8191] * brown;
+      if (kind === 2 && stir > 0) ay2 -= 0.09 * stir * mul[i];   // plume: buoyant ink rises
+      vx[i] += (ux - vx[i]) * gdt + ax2 * dt;
+      vy[i] += (uy - vy[i]) * gdt + ay2 * dt;
       px[i] += vx[i] * dt; py[i] += vy[i] * dt;
       ca[i] += (ta[i] * (0.6 + 0.4 * hold) - ca[i]) * Math.min(1, 0.045 * dt);
       // The pointer parts the ink; it closes again behind it.
