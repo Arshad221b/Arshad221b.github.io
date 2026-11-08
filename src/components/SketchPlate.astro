@@ -395,10 +395,9 @@ import PlateCredit from './PlateCredit.astro';
       var prep = function () { setTimeout(function () { if (!targets[nx] && images[nx]) targets[nx] = sample(images[nx]); }, 50); };
       images[nx] ? prep() : load(nx, prep);
     }
-    else if (phase === 'hold' && e > HOLD) { phase = 'let'; t0 = now; e = 0; plate.classList.remove('settled'); scatter(); }
+    else if (phase === 'hold' && e > HOLD && images[(idx + 1) % list.length]) { phase = 'let'; t0 = now; e = 0; plate.classList.remove('settled'); scatter(); }
     else if (phase === 'let' && e > LET) {
-      idx = (idx + 1) % images.length;
-      if (!images[idx]) { idx = 0; }
+      idx = (idx + 1) % list.length;
       begin(now);
     }
 
@@ -519,6 +518,8 @@ import PlateCredit from './PlateCredit.astro';
     var im = new Image();
     im.crossOrigin = 'anonymous';
     im.onload = function () { images[n] = im; done && done(); };
+    // A drawing that won't load leaves the cycle instead of stalling it.
+    im.onerror = function () { list.splice(n, 1); credits.splice(n, 1); images.splice(n, 1); targets.splice(n, 1); if (n <= idx) idx--; load(n % list.length, done); };
     im.src = list[n];
   }
 
