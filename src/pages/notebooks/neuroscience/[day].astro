@@ -1,6 +1,7 @@
 ---
 import { share } from '../../../lib/media';
 import Layout from '../../../layouts/Layout.astro';
+import { notebooks } from '../../../lib/notebooks';
 import { experiment, days } from '../../../data/neuroscience-days';
 import type { GetStaticPaths } from 'astro';
 
@@ -11,6 +12,7 @@ export const getStaticPaths: GetStaticPaths = () => {
 };
 
 const { dayData: day } = Astro.props;
+const dayInfo = notebooks.find(n => n.slug === 'neuroscience')?.days.find(d => d.day === day.day);
 
 const title = `Day ${day.day}: ${day.curiosityTitle} — Understanding the Visual Cortex — Arshad Kazi`;
 
@@ -30,7 +32,7 @@ const nextDay = currentIndex < activeDays.length - 1 ? activeDays[currentIndex +
     <a href="/notebooks/neuroscience" class="back-link">&larr; All Days</a>
 
     <div class="day-page-header">
-      <span class="day-page-number">Day {day.day} &mdash; {formatDate(day.date)}</span>
+      <span class="day-page-number">Day {day.day} &mdash; {formatDate(day.date)}{dayInfo && <> · {dayInfo.words.toLocaleString('en-US')} words · {dayInfo.minutes} min</>}</span>
       <h1 class="day-page-title">{day.curiosityTitle}</h1>
     </div>
 
