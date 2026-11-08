@@ -17,17 +17,6 @@ const replaced: Record<string, string> = {
   'thoughts/steve-jobs-by-walter-isaacson': 'thoughts/steve-jobs-by-walter-isaacson-poster',
   'thoughts/dabholkar-on-scientific-thinking': 'thoughts/dabholkar-on-scientific-thinking-photo',
   'blog/notebook-3d-reconstruction': 'blog/notebook-3d-reconstruction-sfm',
-  // Uploaded one folder deeper, under site/images/.
-  'india/inayat-khan': 'images/india/inayat-khan',
-  'india/jahangir-sufi': 'images/india/jahangir-sufi',
-  'india/sarnath-buddha': 'images/india/sarnath-buddha',
-  'thoughts-bg/school-of-athens': 'images/thoughts-bg/school-of-athens',
-  'thoughts-bg/rembrandt': 'images/thoughts-bg/rembrandt',
-  'thoughts-bg/kollwitz': 'images/thoughts-bg/kollwitz',
-  'blog-bg/blake-newton': 'images/blog-bg/blake-newton',
-  'blog-bg/hooke-flea': 'images/blog-bg/hooke-flea',
-  'india/lahore-astrolabe': 'images/india/lahore-astrolabe',
-  'india/taj-site-plan': 'images/india/taj-site-plan',
 };
 const id = (path: string) => {
   const name = rel(path).replace(/\.[a-z]+$/i, '');

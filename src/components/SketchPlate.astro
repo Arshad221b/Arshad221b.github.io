@@ -468,14 +468,18 @@ import PlateCredit from './PlateCredit.astro';
           ux += BEH.gx * 3 * stir; uy += BEH.gy * 3 * stir;
         }
       }
-      // Forces → velocity → position (semi-implicit Euler).
+      // Forces → velocity → position (semi-implicit Euler). Ink is fine enough
+      // to go wherever the water goes (a tracer: no inertia against the flow),
+      // so the stirring mixes it evenly; heavy particles would be flung out of
+      // the eddies and bunch in the calm seams between them. Only its own
+      // motion, relative to the water, carries inertia and drag.
       var ri2 = (base + i * 31) & 8191;
       var ax2 = (tx[i] - px[i]) * kk + RT[ri2] * brown;
       var ay2 = (ty[i] - py[i]) * kk + RT[(ri2 + 4099) & 8191] * brown;
       if (kind === 2 && stir > 0) ay2 -= 0.09 * stir * mul[i];   // plume: buoyant ink rises
-      vx[i] += (ux - vx[i]) * gdt + ax2 * dt;
-      vy[i] += (uy - vy[i]) * gdt + ay2 * dt;
-      px[i] += vx[i] * dt; py[i] += vy[i] * dt;
+      vx[i] += -vx[i] * gdt + ax2 * dt;
+      vy[i] += -vy[i] * gdt + ay2 * dt;
+      px[i] += (vx[i] + ux) * dt; py[i] += (vy[i] + uy) * dt;
       ca[i] += (ta[i] * (0.6 + 0.4 * hold) - ca[i]) * Math.min(1, 0.045 * dt);
       // The pointer parts the ink; it closes again behind it.
       var qx = px[i] + fx[i], qy = py[i] + fy[i], ex = qx - mx, ey = qy - my, d2 = ex * ex + ey * ey;
