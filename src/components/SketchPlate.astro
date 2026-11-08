@@ -524,7 +524,12 @@ import PlateCredit from './PlateCredit.astro';
   }
 
   layout(); ink(); size();
-  load(0, function () {
+  // Start only once the page has given the drawing a real size: an image
+  // that arrives before the layout would be sampled at zero and stall.
+  load(0, function start() {
+    if (!layout()) { setTimeout(start, 60); return; }
+    size(); if (!W || !H) { setTimeout(start, 60); return; }
+    targets = [];
     begin(performance.now());
     if (reduce) { still(); return; }
     requestAnimationFrame(frame);
