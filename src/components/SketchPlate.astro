@@ -102,7 +102,7 @@ import PlateCredit from './PlateCredit.astro';
   var tick = 0;
   var images = [], targets = [], idx = 0, phase = 'form', t0 = 0;
   var mx = -1e4, my = -1e4, INK = [34, 28, 22], RGB = 0;
-  var buf, bctx, pix, p32, BW = 0, BH = 0;
+  var buf, bctx, pix, p32, BW = 0, BH = 0, mgx = 1, mgy = 1;
 
   function size() {
     dpr = Math.min(2, devicePixelRatio || 1);
@@ -268,6 +268,27 @@ import PlateCredit from './PlateCredit.astro';
     }, 500);
   }
 
+  // Where the ink goes between drawings: a random destination for every
+  // particle, spread over the whole screen and built fresh each time from
+  // the screen's own size: part an even scatter, part a few clouds of random
+  // number, place and size, in a random mix. sx/sy hold the destinations.
+  function scatter() {
+    var m = 0.05, x0 = W * m, y0 = H * m, w = W * (1 - 2 * m), h = H * (1 - 2 * m);
+    var K = 2 + ((Math.random() * 5) | 0), cs = [];
+    for (var k = 0; k < K; k++) cs.push([x0 + Math.random() * w, y0 + Math.random() * h, Math.min(W, H) * (0.08 + Math.random() * 0.22)]);
+    var even = 0.3 + Math.random() * 0.5;
+    for (var i = 0; i < N; i++) {
+      var x, y;
+      if (Math.random() < even) { x = x0 + Math.random() * w; y = y0 + Math.random() * h; }
+      else {
+        var c = cs[(Math.random() * K) | 0], g1 = Math.sqrt(-2 * Math.log(Math.random() + 1e-9)), g2 = Math.random() * 6.283;
+        x = c[0] + Math.cos(g2) * g1 * c[2]; y = c[1] + Math.sin(g2) * g1 * c[2];
+        if (x < x0 || x > x0 + w || y < y0 || y > y0 + h) { x = x0 + Math.random() * w; y = y0 + Math.random() * h; }
+      }
+      sx[i] = x; sy[i] = y;
+    }
+  }
+
   var wind = 1;   // which way the ink drifts along the screen's long side; new each transition
   function begin(now) { aim(); mark(); phase = 'gather'; t0 = now; wind = Math.random() < 0.5 ? -1 : 1; }
   function smooth(u) { u = u < 0 ? 0 : u > 1 ? 1 : u; return u * u * u * (u * (u * 6 - 15) + 10); }
@@ -332,7 +353,7 @@ import PlateCredit from './PlateCredit.astro';
       var nx = (idx + 1) % list.length;
       if (images[nx] && !targets[nx]) setTimeout(function () { if (!targets[nx]) targets[nx] = sample(images[nx]); }, 50);
     }
-    else if (phase === 'hold' && e > HOLD) { phase = 'let'; t0 = now; e = 0; plate.classList.remove('settled'); }
+    else if (phase === 'hold' && e > HOLD) { phase = 'let'; t0 = now; e = 0; plate.classList.remove('settled'); scatter(); }
     else if (phase === 'let' && e > LET) {
       idx = (idx + 1) % images.length;
       if (!images[idx]) { idx = 0; }
@@ -344,25 +365,19 @@ import PlateCredit from './PlateCredit.astro';
     // nothing as it lets go and back up as the next gathers, and a slow
     // current that takes over in between. Velocity is never reset.
     var hold = phase === 'gather' ? smooth(e / FORM) : phase === 'hold' ? 1 : 1 - smooth(e / LET);
-    var damp = Math.pow(0.982 - 0.084 * hold, dt), pull = 0.0042 * hold * hold * dt, drift = (0.22 * (1 - hold) * (1 - hold) + 0.004) * dt;
+    var damp = Math.pow(0.982 - 0.084 * hold, dt), pull = 0.0042 * hold * hold * dt, drift = (0.1 * (1 - hold) * (1 - hold) + 0.004) * dt;
     grid(now);
     // Echoes: each particle's two companions fan out as the pull lets go and
     // fold back as it returns, so the ink in the air triples without any
     // more particles to move. Not drawn at all while the drawing holds.
     // In transition the ink spreads across the whole window, behind the words
     // too, in the screen's own proportions.
-    var lg = (1 - hold) * (1 - hold), spx = lg * W * 0.55, spy = lg * H * 0.55, echo = lg * Math.min(W, H) > 1;
+    var lg = (1 - hold) * (1 - hold), spx = lg * Math.min(W, H) * 0.06, spy = spx, echo = spx > 0.6;
+    var going = phase === 'let', kd = going ? 0.0026 * smooth(e / (LET * 0.7)) * dt : 0;
     // Loosening without walls: each particle breathes outward from the
     // drawing, strongest near it and fading with distance (measured in the
     // screen's own proportions), so the ink thins into an open field; the
     // current may carry it past the edges, and nothing collects there.
-    var ar0 = art.getBoundingClientRect(), cr0 = canvas.getBoundingClientRect();
-    var ccx = ar0.left - cr0.left + ar0.width / 2, ccy = ar0.top - cr0.top + ar0.height / 2;
-    var push = 0.9 * lg * dt;
-    // The screen's edges turn the ink rather than stop it: within a margin the
-    // current and wind fade and a gentle steer brings each particle back round
-    // into the open, so nothing leaves the frame and nothing stacks against it.
-    var mgx = W * 0.1, mgy = H * 0.1, steer = 0.32 * dt;
     var wx = W >= H ? wind * 0.03 * lg * dt : 0, wy = W < H ? wind * 0.03 * lg * dt : 0;
     // The halo turns slowly, each echo its own way, so the cloud shimmers.
     var q1 = now * 0.00031, q2 = -now * 0.00023, q3 = now * 0.00017;
@@ -375,19 +390,10 @@ import PlateCredit from './PlateCredit.astro';
       // own strength, with a fine tremor while the drawing is let go.
       at(px[i] + nox[i], py[i] + noy[i]);
       var dm = drift * mul[i], ri2 = (base + i * 31) & 8191;
-      var ddx = px[i] - ccx, ddy = py[i] - ccy;
-      var nr = (ddx * ddx) / (W * W) + (ddy * ddy) / (H * H), fall = 1 / (1 + nr * 9);
-      var ex = px[i] < mgx ? 1 - px[i] / mgx : px[i] > W - mgx ? 1 - (W - px[i]) / mgx : 0;
-      var ey = py[i] < mgy ? 1 - py[i] / mgy : py[i] > H - mgy ? 1 - (H - py[i]) / mgy : 0;
-      ex = ex > 1 ? 1 : ex * ex * (3 - 2 * ex); ey = ey > 1 ? 1 : ey * ey * (3 - 2 * ey);
-      var inx = px[i] < W / 2 ? 1 : -1, iny = py[i] < H / 2 ? 1 : -1;
-      vx[i] += (tx[i] - px[i]) * kf + (fu * dm + wx * mul[i] + (ddx / W) * fall * push) * (1 - ex) + RT[ri2] * trem + inx * ex * steer * (1 - hold);
-      vy[i] += (ty[i] - py[i]) * kf + (fv * dm + wy * mul[i]) * (1 - ey) + RT[(ri2 + 4099) & 8191] * trem + ((ddy / H) * fall * push - 0.005 * (1 - hold) * dt) * (1 - ey) + iny * ey * steer * (1 - hold);
+      vx[i] += (tx[i] - px[i]) * kf + (sx[i] - px[i]) * kd * mul[i] + fu * dm + wx * mul[i] + RT[ri2] * trem;
+      vy[i] += (ty[i] - py[i]) * kf + (sy[i] - py[i]) * kd * mul[i] + fv * dm + wy * mul[i] + RT[(ri2 + 4099) & 8191] * trem;
       vx[i] *= damp; vy[i] *= damp;
       px[i] += vx[i] * dt; py[i] += vy[i] * dt;
-      // Last guard: a soft bounce at the very edge.
-      if (px[i] < 1) { px[i] = 1; vx[i] = Math.abs(vx[i]) * 0.4; } else if (px[i] > W - 2) { px[i] = W - 2; vx[i] = -Math.abs(vx[i]) * 0.4; }
-      if (py[i] < 1) { py[i] = 1; vy[i] = Math.abs(vy[i]) * 0.4; } else if (py[i] > H - 2) { py[i] = H - 2; vy[i] = -Math.abs(vy[i]) * 0.4; }
       ca[i] += (ta[i] * (0.6 + 0.4 * hold) - ca[i]) * Math.min(1, 0.045 * dt);
       // The pointer parts the ink; it closes again behind it.
       var qx = px[i] + fx[i], qy = py[i] + fy[i], ex = qx - mx, ey = qy - my, d2 = ex * ex + ey * ey;
@@ -395,7 +401,8 @@ import PlateCredit from './PlateCredit.astro';
       fx[i] *= 0.9; fy[i] *= 0.9;
       var al = ca[i];
       if (al > 0.04) {
-        var bx = px[i] + fx[i], by = py[i] + fy[i], A = al * (dpr > 1 ? 255 : 225);
+        var bx = px[i] + fx[i], by = py[i] + fy[i];
+        var A = al * (dpr > 1 ? 255 : 225);
         dot(bx, by, A);
         if (echo) {
           var ea = A * 0.5;
