@@ -78,7 +78,13 @@ import PlateCredit from './PlateCredit.astro';
   var canvas = plate.querySelector('canvas'), ctx = canvas.getContext('2d');
   var art = plate.querySelector('.plate-art');
   var list = JSON.parse(plate.dataset.sketches), credits = JSON.parse(plate.dataset.credits);
-  var dots = plate.querySelectorAll('.plate-dots button');
+  // A different order on every visit.
+  (function () {
+    var o = list.map(function (_, i) { return i; });
+    for (var i = o.length - 1; i > 0; i--) { var r = (Math.random() * (i + 1)) | 0, t = o[i]; o[i] = o[r]; o[r] = t; }
+    list = o.map(function (i) { return list[i]; }); credits = o.map(function (i) { return credits[i]; });
+  })();
+  var nextBtn = plate.querySelector('.plate-meta');
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var FORM = 3400, HOLD = 4200, LET = 2600;
   plate.style.setProperty('--cycle', (FORM + HOLD + LET) / 1000 + 's');
@@ -143,7 +149,7 @@ import PlateCredit from './PlateCredit.astro';
   // the drawing takes everything above it. CSS places them until this runs.
   var meta = plate.querySelector('.plate-meta'), fitted = '';
   function layout() {
-    var head = document.querySelector('header'), below = document.querySelector(innerWidth < 760 ? '.first-screen .page-name' : '.first-screen .page-statement');
+    var head = document.querySelector('header'), below = document.querySelector('.first-screen .page-name');
     if (!head || !below) return false;
     var top0 = plate.getBoundingClientRect().top;
     var from = head.getBoundingClientRect().bottom - top0 + 12;
@@ -257,11 +263,7 @@ import PlateCredit from './PlateCredit.astro';
       plate.querySelector('.plate-by').textContent = credits[idx].by;
       plate.classList.remove('swap');
     }, 500);
-    dots.forEach(function (b, i) {
-      b.classList.remove('on');
-      b.setAttribute('aria-current', i === idx ? 'true' : 'false');
-      if (i === idx) { void b.offsetWidth; b.classList.add('on'); }
-    });
+    plate.querySelector('.plate-n').textContent = String(idx + 1).padStart(2, '0');
   }
 
   var wind = 1;   // which way the ink drifts along the screen's long side; new each transition
@@ -436,13 +438,11 @@ import PlateCredit from './PlateCredit.astro';
     for (var n = 1; n < list.length; n++) load(n);
   });
 
-  dots.forEach(function (b) {
-    b.addEventListener('click', function () {
-      var n = +b.dataset.i;
-      if (n === idx) return;
-      var go = function () { idx = n; begin(performance.now()); if (reduce) still(); };
-      images[n] ? go() : load(n, go);
-    });
+  // Pressing the credit moves on to the next drawing.
+  nextBtn.addEventListener('click', function () {
+    var n = (idx + 1) % list.length;
+    var go = function () { idx = n; begin(performance.now()); if (reduce) still(); };
+    images[n] ? go() : load(n, go);
   });
 
   var rt = 0;

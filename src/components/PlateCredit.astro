@@ -1,19 +1,17 @@
 ---
-/* The credit under a drawing at the head of an index page: a row of
-   dots, one for each drawing, the current one drawn out into a line that
-   fills as it holds (each can be clicked to go to that drawing); then
-   what it is, and who drew it. The page's drawing script fills it in. */
+/* The credit under a drawing at the head of an index page: which drawing
+   this is out of how many, what it is, and who drew it. The whole credit is
+   a quiet button: pressing it moves on to the next drawing. The page's
+   drawing script fills it in. */
 interface Props { credits: { title: string; by: string }[] }
 const { credits } = Astro.props;
 ---
 
-<div class="plate-meta">
-  <ol class="plate-dots" aria-label="Drawings">
-    {credits.map((c, i) => <li><button type="button" data-i={i} aria-label={`${c.title}, ${c.by}`}></button></li>)}
-  </ol>
-  <p class="plate-title"></p>
-  <p class="plate-by"></p>
-</div>
+<button type="button" class="plate-meta" aria-label="Next drawing">
+  <span class="plate-count"><span class="plate-n">01</span><span class="plate-of"> / {String(credits.length).padStart(2, '0')}</span></span>
+  <span class="plate-title"></span>
+  <span class="plate-by"></span>
+</button>
 
 <style is:global>
   /* The credit, centred under the drawing: a row of ink dots, one for each
@@ -31,34 +29,25 @@ const { credits } = Astro.props;
     text-align: center;
     white-space: nowrap;
   }
-  .plate-dots { display: flex; align-items: center; gap: 10px; margin: 0 0 var(--space-1); padding: 0; list-style: none; pointer-events: auto; }
-  .plate-dots button {
-    position: relative;
-    display: block;
-    width: 5px;
-    height: 5px;
+  .plate-meta {
     padding: 0;
     border: 0;
-    border-radius: 3px;
-    background: var(--color-text-muted);
-    opacity: 0.45;
-    overflow: hidden;
+    background: none;
+    font: inherit;
+    color: inherit;
     cursor: pointer;
-    transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.4s ease;
+    pointer-events: auto;
   }
-  .plate-dots button::before { content: ""; position: absolute; inset: -8px; }
-  .plate-dots button:hover { opacity: 0.9; }
-  .plate-dots button.on { width: 34px; opacity: 1; background: color-mix(in srgb, var(--color-text-muted) 35%, transparent); }
-  .plate-dots button.on::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: var(--color-accent);
-    transform-origin: left;
-    animation: plate-fill var(--cycle) linear forwards;
+  .plate-count {
+    font-family: var(--font-sans);
+    font-size: var(--fs-label);
+    letter-spacing: var(--track-label);
+    color: var(--color-text-muted);
+    text-shadow: 0 0 4px var(--color-bg), 0 0 8px var(--color-bg);
   }
-  @keyframes plate-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .plate-n { color: var(--color-accent); }
+  .plate-meta:hover .plate-title { color: var(--color-accent); }
+  .plate-title, .plate-by { display: block; }
   .plate-title {
     margin: 0;
     font-family: var(--font-serif);
@@ -83,7 +72,6 @@ const { credits } = Astro.props;
     /* A soft halo of paper, so the credit reads over the ink behind it. */
     text-shadow: 0 0 4px var(--color-bg), 0 0 8px var(--color-bg), 0 0 14px var(--color-bg);
   }
-  .plate-dots { filter: drop-shadow(0 0 3px var(--color-bg)) drop-shadow(0 0 6px var(--color-bg)); }
   .swap .plate-title,
   .swap .plate-by { opacity: 0; }
 
@@ -97,8 +85,5 @@ const { credits } = Astro.props;
   @media (max-width: 759px) {
     .plate-meta { top: calc(var(--head-h, 5.4rem) + 30svh); gap: 2px; width: max-content; max-width: calc(100vw - 2rem); white-space: normal; }
     .plate-title { text-wrap: balance; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .plate-dots button.on::after { animation: none; transform: none; }
   }
 </style>

@@ -1992,7 +1992,9 @@ html,body{overflow-x:clip;}
   .first-screen {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: auto 1fr auto auto;
+    /* The open top for the drawing, then a caption line (the page's name,
+       and the note's button across from it), the sentence, the search. */
+    grid-template-rows: 1fr auto auto auto;
     min-height: calc(100svh - var(--head-h, 4.5rem) - var(--main-pt, 2rem));
     padding-top: var(--space-xl);
     padding-bottom: var(--space-lg);
@@ -2006,13 +2008,14 @@ html,body{overflow-x:clip;}
      never moves, and the note unfolds under the line into the open
      middle. */
   .first-screen .page-name {
-    grid-area: 1 / 1;
-    align-self: start;
-    padding-top: var(--space-2);
+    grid-area: 2 / 1;
+    align-self: center;
+    margin: 0;
   }
 
   .first-screen .mast > .why {
-    grid-area: 1 / 1 / 2 / 3;
+    grid-area: 2 / 1 / 3 / 3;
+    align-self: center;
     margin: 0;
     pointer-events: none;
   }
@@ -2041,7 +2044,7 @@ html,body{overflow-x:clip;}
   .first-screen .page-statement {
     grid-area: 3 / 1 / 4 / 3;
     align-self: end;
-    margin-top: var(--space-2xl);
+    margin-top: var(--space-md);
   }
 
   .first-screen > .console {
