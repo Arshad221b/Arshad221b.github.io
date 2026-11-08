@@ -531,7 +531,13 @@ import PlateCredit from './PlateCredit.astro';
       // Read the next drawing's ink now, while this one holds still, so the
       // handover costs nothing extra.
       var nx = (idx + 1) % list.length;
-      var prep = function () { setTimeout(function () { if (!targets[nx] && images[nx]) targets[nx] = sample(images[nx]); }, 50); };
+      // The work is done mid-hold, when the drawing is perfectly still, in two
+      // slices: sampling the points, then the clean-line image, so neither the
+      // settle nor the release ever waits on it.
+      var prep = function () {
+        setTimeout(function () { if (!targets[nx] && images[nx]) targets[nx] = sample(images[nx]); }, 1800);
+        setTimeout(function () { var T = targets[nx]; if (T && !T.ink) inkOf(T); }, 2600);
+      };
       images[nx] ? prep() : load(nx, prep);
     }
     else if (phase === 'hold' && e > HOLD && images[(idx + 1) % list.length]) { phase = 'let'; t0 = now; e = 0; plate.classList.remove('settled'); scatter(); }
@@ -563,7 +569,7 @@ import PlateCredit from './PlateCredit.astro';
     // over its first half, so drifting turns into gathering in one motion.
     var stir = phase === 'let' ? smooth(ue / 0.3) * (1 - 0.6 * smooth((ue - 0.6) / 0.4))
       : phase === 'gather' && scattered ? 0.4 * (1 - smooth(ug / 0.55)) : 0;
-    var still = phase === 'let' ? 0.18 : phase === 'gather' ? 0.18 * (1 - smooth(ug / 0.6)) : 0;
+    var still = phase === 'let' ? 0.18 * smooth(ue / 0.15) : phase === 'gather' ? 0.18 * (1 - smooth(ug / 0.6)) : 0;
     grid(now, 2.4 * (stir * BEH.curl + still), stir);
     var kind = BEH.kind, S = Math.min(W, H);
     var brown = (0.025 + 0.06 * stir) * Math.sqrt(dt), base = (tick = (tick + 7919) & 8191);
@@ -664,6 +670,7 @@ import PlateCredit from './PlateCredit.astro';
     if (!W || !H || !document.querySelector('.first-screen .page-statement')) { setTimeout(start, 60); return; }
     targets = [];
     begin(performance.now());
+    if (curT && !curT.ink) inkOf(curT);   // before the first frame, not at the first settle
     if (reduce) { still(); return; }
     requestAnimationFrame(frame);
   });
