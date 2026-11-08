@@ -303,6 +303,13 @@ import PlateCredit from './PlateCredit.astro';
 
   // Points of ink from a scan, sampled in proportion to how dark it is,
   // placed in the drawing's area and fading out towards its edge.
+  // The fade at a picture's edge: a thin soft margin for an open drawing,
+  // an oval for a picture that fills its frame.
+  function edgeFade(nx, ny, open) {
+    if (open) { var ex = (1 - Math.abs(nx)) / 0.04, ey = (1 - Math.abs(ny)) / 0.04; return (ex < 1 ? ex : 1) * (ey < 1 ? ey : 1); }
+    var r = Math.sqrt(nx * nx + ny * ny);
+    return r <= 0.62 ? 1 : r >= 1 ? 0 : 1 - (r - 0.62) / 0.38;
+  }
   function sample(im) {
     var a = art.getBoundingClientRect(), c = canvas.getBoundingClientRect();
     var k = Math.min(a.width / im.width, a.height / im.height) * (W < 760 ? 1 : 0.5);   // small screens read at full size
@@ -333,16 +340,24 @@ import PlateCredit from './PlateCredit.astro';
       }
     }
     blur(L, S, 1, w, w, h); blur(S, B, w, 1, h, w); blur(B, S, 1, w, w, h); blur(S, B, w, 1, h, w);
+    function inkAt(q) { var dk = Math.max(0, Math.min(1, (hi - L[q]) / span)); return 0.5 * dk * dk + 2.2 * Math.max(0, (B[q] - L[q]) / span); }
+    // A drawing on an open sheet shows whole. Only a picture whose ink runs
+    // into its edges (a photo, a full painting) fades out through an oval,
+    // so it never ends in a hard rectangle. Read from its outer band.
+    var bx = Math.max(2, Math.round(w * 0.05)), by = Math.max(2, Math.round(h * 0.05)), bn = 0, bi = 0;
+    for (var y0 = 0; y0 < h; y0 += 2) for (var x0 = 0; x0 < w; x0 += 2) {
+      if (x0 >= bx && x0 < w - bx && y0 >= by && y0 < h - by) continue;
+      bn++; if (inkAt(y0 * w + x0) > 0.22) bi++;
+    }
+    var open = bi / Math.max(1, bn) < 0.12;
     var cx = [], cy = [], cv = [];
     for (var y = 0, q = 0; y < h; y++) for (var x = 0; x < w; x++, q++) {
-      var dark = Math.max(0, Math.min(1, (hi - L[q]) / span)), edge = Math.max(0, (B[q] - L[q]) / span);
-      var v = 0.5 * dark * dark + 2.2 * edge;
-      var nx = (x / w - 0.5) * 2, ny = (y / h - 0.5) * 2, r = Math.sqrt(nx * nx + ny * ny);
-      v *= r <= 0.62 ? 1 : r >= 1 ? 0 : 1 - (r - 0.62) / 0.38;
+      var v = inkAt(q);
+      v *= edgeFade((x / w - 0.5) * 2, (y / h - 0.5) * 2, open);
       if (v > 0.22) { cx.push(x); cy.push(y); cv.push(Math.min(1, v)); }
     }
     var up = W < 760 ? 1 : 2, ox = a.left - c.left + (a.width - w * up) / 2, oy = a.top - c.top + (a.height - h * up) / 2;
-    var T = { x: new Float32Array(N), y: new Float32Array(N), a: new Float32Array(N), im: im, ink: null };
+    var T = { x: new Float32Array(N), y: new Float32Array(N), a: new Float32Array(N), im: im, ink: null, open: open };
     for (var j = 0, tries = 0; j < N && cx.length && tries < N * 40; tries++) {
       var r2 = (Math.random() * cx.length) | 0;
       if (Math.random() > cv[r2]) continue;
@@ -376,8 +391,7 @@ import PlateCredit from './PlateCredit.astro';
       var ny = (y / o.height - 0.5) * 2;
       for (var x = 0; x < o.width; x++, q += 4) {
         var v = (0.86 - (0.299 * p[q] + 0.587 * p[q + 1] + 0.114 * p[q + 2]) / hi) / 0.55;
-        var nx = (x / o.width - 0.5) * 2, r = Math.sqrt(nx * nx + ny * ny);
-        v *= r <= 0.62 ? 1 : r >= 1 ? 0 : 1 - (r - 0.62) / 0.38;
+        v *= edgeFade((x / o.width - 0.5) * 2, ny, T.open);
         p[q] = INK[0]; p[q + 1] = INK[1]; p[q + 2] = INK[2]; p[q + 3] = v <= 0.05 ? 0 : Math.min(1, v) * 255;
       }
     }
