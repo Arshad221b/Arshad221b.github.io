@@ -100,7 +100,7 @@ import PlateCredit from './PlateCredit.astro';
   var px, py, vx, vy, tx, ty, ta;                // position, drift, target
   var sx, sy, dl, sw, ar, ph, ca, oa, fx, fy;     // start, delay, swirl, arc, phase, alpha, pointer offset
   var e1x, e1y, e2x, e2y, e3x, e3y;               // where each particle's three echoes sit, relative to it
-  var nox, noy, mul;                              // each particle's own offset into the current, and its own drift strength
+  var nox, noy, mul, gl;   // gl: when each particle answers the gather, 0 to ~0.5 of the way in                              // each particle's own offset into the current, and its own drift strength
   // A table of random numbers, read in a shifting order: tremor without
   // calling the random generator for every particle on every frame.
   var RT = new Float32Array(8192); for (var ri = 0; ri < RT.length; ri++) RT[ri] = Math.random() * 2 - 1;
@@ -128,7 +128,7 @@ import PlateCredit from './PlateCredit.astro';
       var F = function () { return new Float32Array(N); };
       px = F(); py = F(); vx = F(); vy = F(); tx = F(); ty = F(); ta = F();
       sx = F(); sy = F(); dl = F(); sw = F(); ar = F(); ph = F(); ca = F(); oa = F(); fx = F(); fy = F();
-      e1x = F(); e1y = F(); e2x = F(); e2y = F(); e3x = F(); e3y = F(); nox = F(); noy = F(); mul = F();
+      e1x = F(); e1y = F(); e2x = F(); e2y = F(); e3x = F(); e3y = F(); nox = F(); noy = F(); mul = F(); gl = F();
       // The first arrival: a soft cloud of dust around where the drawing will form.
       var a = art.getBoundingClientRect(), c = canvas.getBoundingClientRect();
       var cx = a.left - c.left + a.width / 2, cy = a.top - c.top + a.height / 2;
@@ -277,27 +277,67 @@ import PlateCredit from './PlateCredit.astro';
   // particle, spread over the whole screen and built fresh each time from
   // the screen's own size: part an even scatter, part a few clouds of random
   // number, place and size, in a random mix. sx/sy hold the destinations.
-  var scattered = false;
-  function scatter() {
-    scattered = true;
-    var m = 0.05, x0 = W * m, y0 = H * m, w = W * (1 - 2 * m), h = H * (1 - 2 * m);
-    var K = 2 + ((Math.random() * 5) | 0), cs = [];
-    for (var k = 0; k < K; k++) cs.push([x0 + Math.random() * w, y0 + Math.random() * h, Math.min(W, H) * (0.08 + Math.random() * 0.22)]);
-    var even = 0.3 + Math.random() * 0.5;
+  // The order particles move in: all at once but staggered, a sweep across
+  // the screen from a random side, or a ripple out from a random point.
+  // Writes a delay of 0 to 0.5 (of the phase) into arr.
+  function order(arr) {
+    var kind = (Math.random() * 3) | 0, th = Math.random() * 6.283, c = Math.cos(th), s0 = Math.sin(th);
+    var rx = Math.random() * W, ry = Math.random() * H, D = Math.sqrt(W * W + H * H);
     for (var i = 0; i < N; i++) {
-      var x, y;
-      if (Math.random() < even) { x = x0 + Math.random() * w; y = y0 + Math.random() * h; }
-      else {
-        var c = cs[(Math.random() * K) | 0], g1 = Math.sqrt(-2 * Math.log(Math.random() + 1e-9)), g2 = Math.random() * 6.283;
-        x = c[0] + Math.cos(g2) * g1 * c[2]; y = c[1] + Math.sin(g2) * g1 * c[2];
-        if (x < x0 || x > x0 + w || y < y0 || y > y0 + h) { x = x0 + Math.random() * w; y = y0 + Math.random() * h; }
-      }
-      sx[i] = x; sy[i] = y;
+      var u = kind === 0 ? Math.random()
+        : kind === 1 ? ((px[i] - W / 2) * c + (py[i] - H / 2) * s0) / D + 0.5
+        : Math.sqrt((px[i] - rx) * (px[i] - rx) + (py[i] - ry) * (py[i] - ry)) / D;
+      arr[i] = Math.max(0, Math.min(1, u + (Math.random() - 0.5) * 0.15)) * 0.5;
     }
   }
 
+  // Where the ink goes between drawings, a different shape each time, laid
+  // out inside the screen from its own size: an even scatter with clouds, a
+  // vortex, streaming bands, tight clusters, or the whole cloud drifting off
+  // one way. sx/sy hold each particle's destination.
+  var scattered = false;
+  function scatter() {
+    scattered = true;
+    var m = 0.05, x0 = W * m, y0 = H * m, w = W * (1 - 2 * m), h = H * (1 - 2 * m), R = Math.min(w, h);
+    function inside(i, x, y) {
+      if (x < x0 || x > x0 + w || y < y0 || y > y0 + h) { x = x0 + Math.random() * w; y = y0 + Math.random() * h; }
+      sx[i] = x; sy[i] = y;
+    }
+    function gauss() { return Math.sqrt(-2 * Math.log(Math.random() + 1e-9)) * Math.cos(Math.random() * 6.283); }
+    var shape = (Math.random() * 5) | 0, i;
+    if (shape === 0) {                                   // even scatter with a few clouds
+      var K = 2 + ((Math.random() * 5) | 0), cs = [], even = 0.3 + Math.random() * 0.5;
+      for (var k = 0; k < K; k++) cs.push([x0 + Math.random() * w, y0 + Math.random() * h, R * (0.08 + Math.random() * 0.22)]);
+      for (i = 0; i < N; i++) {
+        if (Math.random() < even) { sx[i] = x0 + Math.random() * w; sy[i] = y0 + Math.random() * h; continue; }
+        var cc = cs[(Math.random() * K) | 0]; inside(i, cc[0] + gauss() * cc[2], cc[1] + gauss() * cc[2]);
+      }
+    } else if (shape === 1) {                            // a vortex: spiral arms round a random point
+      var vx0 = x0 + w * (0.25 + Math.random() * 0.5), vy0 = y0 + h * (0.25 + Math.random() * 0.5);
+      var arms = 2 + ((Math.random() * 3) | 0), turns = 0.8 + Math.random() * 1.4, sgn = Math.random() < 0.5 ? -1 : 1;
+      for (i = 0; i < N; i++) {
+        var t = Math.random(), a = sgn * t * turns * 6.283 + ((i % arms) / arms) * 6.283 + gauss() * 0.25, r = (0.08 + 0.92 * Math.sqrt(t)) * R * 0.55;
+        inside(i, vx0 + Math.cos(a) * r * (w / R), vy0 + Math.sin(a) * r * (h / R));
+      }
+    } else if (shape === 2) {                            // streaming bands at a random angle
+      var nb = 2 + ((Math.random() * 3) | 0), ang = Math.random() * 3.1416, ca = Math.cos(ang), sa = Math.sin(ang), L = Math.sqrt(w * w + h * h);
+      for (i = 0; i < N; i++) {
+        var b = (i % nb) - (nb - 1) / 2, along = (Math.random() - 0.5) * L, across = b * R * 0.22 + gauss() * R * 0.035;
+        inside(i, x0 + w / 2 + ca * along - sa * across, y0 + h / 2 + sa * along + ca * across);
+      }
+    } else if (shape === 3) {                            // tight clusters
+      var K2 = 3 + ((Math.random() * 6) | 0), cs2 = [];
+      for (var k2 = 0; k2 < K2; k2++) cs2.push([x0 + Math.random() * w, y0 + Math.random() * h, R * (0.03 + Math.random() * 0.07)]);
+      for (i = 0; i < N; i++) { var c2 = cs2[(Math.random() * K2) | 0]; inside(i, c2[0] + gauss() * c2[2], c2[1] + gauss() * c2[2]); }
+    } else {                                             // the whole cloud drifts off one way
+      var da = Math.random() * 6.283, dist = R * (0.25 + Math.random() * 0.25), ddx = Math.cos(da) * dist * (w / R), ddy = Math.sin(da) * dist * (h / R);
+      for (i = 0; i < N; i++) inside(i, px[i] + ddx + gauss() * R * 0.12, py[i] + ddy + gauss() * R * 0.12);
+    }
+    order(dl);
+  }
+
   var wind = 1;   // which way the ink drifts along the screen's long side; new each transition
-  function begin(now) { aim(); mark(); phase = 'gather'; t0 = now; wind = Math.random() < 0.5 ? -1 : 1; }
+  function begin(now) { aim(); mark(); phase = 'gather'; t0 = now; wind = Math.random() < 0.5 ? -1 : 1; if (gl) order(gl); }
   function smooth(u) { u = u < 0 ? 0 : u > 1 ? 1 : u; return u * u * u * (u * (u * 6 - 15) + 10); }
 
   // ── The current: curl noise ──
@@ -415,13 +455,15 @@ import PlateCredit from './PlateCredit.astro';
     var trem = 0.22 * (1 - hold) * dt * (going ? 1 - calm : phase === 'gather' && scattered ? 0 : 1), base = (tick = (tick + 7919) & 8191);
     p32.fill(0);
     for (var i = 0; i < N; i++) {
-      var kf = pull * (0.6 + ph[i] / 6.283 * 0.8);
+      var kf = pull * (0.6 + ph[i] / 6.283 * 0.8), kdi = kd;
+      if (phase === 'gather' && gl) { var ug = (e / FORM - gl[i]) / 0.5; kf *= ug <= 0 ? 0 : ug >= 1 ? 1 : ug * ug * (3 - 2 * ug); }
+      else if (going) { var ul = (e / LET - dl[i]) / 0.5; kdi *= ul <= 0 ? 0 : ul >= 1 ? 1 : ul * ul * (3 - 2 * ul); }
       // Each particle reads the current from its own offset and drifts at its
       // own strength, with a fine tremor while the drawing is let go.
       at(px[i] + nox[i], py[i] + noy[i]);
       var dm = drift * mul[i], ri2 = (base + i * 31) & 8191;
-      vx[i] += (tx[i] - px[i]) * kf + (sx[i] - px[i]) * kd * mul[i] + fu * dm + wx * mul[i] + RT[ri2] * trem;
-      vy[i] += (ty[i] - py[i]) * kf + (sy[i] - py[i]) * kd * mul[i] + fv * dm + wy * mul[i] + RT[(ri2 + 4099) & 8191] * trem;
+      vx[i] += (tx[i] - px[i]) * kf + (sx[i] - px[i]) * kdi * mul[i] + fu * dm + wx * mul[i] + RT[ri2] * trem;
+      vy[i] += (ty[i] - py[i]) * kf + (sy[i] - py[i]) * kdi * mul[i] + fv * dm + wy * mul[i] + RT[(ri2 + 4099) & 8191] * trem;
       vx[i] *= damp; vy[i] *= damp;
       px[i] += vx[i] * dt; py[i] += vy[i] * dt;
       ca[i] += (ta[i] * (0.6 + 0.4 * hold) - ca[i]) * Math.min(1, 0.045 * dt);
