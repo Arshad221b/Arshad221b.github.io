@@ -11,7 +11,7 @@
    Each scan is read once: its paper dropped, and points sampled from its
    ink in proportion to how dark it is. Drawn on one canvas, in the
    theme's ink, and paused whenever it is out of sight. */
-interface Props { sketches: string[]; credits: { title: string; by: string; india?: boolean }[] }
+interface Props { sketches: string[]; credits: { title: string; by: string; india?: boolean; note?: string }[] }
 const { sketches, credits } = Astro.props;
 import PlateCredit from './PlateCredit.astro';
 ---
@@ -20,7 +20,85 @@ import PlateCredit from './PlateCredit.astro';
   <canvas class="plate-canvas" aria-hidden="true"></canvas>
   <div class="plate-art" aria-hidden="true"></div>
   <PlateCredit credits={credits} />
+  <button type="button" class="plate-all">All {credits.length} drawings</button>
+  <dialog class="plate-index" aria-label="All drawings">
+    <button type="button" class="pi-close" aria-label="Close">×</button>
+    {[['India', true], ['Elsewhere', false]].map(([name, ind]) => (
+      <section>
+        <h2>{name} <span>{credits.filter(c => !!c.india === ind).length}</span></h2>
+        <ol>
+          {credits.map((c, i) => !!c.india === ind && (
+            <li><button type="button" data-i={i}>
+              <span class="pi-t">{c.title}</span>
+              <span class="pi-by">{c.by}</span>
+              {c.note && <span class="pi-note">{c.note}</span>}
+            </button></li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </dialog>
 </div>
+
+<style is:global>
+  /* The way into the whole collection: small, quiet, out of the drawing's way. */
+  .plate-all {
+    position: absolute;
+    top: calc(var(--head-h, 4.5rem) + 0.25rem);
+    right: max(24px, 2vw);
+    z-index: 2;
+    padding: 4px 0;
+    border: 0;
+    background: none;
+    font-family: var(--font-sans);
+    font-size: var(--fs-label);
+    text-transform: uppercase;
+    letter-spacing: var(--track-label);
+    color: var(--color-text-muted);
+    opacity: 0.7;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: opacity 0.3s ease, color 0.3s ease;
+  }
+  .plate-all:hover, .plate-all:focus-visible { opacity: 1; color: var(--color-accent); }
+  @media (max-width: 759px) { .plate-all { right: 16px; } }
+
+  .plate-index {
+    width: min(760px, calc(100vw - 32px));
+    max-height: min(82svh, 900px);
+    padding: var(--space-6, 2rem) var(--space-6, 2rem) var(--space-4, 1rem);
+    border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
+    border-radius: 6px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .plate-index::backdrop { background: color-mix(in srgb, var(--color-bg) 55%, transparent); backdrop-filter: blur(6px); }
+  .plate-index .pi-close {
+    position: sticky; top: 0; float: right; margin: -0.75rem -0.75rem 0 0;
+    width: 2rem; height: 2rem; border: 0; background: var(--color-bg); color: var(--color-text-muted);
+    font-size: 1.4rem; line-height: 1; cursor: pointer;
+  }
+  .plate-index .pi-close:hover { color: var(--color-accent); }
+  .plate-index h2 {
+    margin: 0 0 var(--space-2, 0.5rem);
+    font-family: var(--font-sans); font-size: var(--fs-label); font-weight: 500;
+    text-transform: uppercase; letter-spacing: var(--track-label); color: var(--color-text-muted);
+  }
+  .plate-index h2 span { opacity: 0.6; margin-left: 0.4em; }
+  .plate-index section + section { margin-top: var(--space-6, 2rem); }
+  .plate-index ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 0 var(--space-6, 2rem); }
+  .plate-index li { border-top: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent); }
+  .plate-index li button {
+    display: grid; gap: 2px; width: 100%; padding: 0.7rem 0; border: 0; background: none;
+    color: inherit; font: inherit; text-align: left; cursor: pointer;
+  }
+  .plate-index .pi-t { font-family: var(--font-serif); font-style: italic; font-size: var(--fs-small); line-height: var(--lh-snug); }
+  .plate-index .pi-by { font-family: var(--font-sans); font-size: var(--fs-label); text-transform: uppercase; letter-spacing: var(--track-label); color: var(--color-text-muted); }
+  .plate-index .pi-note { margin-top: 2px; font-size: var(--fs-small); line-height: var(--lh-snug); color: var(--color-text-muted); }
+  .plate-index li button:hover .pi-t { color: var(--color-accent); }
+</style>
 
 <style is:global>
   .plate {
@@ -85,6 +163,7 @@ import PlateCredit from './PlateCredit.astro';
     var need = Math.min(1600, Math.ceil(Math.max(innerWidth * 0.95, innerHeight * 0.6) * Math.min(2, devicePixelRatio || 1) / 200) * 200);
     list = list.map(function (u) { return u.replace('w_1600', 'w_' + need); });
   })();
+  var allList = list.slice(), allCredits = credits.slice();
   // A different set and order on every visit, alternating one Indian drawing and
   // one from elsewhere: each group shuffled, then interleaved, starting
   // with either.
@@ -576,6 +655,23 @@ import PlateCredit from './PlateCredit.astro';
     images[n] ? go() : load(n, go);
   }
   nextBtn.addEventListener('click', next);
+
+  // The index: every drawing in the pool. Choosing one makes it the next to
+  // form, whether or not it was among this visit's draw.
+  var dlg = plate.querySelector('.plate-index');
+  plate.querySelector('.plate-all').addEventListener('click', function () { dlg.showModal(); });
+  dlg.querySelector('.pi-close').addEventListener('click', function () { dlg.close(); });
+  dlg.addEventListener('click', function (ev) {
+    if (ev.target === dlg) { dlg.close(); return; }
+    var b = ev.target.closest('button[data-i]'); if (!b) return;
+    var u = allList[+b.dataset.i], c = allCredits[+b.dataset.i], at = list.indexOf(u);
+    dlg.close();
+    if (at === idx) return;
+    var im = null, tg = null;
+    if (at >= 0) { im = images[at]; tg = targets[at]; list.splice(at, 1); credits.splice(at, 1); images.splice(at, 1); targets.splice(at, 1); if (at < idx) idx--; }
+    list.splice(idx + 1, 0, u); credits.splice(idx + 1, 0, c); images.splice(idx + 1, 0, im || undefined); targets.splice(idx + 1, 0, tg || undefined);
+    next();
+  });
   art.addEventListener('click', next);
 
   var rt = 0;
