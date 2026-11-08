@@ -277,7 +277,9 @@ import PlateCredit from './PlateCredit.astro';
   // particle, spread over the whole screen and built fresh each time from
   // the screen's own size: part an even scatter, part a few clouds of random
   // number, place and size, in a random mix. sx/sy hold the destinations.
+  var scattered = false;
   function scatter() {
+    scattered = true;
     var m = 0.05, x0 = W * m, y0 = H * m, w = W * (1 - 2 * m), h = H * (1 - 2 * m);
     var K = 2 + ((Math.random() * 5) | 0), cs = [];
     for (var k = 0; k < K; k++) cs.push([x0 + Math.random() * w, y0 + Math.random() * h, Math.min(W, H) * (0.08 + Math.random() * 0.22)]);
@@ -394,6 +396,13 @@ import PlateCredit from './PlateCredit.astro';
       var calm = smooth(e / LET);
       damp = Math.pow(0.9 + 0.06 * (1 - smooth(e / (LET * 0.5))), dt);
       drift *= 1 - 0.85 * calm;
+    } else if (phase === 'gather' && scattered) {
+      // Everything carries on from where the release left it: same damping,
+      // the same calm current, the scatter pull fading out, so the only new
+      // force is the next drawing's pull, growing from nothing.
+      damp = Math.pow(0.9, dt);
+      drift *= 0.15;
+      kd = 0.0026 * (1 - smooth(e / (FORM * 0.35))) * dt;
     }
     // Loosening without walls: each particle breathes outward from the
     // drawing, strongest near it and fading with distance (measured in the
@@ -403,7 +412,7 @@ import PlateCredit from './PlateCredit.astro';
     // The halo turns slowly, each echo its own way, so the cloud shimmers.
     var q1 = now * 0.00031, q2 = -now * 0.00023, q3 = now * 0.00017;
     var c1 = Math.cos(q1), s1 = Math.sin(q1), c2 = Math.cos(q2), s2 = Math.sin(q2), c3 = Math.cos(q3), s3 = Math.sin(q3);
-    var trem = 0.22 * (1 - hold) * dt * (going ? 1 - calm : 1), base = (tick = (tick + 7919) & 8191);
+    var trem = 0.22 * (1 - hold) * dt * (going ? 1 - calm : phase === 'gather' && scattered ? 0 : 1), base = (tick = (tick + 7919) & 8191);
     p32.fill(0);
     for (var i = 0; i < N; i++) {
       var kf = pull * (0.6 + ph[i] / 6.283 * 0.8);
