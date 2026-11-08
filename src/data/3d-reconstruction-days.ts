@@ -799,5 +799,777 @@ export const days: Day[] = [
       "How do affine-invariant variants handle the large viewpoint changes SIFT can't?",
       "What do learned features (SuperPoint, LightGlue) learn that these hand-made steps miss, and where does SIFT still win?"
     ]
+  },
+  {
+    "day": 2,
+    "date": "2026-11-08",
+    "curiosityTitle": "Epipolar geometry: why a match has to sit on a line",
+    "summary": "SIFT hands over pairs of pixels it thinks are the same point, and some of them are wrong. Geometry alone can catch most of them: two cameras and a point make a flat triangle, and that one fact turns into a 3×3 matrix that sends every pixel in one photo to a line in the other.",
+    "bullets": [
+      "From a flat triangle to the Essential and Fundamental matrices, one step at a time, with numbers checked at every step."
+    ],
+    "stages": [
+      2
+    ],
+    "intro": [
+      {
+        "kind": "tangent",
+        "title": "Where E and F come from",
+        "blocks": [
+          {
+            "kind": "p",
+            "text": "<strong>Photogrammetry first.</strong> Surveyors making maps from aerial photographs had the core idea long before computers: the two camera centres and a ground point must lie in one plane. They called it the <em>coplanarity condition</em> and solved it by hand and with mechanical plotters."
+          },
+          {
+            "kind": "p",
+            "text": "<strong>1981, the Essential matrix.</strong> H. C. Longuet-Higgins, a theoretical chemist turned cognitive scientist, published <em>A computer algorithm for reconstructing a scene from two projections</em> in <em>Nature</em>. Two pages. It wrote the coplanarity condition as $x'^\\top E x = 0$ and showed that 8 matched points give $E$ by solving a linear system. That is the eight-point algorithm you'll meet in RANSAC."
+          },
+          {
+            "kind": "p",
+            "text": "<strong>Same year, RANSAC.</strong> Fischler and Bolles published <em>Random Sample Consensus</em> in 1981 too, for a different problem (locating a camera from known landmarks). The two ideas met later and became the standard way to match photos."
+          },
+          {
+            "kind": "p",
+            "text": "<strong>Early 1990s, the Fundamental matrix.</strong> $E$ needs to know each camera's focal length and centre. Faugeras and, independently, Hartley showed in 1992 that you can skip that and work on raw pixels. Luong and Faugeras named the pixel version the <em>Fundamental matrix</em>. Hartley's 1997 paper <em>In defense of the eight-point algorithm</em> then showed that the simple linear method works well if you first rescale the coordinates, and it has been the default ever since."
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "n": 1,
+        "act": "Goal",
+        "title": "What problem are we solving?",
+        "subtitle": "A yes/no test for a match, using only geometry",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "SIFT gives matched pixels: this spot in photo 1 = that spot in photo 2",
+              "Some of those matches are wrong",
+              "We want a <strong>test</strong>: is this match possible or impossible, using only geometry"
+            ]
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "Day 1 ended with matches that had passed the ratio test. That test only asks whether a descriptor looks clearly more like one candidate than any other. It knows nothing about the scene. A white window frame matches the window frame next to it, a patch of leaves matches another patch of leaves, and the ratio test can be fooled by both.",
+              "Geometry gives a check that descriptors can't. Both photos were taken of one rigid scene from two places. That puts a hard constraint on where a point from photo 1 is <em>allowed</em> to show up in photo 2. It can't be just anywhere: it has to be on one particular line. A match off that line is impossible, however good its descriptor looks.",
+              "Everything below is the derivation of that line. It helps to keep the end in mind: we're building a function that takes a pixel in photo 1 and returns a line in photo 2, and the test is \"is the matched pixel on it?\""
+            ]
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "act": "Tools",
+        "title": "The linear algebra you need",
+        "subtitle": "Four ideas, each with a number",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "A vector is an arrow: $a = (2, 1, 4)$ is 2 along x, 1 along y, 4 along z",
+              "<strong>Dot product</strong>: multiply matching parts and add. Dot = 0 means the arrows are at 90°",
+              "<strong>Cross product</strong>: gives a third arrow at 90° to both",
+              "<strong>Three arrows flat?</strong> Cross two of them, dot with the third. Zero means they lie in one plane"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "a \\cdot b = a_x b_x + a_y b_y + a_z b_z = a^\\top b"
+          },
+          {
+            "kind": "eq",
+            "tex": "a \\times b = \\begin{bmatrix} a_y b_z - a_z b_y \\\\ a_z b_x - a_x b_z \\\\ a_x b_y - a_y b_x \\end{bmatrix}"
+          },
+          {
+            "kind": "eq",
+            "tex": "c \\cdot (a \\times b) = 0 \\quad\\Longleftrightarrow\\quad a,\\ b,\\ c \\text{ lie in one plane}"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "<strong>Dot product, with numbers.</strong> The x-axis and the y-axis: $(1,0,0)\\cdot(0,1,0) = 0$. They're perpendicular, and the answer is 0. Less obvious: $(1,2,0)\\cdot(2,-1,5) = 2 - 2 + 0 = 0$. You can't see that those are at right angles by looking at them, but the dot product catches it. In formulas the same thing is written $a^\\top b$: $a$ as a row, $b$ as a column, multiplied.",
+              "<strong>Cross product, with numbers.</strong> $(1,0,0)\\times(0,1,0) = (0,0,1)$: x-axis cross y-axis is the z-axis, perpendicular to both. Picture two pencils lying on a table. Their cross product points straight up out of the table. That \"straight up\" arrow is the table's <strong>normal</strong>, and it describes the plane completely: the plane is everything perpendicular to it.",
+              "<strong>Putting them together.</strong> Three arrows $a, b, c$. Cross $a$ and $b$ to get the normal $n$ of the table they lie on. If $c$ lies on the same table, it's perpendicular to $n$, so $c \\cdot n = 0$. This is the <strong>scalar triple product</strong>. It's also the volume of the slanted box the three arrows span, and a flat box has zero volume.",
+              "That's the whole toolkit. Every step below uses only these."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Why does a zero dot product mean a right angle?",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "The dot product has a second formula: $a \\cdot b = |a|\\,|b|\\cos\\theta$, where $\\theta$ is the angle between the arrows. The component formula and the angle formula are the same number. That's not obvious, so here's why."
+              },
+              {
+                "kind": "p",
+                "text": "Take the triangle with sides $a$, $b$ and $a - b$. The law of cosines says $|a-b|^2 = |a|^2 + |b|^2 - 2|a||b|\\cos\\theta$. Now expand the left side in components: $(a_x-b_x)^2 + (a_y-b_y)^2 + (a_z-b_z)^2 = |a|^2 + |b|^2 - 2(a_xb_x + a_yb_y + a_zb_z)$. Match the two and the cross terms must be equal:"
+              },
+              {
+                "kind": "eq",
+                "tex": "a_x b_x + a_y b_y + a_z b_z = |a|\\,|b|\\cos\\theta",
+                "source": "ai"
+              },
+              {
+                "kind": "p",
+                "text": "So the dot product is \"how much the arrows point the same way\", scaled by their lengths. $\\cos 90° = 0$, so perpendicular arrows give 0, whatever their lengths. Parallel arrows give the largest value, opposite arrows the most negative."
+              },
+              {
+                "kind": "p",
+                "text": "This also gives <strong>projection</strong>: $a \\cdot \\hat u$, with $\\hat u$ a unit arrow, is how far $a$ reaches along $\\hat u$. We'll need exactly that to turn \"how far off the line\" into pixels."
+              }
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Where does the cross product formula come from?",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "It looks arbitrary, but it's forced. Ask for an arrow $n$ with $n \\cdot a = 0$ and $n \\cdot b = 0$. That's two equations in three unknowns, so there's a whole line of answers, all multiples of one arrow. The cross product picks the multiple whose length is the <strong>area of the parallelogram</strong> $a$ and $b$ span, $|a||b|\\sin\\theta$, pointing by the right-hand rule."
+              },
+              {
+                "kind": "p",
+                "text": "A compact way to remember it is as a determinant, with the unit arrows $\\hat x, \\hat y, \\hat z$ in the top row:"
+              },
+              {
+                "kind": "eq",
+                "tex": "a \\times b = \\det \\begin{bmatrix} \\hat x & \\hat y & \\hat z \\\\ a_x & a_y & a_z \\\\ b_x & b_y & b_z \\end{bmatrix}",
+                "source": "ai"
+              },
+              {
+                "kind": "p",
+                "text": "Check it's perpendicular to $a$: $a \\cdot (a \\times b) = a_x(a_yb_z - a_zb_y) + a_y(a_zb_x - a_xb_z) + a_z(a_xb_y - a_yb_x)$. Every term cancels with another. Zero."
+              },
+              {
+                "kind": "p",
+                "text": "Two properties matter later. <strong>Order matters</strong>: $b \\times a = -(a \\times b)$. And <strong>an arrow crossed with itself is zero</strong>, $a \\times a = 0$: parallel arrows span no area. That second one is why $E$ will turn out to be a \"flattened\" matrix."
+              }
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "The triple product is a determinant",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Stack the three arrows as the rows of a matrix, and the triple product is its determinant:"
+              },
+              {
+                "kind": "eq",
+                "tex": "c \\cdot (a \\times b) = \\det \\begin{bmatrix} c_x & c_y & c_z \\\\ a_x & a_y & a_z \\\\ b_x & b_y & b_z \\end{bmatrix}",
+                "source": "ai"
+              },
+              {
+                "kind": "p",
+                "text": "A determinant is the volume of the box the rows span. Zero volume means the box is squashed flat: one arrow is a mix of the other two. So \"three arrows are coplanar\", \"the triple product is zero\" and \"the determinant is zero\" are three ways of saying one thing."
+              },
+              {
+                "kind": "p",
+                "text": "Because it's a volume, you can cycle the arrows without changing it: $c\\cdot(a\\times b) = a\\cdot(b\\times c) = b\\cdot(c\\times a)$. Swapping two flips the sign. That freedom is why textbooks write the epipolar constraint in several orders and all of them are right."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "act": "Camera",
+        "title": "How a camera turns 3D into 2D",
+        "subtitle": "Divide by depth, and depth is gone",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Camera at the origin, looking along z",
+              "A 3D point $P = (X, Y, Z)$ lands on the image at $x = (X/Z,\\ Y/Z)$",
+              "$P = (2, 1, 4)$ → $(0.5, 0.25)$. $P = (4, 2, 8)$ → also $(0.5, 0.25)$",
+              "Every point on one ray lands on one pixel. A single photo throws depth away"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "x = \\frac{P}{Z} = \\begin{bmatrix} X/Z \\\\ Y/Z \\\\ 1 \\end{bmatrix} \\qquad\\Longleftrightarrow\\qquad P = Z\\,x"
+          },
+          {
+            "kind": "figure",
+            "svg": "<svg viewBox=\"0 0 600 210\" role=\"img\" aria-label=\"Side view of a camera at the origin. A ray leaves the camera, crosses the image plane at height 0.25, and passes through the point (2, 1, 4) and then (4, 2, 8). Both points land on the same image point.\"><line x1=\"40\" y1=\"180\" x2=\"580\" y2=\"180\" class=\"zero\"/><text x=\"575\" y=\"200\" class=\"fig-label\" text-anchor=\"end\">z, depth</text><line x1=\"105\" y1=\"40\" x2=\"105\" y2=\"190\" class=\"ink\"/><text x=\"105\" y=\"30\" class=\"fig-label mid\">image plane, z = 1</text><line x1=\"40\" y1=\"180\" x2=\"580\" y2=\"45\" class=\"ray\"/><circle cx=\"40\" cy=\"180\" r=\"6\" class=\"centre\"/><text x=\"40\" y=\"202\" class=\"fig-label mid\">camera</text><circle cx=\"105\" cy=\"163.75\" r=\"5\" class=\"pt\"/><text x=\"115\" y=\"158\" class=\"fig-label\">x = (0.5, 0.25)</text><circle cx=\"300\" cy=\"115\" r=\"5\" class=\"pt\"/><text x=\"300\" y=\"138\" class=\"fig-label mid\">P = (2, 1, 4)</text><circle cx=\"560\" cy=\"50\" r=\"5\" class=\"pt\"/><text x=\"555\" y=\"78\" class=\"fig-label\" text-anchor=\"end\">2P = (4, 2, 8)</text></svg>",
+            "caption": "A point and the point twice as far along the same ray land on the same pixel. The camera can't tell them apart."
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "This is the pinhole camera. Light from $P$ travels in a straight line through the pinhole and hits the image plane. Put the image plane one unit in front of the pinhole (a mathematical convenience, the real sensor is behind it and the image is upside down) and similar triangles give the formula: the point is $Z$ away and $X$ to the side, so at distance 1 it's $X/Z$ to the side.",
+              "Dividing by $Z$ is what makes far things small. A person 2 m away and a building 200 m away can fill the same part of the photo. That's perspective, and it's also why depth is lost: the division mixes \"how far to the side\" with \"how far away\", and from the result alone you can't separate them.",
+              "<strong>The extra 1.</strong> Writing the image point as $(0.5,\\ 0.25,\\ 1)$ instead of $(0.5,\\ 0.25)$ lets us say $x = P/Z$ in one line: divide every part of $P$ by its last part. Read backwards, $P = Z x$: <strong>the 3D point is the image point stretched out by its unknown depth.</strong> We know $x$ from the photo. We don't know $Z$. Step 7 is the trick that makes $Z$ irrelevant.",
+              "These are <strong>normalised</strong> coordinates: an ideal camera with focal length 1 and the centre of the image at $(0, 0)$. Real pixels come in step 8. Doing the geometry here first keeps the numbers small and the ideas clean."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Why the extra 1? Homogeneous coordinates",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Writing a 2D point with three numbers, $(u, v, 1)$, is called <strong>homogeneous coordinates</strong>. The rule is that any non-zero multiple is the same point: $(0.5, 0.25, 1)$, $(2, 1, 4)$ and $(4, 2, 8)$ all mean the image point $(0.5, 0.25)$. To read one back, divide by the last number."
+              },
+              {
+                "kind": "p",
+                "text": "Look at what that means: the homogeneous image point and the 3D ray are the same object. $(2, 1, 4)$ is both \"the 3D point\" and \"its pixel, in homogeneous form\". The camera literally is the operation \"forget the scale\"."
+              },
+              {
+                "kind": "p",
+                "text": "Homogeneous coordinates make lines easy too. A line $au + bv + c = 0$ is the three numbers $(a, b, c)$, and a point is on it when $(a,b,c)\\cdot(u,v,1) = 0$. Then:"
+              },
+              {
+                "kind": "table",
+                "headers": [
+                  "You want",
+                  "You compute"
+                ],
+                "rows": [
+                  [
+                    "Is point $x$ on line $l$?",
+                    "$l \\cdot x = 0$"
+                  ],
+                  [
+                    "The line through two points $x_1, x_2$",
+                    "$x_1 \\times x_2$"
+                  ],
+                  [
+                    "The point where two lines $l_1, l_2$ meet",
+                    "$l_1 \\times l_2$"
+                  ]
+                ],
+                "source": "ai"
+              },
+              {
+                "kind": "p",
+                "text": "The second row is just the cross product's job: $x_1 \\times x_2$ is perpendicular to both, so it dots to zero with both, so both points are on it. Points and lines are interchangeable in this algebra, which is why \"$E$ times a point gives a line\" in step 7 isn't a coincidence."
+              },
+              {
+                "kind": "p",
+                "text": "Parallel lines meet too: their cross product has a last part of 0, a <strong>point at infinity</strong>. That is how railway tracks meet at the horizon in a photo, and it'll come up in step 5."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "act": "Setup",
+        "title": "Two cameras, and the running example",
+        "subtitle": "Rotate, then shift",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Camera 1 at the origin, looking along z",
+              "Camera 2 shifted <strong>1 unit to the right</strong>, same direction, no rotation",
+              "$P = (2, 1, 4)$, measured from camera 1",
+              "Camera 1 sees $x = (0.5,\\ 0.25,\\ 1)$",
+              "From camera 2 everything is 1 unit further left: $P' = (1, 1, 4)$, so it sees $x' = (0.25,\\ 0.25,\\ 1)$"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "P' = R\\,P + t, \\qquad R = I,\\quad t = (-1, 0, 0)"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "To compare the two photos we need one formula that says where a point is according to camera 2, given where it is according to camera 1. In general camera 2 is both turned and moved. First <strong>rotate</strong> the point into camera 2's orientation with $R$, then <strong>shift</strong> it by $t$.",
+              "In our example there's no turn, so $R = I$, the identity (\"do nothing\"). The shift is $t = (-1, 0, 0)$, because moving the camera right by 1 is the same as moving the whole world left by 1. Check: $(2,1,4) + (-1,0,0) = (1,1,4)$ ✓.",
+              "<strong>What is $t$, physically?</strong> Put in camera 1's own centre, $P = (0,0,0)$. Out comes $P' = t$. So $t$ is <em>where camera 1 sits, as seen from camera 2</em>: one unit to its left. It's tempting to read $t$ as \"how camera 2 moved\", and in this example that's just the sign flipped, but once there's a rotation the two differ. Camera 2's position as seen from camera 1 is $-R^\\top t$.",
+              "Worth noticing: the two image points differ only in $u$, from 0.5 to 0.25. The height $v$ didn't change. Hold onto that, it's the answer we'll derive."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "What a rotation matrix is",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "A rotation is a 3×3 matrix whose columns are three unit arrows at right angles to each other: where the old x, y and z axes end up after the turn. Turning about the y-axis by an angle $\\theta$, for example:"
+              },
+              {
+                "kind": "eq",
+                "tex": "R_y(\\theta) = \\begin{bmatrix} \\cos\\theta & 0 & \\sin\\theta \\\\ 0 & 1 & 0 \\\\ -\\sin\\theta & 0 & \\cos\\theta \\end{bmatrix}",
+                "source": "ai"
+              },
+              {
+                "kind": "p",
+                "text": "Two properties define it. <strong>$R^\\top R = I$</strong>: undoing a rotation is just the transpose, no inverse to compute. That's the dot product again: each column has length 1 and is perpendicular to the others. And <strong>$\\det R = +1$</strong>: it doesn't mirror the world."
+              },
+              {
+                "kind": "p",
+                "text": "A rotation has 3 degrees of freedom (think yaw, pitch, roll), even though it has 9 numbers. The orthogonality conditions use up the other 6. A shift has 3. So the full relative position of two cameras is 6 numbers. Keep that count in mind: the matrix we're building will only be able to recover 5 of them."
+              },
+              {
+                "kind": "p",
+                "text": "Rotations keep lengths and angles, so they keep dot and cross products: $(Ra)\\cdot(Rb) = a\\cdot b$ and $(Ra)\\times(Rb) = R(a\\times b)$. Geometry built from those two operations doesn't care which way you're facing, which is why step 5 works for any $R$, not just $I$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 5,
+        "act": "Epipolar",
+        "title": "The triangle: the core idea",
+        "subtitle": "Two cameras and a point are always flat",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Camera 1, camera 2 and $P$ make a <strong>triangle</strong>. A triangle is always flat",
+              "That flat sheet is the <strong>epipolar plane</strong>",
+              "Write its three sides as arrows, all in camera 2's coordinates, then apply the flatness test"
+            ]
+          },
+          {
+            "kind": "table",
+            "headers": [
+              "Side",
+              "Arrow",
+              "In our example"
+            ],
+            "rows": [
+              [
+                "Camera 2 → camera 1 (baseline)",
+                "$t$",
+                "$(-1, 0, 0)$"
+              ],
+              [
+                "Camera 1 → $P$ (camera 1's ray)",
+                "$RP$",
+                "$(2, 1, 4)$"
+              ],
+              [
+                "Camera 2 → $P$ (camera 2's ray)",
+                "$P'$",
+                "$(1, 1, 4)$"
+              ]
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "P' \\cdot (t \\times R P) = 0"
+          },
+          {
+            "kind": "figure",
+            "svg": "<svg viewBox=\"0 0 640 290\" role=\"img\" aria-label=\"Two cameras seen from above, one unit apart, both looking up the page. A point P and the two cameras form a shaded triangle, the epipolar plane. Other points along camera 1's ray all land on one image point in camera 1 but on different points along one line in camera 2.\"><polygon points=\"120,250 420,250 300,60\" class=\"soft\"/><text x=\"262\" y=\"236\" class=\"fig-label mid accent\">epipolar plane</text><line x1=\"40\" y1=\"200\" x2=\"220\" y2=\"200\" class=\"ink\"/><text x=\"40\" y=\"190\" class=\"fig-label\">image 1</text><line x1=\"270\" y1=\"200\" x2=\"540\" y2=\"200\" class=\"ink\"/><text x=\"540\" y=\"190\" class=\"fig-label\" text-anchor=\"end\">image 2</text><line x1=\"120\" y1=\"250\" x2=\"345\" y2=\"12.5\" class=\"ray\"/><line x1=\"420\" y1=\"250\" x2=\"300\" y2=\"60\" class=\"ray\"/><line x1=\"420\" y1=\"250\" x2=\"210\" y2=\"155\" class=\"faint\"/><line x1=\"420\" y1=\"250\" x2=\"345\" y2=\"12.5\" class=\"faint\"/><line x1=\"120\" y1=\"250\" x2=\"420\" y2=\"250\" class=\"ink\"/><text x=\"270\" y=\"268\" class=\"fig-label mid\">baseline, t</text><circle cx=\"120\" cy=\"250\" r=\"6\" class=\"centre\"/><text x=\"120\" y=\"282\" class=\"fig-label mid\">camera 1</text><circle cx=\"420\" cy=\"250\" r=\"6\" class=\"centre\"/><text x=\"420\" y=\"282\" class=\"fig-label mid\">camera 2</text><circle cx=\"300\" cy=\"60\" r=\"5\" class=\"pt\"/><text x=\"312\" y=\"62\" class=\"fig-label\">P</text><circle cx=\"210\" cy=\"155\" r=\"4\" class=\"pt\"/><circle cx=\"345\" cy=\"12.5\" r=\"4\" class=\"pt\"/><circle cx=\"167.4\" cy=\"200\" r=\"5\" class=\"pt\"/><text x=\"160\" y=\"222\" class=\"fig-label mid\">x</text><circle cx=\"301\" cy=\"200\" r=\"4\" class=\"hollow\"/><circle cx=\"388.4\" cy=\"200\" r=\"5\" class=\"pt\"/><circle cx=\"403.3\" cy=\"200\" r=\"4\" class=\"hollow\"/><text x=\"395\" y=\"222\" class=\"fig-label mid\">x′</text></svg>",
+            "caption": "Seen from above. Every point along camera 1's ray lands on the same pixel $x$, but in camera 2 the candidates slide along one line. That line is where the epipolar plane cuts image 2."
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "<strong>Why the arrows are $t$, $RP$ and $P'$.</strong> The flatness test needs all three arrows in one coordinate system, and camera 2's is the natural choice. The baseline from camera 2 to camera 1 is $t$, from step 4. The arrow from camera 1 to $P$ is $P$ in camera 1's axes, so in camera 2's axes it's $RP$. An arrow is a direction and a length, not a position, so it gets rotated but not shifted. Camera 2's own ray to $P$ is $P'$.",
+              "And $P' = t + RP$ is the triangle closing up: walk from camera 2 to camera 1, then from camera 1 to $P$, and you're at $P$. Three arrows where one is the sum of the other two always lie in one plane.",
+              "<strong>With numbers.</strong> $t \\times RP = (-1,0,0)\\times(2,1,4)$. First part: $0\\cdot4 - 0\\cdot1 = 0$. Second: $0\\cdot2 - (-1)\\cdot4 = 4$. Third: $(-1)\\cdot1 - 0\\cdot2 = -1$. So the plane's normal is $(0, 4, -1)$. Then $P'\\cdot(0,4,-1) = (1,1,4)\\cdot(0,4,-1) = 0 + 4 - 4 = 0$ ✓. The algebra says what the picture says.",
+              "<strong>Why this is the key step.</strong> The baseline is the same for every point in the scene. Each point gets its own epipolar plane, but every one of those planes contains the baseline, like pages of a book hinged on its spine. Point $P$ picks out one page. Camera 1's ray lies in that page, camera 2's ray must lie in it too, and so camera 2 can only see $P$ somewhere on the line where that page meets its image."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Epipoles: where all the lines meet",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "The baseline pokes through each image at one point: the <strong>epipole</strong>. In image 2 it's the pixel where camera 2 would see camera 1. Since every epipolar plane contains the baseline, <strong>every epipolar line passes through the epipole</strong>. The lines fan out from it like spokes."
+              },
+              {
+                "kind": "p",
+                "text": "This gives a useful sanity check when you look at a real pair of photos: draw a few epipolar lines and they should all aim at one spot. If the camera moved forward, the epipole is near the middle of the image and the lines radiate out from it (things stream outward as you walk forward). If the camera moved sideways, the epipole is far off to the side."
+              },
+              {
+                "kind": "p",
+                "text": "In our example the camera moved <em>exactly</em> sideways, so the baseline is parallel to the images and never hits them. The epipole is a point at infinity, $(-1, 0, 0)$ in homogeneous form, and the \"spokes\" are all parallel: horizontal lines. That's the stereo rig case."
+              },
+              {
+                "kind": "p",
+                "text": "Algebraically, with $F$ from step 8: the epipole $e$ in image 1 satisfies $Fe = 0$, and $e'$ in image 2 satisfies $F^\\top e' = 0$. Since every epipolar line $l' = Fp$ goes through $e'$, $e'^\\top F p = 0$ for <em>every</em> $p$, and that's only possible if $F^\\top e' = 0$. So the epipoles are the null vectors of $F$. In our example, $E^\\top (-1,0,0) = (0,0,0)$ ✓."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 6,
+        "act": "Algebra",
+        "title": "Turning the cross product into a matrix",
+        "subtitle": "So it can be merged with R",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "We want <strong>one matrix</strong> for the camera relationship",
+              "A cross product isn't a matrix multiplication, so it can't be merged with $R$",
+              "Fix: \"cross with $t$\" can be written as \"multiply by a special matrix\""
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "t \\times v = \\begin{bmatrix} t_y v_z - t_z v_y \\\\ t_z v_x - t_x v_z \\\\ t_x v_y - t_y v_x \\end{bmatrix} = \\underbrace{\\begin{bmatrix} 0 & -t_z & t_y \\\\ t_z & 0 & -t_x \\\\ -t_y & t_x & 0 \\end{bmatrix}}_{[t]_\\times} \\begin{bmatrix} v_x \\\\ v_y \\\\ v_z \\end{bmatrix}"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "With $t$ fixed and $v$ as the input, each line of the cross product is just some amount of $v_x$, plus some amount of $v_y$, plus some amount of $v_z$. That's exactly what a row of a matrix does. Read off the amounts. Row 1, $t_y v_z - t_z v_y$, is $0$ of $v_x$, $-t_z$ of $v_y$, $t_y$ of $v_z$: the row $(0, -t_z, t_y)$. Rows 2 and 3 the same way.",
+              "<strong>For our $t = (-1, 0, 0)$:</strong>",
+              "$$[t]_\\times = \\begin{bmatrix} 0 & 0 & 0 \\\\ 0 & 0 & 1 \\\\ 0 & -1 & 0 \\end{bmatrix}$$",
+              "Check it does the same job: times $(2,1,4)$, row 1 gives $0$, row 2 gives $1\\cdot4 = 4$, row 3 gives $-1\\cdot1 = -1$. Result $(0, 4, -1)$, the same normal as step 5 ✓.",
+              "Nothing new has happened. It's the cross product rewritten so it can be multiplied together with other matrices. The constraint now reads:",
+              "$$P'^\\top \\,[t]_\\times\\, R\\, P = 0$$"
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "The shape of $[t]_\\times$, and why it matters later",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Look at $[t]_\\times$: zeros down the diagonal, and every entry is the negative of its mirror across the diagonal. That's a <strong>skew-symmetric</strong> matrix, $[t]_\\times^\\top = -[t]_\\times$. Every 3×3 skew-symmetric matrix is \"cross with something\", and this is the only place they turn up in this subject."
+              },
+              {
+                "kind": "p",
+                "text": "<strong>It flattens one direction.</strong> $[t]_\\times\\, t = t \\times t = 0$. Feed it its own arrow and you get nothing. A matrix that sends a non-zero arrow to zero has squashed 3D down to 2D: its <strong>rank is 2</strong> and its determinant is 0. Everything it outputs is perpendicular to $t$."
+              },
+              {
+                "kind": "p",
+                "text": "That carries straight into $E = [t]_\\times R$. Multiplying by a rotation can't restore the lost dimension, so <strong>$E$ has rank 2</strong>, $\\det E = 0$. Its singular values are $(|t|, |t|, 0)$: two equal, one zero. That's a real test. When RANSAC estimates $E$ or $F$ from noisy matches, the raw answer won't be exactly rank 2, and the standard fix is to force the smallest singular value to zero. A rank-3 \"$F$\" would mean epipolar lines that don't all meet at one epipole, which no pair of real cameras can produce."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 7,
+        "act": "Essential",
+        "title": "Removing the unknown depth",
+        "subtitle": "The clever step, and the Essential matrix",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "We don't know $P$ or $P'$. We only have the image points $x$ and $x'$",
+              "Use $P = Z x$ and $P' = Z' x'$ from step 3",
+              "The depths come out front as plain numbers, and (positive) × (something) = 0 means something = 0",
+              "<strong>The depths are gone.</strong> This only works because the right side is zero"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "(Z' x')^\\top [t]_\\times R\\,(Z x) = Z\\, Z' \\big( x'^\\top [t]_\\times R\\, x \\big) = 0"
+          },
+          {
+            "kind": "eq",
+            "tex": "\\boxed{E = [t]_\\times R} \\qquad\\qquad \\boxed{x'^\\top E\\, x = 0}"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "This is the step that makes the whole subject work. The constraint from step 6 is about 3D points, which we never get to see. But each 3D point is its image point times an unknown number, and an unknown number multiplying something that equals zero doesn't change the fact that it equals zero. The depths are positive (the point is in front of both cameras), so they can't be the zero. The bracket must be.",
+              "If the equation had been \"= 5\", this would fail: $Z Z' (\\ldots) = 5$ still depends on the depths. Constraints of the form \"something = 0\" are exactly the ones that survive not knowing the scale of things, and that's why geometry in computer vision is so full of them.",
+              "<strong>Check with image points only.</strong> $R = I$, so $E = [t]_\\times$. With $x = (0.5, 0.25, 1)$: $Ex$ is row 1: $0$; row 2: $1 \\cdot 1 = 1$; row 3: $-1 \\cdot 0.25 = -0.25$. So $Ex = (0, 1, -0.25)$. Then $x'\\cdot(Ex) = 0.25\\cdot0 + 0.25\\cdot1 + 1\\cdot(-0.25) = 0$ ✓. No depth, no 3D point. Just two pixels and a matrix.",
+              "$E$ is the <strong>Essential matrix</strong>: one 3×3 matrix holding everything about how the two cameras sit relative to each other, as far as two photos can tell."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "What E can't tell you: scale",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "$x'^\\top E x = 0$ is still true if you multiply $E$ by any number. So $E$ is only known up to scale, and since $E = [t]_\\times R$, so is $t$. You can recover the <em>direction</em> the camera moved, never how far."
+              },
+              {
+                "kind": "p",
+                "text": "That's not a weakness of the method, it's a fact about photos. Film a model city with cameras 10 cm apart, or the real city with cameras 100 m apart, and with the right sizes the two pairs of photos can be identical. Nothing in the pixels says which. Real systems fix the scale from outside: a known object size, a measured baseline on a stereo rig, an IMU, GPS."
+              },
+              {
+                "kind": "p",
+                "text": "<strong>Counting.</strong> Rotation has 3 degrees of freedom, translation 3, minus 1 for the lost scale: <strong>$E$ has 5</strong>. That's why the minimal solver for $E$ needs only 5 matches (Nistér, 2004), against 8 for the simple linear method, which ignores the structure and treats all 9 entries as free (minus scale)."
+              },
+              {
+                "kind": "p",
+                "text": "The same scale freedom is why the depths $Z$ and $Z'$ could be thrown away in the first place: if everything can be scaled together, no equation that holds for all scales can contain the scale."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 8,
+        "act": "Lines",
+        "title": "Why $Ex$ is a line",
+        "subtitle": "The payoff: point in, line out",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "A line on an image is $au + bv + c = 0$, so three numbers $(a, b, c)$",
+              "$(0, 1, -0.25)$ means $v = 0.25$, a horizontal line",
+              "A point $(u, v, 1)$ is on the line when $(a,b,c)\\cdot(u,v,1) = 0$, a dot product again",
+              "<strong>Give $E$ a point from image 1, it gives back a line in image 2</strong>. $x'^\\top E x = 0$ says $x'$ is on it"
+            ]
+          },
+          {
+            "kind": "figure",
+            "svg": "<svg viewBox=\"0 0 600 230\" role=\"img\" aria-label=\"Image 2 with the horizontal line v = 0.25. The true match at (0.25, 0.25) sits on the line; a wrong match at (0.25, 0.40) sits 0.15 below it, 75 pixels at focal length 500.\"><rect x=\"40\" y=\"20\" width=\"520\" height=\"190\" rx=\"6\" class=\"patch\"/><text x=\"52\" y=\"40\" class=\"fig-label\">image 2</text><line x1=\"40\" y1=\"115\" x2=\"560\" y2=\"115\" class=\"lineq\"/><text x=\"548\" y=\"105\" class=\"fig-label accent\" text-anchor=\"end\">Ex = (0, 1, −0.25): v = 0.25</text><circle cx=\"180\" cy=\"115\" r=\"6\" class=\"pt\"/><text x=\"196\" y=\"135\" class=\"fig-label\">true match (0.25, 0.25): 0</text><circle cx=\"180\" cy=\"169\" r=\"6\" class=\"hollow\"/><line x1=\"160\" y1=\"115\" x2=\"160\" y2=\"169\" class=\"axis\"/><text x=\"196\" y=\"174\" class=\"fig-label\">bad match (0.25, 0.40): 0.15 off, 75 px</text></svg>",
+            "caption": "The match must be on the row $v = 0.25$. The true match is; the wrong one is 0.15 off, which is 75 pixels at a focal length of 500."
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "Read $x'^\\top E x = 0$ in two halves. First compute $l' = Ex$, three numbers. Then $x'^\\top l' = 0$ says: $x'$ is on the line $l'$. So $E$ is a machine: <strong>point in image 1 → line in image 2</strong>. It's also a machine the other way: $l = E^\\top x'$ is the line in image 1 that $x$ must lie on.",
+              "In our example $Ex = (0, 1, -0.25)$, the line $v = 0.25$. <strong>The match must be on the same row.</strong> And it is: $x' = (0.25, 0.25)$. That's the sideways camera from step 4. Slide a camera left or right and things move left or right in the picture, never up or down. That's why stereo cameras are mounted side by side and their images are \"rectified\" to make it exact: the search for a match goes from the whole image to one row.",
+              "<strong>A wrong match.</strong> Say SIFT claims $x'_{\\text{bad}} = (0.25,\\ 0.40,\\ 1)$. Then $(0.25, 0.40, 1)\\cdot(0, 1, -0.25) = 0.40 - 0.25 = 0.15$. Not zero, so reject. With a focal length of 500 pixels that's 75 pixels off the line, clearly wrong.",
+              "That's the test asked for in step 1. Note what it can and can't do. It catches a match that's off its line. It can't catch a wrong match that happens to land on the line, for instance a repeated window along the same row of a building. The test cuts the search from 2D to 1D; it doesn't make it 0D."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "How far off the line, in pixels?",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "$x'^\\top E x$ isn't a distance in general. Scale the line $(a, b, c)$ by 10 and it's the same line, but the number grows 10 times. The actual distance from point $(u, v)$ to the line $au + bv + c = 0$ is:"
+              },
+              {
+                "kind": "eq",
+                "tex": "d = \\frac{|a u + b v + c|}{\\sqrt{a^2 + b^2}}",
+                "source": "ai"
+              },
+              {
+                "kind": "p",
+                "text": "Why: $(a, b)$ is the line's normal direction in the image. Dividing by its length turns the dot product into a projection onto a unit arrow, which is a true distance (the projection idea from step 2's tangent)."
+              },
+              {
+                "kind": "p",
+                "text": "In our example $(a, b) = (0, 1)$ already has length 1, so the raw 0.15 happened to be the distance. In general you have to divide. RANSAC uses this distance, measured in pixels, so that \"within 2 pixels\" means the same thing for every match."
+              },
+              {
+                "kind": "p",
+                "text": "Two refinements in practice. The <strong>symmetric</strong> distance adds the distance of $x$ from its line in image 1, so neither image is favoured. The <strong>Sampson</strong> distance is a first-order estimate of the smallest total pixel movement in <em>both</em> images that would make the match exact. OpenCV uses Sampson inside its RANSAC for $F$."
+              }
+            ]
+          },
+          {
+            "kind": "question",
+            "text": "Exercise: move camera 2 <strong>up</strong> by 1 instead of right, so $t = (0, -1, 0)$. Before computing, guess the line from the picture. Then build $[t]_\\times$, multiply by $x = (0.5, 0.25, 1)$, and see."
+          },
+          {
+            "kind": "tangent",
+            "title": "Answer to the exercise",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "<strong>Guess first.</strong> Slide a camera up or down and things move up or down in the picture, not sideways. So the match should stay in the same <em>column</em>: a vertical line, $u = 0.5$."
+              },
+              {
+                "kind": "p",
+                "text": "<strong>Build it.</strong> $t_x = 0$, $t_y = -1$, $t_z = 0$:"
+              },
+              {
+                "kind": "eq",
+                "tex": "[t]_\\times = \\begin{bmatrix} 0 & 0 & -1 \\\\ 0 & 0 & 0 \\\\ 1 & 0 & 0 \\end{bmatrix}, \\qquad E x = \\begin{bmatrix} -1 \\\\ 0 \\\\ 0.5 \\end{bmatrix}",
+                "source": "ai"
+              },
+              {
+                "kind": "p",
+                "text": "The line $(-1, 0, 0.5)$ is $-u + 0.5 = 0$, so $u = 0.5$: vertical, through the same column ✓."
+              },
+              {
+                "kind": "p",
+                "text": "<strong>Check against the real point.</strong> $P' = (2, 1, 4) + (0, -1, 0) = (2, 0, 4)$, so $x' = (0.5, 0, 1)$. Same $u$, different $v$. And $(0.5, 0, 1)\\cdot(-1, 0, 0.5) = -0.5 + 0.5 = 0$ ✓."
+              },
+              {
+                "kind": "p",
+                "text": "The epipole is $(0, -1, 0)$, a point at infinity straight up the image, so all the epipolar lines are vertical. Sideways motion gives horizontal lines, vertical motion gives vertical ones, and motion in any other direction tips them, always pointing at the epipole."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 9,
+        "act": "Fundamental",
+        "title": "From ideal coordinates to real pixels",
+        "subtitle": "E becomes F",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Real images are in pixels, like $(570, 365)$, not $(0.5, 0.25)$",
+              "The intrinsics matrix $K$ converts: $p = Kx$, and back: $x = K^{-1}p$",
+              "Substitute into $x'^\\top E x = 0$, and use $(AB)^\\top = B^\\top A^\\top$",
+              "The middle becomes the <strong>Fundamental matrix</strong> $F$, which works on raw pixels"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "K = \\begin{bmatrix} f & 0 & c_x \\\\ 0 & f & c_y \\\\ 0 & 0 & 1 \\end{bmatrix}, \\qquad p = K\\,x"
+          },
+          {
+            "kind": "eq",
+            "tex": "(K^{-1}p')^\\top E\\,(K^{-1}p) = p'^\\top \\underbrace{K^{-\\top} E\\, K^{-1}}_{F}\\, p = 0 \\qquad\\Longrightarrow\\qquad \\boxed{p'^\\top F\\, p = 0}"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "$K$ does two things to a normalised point: scale by the focal length $f$ (in pixels), then shift so that $(0, 0)$ moves from the centre of the image to the top-left corner where pixel numbering starts. With $f = 500$, $c_x = 320$, $c_y = 240$: $x = (0.5, 0.25)$ → $p = (500\\cdot0.5 + 320,\\ 500\\cdot0.25 + 240) = (570, 365)$, and $x' = (0.25, 0.25)$ → $p' = (445, 365)$. Same row in pixels too, 365 ✓.",
+              "Going back is $x = K^{-1}p$. Put that into $x'^\\top E x = 0$. The one rule needed is that transposing a product flips the order, so $(K^{-1}p')^\\top = p'^\\top K^{-\\top}$. Collect the three matrices in the middle and call them $F$.",
+              "<strong>Check in pixels.</strong> The pixel line is $l' = Fp = K^{-\\top}(Ex)$. We have $Ex = (0, 1, -0.25)$, and $K^{-\\top}$ maps a line $(a, b, c)$ to $(a/f,\\ b/f,\\ c - (a c_x + b c_y)/f)$. That gives $(0,\\ 0.002,\\ -0.25 - 240/500) = (0,\\ 0.002,\\ -0.73)$: the line $0.002\\,v = 0.73$, so $v = 365$ ✓. The row from step 8, now in pixels.",
+              "<strong>Why this matters for RANSAC.</strong> $F$ does everything $E$ does, point in, line out, but on raw pixel coordinates. You can estimate it from SIFT matches without ever calibrating the camera. If you <em>do</em> know $K$, you can turn $F$ back into $E$ with $E = K'^\\top F K$, and from $E$ get $R$ and the direction of $t$, which is where triangulation starts."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "What's inside K, and what F loses",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "<strong>$f$</strong> is the focal length measured in pixels: the lens's focal length divided by the size of one pixel on the sensor. A phone's main camera is typically somewhere around 0.8 to 1 times the image width. <strong>$(c_x, c_y)$</strong> is the principal point, where the optical axis hits the sensor, usually near the middle. A full $K$ can also have separate focal lengths for $x$ and $y$ and a skew term, but modern sensors make those nearly 1 and 0."
+              },
+              {
+                "kind": "p",
+                "text": "If the two photos come from different cameras, or the same camera zoomed differently, each has its own: $F = K'^{-\\top} E K^{-1}$."
+              },
+              {
+                "kind": "p",
+                "text": "<strong>Counting again.</strong> $F$ has 9 entries, minus 1 for scale, minus 1 because it's still rank 2 (multiplying $E$ by invertible matrices can't restore its lost dimension): <strong>7 degrees of freedom</strong>. $E$ had 5. The extra 2 are the camera information $F$ doesn't need to know. That's the trade: $F$ works without calibration, but it can only tell you about the cameras up to a projective distortion. You need $K$, and so $E$, to get real angles and true shapes."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 10,
+        "act": "Picture",
+        "title": "Why the picture and the algebra agree",
+        "subtitle": "A whole ray of depths becomes one line",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Knowing only pixel $p$ in image 1, the 3D point could be anywhere along camera 1's ray",
+              "Wherever it is on that ray, the triangle stays in the same flat sheet, the epipolar plane",
+              "That sheet cuts image 2 along a line, and <strong>that line is $Fp$</strong>"
+            ]
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "This is the same fact seen from the two sides. In the figure in step 5, sliding the point along camera 1's ray doesn't move its pixel in image 1 at all, because depth is thrown away. But camera 2 sees the ray from the side, so as the point slides, its image in camera 2 sweeps out a line. That line is the image of camera 1's ray in camera 2.",
+              "The algebra got the same line without ever choosing a depth, because step 7 removed the depth before it could matter. The geometric statement \"all depths at once\" and the algebraic statement \"the depth cancelled\" are one statement.",
+              "One more consequence. Where along the line the match falls is exactly the depth information. In the stereo case, how far a point shifts sideways along its row (the <strong>disparity</strong>) gives its depth: for focal length $f$ and baseline $b$, $Z = f\\,b / \\text{disparity}$. In our example the shift was $570 - 445 = 125$ pixels, and $500 \\cdot 1 / 125 = 4$, the true depth of $P$ ✓. The epipolar line tells you where to look; the position on it tells you how far away the point is. That's day 3's triangulation in its simplest form."
+            ]
+          }
+        ]
+      },
+      {
+        "n": 11,
+        "act": "RANSAC",
+        "title": "How RANSAC will use this",
+        "subtitle": "Where this is going; the fitting itself is still to do",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Hundreds of SIFT matches, as pixel pairs",
+              "Pick 8 at random, solve for a guess of $F$",
+              "For <strong>every</strong> match, compute the line $Fp$ and how many pixels $p'$ is from it",
+              "Within a few pixels → <strong>inlier</strong> (green in <code>inspect_matches.py</code>). Far off → <strong>outlier</strong> (red)",
+              "Repeat with new random picks, keep the $F$ the most matches agree with"
+            ]
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "The difficulty RANSAC solves is a chicken-and-egg one. To find the bad matches you need $F$. To compute $F$ you need good matches. A least-squares fit to all matches would be dragged off by the wrong ones, because one match 300 pixels off pulls harder than a hundred matches 1 pixel off.",
+              "RANSAC sidesteps it by guessing. Take the smallest set of matches that pins $F$ down, solve exactly, and let every other match vote on whether that $F$ makes sense. A guess built from good matches gets a big agreeing crowd. A guess built from even one bad match gets a tiny one, because the lines it draws are wrong for everyone else. Then refit $F$ to the winning crowd only.",
+              "<strong>Why 8?</strong> Write $p'^\\top F p = 0$ out and it's one linear equation in the 9 entries of $F$. $F$ only counts up to scale, so 8 equations pin it down. That's Longuet-Higgins's eight-point algorithm, solved with an SVD. Hartley's 1997 point was that you must first shift and rescale the pixel coordinates so they're around 1 in size; raw pixel values in the hundreds make the system badly conditioned and the answer poor."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "How many random tries?",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "If a fraction $w$ of matches are good and each guess uses $s$ of them, a guess is all-good with chance $w^s$. To have at least one all-good guess with confidence $p$, you need $N$ tries:"
+              },
+              {
+                "kind": "eq",
+                "tex": "N = \\frac{\\log(1 - p)}{\\log(1 - w^s)}",
+                "source": "ai"
+              },
+              {
+                "kind": "table",
+                "headers": [
+                  "Points per guess",
+                  "$w = 0.5$",
+                  "$w = 0.7$"
+                ],
+                "rows": [
+                  [
+                    "8 (eight-point, $F$)",
+                    "1,177",
+                    "78"
+                  ],
+                  [
+                    "7 (seven-point, $F$)",
+                    "588",
+                    "54"
+                  ],
+                  [
+                    "5 (five-point, $E$)",
+                    "146",
+                    "26"
+                  ]
+                ],
+                "source": "ai"
+              },
+              {
+                "kind": "p",
+                "text": "All at $p = 0.99$. Two things stand out. Fewer points per guess helps a lot, which is why the 7-point and 5-point solvers exist despite being harder to derive. And the inlier fraction matters even more: a clean set of matches (70% good) needs about 15 times fewer tries than a messy one (50% good) for the eight-point case. Since $w$ isn't known in advance, the usual trick is to start pessimistic and lower $N$ as better inlier counts turn up."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 12,
+        "act": "Summary",
+        "title": "The whole chain",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Two cameras and a point make a <strong>triangle</strong>, and a triangle is <strong>flat</strong>",
+              "\"Three arrows are flat\" is the equation $c \\cdot (a \\times b) = 0$",
+              "The cross product becomes the matrix $[t]_\\times$, which merges with $R$ into $E$",
+              "The unknown depths <strong>cancel</strong>, because the equation equals zero",
+              "$E$ times a point is a <strong>line</strong>, and the match has to be on it",
+              "Wrapping in $K$ moves it to pixels: $E \\to F$",
+              "RANSAC throws out matches that are <strong>off their lines</strong>"
+            ]
+          }
+        ]
+      }
+    ],
+    "questions": [
+      "How exactly is $F$ solved from 8 matches, and why does the SVD give the answer?",
+      "Why does normalising the coordinates rescue the eight-point algorithm? What goes wrong without it?",
+      "How is the inlier threshold chosen, and how does it depend on image size and SIFT's localisation error?",
+      "What goes wrong when the scene is nearly flat, or the camera only rotates, and $F$ isn't defined properly?",
+      "How do you get $R$ and $t$ back out of $E$, and how do you choose between its four possible answers?",
+      "How does the five-point algorithm work, and is it worth it over eight-point inside RANSAC?",
+      "How does triangulation turn a match plus $R$ and $t$ into a 3D point when the rays don't quite meet?"
+    ]
   }
 ];
