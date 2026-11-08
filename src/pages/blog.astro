@@ -23,6 +23,7 @@ import { notebooks } from '../lib/notebooks';
 const essaySources = import.meta.glob('./blog/*.astro', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
 const essayWords: Record<string, number> = Object.fromEntries(Object.entries(essaySources).map(([path, raw]) =>
   [path.split('/').pop()!.replace('.astro', ''), wordsIn(raw)]));
+const totalWords = Object.values(essayWords).reduce((a, b) => a + b, 0) + notebooks.reduce((a, nb) => a + nb.words, 0);
 const wordsLabel = (n: number) => (n > 0 ? `${n.toLocaleString('en-US')} words · ` : '');
 
 // At the head of the page, in particles of ink: Leonardo's flight, water and
@@ -169,7 +170,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     <div class="first-screen">
     <Mast
       name="Technical Blogs"
-      statement={`<em>${posts.length} essays</em> and <em>${notebooks.length} notebooks</em> on computer vision, the brain and machine learning, written down while I was learning it.`}
+      statement={`<em>${posts.length} essays</em> and <em>${notebooks.length} notebooks</em>, <em>${totalWords.toLocaleString('en-US')} words</em> in all, on computer vision, the brain and machine learning, written down while I was learning it.`}
     >
       <details class="why">
           <summary>Why I write these</summary>
