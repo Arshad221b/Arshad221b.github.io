@@ -343,17 +343,20 @@ import PlateCredit from './PlateCredit.astro';
     // nothing as it lets go and back up as the next gathers, and a slow
     // current that takes over in between. Velocity is never reset.
     var hold = phase === 'gather' ? smooth(e / FORM) : phase === 'hold' ? 1 : 1 - smooth(e / LET);
-    var damp = Math.pow(0.982 - 0.084 * hold, dt), pull = 0.0042 * hold * hold * dt, drift = (0.3 * (1 - hold) * (1 - hold) + 0.004) * dt;
+    var damp = Math.pow(0.982 - 0.084 * hold, dt), pull = 0.0042 * hold * hold * dt, drift = (0.22 * (1 - hold) * (1 - hold) + 0.004) * dt;
     grid(now);
     // Echoes: each particle's two companions fan out as the pull lets go and
     // fold back as it returns, so the ink in the air triples without any
     // more particles to move. Not drawn at all while the drawing holds.
     // In transition the ink spreads across the whole window, behind the words
     // too, in the screen's own proportions.
-    var lg = (1 - hold) * (1 - hold), spx = lg * W * 0.7, spy = lg * H * 0.7, echo = lg * Math.min(W, H) > 1;
-    // A gentle outward breath from the drawing, so the ink loosens across the whole screen.
+    var lg = (1 - hold) * (1 - hold), spx = lg * W * 0.55, spy = lg * H * 0.55, echo = lg * Math.min(W, H) > 1;
+    // Loosening that knows the screen: each particle drifts outward in
+    // proportion to the room it has left before the edge, measured against
+    // the screen's own width and height, and a soft margin turns it back.
     var ar0 = art.getBoundingClientRect(), cr0 = canvas.getBoundingClientRect();
-    var ccx = ar0.left - cr0.left + ar0.width / 2, ccy = ar0.top - cr0.top + ar0.height / 2, push = 0.035 * lg * dt;
+    var ccx = ar0.left - cr0.left + ar0.width / 2, ccy = ar0.top - cr0.top + ar0.height / 2;
+    var push = 0.9 * lg * dt, mg = Math.min(W, H) * 0.06, edge = 0.012 * dt;
     var wx = W >= H ? wind * 0.03 * lg * dt : 0, wy = W < H ? wind * 0.03 * lg * dt : 0;
     // The halo turns slowly, each echo its own way, so the cloud shimmers.
     var q1 = now * 0.00031, q2 = -now * 0.00023, q3 = now * 0.00017;
@@ -366,8 +369,13 @@ import PlateCredit from './PlateCredit.astro';
       // own strength, with a fine tremor while the drawing is let go.
       at(px[i] + nox[i], py[i] + noy[i]);
       var dm = drift * mul[i], ri2 = (base + i * 31) & 8191;
-      vx[i] += (tx[i] - px[i]) * kf + fu * dm + RT[ri2] * trem + wx * mul[i] + (px[i] - ccx) * push * 0.05;
-      vy[i] += (ty[i] - py[i]) * kf + fv * dm + RT[(ri2 + 4099) & 8191] * trem + wy * mul[i] + (py[i] - ccy) * push * 0.05 - 0.005 * (1 - hold) * dt;
+      var ddx = px[i] - ccx, ddy = py[i] - ccy;
+      var roomX = (ddx > 0 ? W - px[i] : px[i]) / (W * 0.5), roomY = (ddy > 0 ? H - py[i] : py[i]) / (H * 0.5);
+      roomX = roomX < 0 ? 0 : roomX > 1 ? 1 : roomX; roomY = roomY < 0 ? 0 : roomY > 1 ? 1 : roomY;
+      var bx0 = px[i] < mg ? (mg - px[i]) * edge : px[i] > W - mg ? (W - mg - px[i]) * edge : 0;
+      var by0 = py[i] < mg ? (mg - py[i]) * edge : py[i] > H - mg ? (H - mg - py[i]) * edge : 0;
+      vx[i] += (tx[i] - px[i]) * kf + fu * dm + RT[ri2] * trem + wx * mul[i] + (ddx / W) * roomX * push + bx0;
+      vy[i] += (ty[i] - py[i]) * kf + fv * dm + RT[(ri2 + 4099) & 8191] * trem + wy * mul[i] + (ddy / H) * roomY * push + by0 - 0.005 * (1 - hold) * dt;
       vx[i] *= damp; vy[i] *= damp;
       px[i] += vx[i] * dt; py[i] += vy[i] * dt;
       ca[i] += (ta[i] * (0.6 + 0.4 * hold) - ca[i]) * Math.min(1, 0.045 * dt);
