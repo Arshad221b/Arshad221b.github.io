@@ -182,7 +182,7 @@ import PlateCredit from './PlateCredit.astro';
   var list = JSON.parse(plate.dataset.sketches), credits = JSON.parse(plate.dataset.credits);
   // Ask for each drawing at the width this screen needs, not the largest.
   (function () {
-    var need = Math.min(1600, Math.ceil(Math.max(innerWidth * 0.95, innerHeight * 0.6) * Math.min(2, devicePixelRatio || 1) / 200) * 200);
+    var need = Math.min(1600, Math.ceil(Math.max(innerWidth * 0.95, innerHeight * 0.6) * Math.min(innerWidth < 760 ? 3 : 2, devicePixelRatio || 1) / 200) * 200);
     list = list.map(function (u) { return u.replace('w_1600', 'w_' + need); });
   })();
   var allList = list.slice(), allCredits = credits.slice();
@@ -218,7 +218,9 @@ import PlateCredit from './PlateCredit.astro';
   var buf, bctx, pix, p32, BW = 0, BH = 0, mgx = 1, mgy = 1;
 
   function size() {
-    dpr = Math.min(2, devicePixelRatio || 1);
+    // Phones draw at their full density (up to 3×): the drawing is small there,
+    // so it costs little, and anything less is visibly soft.
+    dpr = Math.min(innerWidth < 760 ? 3 : 2, devicePixelRatio || 1);
     W = canvas.offsetWidth; H = canvas.offsetHeight;
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -227,10 +229,10 @@ import PlateCredit from './PlateCredit.astro';
     // call: the cost hardly grows with the number of dots.
     // At the screen's own density (up to 2x), so a phone's dots stay fine.
     BW = Math.round(W * dpr); BH = Math.round(H * dpr);
-    DS = dpr > 1 ? 3 : 2;
+    DS = dpr >= 2.5 ? 4 : dpr > 1 ? 3 : 2;   // about the same dot size on every screen
     buf = document.createElement('canvas'); buf.width = BW; buf.height = BH;
     bctx = buf.getContext('2d'); pix = bctx.createImageData(BW, BH); p32 = new Uint32Array(pix.data.buffer);
-    var n = W < 760 ? 14000 : W < 1500 ? 18000 : 28000;
+    var n = W < 760 ? 24000 : W < 1500 ? 22000 : 28000;
     if (n !== N) {
       N = n;
       var F = function () { return new Float32Array(N); };
