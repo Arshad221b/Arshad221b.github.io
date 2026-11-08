@@ -359,6 +359,10 @@ import PlateCredit from './PlateCredit.astro';
     var ar0 = art.getBoundingClientRect(), cr0 = canvas.getBoundingClientRect();
     var ccx = ar0.left - cr0.left + ar0.width / 2, ccy = ar0.top - cr0.top + ar0.height / 2;
     var push = 0.9 * lg * dt;
+    // The screen's edges turn the ink rather than stop it: within a margin the
+    // current and wind fade and a gentle steer brings each particle back round
+    // into the open, so nothing leaves the frame and nothing stacks against it.
+    var mgx = W * 0.1, mgy = H * 0.1, steer = 0.32 * dt;
     var wx = W >= H ? wind * 0.03 * lg * dt : 0, wy = W < H ? wind * 0.03 * lg * dt : 0;
     // The halo turns slowly, each echo its own way, so the cloud shimmers.
     var q1 = now * 0.00031, q2 = -now * 0.00023, q3 = now * 0.00017;
@@ -373,10 +377,17 @@ import PlateCredit from './PlateCredit.astro';
       var dm = drift * mul[i], ri2 = (base + i * 31) & 8191;
       var ddx = px[i] - ccx, ddy = py[i] - ccy;
       var nr = (ddx * ddx) / (W * W) + (ddy * ddy) / (H * H), fall = 1 / (1 + nr * 9);
-      vx[i] += (tx[i] - px[i]) * kf + fu * dm + RT[ri2] * trem + wx * mul[i] + (ddx / W) * fall * push;
-      vy[i] += (ty[i] - py[i]) * kf + fv * dm + RT[(ri2 + 4099) & 8191] * trem + wy * mul[i] + (ddy / H) * fall * push - 0.005 * (1 - hold) * dt;
+      var ex = px[i] < mgx ? 1 - px[i] / mgx : px[i] > W - mgx ? 1 - (W - px[i]) / mgx : 0;
+      var ey = py[i] < mgy ? 1 - py[i] / mgy : py[i] > H - mgy ? 1 - (H - py[i]) / mgy : 0;
+      ex = ex > 1 ? 1 : ex * ex * (3 - 2 * ex); ey = ey > 1 ? 1 : ey * ey * (3 - 2 * ey);
+      var inx = px[i] < W / 2 ? 1 : -1, iny = py[i] < H / 2 ? 1 : -1;
+      vx[i] += (tx[i] - px[i]) * kf + (fu * dm + wx * mul[i] + (ddx / W) * fall * push) * (1 - ex) + RT[ri2] * trem + inx * ex * steer * (1 - hold);
+      vy[i] += (ty[i] - py[i]) * kf + (fv * dm + wy * mul[i]) * (1 - ey) + RT[(ri2 + 4099) & 8191] * trem + ((ddy / H) * fall * push - 0.005 * (1 - hold) * dt) * (1 - ey) + iny * ey * steer * (1 - hold);
       vx[i] *= damp; vy[i] *= damp;
       px[i] += vx[i] * dt; py[i] += vy[i] * dt;
+      // Last guard: a soft bounce at the very edge.
+      if (px[i] < 1) { px[i] = 1; vx[i] = Math.abs(vx[i]) * 0.4; } else if (px[i] > W - 2) { px[i] = W - 2; vx[i] = -Math.abs(vx[i]) * 0.4; }
+      if (py[i] < 1) { py[i] = 1; vy[i] = Math.abs(vy[i]) * 0.4; } else if (py[i] > H - 2) { py[i] = H - 2; vy[i] = -Math.abs(vy[i]) * 0.4; }
       ca[i] += (ta[i] * (0.6 + 0.4 * hold) - ca[i]) * Math.min(1, 0.045 * dt);
       // The pointer parts the ink; it closes again behind it.
       var qx = px[i] + fx[i], qy = py[i] + fy[i], ex = qx - mx, ey = qy - my, d2 = ex * ex + ey * ey;
