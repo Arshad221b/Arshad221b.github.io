@@ -499,7 +499,10 @@ import PlateCredit from './PlateCredit.astro';
     function S(X, Y) {
       var win = sm(X / M) * sm((W - X) / M) * sm(Y / M) * sm((H - Y) / M);
       if (!win) return 0;
-      var v = cn ? cn * sn * psi(X * scx, Y * scy, t) : 0;
+      // Centred on zero: noise that averages 0.75, windowed, would add one
+      // screen-wide circulation, always the same way, pulling every release
+      // toward the same corner.
+      var v = cn ? cn * sn * (psi(X * scx, Y * scy, t) - 0.75) : 0;
       if (cb) {
         if (k === 0) { var dx = X - BEH.cx, dy = Y - BEH.cy; v += cb * BEH.spin * 1.6 * R * Math.log(1 + (dx * dx + dy * dy) / (R * R)); }  // a swirl
         else if (k === 1) v += cb * BEH.spin * 2.2 * H / PI * Math.sin(PI * X / W) * Math.sin(PI * Y / H);                           // one gyre, wall to wall
