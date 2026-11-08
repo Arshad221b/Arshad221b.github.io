@@ -170,7 +170,7 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     <div class="first-screen">
     <Mast
       name="Technical Blogs"
-      statement={`<em>${posts.length} essays</em> and <em>${notebooks.length} notebooks</em>, <em>${totalWords.toLocaleString('en-US')} words</em> in all, on computer vision, the brain and machine learning, written down while I was learning it.`}
+      statement={`<em>${posts.length} essays</em> and <em>${notebooks.length} notebooks</em>, <em>${Math.round(totalWords / 1000)}k words</em> in all, on computer vision, the brain and machine learning, written down while I was learning it.`}
     >
       <details class="why">
           <summary>Why I write these</summary>
