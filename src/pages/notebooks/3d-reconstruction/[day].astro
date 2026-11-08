@@ -571,6 +571,12 @@ const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
   }
   .recon .r-question .r-q-label { display: block; margin-bottom: var(--space-1); color: var(--color-accent); }
 
+  /* Maths at the size of the text around it, like blog posts.
+     KaTeX's default 1.21em makes inline formulas shout. */
+  .recon .katex { font-size: 1em; }
+  .recon .katex-display .katex { font-size: 1.1em; }
+  .recon .katex-display { overflow-x: auto; overflow-y: hidden; }
+
   /* ── Figures ── */
   .recon .r-fig {
     margin: var(--space-6) 0;
@@ -580,6 +586,12 @@ const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
     border-radius: var(--radius-lg);
   }
   .recon .r-fig svg { display: block; width: 100%; height: auto; }
+  /* Phones: SVG text scales with the drawing, so a 600-wide figure in a
+     310px column has 6px labels. Keep a floor and let the figure scroll. */
+  @media (max-width: 640px) {
+    .recon .r-fig { padding: var(--space-3) var(--space-2); overflow-x: auto; overscroll-behavior-x: contain; }
+    .recon .r-fig svg { min-width: 520px; }
+  }
   .recon .r-fig figcaption {
     margin-top: var(--space-2);
     font-family: var(--font-sans);
