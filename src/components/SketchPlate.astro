@@ -420,8 +420,11 @@ import PlateCredit from './PlateCredit.astro';
     var ue = phase === 'let' ? e / LET : 0, ug = phase === 'gather' ? e / FORM : 0;
     // How hard the water is stirred: rises over the first third of the
     // release, falls over the last third, then a faint residue fading away.
-    var stir = phase === 'let' ? smooth(ue / 0.3) * (1 - smooth((ue - 0.7) / 0.3))
-      : 0;
+    // The water never stops dead between drawings: the stirring eases to 40%
+    // by the end of the release and keeps flowing into the gather, fading
+    // over its first half, so drifting turns into gathering in one motion.
+    var stir = phase === 'let' ? smooth(ue / 0.3) * (1 - 0.6 * smooth((ue - 0.6) / 0.4))
+      : phase === 'gather' && scattered ? 0.4 * (1 - smooth(ug / 0.55)) : 0;
     var still = phase === 'let' ? 0.18 : phase === 'gather' ? 0.18 * (1 - smooth(ug / 0.6)) : 0;
     grid(now);
     var kind = BEH.kind, S = Math.min(W, H);
