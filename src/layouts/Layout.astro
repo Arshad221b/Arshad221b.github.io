@@ -356,6 +356,31 @@ const elsewhere = [
       })();
     </script>
     <script is:inline>
+      // Scroll anchoring for browsers without it (iOS Safari). Equations,
+      // their fonts and their fitting settle after the page is drawn; when
+      // something above the screen changes height, the line being read is
+      // put back where it was, as Chrome and Firefox do on their own.
+      (function () {
+        if (!window.ResizeObserver || (window.CSS && CSS.supports('overflow-anchor', 'auto'))) return;
+        var main = document.querySelector('main') || document.body, anchor = null, top = 0, queued = false;
+        function pick() {
+          queued = false;
+          anchor = null;
+          if (scrollY < 40) return;
+          var el = document.elementFromPoint(innerWidth / 2, innerHeight * 0.2);
+          if (!el || !main.contains(el)) return;
+          anchor = el;
+          top = el.getBoundingClientRect().top;
+        }
+        addEventListener('scroll', function () { if (!queued) { queued = true; requestAnimationFrame(pick); } }, { passive: true });
+        new ResizeObserver(function () {
+          if (!anchor || !anchor.isConnected) return;
+          var d = anchor.getBoundingClientRect().top - top;
+          if (Math.abs(d) >= 1) scrollBy(0, d);
+        }).observe(main);
+      })();
+    </script>
+    <script is:inline>
       // "Why I write these" unfolds: the note grows from nothing to its
       // height and fades in, and folds back the same way, instead of
       // appearing or vanishing at once.
