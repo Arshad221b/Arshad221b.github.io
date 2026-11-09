@@ -1529,8 +1529,12 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
   root.classList.add('live');
   var io = new IntersectionObserver(function (es) {
     es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
-  root.querySelectorAll('.rv').forEach(function (el) { io.observe(el); });
+  }, { rootMargin: '0px', threshold: 0 });
+  root.querySelectorAll('.rv').forEach(function (el) {
+    // A topic's first piece peeks into the opening: it is there from the start.
+    if (el.matches('.piece:first-child')) { el.classList.add('in'); return; }
+    io.observe(el);
+  });
 })();
 </script>
 
