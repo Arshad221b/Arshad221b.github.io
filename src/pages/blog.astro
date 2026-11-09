@@ -16,11 +16,10 @@ import SketchPlate from '../components/SketchPlate.astro';
 import Layout from '../layouts/Layout.astro';
 import { wordsIn } from '../lib/text';
 
-import Mast from '../components/Mast.astro';
 import { notebooks } from '../lib/notebooks';
 
 /* Words in each essay, from its own source: markup, code and maths out. */
-const essaySources = import.meta.glob('./blog/*.astro', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+const essaySources = import.meta.glob(['./blog/*.astro', './sign-language-recognition-using-cnn-and-opencv.astro'], { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
 const essayWords: Record<string, number> = Object.fromEntries(Object.entries(essaySources).map(([path, raw]) =>
   [path.split('/').pop()!.replace('.astro', ''), wordsIn(raw)]));
 const totalWords = Object.values(essayWords).reduce((a, b) => a + b, 0) + notebooks.reduce((a, nb) => a + nb.words, 0);
@@ -134,12 +133,12 @@ type Item =
 const items: Item[] = [
   ...posts.map(p => ({
     kind: 'essay' as const, date: p.date, title: p.title, description: p.description,
-    href: p.href || `/blog/${p.slug}`, image: img(`/images/blog/${p.slug}.jpg`, 1000),
+    href: p.href || `/blog/${p.slug}`, image: img(`/images/blog/${p.slug}.jpg`, 1200),
     minutes: essayWords[p.slug] ? Math.max(1, Math.round(essayWords[p.slug] / 230)) : p.minutes, words: essayWords[p.slug] ?? 0, tags: p.tags, contents: p.contents,
   })),
   ...notebooks.map(nb => ({
     kind: 'notebook' as const, date: nb.endDate, title: nb.title, description: nb.description,
-    href: `/notebooks/${nb.slug}`, image: img(`/images/blog/notebook-${nb.slug}.jpg`, 1000),
+    href: `/notebooks/${nb.slug}`, image: img(`/images/blog/notebook-${nb.slug}.jpg`, 1200),
     minutes: nb.minutes, tags: nb.tags, nb,
   })),
 ].sort((a, b) => b.date.localeCompare(a.date));
@@ -162,101 +161,243 @@ const topics = TOPICS.map(([n]) => ({ name: n, count: items.filter(it => topicsO
 const fmt = (d: string, o: Intl.DateTimeFormatOptions) => new Date(d + 'T00:00:00').toLocaleDateString('en-US', o);
 const short = (d: string) => fmt(d, { month: 'short', day: 'numeric' });
 const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
+
+/* The work in four topics, so a page of wide interests reads as four
+   clear bodies of work. Each has its own drawings from the history of
+   looking, which form beside its name as you reach it. In each, notebooks lead (the one being written first),
+   then essays, newest first. */
+const keyOf = (it: Item) => it.href.split('/').filter(Boolean).pop()!;
+const TOPIC_DEFS = [
+  { id: 'vision', intro: 'How a machine turns pixels into an understanding of a scene: where things are, how they move and what they are. Here that starts with geometry, from cameras and matched points to recovering 3D structure, and continues into learned models that estimate pose and read gestures.', set: [15, 10, 7, 3, 9, 2, 12, 25], name: 'Vision', line: 'How a machine recovers the world from pixels: geometry, pose and recognition.', keys: ['3d-reconstruction', 'temporal-spatial-attention-3d-pose', 'sign-language-recognition-using-cnn-and-opencv'] },
+  { id: 'neuroscience', intro: 'How the brain does what those machines attempt. The notebooks follow vision from the retina to recognition through its two cortical streams, then turn to emotion: what it is, why it evolved and how it steers thought. The essay reads the visual cortex as an architecture an engineer could build.', set: [13, 14, 20, 17, 18], name: 'Neuroscience', line: 'How the brain sees, and how it feels: the computation behind both.', keys: ['neuroscience', 'cnns-design-flaw-evolution', 'emotion'] },
+  { id: 'machine-learning', intro: 'The models under modern AI, derived rather than used: how text becomes tokens, how attention works and how the transformer is put together; how CLIP binds text and images in one space; and how databases search those embeddings by meaning.', set: [5, 8, 0, 19, 21, 23, 24], name: 'Machine learning', line: 'Transformers, models that read images, and search by meaning, derived from the ground up.', keys: ['modern-nets', 'vlm-search', 'vector-databases-vdbms'] },
+  { id: 'foundations', intro: 'The mathematics the rest relies on: random variables, expectation and variance, and how to judge a classifier honestly with ROC curves and AUC instead of accuracy.', set: [1, 4, 6, 11, 16, 22, 26, 27, 28, 29], name: 'Foundations', line: 'The probability and evaluation everything above stands on.', keys: ['probability-mass-function', 'roc-curve-auc'] },
+];
+const rank = (it: Item) => (it.kind === 'notebook' ? (it.nb.inProgress ? 0 : 1) : 2);
+const fields4 = TOPIC_DEFS.map(t => {
+  const its = t.keys.map(k => items.find(it => keyOf(it) === k)!).filter(Boolean)
+    .sort((a, b) => rank(a) - rank(b) || b.date.localeCompare(a.date));
+  const words = its.reduce((n, it) => n + (it.kind === 'essay' ? it.words : it.nb.words), 0);
+  return { ...t, items: its, words, notebooks: its.filter(x => x.kind === 'notebook').length, essays: its.filter(x => x.kind === 'essay').length };
+});
+const k1 = (n: number) => `${(n / 1000).toFixed(1).replace('.0', '')}k`;
+const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
 ---
 
-<Layout title={title} activeNav="/blog" description="Essays and day-by-day notebooks on computer vision, the brain and machine learning. Notes on things I finally understood, not tutorials." ogImage={share("/images/share-blog.jpg")}>
+<Layout title={title} activeNav="/blog" description="Essays and day-by-day notebooks in four topics: vision, neuroscience, machine learning and their foundations. Notes on things I finally understood, not tutorials." ogImage={share("/images/share-blog.jpg")}>
   <SketchPlate sketches={sketches} credits={credits} />
   <div class="blog-page free">
-    <div class="first-screen">
-    <Mast
-      name="Technical Blogs"
-      statement={`<em>${posts.length} essays</em> and <em>${notebooks.length} notebooks</em>, <em>${Math.round(totalWords / 1000)}k words</em> in all, on computer vision, the brain and machine learning, written down while I was learning it.`}
-    >
-      <details class="why">
-          <summary>Why I write these</summary>
-          <div class="why-body">
+    <div class="shelf-layout">
+      <!-- One column, held on screen: the page's name, the four topics
+           (choose one; it fills the right), and the line to search on. -->
+      <aside class="side" id="side">
+        <div class="side-head">
+          <h1 class="side-title">Technical Blogs</h1>
+          <details class="why">
+            <summary>Why I write these</summary>
+            <div class="why-body">
             <p>I write these to check whether I actually understand something. If I can explain it from the start, with the reasoning and not just the result, I do. If I can't, the gap shows up on the page.</p>
             <p>I'm mostly self-taught, so I don't always know what I'm missing. Writing is how I find out.</p>
             <p>I move between subjects because that's how my curiosity works, and because an idea often makes more sense once I've seen it somewhere else.</p>
             <p>These are working notes, not tutorials. Some of it will be wrong. Where I'm not sure, I say so.</p>
           </div>
-        </details>
-    </Mast>
-
-    <!-- The same console as Thoughts: one line to search on, one row of topics. -->
-    <div class="console">
-      <div class="seek">
-        <span class="seek-lead">Find the one about</span>
-        <input type="text" id="search-input" placeholder="anything" autocomplete="off" aria-label="Search the blogs" />
-        <span class="seek-key" aria-hidden="true">/</span>
-        <button type="button" class="seek-clear" id="seek-clear" aria-label="Clear search">Clear</button>
-      </div>
-
-      <p class="console-note" id="results-count"></p>
-
-      <div class="themes">
-        <span class="themes-name">Topics</span>
-        <div class="theme-strip" id="theme-strip">
-          {topics.map(t => (
-            <button class="idx" data-tag={t.name} type="button">
-              <span class="idx-name">{t.name}</span><span class="idx-n">{t.count}</span>
-            </button>
+          </details>
+        </div>
+        <nav class="tabs" id="tabs" role="tablist" aria-label="Topics">
+          <span class="tab-marker" aria-hidden="true"></span>
+          <button type="button" class="back-topics" id="back-topics">← Topics</button>
+          {fields4.map((t, i) => (<Fragment>
+            <a href={`#${t.id}`} class="tab" role="tab" data-t={t.id} aria-selected={i === 0 ? 'true' : 'false'} aria-controls={t.id} style={`--o:${i}`}>
+              <span class="tab-n">{String(i + 1).padStart(2, '0')}</span>
+              <span class="tab-name">{t.name}</span>
+              <span class="tab-line">{t.line}</span>
+              <span class="tab-c">{[t.notebooks && `${t.notebooks} notebook${t.notebooks > 1 ? 's' : ''}`, t.essays && `${t.essays} essay${t.essays > 1 ? 's' : ''}`].filter(Boolean).join(' · ')}</span>
+            </a>
+          </Fragment>))}
+          <button type="button" class="tab-find" id="tab-find" aria-controls="side-find" aria-expanded="false">Find</button>
+        </nav>
+        <!-- The chosen topic's drawing forms here, under its name. -->
+        <div class="side-art" id="side-art" aria-hidden="true" style="--o:0">
+          {fields4.map((t, i) => (
+            <div class={`plate-slot${i === 0 ? ' on' : ''}`} data-t={t.id} data-set={JSON.stringify(t.set)}></div>
           ))}
         </div>
-      </div>
-    </div>
-    </div>
+        <!-- The chosen topic in a few lines, under its drawing. -->
+        <div class="side-intro">
+          {fields4.map((t, i) => (
+            <p class={`tab-intro${i === 0 ? ' on' : ''}`} data-t={t.id}>{t.intro}</p>
+          ))}
+        </div>
+        <div class="side-find" id="side-find">
+          <div class="seek">
+            <label class="seek-lead" for="search-input">Find</label>
+            <input type="search" id="search-input" placeholder="anything" enterkeyhint="search" autocomplete="off" aria-label="Search the blogs" />
+            <span class="seek-key" aria-hidden="true">/</span>
+          </div>
+          <p class="find-note" id="find-note" aria-live="polite"></p>
+        </div>
+      </aside>
 
-    <div class="timeline" id="post-index">
-      {years.map(year => (
-        <section class="year" data-year={year}>
-          <h2 class="year-head"><span class="year-n">{year}</span><span class="year-rule"></span><span class="year-c">{items.filter(it => it.date.startsWith(year)).length} pieces</span></h2>
-          <ol class="rows">
-            {items.filter(it => it.date.startsWith(year)).map(it => (
-              <li class={`row ${it.kind}`} data-month={it.date.slice(0, 7)} data-tags={topicsOf(it.tags).join('|')}
-                  data-text={[it.title, it.description, ...it.tags, ...topicsOf(it.tags), ...(it.kind === 'essay' ? it.contents : it.nb.days.map(d => d.title))].join(' ').toLowerCase()}>
-                <time class="row-date" datetime={it.date}><span class="dd">{fmt(it.date, { month: 'short' })}</span><span class="mm">{it.date.slice(0, 4)}</span></time>
-                <div class="row-body">
-                  <div class="row-fig"><img src={it.image} data-ink crossorigin="anonymous" alt="" width="1600" height="840" loading="lazy" decoding="async" /></div>
-                  <p class="meta">
-                    <span class="k">{it.kind === 'essay' ? 'Essay' : 'Notebook'}</span>
-                    <span>{it.kind === 'essay' ? `${wordsLabel(it.words)}${it.minutes} min read` : (it.nb.inProgress ? 'In progress · ' : '') + `${it.nb.days.length} days · ${wordsLabel(it.nb.words)}${it.minutes} min in all`}</span>
+    <div class="stage">
+    <div class="chapters" id="post-index">
+      {fields4.map((t, i) => (
+        <section class={`chapter ch-${t.id}${i === 0 ? ' active' : ''}`} id={t.id} role="tabpanel" data-i={i} style={`--o:${i}`}>
+          <header class="ch-head rv">
+            <div class="ch-side">
+              <p class="ch-line">{t.intro}</p>
+              <dl class="ch-stats">
+                {t.notebooks > 0 && <div><dt>Notebooks</dt><dd>{t.notebooks}</dd></div>}
+                {t.essays > 0 && <div><dt>Essays</dt><dd>{t.essays}</dd></div>}
+                <div><dt>Words</dt><dd>{k1(t.words)}</dd></div>
+              </dl>
+            </div>
+          </header>
+
+          <ol class="pieces">
+            {t.items.map(it => (
+              <li class={`piece rv ${it.kind}`} id={keyOf(it)}
+                  data-text={[it.title, it.description, t.name, ...it.tags, ...(it.kind === 'essay' ? it.contents : it.nb.days.map(d => d.title))].join(' ').toLowerCase()}>
+                <a class="p-fig" href={it.href} tabindex="-1" aria-hidden="true">
+                  <img src={it.image} data-ink crossorigin="anonymous" alt="" width="1600" height="840" loading="lazy" decoding="async" />
+                </a>
+                <div class="p-body">
+                  <p class="p-meta">
+                    <span class="p-kind">{it.kind === 'essay' ? 'Essay' : 'Notebook'}</span>
+                    {it.kind === 'notebook' && (
+                      <span class="p-days" aria-label={`${it.nb.days.filter(d => d.href).length} days written`}>
+                        {it.nb.days.map(d => <i class={d.href ? '' : 'off'}></i>)}{it.nb.inProgress && <i class="next"></i>}
+                      </span>
+                    )}
+                    <span class="p-when">
+                      {it.kind === 'essay'
+                        ? `${mon(it.date)} · ${it.words ? `${it.words.toLocaleString('en-US')} words · ` : ''}${it.minutes} min`
+                        : `${it.nb.inProgress ? 'In progress · ' : ''}${it.nb.days.length} days · ${it.nb.words.toLocaleString('en-US')} words`}
+                    </span>
                   </p>
-                  <h3><a href={it.href} class="stretch">{it.title}</a></h3>
-                  <p class="desc">{it.description}</p>
-                  {/* What it answers: revealed when you reach for the piece. */}
-                  <div class="reveal"><ol class="inside">
+                  <h3 class="p-title"><a href={it.href}>{it.title}</a></h3>
+                  <p class="p-desc">{it.description}</p>
+                  <button type="button" class="p-more" aria-expanded="false">{it.kind === 'essay' ? `${it.contents.length} sections` : `${it.nb.days.length} days`}</button>
+                  <ol class="p-toc">
                     {it.kind === 'essay'
-                      ? it.contents.map((c, i) => <li style={`--i:${i}`}><span class="in-row"><span class="in-n">{String(i + 1).padStart(2, '0')}</span><span class="in-t">{c}</span></span></li>)
-                      : it.nb.days.map((d, i) => (
-                          <li style={`--i:${i}`}>{d.href
-                            ? <a href={d.href}><span class="in-n">Day {d.day}</span><span class="in-t">{d.title}</span><span class="in-m">{d.minutes} min</span></a>
-                            : <span class="off"><span class="in-n">Day {d.day}</span><span class="in-t">{d.title}</span></span>}</li>
-                        ))}
-                  </ol></div>
+                      ? it.contents.map((c, j) => <li><a href={`${it.href}#section-${j + 1}`}><span class="n">§{j + 1}</span><span class="t">{c}</span></a></li>)
+                      : it.nb.days.map(d => <li>{d.href
+                          ? <a href={d.href}><span class="n">{String(d.day).padStart(2, '0')}</span><span class="t">{d.title}</span><span class="m">{d.minutes} min</span></a>
+                          : <span class="later"><span class="n">{String(d.day).padStart(2, '0')}</span><span class="t">{d.title}</span></span>}</li>)}
+                  </ol>
                 </div>
               </li>
             ))}
           </ol>
+          <a class="next-topic" href={`#${fields4[(i + 1) % fields4.length].id}`}>
+            <span class="nt-k">{i + 1 < fields4.length ? 'Next' : 'Back to'}</span>
+            <span class="nt-name">{fields4[(i + 1) % fields4.length].name}</span>
+            <span class="nt-a" aria-hidden="true">→</span>
+          </a>
         </section>
       ))}
     </div>
-
-    <p class="no-results" id="no-results">Nothing on that topic yet.</p>
+    <p class="no-results" id="no-results" hidden>Nothing written on that yet.</p>
+    </div>
   </div>
 </Layout>
 
 <style>
-  /* The longer reasoning stays folded until asked for. */
+  .blog-page {
+    --c: var(--color-accent);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
 
+  /* The opening is words alone now: the drawing has moved down into the
+     topics, so it no longer holds the whole first screen. */
+  /* ── The layout: one column held on screen, the topic beside it ── */
+  .shelf-layout {
+    display: grid;
+    grid-template-columns: minmax(16rem, 30%) minmax(0, 1fr);
+    column-gap: clamp(2rem, 5vw, 5rem);
+    align-items: start;
+  }
 
-  /* ── The console ───────────────────────────────────
-     One line to type on and one index of themes. Nothing here is a
-     widget: it is a ruled line and a page of set words. */
+  .side {
+    position: sticky;
+    top: var(--head-h, 4.5rem);
+    height: calc(100svh - var(--head-h, 4.5rem));
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    padding: clamp(0.75rem, 3vh, 2.25rem) 0 clamp(1rem, 3.5vh, 2rem);
+  }
 
+  /* The drawing's place: what is left of the column, under the topics. */
+  .side-art {
+    position: relative;
+    min-height: 0;
+    margin: clamp(1.25rem, 5vh, 3.5rem) 0 clamp(1rem, 4vh, 2.75rem);
+  }
 
-  /* The one control on the right is the slash key while the line is empty
-     and the way out of the search once it is not. */
+  .side-art .plate-slot {
+    display: none;
+    position: absolute;
+    inset: 0;
+  }
+
+  .side-art .plate-slot.on {
+    display: block;
+  }
+
+  .side-head {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .side-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: var(--fw-display);
+    font-size: clamp(1.25rem, min(1.9vw, 3.2vh), 1.9rem);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: var(--color-text);
+  }
+
+  /* The note opens over the page, so the column keeps its shape. */
+  .side-head .why {
+    position: relative;
+    margin: 0;
+  }
+
+  .side-head .why :global(.why-body) {
+    position: absolute;
+    left: 0;
+    top: calc(100% + var(--space-3));
+    z-index: 8;
+    width: min(56ch, 80vw);
+    margin: 0;
+    padding: var(--space-5);
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .side-find .seek {
+    max-width: 100%;
+  }
+
+  @media (min-width: 901px) {
+    .side-find :global(.seek-lead),
+    .side-find input {
+      font-size: var(--fs-ui) !important;
+    }
+  }
+
+  .side-find .find-note {
+    min-height: 1.2em;
+    margin-top: var(--space-1);
+  }
+
+  /* ── Search ──────────────────────────────────────────── */
   .seek-key {
     font-family: var(--font-mono);
     font-size: var(--fs-label);
@@ -266,761 +407,1131 @@ const years = [...new Set(items.map(it => it.date.slice(0, 4)))];
     border-radius: var(--radius-sm);
     padding: 1px var(--space-1-5);
     user-select: none;
-    white-space: nowrap;
   }
 
-
-  /* Say what is on screen in words. This page is not a dashboard. */
-  .console-note {
+  .find-note {
+    margin: var(--space-2) 0 0;
+    min-height: 1.5em;
     font-family: var(--font-serif);
     font-style: italic;
     font-size: var(--fs-ui);
     color: var(--color-text-muted);
-    margin: var(--space-sm) 0 0;
-    min-height: 1.6em;
   }
 
-  /* One strip, on one or two lines, that recounts itself against what is
-     on screen. Nothing here is a list of everything that exists. */
-
-
-  /* The figure rides above the word, the way a footnote mark does. It is
-     the live count, so it moves while you type. */
-  .idx-n {
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    font-variant-numeric: tabular-nums;
-    color: var(--color-text-muted);
-    opacity: 0.7;
-    transform: translateY(-0.5em);
-  }
-
-
-  .idx.active {
-    color: var(--color-accent);
-    font-weight: var(--fw-bold);
-    text-decoration-color: var(--color-accent);
-    text-decoration-thickness: 2px;
-  }
-
-  .idx.active .idx-n {
-    color: var(--color-accent);
-    opacity: 1;
-  }
-
-  .idx.gone {
-    display: none;
-  }
-
-  .idx-more {
-    border: none;
-    background: none;
-    padding: 0;
-    cursor: pointer;
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    letter-spacing: var(--track-label);
-    color: var(--color-text-muted);
-    white-space: nowrap;
-    transition: color var(--dur-fast) ease;
-  }
-
-  .idx-more:hover {
-    color: var(--color-accent);
-  }
-
-  .idx-more:empty {
-    display: none;
-  }
-
-
-  /* The same column as Thoughts and as wide as the essays' figures, centred. */
-  .blog-page {
+  /* ── The topics: four names, the chosen one in full ink ── */
+  .tabs {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    gap: clamp(0.1rem, 0.6vh, 0.5rem);
+    padding: clamp(1rem, 4.5vh, 3rem) 0 0;
   }
 
-  .small-label,
-  .meta {
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-    margin: 0;
-  }
-
-  .meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-1) var(--space-4);
-  }
-
-  .meta .k {
-    color: var(--color-accent);
-  }
-
-  /* An essay is one block; a notebook is a run of days. */
-  /* An essay is one dot; a notebook, a few, like days. */
-  .mark {
-    display: inline-flex;
-    gap: var(--space-0-5);
-  }
-
-  .mark.essay,
-  .mark.notebook i {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--color-accent);
-  }
-
-  /* ── The timeline ─────────────────────────────────── */
-  .timeline {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2xl);
-  }
-
-  .year-head {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-md);
-    margin: 0 0 var(--space-sm);
-  }
-
-  .year-n {
-    font-family: var(--font-display);
-    font-size: var(--fs-h1);
-    font-weight: var(--fw-display);
-    letter-spacing: var(--track-tight);
-    line-height: var(--lh-none);
-    color: var(--color-text);
-  }
-
-  .year-rule {
-    flex: 1;
-    height: 1px;
-    background: var(--color-border);
-    align-self: center;
-  }
-
-  .year-c {
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-  }
-
-  .rows {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  /* Every row the same: date, figure, words. */
-  .row {
-    position: relative;
+  .tab {
     display: grid;
-    grid-template-columns: 5.5rem minmax(0, 1fr);
-    gap: var(--space-lg);
-    align-items: start;
-    padding: var(--space-xl) 0;
-    border-bottom: 1px solid var(--color-border-light);
+    grid-template-columns: 2.2rem minmax(0, 1fr);
+    grid-template-areas: 'n name' '. c';
+    row-gap: 2px;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color 400ms ease;
   }
 
-  .row-date {
-    position: sticky;
-    top: 6.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-1-5);
-    padding-top: var(--space-0-5);
+  .tab-n {
+    grid-area: n;
+    padding-top: 0.75em;
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-medium);
+    letter-spacing: var(--track-label);
+    color: var(--c);
+    opacity: 0.5;
+    transition: opacity 400ms ease;
+  }
+
+  .tab-name {
+    grid-area: name;
+    position: relative;
+    justify-self: start;
+    font-family: var(--font-display);
+    font-weight: var(--fw-display);
+    font-size: clamp(1.9rem, min(3.3vw, 5.6vh), 3.75rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* The chosen one is underlined in the accent, drawn in from the left. */
+  .tab-name::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.08em;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--c);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .tab-c {
+    grid-area: c;
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
+    text-transform: uppercase;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 400ms ease, transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .tab:hover {
+    color: var(--color-text-secondary);
+  }
+
+  .tab:hover .tab-name {
+    transform: translateX(0.1em);
+  }
+
+  .tab[aria-selected='true'] {
     color: var(--color-text);
   }
 
-  /* The month large and light in the margin, the year small beneath it;
-     it rides along with its piece as you read, and lights up as you
-     reach for it. */
-  /* The rider carries the month; each piece's own label is kept only
-     for a ranked search, where order is not by date. */
-  .row-date {
-    visibility: hidden;
-  }
-
-  /* The month marker that rides down the margin (built by the script). */
-  :global(.month-rider) {
-    position: sticky;
-    top: 6.5rem;
-    z-index: 2;
-    width: 5.5rem;
-    height: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1-5);
-    opacity: 0;
-    transition: opacity var(--dur-base) ease;
-    pointer-events: none;
-  }
-
-  :global(.month-rider.on) {
+  .tab[aria-selected='true'] .tab-n {
     opacity: 1;
   }
 
-  :global(.month-rider .dd) {
-    font-family: var(--font-mono);
-    font-size: var(--fs-small);
-    font-weight: var(--fw-medium);
-    line-height: var(--lh-none);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
-    color: var(--color-text);
+  .tab[aria-selected='true'] .tab-name::after {
+    transform: scaleX(1);
   }
 
-  :global(.month-rider .mm) {
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
+  .tab[aria-selected='true'] .tab-c {
+    opacity: 1;
+    transform: none;
     color: var(--color-text-muted);
-    padding-left: var(--space-0-5);
   }
 
-  @media (max-width: 760px) {
-    :global(.month-rider) { display: none; }
-  }
-
-  .dd {
-    font-family: var(--font-display);
-    font-family: var(--font-mono);
-    font-size: var(--fs-small);
-    font-weight: var(--fw-medium);
-    line-height: var(--lh-none);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
-    color: var(--color-text);
-    font-variant-numeric: lining-nums;
-    transition: color var(--dur-base) ease, transform var(--dur-slow) cubic-bezier(0.34, 1.5, 0.5, 1);
-  }
-
-  .mm {
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
+  /* While searching, every topic's matches show together; no topic is chosen. */
+  .tabs.searching .tab {
     color: var(--color-text-muted);
-    padding-left: var(--space-0-5);
   }
 
-  .mm::after {
-    content: '';
+  .tabs.searching .tab-name::after {
+    transform: scaleX(0);
+  }
+
+  .tabs.searching .tab-c {
+    opacity: 0;
+  }
+
+  .stage {
+    min-width: 0;
+    padding-top: clamp(0.75rem, 3vh, 2.25rem);
+  }
+
+  /* ── The stage: the chosen topic, arriving from the side it was chosen on ── */
+  .chapter {
+    display: none;
+  }
+
+  .chapter.active,
+  :global(.chapters.searching) .chapter {
     display: block;
-    width: 14px;
-    height: 2px;
-    margin-top: var(--space-2);
-    border-radius: var(--radius-sm);
-    background: var(--color-accent);
-    transform-origin: left;
-    transform: scaleX(0.4);
-    transition: transform var(--dur-slow) cubic-bezier(0.34, 1.5, 0.5, 1);
   }
 
-  .row:hover .dd {
-    color: var(--color-accent);
-    transform: translateY(-3px);
+  .chapter.active {
+    animation: topic-in 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
 
-  .row:hover .mm::after {
-    transform: scaleX(1.6);
+  @keyframes topic-in {
+    from { opacity: 0; transform: translateX(calc(var(--dir, 1) * 36px)); }
+    to { opacity: 1; transform: none; }
   }
 
-  .row-fig {
-    margin-bottom: var(--space-md);
-
+  /* ── A chapter: its name, and its drawing forming beside it ── */
+  .chapter {
+    position: relative;
+    padding: var(--space-md) 0 var(--space-3xl, 8rem);
+    scroll-margin-top: calc(var(--head-h, 4.5rem) + 3.5rem);
   }
 
-  /* The figure's paper is lifted out by InkPlates; only the ink stays. */
-  .row-fig img {
+  .ch-head {
+    padding: 0 0 var(--space-xl);
+    max-width: 44rem;
+  }
+
+
+
+
+  .ch-line {
+    margin: 0 0 var(--space-lg);
+    max-width: 38ch;
+    font-family: var(--font-display);
+    font-size: clamp(1.45rem, 2.1vw, 1.95rem);
+    line-height: 1.32;
+    letter-spacing: -0.005em;
+    color: var(--color-text);
+  }
+
+
+  .ch-stats {
+    display: flex;
+    gap: var(--space-xl);
+    margin: 0;
+  }
+
+  .ch-stats div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 2px;
+  }
+
+  .ch-stats dt {
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .ch-stats dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--fs-h2);
+    line-height: 1;
+    color: var(--color-text);
+  }
+
+  /* ── A piece: its plate, and everything it holds ───── */
+  .pieces {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .piece {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+    gap: var(--space-2xl);
+    align-items: start;
+    padding: var(--space-2xl) 0;
+    scroll-margin-top: calc(var(--head-h, 4.5rem) + 4rem);
+  }
+
+  /* Every other piece turns the other way, so the page flows from side to side. */
+  .piece:nth-child(even) {
+    grid-template-columns: minmax(0, 6fr) minmax(0, 4fr);
+  }
+
+  .piece:nth-child(even) .p-fig {
+    order: 2;
+  }
+
+  .piece[hidden],
+  .chapter[hidden] {
+    display: none;
+  }
+
+  .p-fig {
+    display: block;
+    isolation: isolate;
+    background-color: var(--color-bg);
+  }
+
+  .p-fig img {
     display: block;
     width: 100%;
     height: auto;
+    transition: transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
-  :global(html.dark) .row-fig img {
+  .piece:hover .p-fig img {
+    transform: translateY(-4px);
+  }
+
+  :global(html.dark) .p-fig img {
     filter: invert(1) hue-rotate(180deg) brightness(0.9);
   }
 
-  .row:hover .row-fig img {
-    box-shadow: var(--ring-accent);
+  .p-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
   }
 
-  .row h3 {
+  .p-kind {
+    color: var(--c);
+    font-weight: var(--fw-medium);
+  }
+
+  /* A notebook's days, one square each in the topic's colour; the next, open. */
+  .p-days {
+    display: inline-flex;
+    gap: 3px;
+  }
+
+  .p-days i {
+    width: 8px;
+    height: 8px;
+    background: var(--c);
+  }
+
+  .p-days i.off,
+  .p-days i.next {
+    background: none;
+    box-shadow: inset 0 0 0 1.5px var(--c);
+  }
+
+  .p-days i.next {
+    opacity: 0.55;
+  }
+
+  .p-title {
+    margin: var(--space-3) 0 var(--space-3);
     font-family: var(--font-display);
     font-size: var(--fs-h2);
     font-weight: var(--fw-regular);
     line-height: var(--lh-snug);
     letter-spacing: var(--track-snug);
-    margin: var(--space-1-5) 0 var(--space-1-5);
   }
 
-  .row h3 a {
+  .notebook .p-title {
+    font-size: clamp(1.9rem, 3vw, 2.6rem);
+  }
+
+  .p-title a {
     color: var(--color-text);
     text-decoration: none;
-    transition: color var(--dur-base) ease;
+    transition: color 250ms ease;
   }
 
-  .row:hover h3 a {
-    color: var(--color-accent);
+  .p-title a:hover,
+  .piece:hover .p-title a {
+    color: var(--c);
   }
 
-  /* The whole row opens the piece; a notebook's days sit above it. */
-  .stretch::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-  }
-
-  .desc {
-    font-family: var(--font-serif);
-    font-size: var(--fs-ui);
-    line-height: var(--lh-ui);
-    color: var(--color-text-secondary);
+  .p-desc {
     margin: 0;
     max-width: 58ch;
-  }
-
-  /* What a piece answers, listed quietly under it. */
-  /* Set like a note in the margin: a thin accent rule down its left,
-     numbers small in the accent, the questions in the reading face. */
-  .inside {
-    list-style: none;
-    max-width: 62ch;
-    padding: 0 0 0 var(--space-4);
-    margin: var(--space-4) 0 0;
-    border-left: 1px solid var(--color-accent);
-  }
-
-  .inside .in-row,
-  .inside .off,
-  .inside a {
-    display: grid;
-    grid-template-columns: 3.2rem minmax(0, 1fr) auto;
-    gap: var(--space-2);
-    align-items: baseline;
-    padding: var(--space-1) 0;
-    color: inherit;
-    text-decoration: none;
-  }
-
-  .in-n {
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    letter-spacing: var(--track-label);
-    text-transform: uppercase;
-    color: var(--color-accent);
-  }
-
-  .in-t {
     font-family: var(--font-serif);
     font-size: var(--fs-ui);
     line-height: var(--lh-ui);
     color: var(--color-text-secondary);
-    transition: color var(--dur-base) ease;
   }
 
-  .in-m {
+  /* What is inside: numbered in the topic's colour, every line a link. */
+  .p-toc {
+    list-style: none;
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    max-width: 60ch;
+  }
+
+  .p-toc a,
+  .p-toc .later {
+    display: grid;
+    grid-template-columns: 2.6rem minmax(0, 1fr) auto;
+    gap: var(--space-3);
+    align-items: baseline;
+    padding: var(--space-1-5) 0;
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .p-toc .n {
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-medium);
+    letter-spacing: var(--track-label);
+    color: var(--c);
+  }
+
+  .p-toc .t {
+    font-family: var(--font-serif);
+    font-size: var(--fs-ui);
+    line-height: var(--lh-snug);
+    transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1), color 200ms ease;
+  }
+
+  .p-toc .m {
     font-family: var(--font-mono);
     font-size: var(--fs-micro);
     letter-spacing: var(--track-label);
     color: var(--color-text-muted);
-    white-space: nowrap;
   }
 
-  .inside a:hover .in-t {
-    color: var(--color-accent);
+  .p-toc a:hover .t {
+    color: var(--c);
+    transform: translateX(4px);
   }
 
-  .inside .off {
-    opacity: 0.5;
+  .p-toc .later {
+    opacity: 0.45;
   }
 
-  @media (max-width: 600px) {
-    .inside .in-row,
-    .inside .off,
-    .inside a {
-      grid-template-columns: 2.6rem minmax(0, 1fr) auto;
-    }
-
-    .in-t {
-      font-size: var(--fs-ui);
-    }
-  }
-
-  /* The list waits folded and opens smoothly when the piece is the one
-     you are on: on a pointer, as you reach for it; on a phone, as it
-     passes through the middle of the screen. Its lines arrive in turn. */
-  .reveal {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows var(--dur-slow) cubic-bezier(0.22, 0.8, 0.24, 1);
-  }
-
-  .reveal > .inside {
-    min-height: 0;
-    overflow: hidden;
-    margin-top: 0;
-  }
-
-  .reveal {
-    margin-top: var(--space-4);
-  }
-
-  .reveal .inside li {
+  /* Arriving: each heading and piece rises into place once. */
+  :global(.chapters.live) .rv {
     opacity: 0;
-    transform: translateY(4px);
-    transition: opacity var(--dur-slow) ease, transform var(--dur-slow) ease;
+    transform: translateY(28px);
+    transition: opacity 1s cubic-bezier(0.2, 0.7, 0.2, 1), transform 1s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 
-  .row.near .reveal {
-    grid-template-rows: 1fr;
-  }
-
-  .row.near .reveal .inside li {
+  :global(.chapters.live) .rv.in {
     opacity: 1;
     transform: none;
-    transition-delay: calc(var(--i, 0) * 45ms + 80ms);
   }
 
-  /* On phones: the same outlined pill as 'Why I write these'. */
-  :global(.reveal-toggle) {
-    position: relative;
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-top: var(--space-4);
-    padding: var(--space-2) var(--space-4);
-    min-height: 40px;
-    font-family: var(--font-mono);
-    font-size: var(--fs-label);
-    letter-spacing: var(--track-caps);
-    text-transform: uppercase;
-    color: var(--color-text);
-    background: none;
-    border: 1px solid var(--color-text-muted);
-    border-radius: var(--radius-pill);
-    cursor: pointer;
-    transition: color var(--dur-base) ease, border-color var(--dur-base) ease;
-  }
-
-  :global(.reveal-peek) {
-    position: absolute;
-    left: calc(100% + 0.9rem);
-    top: 50%;
-    max-width: 34ch;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: var(--fs-ui);
-    letter-spacing: var(--track-normal);
-    text-transform: none;
-    color: var(--color-text-muted);
-    opacity: 0;
-    transform: translate(-6px, -50%);
-    transition: opacity var(--dur-base) ease, transform var(--dur-base) ease;
-    pointer-events: none;
-  }
-
-  @media (hover: hover) {
-    :global(.reveal-toggle):hover :global(.reveal-peek) {
-      opacity: 1;
-      transform: translate(0, -50%);
-    }
-
-    :global(.reveal-toggle):hover {
-      color: var(--color-accent);
-      border-color: var(--color-accent);
-    }
-  }
-
-  .row.near :global(.reveal-peek) {
-    display: none;
-  }
-
-  @media (hover: none), (max-width: 760px) {
-    :global(.reveal-peek) {
-      display: none;
-    }
-  }
-
-  .row.near :global(.reveal-toggle) {
-    color: var(--color-accent);
-    border-color: var(--color-accent);
-  }
-
-  :global(.reveal-toggle)::before {
-    content: '+';
-    font-size: var(--fs-ui);
-    line-height: var(--lh-none);
-    color: var(--color-accent);
-    transition: transform var(--dur-base) ease;
-  }
-
-  .row.near :global(.reveal-toggle)::before {
-    content: '−';
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .reveal, .reveal .inside li { transition: none !important; }
+  /* The drawing's place never moves, so the drawing never lands off it. */
+  :global(.chapters.live) .ch-head.rv {
+    transform: none;
   }
 
   .no-results {
-    display: none;
     font-family: var(--font-serif);
     font-style: italic;
     color: var(--color-text-muted);
+    padding: var(--space-xl) 0;
   }
 
-  /* On a wide screen the figure becomes the ground of its piece: it fills
-     the right of the row, full height, and dissolves into the paper toward
-     the words, which sit over its fading edge. Reaching for the piece
-     brings the figure into focus. */
-  @media (min-width: 1101px) {
-    /* The row is as tall as the taller of its words and its figure: the
-       words centred on the left, the figure whole beside them. */
-    .row-body {
+
+
+  /* ── Choosing a topic (wide screens): unmistakable, and smooth ── */
+  @media (min-width: 901px) {
+    .tabs {
+      position: relative;
+      padding-left: 1.4rem;
+    }
+
+    /* The accent marker glides to the chosen topic. */
+    .tab-marker {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 3px;
+      height: var(--mh, 0px);
+      border-radius: 3px;
+      background: var(--c);
+      transform: translateY(var(--my, 0px));
+      transition: transform 650ms cubic-bezier(0.2, 0.8, 0.2, 1), height 650ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .tab {
+      padding: 0.1em 0;
+      align-items: baseline;
+    }
+
+    .tab-n {
+      padding-top: 0;
+    }
+
+    /* The others step back: smaller and quieter, so the chosen one leads. */
+    .tab-name {
+      font-size: clamp(1.45rem, min(2.4vw, 4vh), 2.65rem);
+      transition: font-size 550ms cubic-bezier(0.2, 0.8, 0.2, 1), color 400ms ease, transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .tab[aria-selected='true'] .tab-name {
+      font-size: clamp(1.9rem, min(3.3vw, 5.6vh), 3.75rem);
+    }
+
+    .tab[aria-selected='true'] .tab-name::after {
+      transform: scaleX(0);
+    }
+
+    /* The chosen one's counts open under it; the others' stay closed. */
+    .tab-c {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 500ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 400ms ease;
+    }
+
+    .tab[aria-selected='true'] .tab-c {
+      max-height: 2em;
+      margin-top: 2px;
+    }
+
+    .tabs.searching .tab-name {
+      font-size: clamp(1.45rem, min(2.4vw, 4vh), 2.65rem);
+    }
+
+    .tabs.searching .tab-marker {
+      opacity: 0;
+    }
+  }
+
+  .tab:focus-visible {
+    outline: 2px solid var(--c);
+    outline-offset: 4px;
+    border-radius: var(--radius-sm);
+  }
+
+  @media (max-width: 900px) {
+    .tab-marker { display: none; }
+  }
+
+  .tab-find {
+    display: none;
+  }
+
+  .back-topics,
+  .p-more,
+  .tab-line {
+    display: none;
+  }
+
+  /* ── Phones: an overview of the four, and each topic a view of its own ── */
+  @media (max-width: 900px) {
+    .shelf-layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .side,
+    .tabs,
+    .stage,
+    :global(.chapters) {
+      display: contents;
+    }
+
+    /* The header: the page's name, why under it as a quiet line, and one
+       compact line to search on. */
+    .side-head {
+      order: 1;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-2);
+      padding-top: var(--space-xl);
+    }
+
+    .side-title {
+      font-size: clamp(2.4rem, 11vw, 3.2rem);
+      line-height: 0.95;
+    }
+
+    .side-head .why :global(summary) {
+      padding: 0;
+      border: 0;
+      background: none;
+      min-height: 0;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: var(--fs-ui);
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--color-text-muted);
+      text-decoration: underline 1px;
+      text-decoration-color: var(--color-border);
+      text-underline-offset: 0.3em;
+    }
+
+    .side-head .why :global(summary::before) {
+      display: none;
+    }
+
+    .side-head .why :global(.why-body) {
+      left: auto;
+      right: 0;
+      width: min(56ch, calc(100vw - 2rem));
+    }
+
+    .side-find {
+      order: 3;
+      margin: var(--space-lg) 0 var(--space-sm);
+    }
+
+    .side-find .seek {
+      flex-wrap: nowrap;
+      align-items: baseline;
+      gap: var(--space-3);
+      padding: var(--space-2) 0;
+    }
+
+    .side-find :global(.seek-lead) {
+      flex-basis: auto;
+      font-family: var(--font-mono);
+      font-size: var(--fs-micro);
+      font-weight: var(--fw-regular);
+      letter-spacing: var(--track-caps);
+      text-transform: uppercase;
+      color: var(--color-accent);
+    }
+
+    .side-find input {
+      font-family: var(--font-serif) !important;
+      font-size: var(--fs-ui) !important;
+      font-weight: var(--fw-regular) !important;
+      line-height: var(--lh-ui) !important;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .side-find .seek-key {
+      display: none;
+    }
+
+    .tab-find,
+    .tab-marker,
+    .scroll-cue {
+      display: none;
+    }
+
+    /* The overview: each topic a row to tap, with what it is about. */
+    .tab {
+      order: calc(10 + 4 * var(--o));
       display: grid;
-      grid-template-columns: min(46%, 38rem) minmax(0, 1fr);
-      grid-template-rows: 1fr auto auto auto auto 1fr;
-      column-gap: var(--space-2xl);
-      padding: var(--space-md) 0;
+      grid-template-columns: 2rem minmax(0, 1fr);
+      align-items: baseline;
+      row-gap: var(--space-1);
+      padding: var(--space-5) 0;
     }
 
-    .row-body > :not(.row-fig) {
-      grid-column: 1;
-    }
-    .row-body > :nth-child(2) { grid-row: 2; }
-    .row-body > :nth-child(3) { grid-row: 3; }
-    .row-body > :nth-child(4) { grid-row: 4; }
-
-    .row-body > .row-fig {
-      grid-column: 2;
-      grid-row: 1 / -1;
-      align-self: center;
-      margin: 0;
+    .tab + .tab-intro + .tab {
+      border: 0;
     }
 
-    .row-body > .row-fig img {
+    .tab-n {
+      padding-top: 0;
+    }
+
+    .tab-name {
+      font-size: clamp(2.1rem, 9.5vw, 2.9rem);
+      color: var(--color-text);
+    }
+
+    .tab-name::after {
+      display: none;
+    }
+
+    .tab-line {
       display: block;
-      width: 100%;
-      height: auto;
-      max-height: 34rem;
-      object-fit: contain;
-      object-position: left center;
-      border-radius: var(--radius-sm);
-      box-shadow: none !important;
-      opacity: 1;
+      grid-column: 2;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: var(--fs-ui);
+      line-height: var(--lh-ui);
+      color: var(--color-text-secondary);
     }
 
-    :global(html.dark) .row-body > .row-fig img {
-      opacity: 0.85;
-    }
-
-
-    .row-body > .reveal {
-      grid-template-rows: 1fr;
-      grid-row: 5;
-    }
-
-    .row-body > .reveal .inside li {
+    .tab-c {
+      grid-column: 2;
       opacity: 1;
       transform: none;
+      max-height: none;
+      color: var(--color-text-muted);
     }
 
-    .row-body > :global(.reveal-toggle) {
+    .chapter {
+      order: calc(12 + 4 * var(--o));
+    }
+
+    /* The drawing belongs to the overview: under the page's name, above
+       the topics; a topic's own view is words only. */
+    .side-art {
+      order: 2;
+      height: 36vh;
+      margin: var(--space-md) 0 0;
+    }
+
+    .shelf-layout:global(.reading) .side-art {
+      display: none;
+    }
+
+    .no-results {
+      order: 100;
+    }
+
+    /* A topic open: a view of its own. Back to the four at the top; its
+       name; its drawing; its intro; its pieces; then the next topic. */
+    .shelf-layout:global(.reading) .side-head,
+    .shelf-layout:global(.reading) .side-find,
+    .shelf-layout:global(.reading) .tab:not([aria-selected='true']) {
+      display: none;
+    }
+
+    .shelf-layout:global(.reading) .back-topics {
+      order: 3;
+      display: inline-flex;
+      justify-self: start;
+      margin-top: var(--space-lg);
+      padding: var(--space-1) 0;
+      border: 0;
+      background: none;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: var(--fs-micro);
+      letter-spacing: var(--track-caps);
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .shelf-layout:global(.reading) .tab[aria-selected='true'] {
+      padding-top: var(--space-3);
+    }
+
+    .shelf-layout:global(.reading) .tab[aria-selected='true'] .tab-line {
+      display: none;
+    }
+
+    .ch-head {
+      padding-bottom: var(--space-md);
+    }
+
+    .ch-line {
+      font-size: clamp(1.15rem, 4.8vw, 1.35rem);
+      margin-bottom: var(--space-md);
+    }
+
+    /* Pieces as compact cards: what they hold folds away behind a word. */
+    .piece {
+      gap: var(--space-3);
+      padding: var(--space-lg) 0;
+    }
+
+    .p-title {
+      font-size: clamp(1.45rem, 6.4vw, 1.85rem) !important;
+      margin: var(--space-2) 0;
+    }
+
+    .p-desc {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .p-toc {
+      display: none;
+    }
+
+    .piece:global(.open) .p-toc {
+      display: block;
+    }
+
+    .p-more {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+      padding: var(--space-1) 0;
+      border: 0;
+      background: none;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: var(--fs-micro);
+      letter-spacing: var(--track-caps);
+      text-transform: uppercase;
+      color: var(--color-accent);
+    }
+
+    .p-more::after {
+      content: '▾';
+      transition: transform 300ms ease;
+    }
+
+    .piece:global(.open) .p-more::after {
+      transform: rotate(180deg);
+    }
+
+    /* The next topic, at the end of this one. */
+    .next-topic {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--space-3);
+      margin: var(--space-xl) 0 var(--space-2xl);
+      color: var(--color-text);
+      text-decoration: none;
+    }
+
+    .nt-k {
+      font-family: var(--font-mono);
+      font-size: var(--fs-micro);
+      letter-spacing: var(--track-caps);
+      text-transform: uppercase;
+      color: var(--color-accent);
+    }
+
+    .nt-name {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 8vw, 2.4rem);
+      line-height: 1;
+    }
+
+    .nt-a {
+      color: var(--color-accent);
+    }
+  }
+
+
+  /* ── Narrower screens ──────────────────────────────── */
+  @media (max-width: 900px) {
+
+    .piece:nth-child(even) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .piece:nth-child(even) .p-fig {
+      order: 0;
+    }
+
+    .piece {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+
+    .p-fig {
+      max-width: 34rem;
+    }
+  }
+
+  @media (max-width: 759px) {
+    .ch-stats {
+      gap: var(--space-lg);
+    }
+
+    .piece {
+      padding: var(--space-xl) 0;
+    }
+
+    .p-toc a,
+    .p-toc .later {
+      grid-template-columns: 2.2rem minmax(0, 1fr);
+    }
+
+    .p-toc .m {
       display: none;
     }
   }
 
-  @media (max-width: 760px) {
-    .row {
-      grid-template-columns: 1fr;
-      gap: var(--space-sm);
+  @media (prefers-reduced-motion: reduce) {
+    .p-fig img, .p-toc .t, .tab::after { transition: none; }
+    .chapter.active { animation: none; }
+  }
+  /* ── Wide screens: a free first screen ───────────────
+     The topics on the left, the chosen one's intro unfolding under its
+     name; its drawing large on the right, out to the screen's edge; the
+     pieces below, the full width. */
+  .tab-intro,
+  .next-topic {
+    display: none;
+  }
+
+  @media (min-width: 901px) {
+    .shelf-layout {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      grid-template-areas: 'head art' 'list art' 'intro art' 'find art' 'stage stage';
+      grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+      column-gap: clamp(2rem, 4vw, 4rem);
     }
 
-    /* On a phone the year headings carry the time; no margin date. */
-    .row-date {
+    .side {
+      display: contents;
+    }
+
+    .side-head {
+      grid-area: head;
+      padding-top: clamp(1rem, 4vh, 3rem);
+    }
+
+    .tabs {
+      grid-area: list;
+      align-self: start;
+      padding-block: clamp(1.25rem, 5vh, 3rem) var(--space-md);
+    }
+
+    .side-find {
+      grid-area: find;
+      align-self: end;
+      max-width: 30rem;
+      padding: var(--space-md) 0 var(--space-sm);
+    }
+
+    /* The drawing: the opening's, large, out to the edge of the screen; it
+       stays with the opening and does not follow the reading. */
+    .side-art {
+      grid-area: art;
+      align-self: start;
+      height: min(68svh, 48rem);
+      margin: 0 calc(-1 * var(--gutter, 2rem)) 0 0;
+    }
+
+    .stage {
+      grid-area: stage;
+      padding-top: 0;
+      min-width: 0;
+    }
+
+    /* The first piece starts close under the opening, so it is seen. */
+
+    /* The first piece starts close under the first screen, so it is seen. */
+    .chapter .piece:first-child {
+      padding-top: var(--space-sm);
+    }
+
+    /* The intro is under the topic's name now, not over its pieces. */
+    .ch-head {
       display: none;
     }
 
-    .row-date {
-      order: -1;
+    .side-intro {
+      grid-area: intro;
+      align-self: start;
+      max-width: 44ch;
+      margin: 0 0 0 1.4rem;
     }
 
-    .topics {
-      flex-direction: column;
-      gap: var(--space-sm);
+    .tab-intro.on {
+      display: block;
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(1.05rem, 1.3vw, 1.3rem);
+      line-height: 1.45;
+      color: var(--color-text-secondary);
+      animation: intro-in 650ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
 
-    .row {
-      padding-bottom: var(--space-lg);
+    @keyframes intro-in {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    /* At the end of a topic, the way on to the next. */
+    .next-topic {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--space-4);
+      margin: var(--space-2xl) 0 0;
+      color: var(--color-text);
+      text-decoration: none;
+    }
+
+    .nt-k {
+      font-family: var(--font-mono);
+      font-size: var(--fs-micro);
+      letter-spacing: var(--track-caps);
+      text-transform: uppercase;
+      color: var(--color-accent);
+    }
+
+    .nt-name {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      line-height: 1;
+      letter-spacing: -0.02em;
+      transition: color 300ms ease;
+    }
+
+    .nt-a {
+      font-family: var(--font-serif);
+      font-size: 1.6rem;
+      color: var(--color-accent);
+      transition: transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .next-topic:hover .nt-name {
+      color: var(--color-accent);
+    }
+
+    .next-topic:hover .nt-a {
+      transform: translateX(6px);
     }
   }
-</style>
-
-<style is:global>
-  .row.hidden,
-  .year.hidden {
-    display: none !important;
+  .piece:global(.found) .p-title a {
+    color: var(--color-accent);
   }
+
 </style>
 
 <script is:inline>
-
-/* One month marker rides down the margin beside the whole list, and turns
-   to the next month as you cross into it, so a month's label stays with
-   all of its pieces, not just the first. */
+/* One topic at a time. A tab (or a link to #topic) chooses it: it slides in
+   from the side it was chosen on, the address follows, and the ink pours
+   into its drawing. Search looks across all four at once. */
 (function () {
-  var list = document.getElementById('post-index');
-  if (!list || matchMedia('(max-width: 760px)').matches) return;
-  var rider = document.createElement('div');
-  rider.className = 'month-rider';
-  rider.setAttribute('aria-hidden', 'true');
-  rider.innerHTML = '<span class="dd"></span><span class="mm"></span>';
-  // A zero-height mark where the marker would sit if it never stuck.
-  var mark = document.createElement('span');
-  mark.style.cssText = 'display:block;height:0';
-  list.parentNode.insertBefore(mark, list);
-  list.parentNode.insertBefore(rider, list);
-  var dd = rider.querySelector('.dd'), mm = rider.querySelector('.mm'), shown = '', off = -1, on = null;
-  var LINE = 140, rows = [], tops = [], home = 0, stick = 0, ranked = false;
-  // Everything is measured when the list or the page changes; a scroll
-  // only compares numbers.
-  function measure() {
-    ranked = list.classList.contains('ranked');
-    rows = [].slice.call(list.querySelectorAll('[data-month]')).filter(function (r) {
-      return !r.classList.contains('hidden') && r.offsetParent !== null;
+  var stage = document.getElementById('post-index'), bar = document.getElementById('tabs');
+  if (!stage || !bar) return;
+  var tabs = [].slice.call(bar.querySelectorAll('.tab'));
+  var chs = [].slice.call(stage.querySelectorAll('.chapter'));
+  var plate = document.querySelector('.plate');
+  var layout = document.querySelector('.shelf-layout');
+  var phoneQ = matchMedia('(max-width: 900px)');
+  var current = 0;
+  // On a wide screen, while the page is at its top, a cue that the topic's
+  // pieces are below; it goes as soon as you scroll.
+  var cueEl = document.getElementById('scroll-cue');
+  function cue() {
+    if (!cueEl) return;
+    var t = tabs[current], show = !phoneQ.matches && current >= 0 && scrollY < 40 && !stage.classList.contains('searching');
+    if (t) cueEl.querySelector('.sc-t').textContent = t.querySelector('.tab-c').textContent + ' below';
+    cueEl.classList.toggle('show', show);
+  }
+  if (cueEl) cueEl.addEventListener('click', function () {
+    var head = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--head-h')) || 72;
+    scrollTo({ top: stage.getBoundingClientRect().top + scrollY - head - 16, behavior: 'smooth' });
+  });
+  addEventListener('scroll', function () { if (cueEl) cueEl.classList.toggle('show', !phoneQ.matches && current >= 0 && scrollY < 40 && !stage.classList.contains('searching')); }, { passive: true });
+
+  function select(i, how) {
+    how = how || {};
+    if (i < 0 || i >= chs.length) i = 0;
+    var was = current;
+    var dir = current < 0 || i >= current ? 1 : -1;
+    chs.forEach(function (c, k) { c.classList.toggle('active', k === i); });
+    chs[i].style.setProperty('--dir', how.initial ? 0 : dir);
+    tabs.forEach(function (t, k) { t.setAttribute('aria-selected', String(k === i)); });
+    var slot = null;
+    document.querySelectorAll('.side-art .plate-slot').forEach(function (el) { var on = el.dataset.t === chs[i].id; el.classList.toggle('on', on); if (on) slot = el; });
+    var art = document.getElementById('side-art'); if (art) art.style.setProperty('--o', i);
+    if (layout) layout.classList.toggle('reading', phoneQ.matches);
+    document.querySelectorAll('.tab-intro').forEach(function (p) { p.classList.toggle('on', p.dataset.t === chs[i].id); });
+    current = i;
+    mark();
+    cue();
+    if (bar.scrollWidth > bar.clientWidth) bar.scrollTo({ left: tabs[i].offsetLeft - 16, behavior: how.initial ? 'auto' : 'smooth' });
+    if (how.initial) return;
+    if (phoneQ.matches && was < 0) history.pushState(null, '', '#' + chs[i].id);
+    else history.replaceState(null, '', '#' + chs[i].id);
+    if (plate && slot) plate.dispatchEvent(new CustomEvent('plate:slot', { detail: slot }));
+    // Keep the tabs where they are: if the page was scrolled into the old
+    // topic, bring the new one's start up under them.
+    var head = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--head-h')) || 72;
+    // On a phone the opened topic's name comes up to the top; on a wide
+    // screen, the topic's start, if the page was scrolled into the old one.
+    var phone = matchMedia('(max-width: 900px)').matches;
+    var stageTop = stage.getBoundingClientRect().top + scrollY;
+    var top = 0;
+    if (phone || scrollY > stageTop - innerHeight * 0.6 || how.jump) scrollTo({ top: top, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }
+
+  // The marker sits beside the chosen topic, and moves when the layout does.
+  var marker = bar.querySelector('.tab-marker');
+  function mark() {
+    if (!marker || current < 0) return;
+    var t = tabs[current];
+    marker.style.setProperty('--my', t.offsetTop + 'px');
+    marker.style.setProperty('--mh', t.offsetHeight + 'px');
+  }
+  if (window.ResizeObserver) new ResizeObserver(mark).observe(bar);
+  if (document.fonts) document.fonts.ready.then(mark);
+
+  tabs.forEach(function (t, i) {
+    t.addEventListener('click', function (e) {
+      e.preventDefault(); clearSearch();
+      if (phoneQ.matches && i === current) { closeAll(); scrollTo({ top: t.getBoundingClientRect().top + scrollY - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--head-h')) || 72), behavior: 'smooth' }); return; }
+      select(i);
     });
-    var y = scrollY;
-    tops = rows.map(function (r) { return r.getBoundingClientRect().top + y; });
-    home = mark.getBoundingClientRect().top + y;
-    stick = parseFloat(getComputedStyle(rider).top) || 0;
-    update();
+  });
+  // A topic chosen in the opening: chosen in the tabs, and brought up under them.
+  document.querySelectorAll('.op-topic').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault(); clearSearch();
+      var i = chs.findIndex(function (c) { return c.id === a.dataset.t; });
+      select(i, { jump: true });
+    });
+  });
+  // Arrow keys move between tabs, as tabs should.
+  bar.addEventListener('keydown', function (e) {
+    var k = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!k) return;
+    e.preventDefault(); var n = (current + k + tabs.length) % tabs.length; select(n); tabs[n].focus();
+  });
+  // A link straight to a topic, or to a piece inside one.
+  function fromHash() {
+    var h = location.hash.slice(1); if (!h) return -1;
+    var el = document.getElementById(h); if (!el) return -1;
+    var c = el.closest('.chapter'); return c ? chs.indexOf(c) : -1;
   }
-  function update() {
-    var y = scrollY;
-    // Sit level with the first piece (below the year heading) until it is
-    // reached, then hold at the top.
-    if (rows.length) {
-      var o = Math.max(0, Math.round(tops[0] - y + 28 - Math.max(home - y, stick)));
-      if (o !== off) { off = o; rider.style.transform = 'translateY(' + o + 'px)'; }
-    }
-    var cur = -1;
-    for (var i = 0; i < tops.length && tops[i] - y <= LINE + 40; i++) cur = i;
-    var first = rows.length ? tops[0] - y : Infinity;
-    if (cur < 0 && first < innerHeight) cur = 0;
-    var now = !ranked && cur >= 0 && first < innerHeight * 0.8;
-    if (now !== on) { on = now; rider.classList.toggle('on', now); }
-    if (cur < 0) return;
-    var row = rows[cur], key = row.dataset.month;
-    if (key !== shown) {
-      shown = key;
-      var label = row.querySelector('time');
-      dd.textContent = label.querySelector('.dd').textContent;
-      mm.textContent = label.querySelector('.mm').textContent;
+  // On a phone the page opens on the four names, none open, unless a link
+  // asked for one; tapping the open one closes it again.
+  var lastOpen = 0;
+  function closeAll() {
+    if (current >= 0) lastOpen = current;
+    if (layout) layout.classList.remove('reading');
+    chs.forEach(function (c) { c.classList.remove('active'); });
+    tabs.forEach(function (t) { t.setAttribute('aria-selected', 'false'); });
+    current = -1;
+    var shown = document.querySelector('.side-art .plate-slot.on');
+    if (plate && shown) requestAnimationFrame(function () { plate.dispatchEvent(new CustomEvent('plate:slot', { detail: shown })); });
+    if (plate) plate.dispatchEvent(new Event('scroll'));
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+  var start = fromHash();
+  if (start < 0 && phoneQ.matches) closeAll(); else select(start >= 0 ? start : 0, { initial: true });
+
+  // Crossing between a phone's width and a wide screen: a wide screen
+  // always has a topic chosen, drawn in full; a phone shows the open topic
+  // as its own view, or the four.
+  function settle() {
+    if (!phoneQ.matches) {
+      if (current < 0) select(lastOpen, { initial: true });
+      if (layout) layout.classList.remove('reading');
+      mark();
+      var slot = document.querySelector('.side-art .plate-slot.on');
+      if (plate && slot) requestAnimationFrame(function () { plate.dispatchEvent(new CustomEvent('plate:slot', { detail: slot })); });
+    } else if (layout) {
+      layout.classList.toggle('reading', current >= 0);
     }
   }
-  var queued = false, mq = false;
-  function queue() { if (!queued) { queued = true; requestAnimationFrame(function () { queued = false; update(); }); } }
-  function remeasure() { if (!mq) { mq = true; requestAnimationFrame(function () { mq = false; measure(); }); } }
-  addEventListener('scroll', queue, { passive: true });
-  new ResizeObserver(remeasure).observe(document.body);
-  new MutationObserver(remeasure).observe(list, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true });
+  if (phoneQ.addEventListener) phoneQ.addEventListener('change', settle); else if (phoneQ.addListener) phoneQ.addListener(settle);
+  function fromAddress() {
+    var i = fromHash();
+    if (i >= 0 && i !== current) select(i);
+    else if (i < 0 && phoneQ.matches && current >= 0) { closeAll(); scrollTo(0, 0); }
+  }
+  addEventListener('hashchange', fromAddress);
+  addEventListener('popstate', fromAddress);
+  var back = document.getElementById('back-topics');
+  if (back) back.addEventListener('click', function () { closeAll(); scrollTo(0, 0); });
+  // On a phone a piece's days or sections open under it.
+  stage.querySelectorAll('.p-more').forEach(function (b) {
+    b.addEventListener('click', function () { var p = b.closest('.piece'); var o = p.classList.toggle('open'); b.setAttribute('aria-expanded', String(o)); });
+  });
+
+  // On a phone, Find opens the search under the topics, and closes it.
+  var findBtn = document.getElementById('tab-find'), findBox = document.getElementById('side-find');
+  if (findBtn && findBox) findBtn.addEventListener('click', function () {
+    var open = !findBox.classList.contains('open');
+    findBox.classList.toggle('open', open); findBtn.setAttribute('aria-expanded', String(open));
+    if (open) document.getElementById('search-input').focus(); else clearSearch();
+  });
+
+
+  // Find: every word typed must appear in the piece (a prefix is enough).
+  var input = document.getElementById('search-input'), note = document.getElementById('find-note'), none = document.getElementById('no-results');
+  var pieces = [].slice.call(stage.querySelectorAll('.piece'));
+  function run() {
+    var ws = input.value.toLowerCase().split(/[^a-z0-9]+/).filter(function (w) { return w.length > 1; }), shown = 0, on = ws.length > 0;
+    stage.classList.toggle('searching', on); bar.classList.toggle('searching', on);
+    pieces.forEach(function (p) { var ok = !on || ws.every(function (w) { return p.dataset.text.indexOf(w) >= 0; }); p.hidden = !ok; if (ok) shown++; });
+    chs.forEach(function (c) { c.hidden = on && !c.querySelector('.piece:not([hidden])'); });
+    note.textContent = on ? shown + ' of ' + pieces.length + ' mention \u201c' + input.value.trim() + '\u201d' : '';
+    none.hidden = !on || shown > 0;
+  }
+  function clearSearch() { if (input && input.value) { input.value = ''; run(); } }
+  if (input) {
+    input.addEventListener('input', run);
+    addEventListener('keydown', function (e) {
+      if (e.key === '/' && document.activeElement !== input && !/input|textarea/i.test(document.activeElement.tagName)) { e.preventDefault(); input.focus(); }
+      if (e.key === 'Escape' && document.activeElement === input) clearSearch();
+    });
+  }
 })();
-/* Each list stays closed behind a small pill that opens it when clicked
-   or tapped, and closes it again; reaching for the pill gives a glimpse
-   of the first line inside. */
+
+/* Arriving: headings and pieces rise into place once, as they come into view. */
 (function () {
-  document.querySelectorAll('#post-index .row').forEach(function (r) {
-    var list = r.querySelector('.reveal');
-    if (!list) return;
-    var n = list.querySelectorAll('li').length;
-    var b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'reveal-toggle';
-    b.setAttribute('aria-expanded', 'false');
-    b.textContent = n + (r.classList.contains('notebook') ? ' days' : ' sections');
-    // A glimpse of what is inside, shown beside the pill as you reach for it.
-    var first = list.querySelector('.in-t');
-    if (first) {
-      var peek = document.createElement('span');
-      peek.className = 'reveal-peek';
-      peek.textContent = first.textContent;
-      b.appendChild(peek);
-    }
-    b.addEventListener('click', function () {
-      var open = r.classList.toggle('near');
-      b.setAttribute('aria-expanded', open);
-    });
-    list.parentNode.insertBefore(b, list);
-  });
-})();
-
-(function () {
-  var plates = [].slice.call(document.querySelectorAll('#post-index .row'));
-  var years = document.querySelectorAll('#post-index .year');
-  var chips = [].slice.call(document.querySelectorAll('#theme-strip .idx'));
-  var empty = document.getElementById('no-results');
-  var tag = null, query = [];
-  var input = document.getElementById('search-input'), note = document.getElementById('results-count');
-  var seek = input.closest('.seek'), clear = document.getElementById('seek-clear');
-
-  // Every word typed must appear somewhere in the piece (a prefix is
-  // enough: 'attent' finds attention); a topic narrows it further.
-  function apply() {
-    var shown = 0;
-    plates.forEach(function (p) {
-      var topical = !tag || p.dataset.tags.split('|').indexOf(tag) >= 0;
-      var found = query.every(function (w) { return p.dataset.text.indexOf(w) >= 0; });
-      var show = topical && found;
-      p.classList.toggle('hidden', !show);
-      if (show) shown++;
-    });
-    years.forEach(function (y) { y.classList.toggle('hidden', !y.querySelector('.row:not(.hidden)')); });
-    var said = [];
-    if (query.length) said.push('mentioning “' + input.value.trim() + '”');
-    if (tag) said.push('on ' + tag);
-    note.textContent = said.length ? shown + ' of ' + plates.length + ' ' + said.join(', ') : '';
-    empty.style.display = shown ? 'none' : 'block';
-  }
-
-  input.addEventListener('input', function () {
-    query = input.value.toLowerCase().split(/[^a-z0-9]+/).filter(function (w) { return w.length > 1; });
-    seek.classList.toggle('has-value', input.value.length > 0);
-    apply();
-  });
-  clear.addEventListener('click', function () {
-    input.value = ''; query = []; seek.classList.remove('has-value'); apply(); input.focus();
-  });
-
-  // '/' jumps to the search, as on Thoughts.
-  addEventListener('keydown', function (e) {
-    if (e.key === '/' && document.activeElement !== input && !/input|textarea/i.test(document.activeElement.tagName)) {
-      e.preventDefault(); input.focus();
-    }
-  });
-
-  chips.forEach(function (c) {
-    c.addEventListener('click', function () {
-      tag = tag === c.dataset.tag ? null : c.dataset.tag;
-      chips.forEach(function (o) { o.classList.toggle('active', o.dataset.tag === tag); });
-      apply();
-    });
-  });
+  var root = document.getElementById('post-index');
+  if (!root || !window.IntersectionObserver || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  root.classList.add('live');
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
+  root.querySelectorAll('.rv').forEach(function (el) { io.observe(el); });
 })();
 </script>
+
+

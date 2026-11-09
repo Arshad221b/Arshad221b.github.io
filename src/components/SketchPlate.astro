@@ -154,6 +154,16 @@ import PlateCredit from './PlateCredit.astro';
     transform: translateX(-50%);
   }
 
+  /* Roving: fixed to the screen, moved along with the part being read. */
+  .plate.roving {
+    position: fixed;
+    height: 100vh;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .plate.roving .plate-art { pointer-events: none; }
+  .plate.roving .plate-all { display: none; }
+
   /* While the note is open, the drawing steps back for the reading. */
   body:has(.first-screen .why[open]) .plate { opacity: 0.1; transition: opacity var(--dur-base) ease; }
 
@@ -174,7 +184,8 @@ import PlateCredit from './PlateCredit.astro';
 </style>
 
 <script is:inline>
-(function () {
+// Started once the page is read, so a page's places for the drawing exist.
+(function (run) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run(); })(function () {
   var plate = document.querySelector('.plate');
   if (!plate) return;
   var canvas = plate.querySelector('canvas'), ctx = canvas.getContext('2d');
@@ -186,10 +197,29 @@ import PlateCredit from './PlateCredit.astro';
     list = list.map(function (u) { return u.replace('w_1600', 'w_' + need); });
   })();
   var allList = list.slice(), allCredits = credits.slice();
+  // Roving: a page may give each of its parts a place for the drawing
+  // (.plate-slot, holding in data-set the drawings that belong there). The
+  // drawing then forms in the part being read, moves with it as the page
+  // scrolls, and pours into the next part's place when you reach it.
+  var slots = [].slice.call(document.querySelectorAll('.plate-slot[data-set]'));
+  var roving = slots.length > 0, base = 0, dy = 0, switchToken = 0;
+  // Start in the place that is on show (a page may hide all but one).
+  var slot = roving ? (slots.filter(function (el) { return el.offsetParent; })[0] || slots[0]) : null;
+  // A place's drawings, in a new order every time it is shown.
+  function setOf(el) {
+    var a = []; try { a = JSON.parse(el.dataset.set); } catch (e) {}
+    for (var i = a.length - 1; i > 0; i--) { var r = (Math.random() * (i + 1)) | 0, t = a[i]; a[i] = a[r]; a[r] = t; }
+    return a;
+  }
+  if (roving) plate.classList.add('roving');
   // A different set and order on every visit, alternating one Indian drawing and
   // one from elsewhere: each group shuffled, then interleaved, starting
   // with either.
-  (function () {
+  if (roving) {
+    var set0 = setOf(slot);
+    list = set0.map(function (i) { return allList[i]; });
+    credits = set0.map(function (i) { return allCredits[i]; });
+  } else (function () {
     function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var r = (Math.random() * (i + 1)) | 0, t = a[i]; a[i] = a[r]; a[r] = t; } return a; }
     var ind = [], oth = [];
     credits.forEach(function (c, i) { (c.india ? ind : oth).push(i); });
@@ -233,6 +263,8 @@ import PlateCredit from './PlateCredit.astro';
     buf = document.createElement('canvas'); buf.width = BW; buf.height = BH;
     bctx = buf.getContext('2d'); pix = bctx.createImageData(BW, BH); p32 = new Uint32Array(pix.data.buffer);
     var n = W < 760 ? 24000 : W < 1500 ? 22000 : 28000;
+    // A drawing in a small place takes fewer particles, or it clogs into a blot.
+    if (roving) { var ar0 = art.getBoundingClientRect(); n = Math.round(Math.max(4000, Math.min(n, ar0.width * ar0.height * 0.075))); }
     if (n !== N) {
       N = n;
       var F = function () { return new Float32Array(N); };
@@ -267,6 +299,7 @@ import PlateCredit from './PlateCredit.astro';
   // the drawing takes everything above it. CSS places them until this runs.
   var meta = plate.querySelector('.plate-meta'), fitted = '';
   function layout() {
+    if (roving) return place();
     var head = document.querySelector('header'), below = document.querySelector('.first-screen .page-statement');
     if (!head || !below) return false;
     var top0 = plate.getBoundingClientRect().top;
@@ -285,6 +318,56 @@ import PlateCredit from './PlateCredit.astro';
     meta.style.top = Math.round(to - ch) + 'px';
     return true;
   }
+  // The drawing's area: the slot, where it is now on the screen.
+  function place() {
+    var r = slot.getBoundingClientRect(), mh = meta.offsetHeight;
+    if (r.width < 60 || r.height < 120) { hide(); return false; }
+    base = r.top;
+    art.style.transform = 'none';
+    art.style.left = Math.round(r.left) + 'px';
+    art.style.top = Math.round(r.top) + 'px';
+    art.style.width = Math.round(r.width) + 'px';
+    art.style.height = Math.round(r.height - mh - 14) + 'px';
+    meta.style.top = Math.round(r.bottom - mh) + 'px';
+    meta.style.left = Math.round(r.left + r.width / 2) + 'px';
+    fitted = '';
+    return true;
+  }
+  // Follow the slot as the page scrolls: the ink, where it is going, and
+  // the drawings already read all move by the same amount, so the drawing
+  // travels with its part of the page and never leaves the canvas.
+  var scrolledAt = 0;
+  // No place on show (a page may close them all): nothing drawn.
+  function hide() { visible = false; if (W) ctx.clearRect(0, 0, W, H); meta.style.opacity = '0'; }
+  function follow() {
+    var r = slot.getBoundingClientRect(), d = r.top - base;
+    if (!r.width) { if (visible) hide(); return; }
+    meta.style.opacity = '';
+    visible = r.bottom > -innerHeight * 0.6 && r.top < innerHeight * 1.6;
+    if (!d) return;
+    base = r.top; scrolledAt = performance.now();
+    if (py) for (var i = 0; i < N; i++) { py[i] += d; ty[i] += d; }
+    targets.forEach(function (T) { if (!T) return; for (var j = 0; j < T.y.length; j++) T.y[j] += d; if (T.ink) T.iy += d; });
+    art.style.top = Math.round(r.top) + 'px';
+    meta.style.top = Math.round(r.bottom - meta.offsetHeight) + 'px';
+  }
+  // Reaching another part: its drawings, poured in from where the ink is.
+  function switchTo(el) {
+    // The same place, already drawn in: nothing to do. (Shown again after
+    // being hidden, it is drawn afresh.)
+    if (el === slot && visible) return;
+    var token = ++switchToken;
+    slot = el;
+    var set1 = setOf(el);
+    list = set1.map(function (i) { return allList[i]; });
+    credits = set1.map(function (i) { return allCredits[i]; });
+    images = []; targets = []; idx = 0;
+    if (!place()) return;
+    size(); visible = true; meta.style.opacity = '';
+    plate.classList.remove('settled');
+    load(0, function () { if (token !== switchToken) return; begin(performance.now()); if (reduce) still(); });
+  }
+
   // The words come after this script in the page, so fit once they exist,
   // again when the fonts settle, and whenever the opening changes size.
   function refit() { if (layout() && images[idx]) { targets = []; size(); aim(); if (reduce) still(); } }
@@ -533,7 +616,7 @@ import PlateCredit from './PlateCredit.astro';
     // While a drawing holds still, every other frame is enough, unless the
     // pointer is moving through it.
     fc++;
-    if (phase === 'hold' && now - t0 > 900 && (fc & 1) && now - moved > 600) return;
+    if (phase === 'hold' && now - t0 > 900 && (fc & 1) && now - moved > 600 && (!roving || now - scrolledAt > 200)) return;
     var dt = last ? Math.min(2, Math.max(0.4, (now - last) / 16.667)) : 1; last = now;
     // A slow device sheds particles until it runs smoothly (under ~45fps for a while).
     slow = slow * 0.97 + (dt > 1.35 ? 1 : 0) * 0.03;
@@ -681,7 +764,7 @@ import PlateCredit from './PlateCredit.astro';
   // that arrives before the layout would be sampled at zero and stall.
   load(0, function start() {
     layout(); size();
-    if (!W || !H || !document.querySelector('.first-screen .page-statement')) { setTimeout(start, 60); return; }
+    if (!W || !H || (!roving && !document.querySelector('.first-screen .page-statement'))) { setTimeout(start, 60); return; }
     targets = [];
     begin(performance.now());
     if (curT && !curT.ink) inkOf(curT);   // before the first frame, not at the first settle
@@ -734,16 +817,26 @@ import PlateCredit from './PlateCredit.astro';
   }, { passive: true });
   addEventListener('pointerleave', function () { mx = my = -1e4; });
 
+  // The page can say which place to form in: plate:slot with the element.
+  plate.addEventListener('plate:slot', function (e) { if (e.detail && tx) switchTo(e.detail); });
+  if (roving && window.IntersectionObserver) {
+    var sio = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting && tx) switchTo(e.target); });
+    }, { rootMargin: '-38% 0px -38% 0px' });
+    slots.forEach(function (el) { sio.observe(el); });
+  }
+
   var ticking = false;
   addEventListener('scroll', function () {
     if (ticking) return;
     ticking = true;
     requestAnimationFrame(function () {
       ticking = false;
+      if (roving) { follow(); return; }
       var s = Math.min(1, scrollY / (innerHeight * 0.8));
       plate.style.setProperty('--scroll', s.toFixed(3));
       visible = s < 1;
     });
   }, { passive: true });
-})();
+});
 </script>
