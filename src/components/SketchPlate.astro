@@ -335,6 +335,11 @@ import PlateCredit from './PlateCredit.astro';
     if (r.width < 60 || r.height < 120) { hide(); return false; }
     // A place found again (after a layout pass saw none): draw again.
     visible = true; meta.style.opacity = '';
+    // The ink stays within its place (a little margin to breathe), never
+    // spraying across the rest of the page.
+    var pr = plate.getBoundingClientRect(), mg = 28;
+    canvas.style.clipPath = 'inset(' + Math.max(0, r.top - pr.top - mg) + 'px ' + Math.max(0, pr.right - r.right - mg) + 'px ' +
+      Math.max(0, pr.bottom - r.bottom - mg) + 'px ' + Math.max(0, r.left - pr.left - mg) + 'px)';
     base = r.top - pt; shift = 0; bakeDue = false; clearTimeout(bakeT);
     canvas.style.transform = ''; meta.style.transform = 'translateX(-50%)';
     art.style.transform = 'none';
