@@ -335,6 +335,15 @@ import PlateCredit from './PlateCredit.astro';
     if (r.width < 60 || r.height < 120) { hide(); return false; }
     // A place found again (after a layout pass saw none): draw again.
     visible = true; meta.style.opacity = '';
+    // The ink moves freely, but only within the page: below the header and
+    // inside the page's side margins (a page marks its area data-plate-bounds).
+    var bounds = slot.closest('[data-plate-bounds]');
+    if (bounds) {
+      var pr = plate.getBoundingClientRect(), br = bounds.getBoundingClientRect(), bs = getComputedStyle(bounds);
+      var head = document.querySelector('body > header'), hb = head ? head.getBoundingClientRect().bottom : 0;
+      var L = br.left + parseFloat(bs.paddingLeft), R = br.right - parseFloat(bs.paddingRight);
+      canvas.style.clipPath = 'inset(' + Math.max(0, hb + scrollY - (pr.top + scrollY)) + 'px ' + Math.max(0, pr.right - R) + 'px 0px ' + Math.max(0, L - pr.left) + 'px)';
+    }
     base = r.top - pt; shift = 0; bakeDue = false; clearTimeout(bakeT);
     canvas.style.transform = ''; meta.style.transform = 'translateX(-50%)';
     art.style.transform = 'none';

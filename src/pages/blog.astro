@@ -186,7 +186,7 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
 ---
 <Layout title={title} activeNav="/blog" description="Essays and day-by-day notebooks in four topics: vision, neuroscience, machine learning and their foundations. Notes on things I finally understood, not tutorials." ogImage={share("/images/share-blog.jpg")}>
   <SketchPlate sketches={sketches} credits={credits} />
-  <div class="bp" id="bp">
+  <div class="bp" id="bp" data-plate-bounds>
 
     <!-- Opening: the drawing, the name, the four fields. -->
     <section class="open">
@@ -300,12 +300,10 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
     grid-row: 1;
     align-self: stretch;
     position: relative;
-    /* Unbounded: from the very top of the screen (the header is clear, so
-       the ink runs behind it) to the screen's right edge, over the whole
-       height of the opening. */
-    min-height: max(26rem, calc(100svh - 3rem - var(--space-lg)));
-    margin-top: calc(-1 * (var(--head-h, 72px) + var(--main-pt, 0px)));
-    margin-right: calc(-1 * var(--side));
+    /* The picture forms inside the page: below the header, within the
+       margins, over the opening's full height. (The ink itself is free to
+       move across the screen on its way there.) */
+    min-height: max(26rem, calc(100svh - var(--head-h, 72px) - 3rem - var(--space-lg)));
   }
   .op-art .plate-slot { display: none; position: absolute; inset: 0; }
   .op-art .plate-slot.on { display: block; }
@@ -666,14 +664,7 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
   /* ── Phones ── */
   @media (max-width: 900px) {
     .open { display: flex; flex-direction: column; align-items: stretch; min-height: 0; padding-top: var(--space-md); }
-    /* On a phone the drawing opens the page: edge to edge, from the top of
-       the screen, behind the clear header. */
-    .op-art {
-      order: 0;
-      min-height: 0;
-      height: calc(44svh + var(--head-h, 72px));
-      margin: calc(-1 * (var(--head-h, 72px) + var(--main-pt, 0px) + var(--space-md))) calc(-1 * var(--side)) var(--space-md);
-    }
+    .op-art { order: 2; min-height: 0; height: 40svh; margin: var(--space-md) 0; }
     .op-art .plate-slot { inset: 0; }
     .op-text { display: contents; }
     .op-title { order: 1; font-size: clamp(3rem, 15vw, 4.2rem); }
