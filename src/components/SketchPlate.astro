@@ -162,6 +162,11 @@ import PlateCredit from './PlateCredit.astro';
     transform: none !important;
   }
   .plate.roving .plate-canvas { will-change: transform; }
+  /* On a phone the drawing's place is in the opening, so the plate is part
+     of the page there and the phone scrolls it with everything else. */
+  @media (max-width: 900px) {
+    .plate.roving { position: absolute; height: 100svh; }
+  }
   .plate.roving .plate-art { pointer-events: none; }
   .plate.roving .plate-all { display: none; }
 
@@ -320,17 +325,21 @@ import PlateCredit from './PlateCredit.astro';
     return true;
   }
   // The drawing's area: the slot, where it is now on the screen.
+  // Where the slot sits relative to the plate. On a wide screen the plate is
+  // fixed to the screen (its top is 0); on a phone it is part of the page
+  // and scrolls with it natively, so nothing has to follow at all.
+  function plateTop() { return plate.getBoundingClientRect().top; }
   function place() {
-    var r = slot.getBoundingClientRect(), mh = meta.offsetHeight;
+    var r = slot.getBoundingClientRect(), mh = meta.offsetHeight, pt = plateTop();
     if (r.width < 60 || r.height < 120) { hide(); return false; }
-    base = r.top; shift = 0; bakeDue = false; clearTimeout(bakeT);
+    base = r.top - pt; shift = 0; bakeDue = false; clearTimeout(bakeT);
     canvas.style.transform = ''; meta.style.transform = 'translateX(-50%)';
     art.style.transform = 'none';
     art.style.left = Math.round(r.left) + 'px';
-    art.style.top = Math.round(r.top) + 'px';
+    art.style.top = Math.round(r.top - pt) + 'px';
     art.style.width = Math.round(r.width) + 'px';
     art.style.height = Math.round(r.height - mh - 14) + 'px';
-    meta.style.top = Math.round(r.bottom - mh) + 'px';
+    meta.style.top = Math.round(r.bottom - pt - mh) + 'px';
     meta.style.left = Math.round(r.left + r.width / 2) + 'px';
     fitted = '';
     return true;
@@ -347,7 +356,8 @@ import PlateCredit from './PlateCredit.astro';
     if (!r.width) { if (visible) hide(); return; }
     meta.style.opacity = '';
     visible = r.bottom > -innerHeight * 0.6 && r.top < innerHeight * 1.6;
-    shift = r.top - base;
+    shift = r.top - plateTop() - base;
+    if (!shift) { if (canvas.style.transform) { canvas.style.transform = ''; meta.style.transform = 'translateX(-50%)'; } return; }
     canvas.style.transform = shift ? 'translate3d(0,' + shift.toFixed(1) + 'px,0)' : '';
     meta.style.transform = 'translate(-50%,' + shift.toFixed(1) + 'px)';
     scrolledAt = performance.now();
@@ -356,13 +366,13 @@ import PlateCredit from './PlateCredit.astro';
   }
   function bake() {
     bakeDue = false;
-    var r = slot.getBoundingClientRect(), d = r.top - base;
+    var r = slot.getBoundingClientRect(), pt = plateTop(), d = r.top - pt - base;
     if (!d || r.bottom < 0 || r.top > innerHeight) return;
     if (py) for (var i = 0; i < N; i++) { py[i] += d; ty[i] += d; }
     targets.forEach(function (T) { if (!T) return; for (var j = 0; j < T.y.length; j++) T.y[j] += d; if (T.ink) T.iy += d; });
-    art.style.top = Math.round(r.top) + 'px';
-    meta.style.top = Math.round(r.bottom - meta.offsetHeight) + 'px';
-    base = r.top; shift = 0;
+    art.style.top = Math.round(r.top - pt) + 'px';
+    meta.style.top = Math.round(r.bottom - pt - meta.offsetHeight) + 'px';
+    base = r.top - pt; shift = 0;
     canvas.style.transform = ''; meta.style.transform = 'translateX(-50%)';
   }
   // Reaching another part: its drawings, poured in from where the ink is.
