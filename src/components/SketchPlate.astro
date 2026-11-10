@@ -333,6 +333,8 @@ import PlateCredit from './PlateCredit.astro';
   function place() {
     var r = slot.getBoundingClientRect(), mh = meta.offsetHeight, pt = plateTop();
     if (r.width < 60 || r.height < 120) { hide(); return false; }
+    // A place found again (after a layout pass saw none): draw again.
+    visible = true; meta.style.opacity = '';
     base = r.top - pt; shift = 0; bakeDue = false; clearTimeout(bakeT);
     canvas.style.transform = ''; meta.style.transform = 'translateX(-50%)';
     art.style.transform = 'none';
