@@ -299,10 +299,9 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
     grid-row: 1;
     align-self: stretch;
     position: relative;
-    /* As much of the screen as the opening has: its full height, and out
-       to the right edge. */
+    /* As much of the screen as the opening has: its full height, within
+       the page's margins. */
     min-height: max(26rem, calc(100svh - var(--head-h, 72px) - 3rem - var(--space-lg)));
-    margin-right: calc(-1 * var(--side));
   }
   .op-art .plate-slot { display: none; position: absolute; inset: 0; }
   .op-art .plate-slot.on { display: block; }
