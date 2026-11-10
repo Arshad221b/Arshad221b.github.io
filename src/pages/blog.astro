@@ -257,6 +257,7 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
                       ? <a href={r.href}><i>{r.n}</i><span class="t">{r.t}{r.m && <span class="m">{r.m}</span>}</span></a>
                       : <span class="a"><i>{r.n}</i><span class="t">{r.t}{r.m && <span class="m">{r.m}</span>}</span></span>}</li>)}
                   </ol>
+                  {rows.length > 3 && <button type="button" class="toc-more" aria-expanded="false">+ {rows.length - 3} more {it.kind === 'essay' ? 'sections' : 'days'}</button>}
                 </figcaption>
               </figure>
             );
@@ -649,6 +650,7 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
   .cap-toc a:focus-visible { outline: none; }
   .cap-toc a:hover .m { color: var(--color-text-muted); }
   .cap-toc .later { opacity: 0.45; }
+  .toc-more { display: none; }
 
   /* Finding: what does not match steps out; a plate keeps its columns
      to the figures left on it. */
@@ -679,7 +681,23 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
     .cap-title { font-size: clamp(1.75rem, 8.4vw, 2.15rem); }
     .cap-k { line-height: 1.5; }
     .cap-toc { margin-top: var(--space-md); }
-    .cap-toc .t, .cap-toc i { font-size: var(--fs-body); }
+    .cap-toc .t, .cap-toc i { font-size: var(--fs-ui); }
+    /* On a phone a work shows its first three parts; the rest on asking. */
+    .fig:not(.open) .cap-toc li:nth-child(n + 4) { display: none; }
+    .toc-more {
+      display: inline-block;
+      margin-top: var(--space-3);
+      padding: 0.3rem 0;
+      border: 0;
+      background: none;
+      font-family: var(--font-mono);
+      font-size: var(--fs-micro);
+      letter-spacing: var(--track-caps);
+      text-transform: uppercase;
+      color: var(--color-accent);
+      cursor: pointer;
+    }
+    .fig.open .toc-more { display: none; }
     .cap-toc a, .cap-toc .a { grid-template-columns: 2.1rem minmax(0, 1fr) 1.1rem; padding: 0.35rem 0; }
     .fig-img { margin-bottom: var(--space-md); }
     .figs { gap: var(--space-2xl); }
@@ -732,6 +750,10 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
     }, { threshold: 0 });
     bp.querySelectorAll('.pl-head').forEach(function (h) { hin.observe(h); hout.observe(h); });
   }
+
+  bp.querySelectorAll('.toc-more').forEach(function (b) {
+    b.addEventListener('click', function () { b.closest('.fig').classList.add('open'); b.setAttribute('aria-expanded', 'true'); });
+  });
 
   // Find: across all four plates; what does not match steps out, and each
   // plate shares its width among the figures left on it.
