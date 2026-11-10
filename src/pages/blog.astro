@@ -241,7 +241,7 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
                       data-text={[it.title, it.description, t.name, ...it.tags, ...(it.kind === 'essay' ? it.contents : it.nb.days.map(d => d.title))].join(' ').toLowerCase()}>
                 <a class="fig-img" href={it.href} tabindex="-1" aria-hidden="true">
                   <img src={it.image} srcset={widths(it.src, [480, 720, 960, 1280, 1600])}
-                       sizes="(max-width: 900px) calc(100vw - 2rem), 40vw"
+                       sizes="(max-width: 900px) calc(100vw - 2rem), 46vw"
                        data-ink crossorigin="anonymous" alt="" width="1600" height="840" loading="lazy" decoding="async" />
                 </a>
                 <figcaption class="cap">
@@ -288,7 +288,7 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
   .open {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: end;
     min-height: calc(100svh - var(--head-h, 72px) - 3rem);
     padding-bottom: var(--space-lg);
@@ -498,7 +498,7 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
   .figs { display: flex; flex-direction: column; gap: clamp(3.5rem, 11vh, 7rem); }
   .fig {
     display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-rows: auto auto auto 1fr;
     grid-template-areas: 'img k' 'img title' 'img desc' 'img toc';
     column-gap: clamp(2rem, 4.5vw, 5rem);
