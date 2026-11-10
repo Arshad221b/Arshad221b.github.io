@@ -276,10 +276,10 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
     --side: clamp(1rem, 4.5vw, 5rem);
     box-sizing: border-box;
     /* Full width up to a point, then centred, so a wide screen does not
-       leave everything leaning left. */
-    width: min(100vw, 1680px);
+       leave everything leaning left (the opening stays the full width). */
+    width: 100vw;
     max-width: none;
-    margin-inline: calc(50% - min(50vw, 840px));
+    margin-inline: calc(50% - 50vw);
     padding-inline: var(--side);
   }
 
@@ -396,6 +396,7 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
      Every figure's caption parts sit on the same lines across the plate. */
   /* A new topic begins at a hairline across the page, drawn outward from
      the middle as the topic's name sets itself. */
+  .plate-sec, .none { max-width: 1560px; margin-inline: auto; }
   .plate-sec {
     position: relative;
     margin-top: clamp(3.5rem, 9vh, 6rem);
