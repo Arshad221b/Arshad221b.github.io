@@ -2637,3 +2637,54 @@ pre,
   line-height: var(--lh-body);
   color: var(--color-text-secondary);
 }
+
+
+/* ── Technical posts on a wide screen ─────────────────────
+   The prose keeps a reading measure; what needs room (displayed maths,
+   code, tables, diagrams and charts) opens out on both sides of it, as
+   far as the screen allows without reaching the contents in the margin,
+   which sits close beside it rather than at the window's edge. */
+@media (min-width: 1240px) {
+  body:has(main > .blog-post.tech) {
+    --toc-w: 15rem;
+    --toc-gap: 2.75rem;
+    --toc-edge: 2rem;
+    --wide: min(980px, calc(100vw - 2 * (var(--toc-w) + var(--toc-gap) + var(--toc-edge))));
+  }
+  main > .blog-post.tech { --measure: 680px; }
+
+  .blog-post.tech .blog-post-content > p > .katex-display,
+  .blog-post.tech .blog-post-content > span > .katex-display,
+  .blog-post.tech .blog-post-content > .eq-block,
+  .blog-post.tech .blog-post-content > .derivation-block,
+  .blog-post.tech .blog-post-content > pre,
+  .blog-post.tech .blog-post-content > table,
+  .blog-post.tech .blog-post-content > .mini-diagram,
+  .blog-post.tech .blog-post-content > [class*='diagram'],
+  .blog-post.tech .blog-post-content > [class*='chart'],
+  .blog-post.tech .blog-post-content > [class*='table-wrap'],
+  .blog-post.tech .blog-post-content > [class*='grid'],
+  .blog-post.tech .blog-post-content > .three-col {
+    width: var(--wide);
+    max-width: var(--wide);
+    margin-left: calc((100% - var(--wide)) / 2);
+    margin-right: calc((100% - var(--wide)) / 2);
+    box-sizing: border-box;
+  }
+  /* A wide equation still centres on the text, so it reads in line with it. */
+  .blog-post.tech .blog-post-content .katex-display { text-align: center; }
+
+  body:has(main > .blog-post.tech) .margin-toc {
+    left: max(var(--toc-edge), calc((100vw - var(--wide)) / 2 - var(--toc-w) - var(--toc-gap)));
+    width: var(--toc-w);
+    padding: 0;
+  }
+}
+
+/* A large screen: a little more measure and a little larger type, the line
+   length staying where reading is easy. */
+@media (min-width: 1600px) {
+  main > .blog-post.tech { --measure: 720px; }
+  .blog-post.tech .blog-post-content p,
+  .blog-post.tech .blog-post-content li { font-size: 1.22rem; }
+}
