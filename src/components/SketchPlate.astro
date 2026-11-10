@@ -161,6 +161,7 @@ import PlateCredit from './PlateCredit.astro';
     opacity: 1 !important;
     transform: none !important;
   }
+  .plate.roving .plate-canvas { will-change: transform; }
   .plate.roving .plate-art { pointer-events: none; }
   .plate.roving .plate-all { display: none; }
 
@@ -322,7 +323,8 @@ import PlateCredit from './PlateCredit.astro';
   function place() {
     var r = slot.getBoundingClientRect(), mh = meta.offsetHeight;
     if (r.width < 60 || r.height < 120) { hide(); return false; }
-    base = r.top;
+    base = r.top; shift = 0; bakeDue = false; clearTimeout(bakeT);
+    canvas.style.transform = ''; meta.style.transform = 'translateX(-50%)';
     art.style.transform = 'none';
     art.style.left = Math.round(r.left) + 'px';
     art.style.top = Math.round(r.top) + 'px';
@@ -333,23 +335,35 @@ import PlateCredit from './PlateCredit.astro';
     fitted = '';
     return true;
   }
-  // Follow the slot as the page scrolls: the ink, where it is going, and
-  // the drawings already read all move by the same amount, so the drawing
-  // travels with its part of the page and never leaves the canvas.
-  var scrolledAt = 0;
-  // No place on show (a page may close them all): nothing drawn.
-  function hide() { visible = false; if (W) ctx.clearRect(0, 0, W, H); meta.style.opacity = '0'; }
+  // Follow the slot as the page scrolls. While the page moves, the canvas
+  // and its credit move with it by transform alone, which every device does
+  // smoothly, even mid-fling on a phone. Once it rests, the shift is folded
+  // into the ink itself (in a frame that also redraws, so nothing jumps),
+  // but only while the place is on screen, so the drawing never ends up
+  // outside the canvas.
+  var scrolledAt = 0, shift = 0, bakeT = 0, bakeDue = false;
   function follow() {
-    var r = slot.getBoundingClientRect(), d = r.top - base;
+    var r = slot.getBoundingClientRect();
     if (!r.width) { if (visible) hide(); return; }
     meta.style.opacity = '';
     visible = r.bottom > -innerHeight * 0.6 && r.top < innerHeight * 1.6;
-    if (!d) return;
-    base = r.top; scrolledAt = performance.now();
+    shift = r.top - base;
+    canvas.style.transform = shift ? 'translate3d(0,' + shift.toFixed(1) + 'px,0)' : '';
+    meta.style.transform = 'translate(-50%,' + shift.toFixed(1) + 'px)';
+    scrolledAt = performance.now();
+    clearTimeout(bakeT);
+    bakeT = setTimeout(function () { bakeDue = true; }, 160);
+  }
+  function bake() {
+    bakeDue = false;
+    var r = slot.getBoundingClientRect(), d = r.top - base;
+    if (!d || r.bottom < 0 || r.top > innerHeight) return;
     if (py) for (var i = 0; i < N; i++) { py[i] += d; ty[i] += d; }
     targets.forEach(function (T) { if (!T) return; for (var j = 0; j < T.y.length; j++) T.y[j] += d; if (T.ink) T.iy += d; });
     art.style.top = Math.round(r.top) + 'px';
     meta.style.top = Math.round(r.bottom - meta.offsetHeight) + 'px';
+    base = r.top; shift = 0;
+    canvas.style.transform = ''; meta.style.transform = 'translateX(-50%)';
   }
   // Reaching another part: its drawings, poured in from where the ink is.
   function switchTo(el) {
@@ -613,10 +627,12 @@ import PlateCredit from './PlateCredit.astro';
   function frame(now) {
     requestAnimationFrame(frame);
     if (!visible || document.hidden || !tx) return;
+    var folding = roving && bakeDue;
+    if (folding) bake();
     // While a drawing holds still, every other frame is enough, unless the
     // pointer is moving through it.
     fc++;
-    if (phase === 'hold' && now - t0 > 900 && (fc & 1) && now - moved > 600 && (!roving || now - scrolledAt > 200)) return;
+    if (phase === 'hold' && now - t0 > 900 && (fc & 1) && now - moved > 600 && (!roving || now - scrolledAt > 200) && !folding) return;
     var dt = last ? Math.min(2, Math.max(0.4, (now - last) / 16.667)) : 1; last = now;
     // A slow device sheds particles until it runs smoothly (under ~45fps for a while).
     slow = slow * 0.97 + (dt > 1.35 ? 1 : 0) * 0.03;
