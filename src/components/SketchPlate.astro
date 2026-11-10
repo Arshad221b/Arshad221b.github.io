@@ -154,18 +154,13 @@ import PlateCredit from './PlateCredit.astro';
     transform: translateX(-50%);
   }
 
-  /* Roving: fixed to the screen, moved along with the part being read. */
+  /* Roving: the drawing's place is in the page, so the plate is part of
+     the page and scrolls with it natively; nothing chases the scroll. */
   .plate.roving {
-    position: fixed;
-    height: 100vh;
+    position: absolute;
+    height: 100svh;
     opacity: 1 !important;
     transform: none !important;
-  }
-  .plate.roving .plate-canvas { will-change: transform; }
-  /* On a phone the drawing's place is in the opening, so the plate is part
-     of the page there and the phone scrolls it with everything else. */
-  @media (max-width: 900px) {
-    .plate.roving { position: absolute; height: 100svh; }
   }
   .plate.roving .plate-art { pointer-events: none; }
   .plate.roving .plate-all { display: none; }
@@ -329,6 +324,12 @@ import PlateCredit from './PlateCredit.astro';
   // fixed to the screen (its top is 0); on a phone it is part of the page
   // and scrolls with it natively, so nothing has to follow at all.
   function plateTop() { return plate.getBoundingClientRect().top; }
+  // Nowhere to draw (the place is folded away or not shown): clear the ink.
+  function hide() {
+    visible = false;
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    meta.style.opacity = '0';
+  }
   function place() {
     var r = slot.getBoundingClientRect(), mh = meta.offsetHeight, pt = plateTop();
     if (r.width < 60 || r.height < 120) { hide(); return false; }
@@ -845,12 +846,7 @@ import PlateCredit from './PlateCredit.astro';
 
   // The page can say which place to form in: plate:slot with the element.
   plate.addEventListener('plate:slot', function (e) { if (e.detail && tx) switchTo(e.detail); });
-  if (roving && window.IntersectionObserver) {
-    var sio = new IntersectionObserver(function (es) {
-      es.forEach(function (e) { if (e.isIntersecting && tx) switchTo(e.target); });
-    }, { rootMargin: '-38% 0px -38% 0px' });
-    slots.forEach(function (el) { sio.observe(el); });
-  }
+
 
   var ticking = false;
   addEventListener('scroll', function () {
