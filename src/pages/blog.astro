@@ -275,9 +275,11 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
     --ease: cubic-bezier(0.22, 0.8, 0.2, 1);
     --side: clamp(1rem, 4.5vw, 5rem);
     box-sizing: border-box;
-    width: 100vw;
+    /* Full width up to a point, then centred, so a wide screen does not
+       leave everything leaning left. */
+    width: min(100vw, 1680px);
     max-width: none;
-    margin-inline: calc(50% - 50vw);
+    margin-inline: calc(50% - min(50vw, 840px));
     padding-inline: var(--side);
   }
 
