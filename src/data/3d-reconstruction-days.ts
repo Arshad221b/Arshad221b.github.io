@@ -44,7 +44,7 @@ export interface Day {
 }
 
 export const experiment = {
-  title: "3D Reconstruction",
+  title: "Structure from Motion",
   status: "active" as const,
   startDate: "2026-11-03",
   description: "Geometry-based 3D reconstruction from images: camera models, epipolar geometry, triangulation and structure from motion.",

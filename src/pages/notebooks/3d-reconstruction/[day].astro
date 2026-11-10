@@ -15,7 +15,7 @@ export const getStaticPaths: GetStaticPaths = () => {
 const { dayData: day } = Astro.props;
 const dayInfo = notebooks.find(n => n.slug === '3d-reconstruction')?.days.find(d => d.day === day.day);
 
-const title = `Day ${day.day}: ${day.curiosityTitle} — 3D Reconstruction — Arshad Kazi`;
+const title = `Day ${day.day}: ${day.curiosityTitle} — Structure from Motion — Arshad Kazi`;
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr + 'T00:00:00');

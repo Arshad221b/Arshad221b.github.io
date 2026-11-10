@@ -33,7 +33,7 @@ export interface Notebook {
 
 const meta = [
   {
-    title: '3D Reconstruction',
+    title: 'Structure from Motion',
     slug: '3d-reconstruction',
     commitment: '',
     startDate: '2026-11-03',
