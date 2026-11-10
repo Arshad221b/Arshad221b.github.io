@@ -195,7 +195,7 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
         {fields4.map(t => <div class="plate-slot" data-t={t.id} data-set={JSON.stringify(t.set)}></div>)}
       </div>
       <div class="op-text">
-        <h1 class="op-title">Technical<br />Blogs</h1>
+        <h1 class="op-title">Technical<br /><span class="op-accent">Blogs</span></h1>
         <p class="op-say">Things I had to understand from the ground up, written down while learning them. Notebooks follow a subject day by day; essays make one argument.</p>
         <nav class="op-index" aria-label="Fields">
           {fields4.map((t, i) => (
@@ -316,6 +316,8 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
     line-height: 0.88;
     letter-spacing: -0.045em;
   }
+
+  .op-accent { color: var(--color-accent); }
 
   .op-say {
     max-width: 38ch;
