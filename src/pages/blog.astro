@@ -545,8 +545,8 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
     letter-spacing: -0.03em;
     text-wrap: balance;
   }
-  .cap-title a { color: var(--color-text); text-decoration: none; transition: color 250ms ease; }
-  .fig:hover .cap-title a, .cap-title a:focus-visible { color: var(--color-accent); }
+  .cap-title a { color: var(--color-accent); text-decoration: none; transition: color 250ms ease; }
+  .cap-title a:hover, .cap-title a:focus-visible { color: var(--color-text); }
 
   .cap-desc {
     margin: var(--space-3) 0 0;
