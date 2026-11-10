@@ -354,10 +354,11 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   /* The essay's opening line, drifting in the river. */
   .entry-quote {
     display: block;
-    font-family: var(--font-display);
+    font-family: var(--font-serif);
     font-style: italic;
-    font-size: var(--fs-ui);
-    line-height: var(--lh-ui);
+    font-size: var(--fs-small);
+    line-height: 1.6;
+    text-align: left;
     color: var(--color-text-secondary);
   }
 
@@ -404,9 +405,11 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
   }
 
   .entry-topic {
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: var(--fs-ui);
+    margin-top: var(--space-1);
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
+    text-transform: uppercase;
     color: var(--color-text-muted);
   }
 
@@ -493,18 +496,17 @@ const byIndex = new Map(posts.map((p, i) => [p.slug, i]));
 
   /* Each plate takes its own size and height up the bank, so no two
      landings look alike. */
-  .entry { --fw: 34rem; --fy: 0rem; --fx: -5rem; }
-  .entry:nth-child(3n of .entry) { --fw: 28rem; --fy: -3rem; --fx: -1rem; }
-  .entry:nth-child(3n + 2 of .entry) { --fw: 40rem; --fy: 2.5rem; --fx: -9rem; }
-  .entry:nth-child(5n of .entry) { --fw: 24rem; --fy: -1rem; --fx: 1rem; }
+  /* Every plate the same size and set the same way, so the eye reads the
+     words, not a scatter of pictures. */
+  .entry { --fw: 30rem; --fy: 0rem; --fx: -4rem; }
 
   /* ── Wide screens and iPads: both banks ─────────────── */
   @media (min-width: 760px) {
     .entry-link {
       grid-template-columns:
-        [lside] minmax(0, 1fr) [lbody] minmax(0, 22rem)
+        [lside] minmax(0, 1fr) [lbody] minmax(0, 26rem)
         [river] var(--river)
-        [rbody] minmax(0, 22rem) [rside] minmax(0, 1fr);
+        [rbody] minmax(0, 26rem) [rside] minmax(0, 1fr);
       column-gap: var(--space-10);
     }
 
