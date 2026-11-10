@@ -288,14 +288,22 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
               </li>
             ))}
           </ol>
-          <a class="next-topic" href={`#${fields4[(i + 1) % fields4.length].id}`}>
-            <span class="nt-k">{i + 1 < fields4.length ? 'Next' : 'Back to'}</span>
-            <span class="nt-name">{fields4[(i + 1) % fields4.length].name}</span>
-            <span class="nt-a" aria-hidden="true">→</span>
-          </a>
+          <nav class="elsewhere" aria-label="Other topics">
+            <p class="el-k">Other topics</p>
+            {[1, 2, 3].map(k => { const o = fields4[(i + k) % fields4.length], j = (i + k) % fields4.length; return (
+              <a class="el-t" href={`#${o.id}`}>
+                <span class="el-n">{String(j + 1).padStart(2, '0')}</span>
+                <span class="el-name">{o.name}</span>
+                <span class="el-line">{o.line}</span>
+              </a>
+            ); })}
+          </nav>
         </section>
       ))}
     </div>
+    <nav class="rail" id="rail" aria-label="Topics">
+      {fields4.map((t, i) => <a href={`#${t.id}`} data-t={t.id} class={i === 0 ? 'on' : ''}>{t.name}</a>)}
+    </nav>
     <p class="no-results" id="no-results" hidden>Nothing written on that yet.</p>
     </div>
   </div>
@@ -1140,32 +1148,9 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
     }
 
     /* The next topic, at the end of this one. */
-    .next-topic {
-      display: inline-flex;
-      align-items: baseline;
-      gap: var(--space-3);
-      margin: var(--space-xl) 0 var(--space-2xl);
-      color: var(--color-text);
-      text-decoration: none;
-    }
 
-    .nt-k {
-      font-family: var(--font-mono);
-      font-size: var(--fs-micro);
-      letter-spacing: var(--track-caps);
-      text-transform: uppercase;
-      color: var(--color-accent);
-    }
 
-    .nt-name {
-      font-family: var(--font-display);
-      font-size: clamp(1.8rem, 8vw, 2.4rem);
-      line-height: 1;
-    }
 
-    .nt-a {
-      color: var(--color-accent);
-    }
   }
 
 
@@ -1217,8 +1202,7 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
      The topics on the left, the chosen one's intro unfolding under its
      name; its drawing large on the right, out to the screen's edge; the
      pieces below, the full width. */
-  .tab-intro,
-  .next-topic {
+  .tab-intro {
     display: none;
   }
 
@@ -1302,48 +1286,152 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
     }
 
     /* At the end of a topic, the way on to the next. */
-    .next-topic {
-      display: inline-flex;
-      align-items: baseline;
-      gap: var(--space-4);
-      margin: var(--space-2xl) 0 0;
-      color: var(--color-text);
-      text-decoration: none;
-    }
 
-    .nt-k {
+
+
+
+
+  }
+  .piece:global(.found) .p-title a {
+    color: var(--color-accent);
+  }
+
+  .rail { display: none; }
+
+  /* At the end of a topic, the other three, each with what it is about. */
+  .elsewhere {
+    display: block;
+    margin: var(--space-2xl) 0 0;
+    max-width: 60rem;
+  }
+  .el-k {
+    margin: 0 0 var(--space-md);
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-caps);
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  .el-t {
+    display: grid;
+    grid-template-columns: 2.6rem minmax(0, auto) minmax(0, 1fr);
+    column-gap: var(--space-md);
+    align-items: baseline;
+    padding: 0.35em 0;
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+  .el-n {
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    letter-spacing: var(--track-label);
+    color: var(--color-accent);
+    opacity: 0.6;
+  }
+  .el-name {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 3.6vw, 3.2rem);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--color-text);
+    transition: color 300ms ease, transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .el-line {
+    font-family: var(--font-serif);
+    font-style: italic;
+    line-height: 1.4;
+    max-width: 40ch;
+    opacity: 0.75;
+    transition: opacity 300ms ease;
+  }
+  .el-t:hover .el-name { color: var(--color-accent); transform: translateX(0.12em); }
+  .el-t:hover .el-line { opacity: 1; }
+  @media (max-width: 900px) {
+    .elsewhere { margin-top: var(--space-xl); }
+    .el-t { grid-template-columns: 2.2rem minmax(0, 1fr); row-gap: 0.2em; padding: 0.6em 0; }
+    .el-line { grid-column: 2; font-size: var(--fs-small, 0.95rem); }
+  }
+
+  @media (min-width: 901px) {
+    /* The chosen topic is the opening's headline; the others step back to
+       a quiet list, and say what they are when the pointer comes near. */
+    .tab-marker { display: none; }
+    .tabs { gap: 0.15rem; padding-left: 0; }
+    .tab {
+      grid-template-columns: 2.2rem minmax(0, 1fr);
+      grid-template-areas: 'n name' '. c' '. l';
+    }
+    .tab-n { padding-top: 0.55em; }
+    .tab-name,
+    .tabs.searching .tab-name {
+      font-size: clamp(1.2rem, min(1.7vw, 3vh), 1.7rem);
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+      transition: font-size 700ms cubic-bezier(0.2, 0.8, 0.2, 1), letter-spacing 700ms cubic-bezier(0.2, 0.8, 0.2, 1), color 400ms ease, transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .tab[aria-selected='true'] .tab-name {
+      font-size: clamp(3.4rem, min(6.4vw, 11.5vh), 7.25rem);
+      line-height: 0.98;
+      letter-spacing: -0.035em;
+      margin-bottom: 0.08em;
+    }
+    .tab[aria-selected='true'] .tab-n { padding-top: 0; }
+    .tab[aria-selected='true'] .tab-name::after { transform: scaleX(0); }
+    .tab[aria-selected='true'] { margin-bottom: var(--space-sm); }
+    .tab-line {
+      display: block;
+      grid-area: l;
+      max-width: 38ch;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: var(--fs-small, 0.95rem);
+      line-height: 1.4;
+      color: var(--color-text-secondary);
+      transition: max-height 500ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 350ms ease, margin 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .tab:not([aria-selected='true']):hover .tab-line,
+    .tab:not([aria-selected='true']):focus-visible .tab-line {
+      max-height: 3em;
+      opacity: 1;
+      margin: 0.15em 0 0.4em;
+    }
+    .tab:not([aria-selected='true']):hover .tab-name { color: var(--color-accent); }
+    .tabs.searching .tab-line { display: none; }
+
+  }
+
+  /* While reading, all four stay at the screen's edge: the one you are in
+     in the accent, the others a click away. */
+  @media (min-width: 1100px) {
+    .rail {
+      display: flex;
+      position: fixed;
+      left: clamp(0.9rem, 1.6vw, 1.75rem);
+      top: 50%;
+      z-index: 5;
+      flex-direction: row-reverse;
+      gap: 1.6rem;
+      writing-mode: vertical-rl;
+      transform: translateY(-50%) rotate(180deg);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 600ms ease;
+    }
+    .rail:global(.show) { opacity: 1; pointer-events: auto; }
+    .rail a {
       font-family: var(--font-mono);
       font-size: var(--fs-micro);
       letter-spacing: var(--track-caps);
       text-transform: uppercase;
-      color: var(--color-accent);
-    }
-
-    .nt-name {
-      font-family: var(--font-display);
-      font-size: clamp(2rem, 4vw, 3.5rem);
-      line-height: 1;
-      letter-spacing: -0.02em;
+      color: var(--color-text-muted);
+      text-decoration: none;
       transition: color 300ms ease;
     }
-
-    .nt-a {
-      font-family: var(--font-serif);
-      font-size: 1.6rem;
-      color: var(--color-accent);
-      transition: transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-
-    .next-topic:hover .nt-name {
-      color: var(--color-accent);
-    }
-
-    .next-topic:hover .nt-a {
-      transform: translateX(6px);
-    }
-  }
-  .piece:global(.found) .p-title a {
-    color: var(--color-accent);
+    .rail a:hover { color: var(--color-text); }
+    .rail a:global(.on) { color: var(--color-accent); }
   }
 
 </style>
@@ -1390,6 +1478,7 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
     if (layout) layout.classList.toggle('reading', phoneQ.matches);
     document.querySelectorAll('.tab-intro').forEach(function (p) { p.classList.toggle('on', p.dataset.t === chs[i].id); });
     current = i;
+    railMark();
     mark();
     cue();
     if (bar.scrollWidth > bar.clientWidth) bar.scrollTo({ left: tabs[i].offsetLeft - 16, behavior: how.initial ? 'auto' : 'smooth' });
@@ -1408,6 +1497,20 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
     if (phone || scrollY > stageTop - innerHeight * 0.6 || how.jump) scrollTo({ top: top, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   }
 
+  var rail = document.getElementById('rail');
+  function railMark() {
+    if (!rail) return;
+    [].forEach.call(rail.children, function (a) { a.classList.toggle('on', current >= 0 && a.dataset.t === chs[current].id); });
+  }
+  function railShow() {
+    if (!rail) return;
+    var r = stage.getBoundingClientRect();
+    var el = current >= 0 && chs[current].querySelector('.elsewhere');
+    var end = el ? el.getBoundingClientRect().top : r.bottom;
+    rail.classList.toggle('show', r.top < innerHeight * 0.35 && end > innerHeight * 0.75);
+  }
+  addEventListener('scroll', railShow, { passive: true });
+  addEventListener('resize', railShow);
   // The marker sits beside the chosen topic, and moves when the layout does.
   var marker = bar.querySelector('.tab-marker');
   function mark() {
@@ -1427,10 +1530,11 @@ const mon = (d: string) => fmt(d, { month: 'short', year: 'numeric' });
     });
   });
   // A topic chosen in the opening: chosen in the tabs, and brought up under them.
-  document.querySelectorAll('.op-topic').forEach(function (a) {
+  document.querySelectorAll('.op-topic, .rail a, .el-t').forEach(function (a) {
     a.addEventListener('click', function (e) {
       e.preventDefault(); clearSearch();
-      var i = chs.findIndex(function (c) { return c.id === a.dataset.t; });
+      var id = a.dataset.t || a.getAttribute('href').slice(1);
+      var i = chs.findIndex(function (c) { return c.id === id; });
       select(i, { jump: true });
     });
   });
