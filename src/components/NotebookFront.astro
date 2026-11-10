@@ -374,8 +374,9 @@ const hasConclusion = Astro.slots.has('conclusion');
 
   /* ── Contents strip ── */
   .nb-nav {
+    /* Held just under the site header, whatever its height on the device. */
     position: sticky;
-    top: 4.5rem;
+    top: var(--head-h, 4.5rem);
     z-index: 2;
     display: flex;
     flex-wrap: wrap;
@@ -391,7 +392,7 @@ const hasConclusion = Astro.slots.has('conclusion');
   }
   .nb-nav a { color: var(--color-text-muted); text-decoration: none; }
   .nb-nav a:hover { color: var(--color-accent); }
-  .nb-section h2 { scroll-margin-top: 8rem; }
+  .nb-section h2 { scroll-margin-top: calc(var(--head-h, 4.5rem) + 3.5rem); }
 
   /* ── Syllabus ── */
   .syl {
