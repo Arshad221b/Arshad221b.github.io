@@ -110,7 +110,7 @@ function formatDate(dateStr: string): string {
      drawing ends. Its height never exceeds the plate's own proportions, so
      the whole drawing always fits. */
   .blog-post-header.has-figure {
-    --plate-h: min(clamp(17rem, 62vh, 40rem), calc(min(100vw, 2400px) / 1.905));
+    --plate-h: min(clamp(17rem, 62vh, 40rem), calc(100vw / 1.905));
     position: relative;
     padding-top: calc(var(--plate-h) * 0.92 - var(--head-h, 4.5rem) - var(--main-pt));
     padding-bottom: var(--space-sm);
@@ -124,8 +124,8 @@ function formatDate(dateStr: string): string {
   .post-cover {
     position: absolute;
     top: calc(-1 * (var(--main-pt) + var(--head-h, 4.5rem)));
-    left: calc(50% - min(50vw, 1200px));
-    width: min(100vw, 2400px);
+    left: calc(50% - 50vw);
+    width: 100vw;
     height: var(--plate-h);
     margin: 0;
     overflow: hidden;
@@ -179,7 +179,7 @@ function formatDate(dateStr: string): string {
   @media (min-width: 1240px) {
     .blog-post-header.has-figure {
       --hero-h: max(34rem, 100vh);
-      --img-w: max(calc(min(100vw, 2400px) * 1.05), calc(var(--hero-h) * 2.25));
+      --img-w: max(calc(100vw * 1.05), calc(var(--hero-h) * 2.25));
       --band-w: min(1240px, calc(100vw - 2 * var(--gutter)));
       /* The title block sits in the optical middle of the screen below the
          nav, a touch above true centre, whatever the window's height. */
@@ -205,8 +205,8 @@ function formatDate(dateStr: string): string {
     }
 
     .post-cover {
-      left: calc(50% - min(50vw, 1200px));
-      width: min(100vw, 2400px);
+      left: calc(50% - 50vw);
+      width: 100vw;
       height: var(--hero-h);
     }
 
@@ -214,7 +214,7 @@ function formatDate(dateStr: string): string {
       --veil: calc(var(--head-h, 4.5rem) * 1.4);
       position: absolute;
       top: 0;
-      left: calc(min(100vw, 2400px) * 0.64 - var(--img-w) / 2);
+      left: calc(100vw * 0.64 - var(--img-w) / 2);
       width: var(--img-w);
       height: 100%;
       object-fit: cover;
