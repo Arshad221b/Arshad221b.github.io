@@ -1571,5 +1571,1164 @@ export const days: Day[] = [
       "How does the five-point algorithm work, and is it worth it over eight-point inside RANSAC?",
       "How does triangulation turn a match plus $R$ and $t$ into a 3D point when the rays don't quite meet?"
     ]
+  },
+  {
+    "day": 3,
+    "date": "2026-11-13",
+    "curiosityTitle": "From matches to cameras to points: estimating F, taking E apart, triangulating",
+    "summary": "Day 2 built the matrix that ties two photos together. Day 3 runs it backwards: from a pile of noisy matches, estimate that matrix, take it apart to find how the second camera is turned and which way it moved, and then send rays back out of both cameras to find where each matched point sits in 3D.",
+    "bullets": [
+      "The eight-point algorithm inside RANSAC, $E$ taken apart with the SVD into four candidate $(R, t)$, and triangulation in full: midpoint, linear, reprojection error and how accurate a point can be. Day 2's numbers checked at every step."
+    ],
+    "stages": [
+      2,
+      3
+    ],
+    "intro": [
+      {
+        "kind": "tangent",
+        "title": "Who worked these steps out",
+        "blocks": [
+          {
+            "kind": "p",
+            "text": "<strong>1981, eight points.</strong> Longuet-Higgins's two-page <em>Nature</em> paper already contained the recipe used below: one linear equation per match, eight matches, solve. It also showed how to get the rotation and translation back out of $E$, and noticed that the answer comes in several versions that have to be told apart."
+          },
+          {
+            "kind": "p",
+            "text": "<strong>1989, the shape of $E$.</strong> Huang and Faugeras proved that a 3×3 matrix is an Essential matrix exactly when it has two equal singular values and a zero one. That single fact is what makes step 7's clean-up and steps 8–9's decomposition work."
+          },
+          {
+            "kind": "p",
+            "text": "<strong>Early 1990s, the SVD recipe.</strong> Hartley wrote the decomposition of $E$ in terms of the singular value decomposition, the form every library uses today, and in 1997 showed that the eight-point algorithm only behaves once the pixel coordinates are rescaled (step 5). Hartley and Zisserman's <em>Multiple View Geometry</em> (2000) made all of it the standard reference."
+          },
+          {
+            "kind": "p",
+            "text": "<strong>1997, triangulation done properly.</strong> Hartley and Sturm's paper, titled simply <em>Triangulation</em>, compared the obvious methods (midpoint, linear) with the one that minimises pixel error, and showed that the best answer for two views comes from the roots of a single polynomial of degree six (step 14's tangent)."
+          },
+          {
+            "kind": "p",
+            "text": "<strong>2004, five points.</strong> Nistér's five-point solver estimates $E$ directly from the minimum number of matches. It is what OpenCV's <code>findEssentialMat</code> runs inside RANSAC when the camera is calibrated."
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "n": 1,
+        "act": "Goal",
+        "title": "Running day 2 backwards",
+        "subtitle": "Matches in, camera motion and 3D points out",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Day 2 went <strong>cameras → matrix</strong>: given $R$ and $t$, build $E$ (and $F$)",
+              "In practice we don't know $R$ or $t$. We only have SIFT matches, some of them wrong",
+              "Day 3 goes <strong>matches → matrix → cameras → points</strong>"
+            ]
+          },
+          {
+            "kind": "table",
+            "headers": [
+              "Stage",
+              "In",
+              "Out",
+              "Steps"
+            ],
+            "rows": [
+              [
+                "Estimate $F$",
+                "pixel matches",
+                "$F$, with inliers marked",
+                "2–6"
+              ],
+              [
+                "Undo the camera",
+                "$F$, $K$",
+                "$E$",
+                "7"
+              ],
+              [
+                "Take $E$ apart",
+                "$E$",
+                "four candidate $(R, t)$",
+                "8–9"
+              ],
+              [
+                "Pick the real one",
+                "candidates, matches",
+                "one $(R, t)$",
+                "10"
+              ],
+              [
+                "Triangulate",
+                "$(R, t)$, matches",
+                "3D points",
+                "11–15"
+              ]
+            ]
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "Day 2 assumed we knew how the two cameras sat: $R = I$, $t = (-1, 0, 0)$. From that it built $E$, and showed every match must lie on its epipolar line. That was useful for understanding, but it's the wrong way round for a real pair of photos, where the camera positions are exactly what we don't know.",
+              "The trick is that $p'^\\top F p = 0$ works in both directions. Knowing $F$, it tests matches. Knowing matches, it's an equation <em>for</em> $F$. Enough matches pin $F$ down; RANSAC protects that step from the wrong ones; once we have $F$ and the camera's $K$, $E$ follows, and $E = [t]_\\times R$ can be taken apart. With the cameras known, each match becomes two rays in space, and where they meet is the 3D point.",
+              "<strong>Why go through $F$ at all</strong>, instead of solving for $R$ and $t$ directly? Because $R$ hides its 3 unknowns inside sines and cosines, and the constraint multiplies $R$ by $t$. Equations like that have no direct solution; you'd have to guess and iterate. The entries of $F$, on the other hand, appear in the constraint in a plain linear way (step 2). So we solve the easy problem first, a linear one with 9 unknowns, and then extract the 5 numbers we actually want from its answer. Swapping a hard problem in a few unknowns for an easy one in more unknowns is a trick this subject uses over and over.",
+              "We keep day 2's running example throughout, so every answer can be checked against something we already know: $P = (2, 1, 4)$, $f = 500$, image centre $(320, 240)$, the match $p = (570, 365)$ in image 1 and $p' = (445, 365)$ in image 2. If day 3's machinery is right, it must hand back $R = I$, $t$ pointing along $(-1, 0, 0)$, and the point $(2, 1, 4)$."
+            ]
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "act": "Eight-point",
+        "title": "One match, one equation",
+        "subtitle": "The unknowns are the nine entries of F",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Write $F$ as nine unknown numbers $F_{11}, F_{12}, \\ldots, F_{33}$",
+              "Multiply out $p'^\\top F p = 0$ for one match $p = (u, v, 1)$, $p' = (u', v', 1)$",
+              "Every term is (a number we know) × (one entry of $F$)",
+              "So it's <strong>one linear equation</strong> in the nine unknowns"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "Fp = \\begin{bmatrix} F_{11}u + F_{12}v + F_{13} \\\\ F_{21}u + F_{22}v + F_{23} \\\\ F_{31}u + F_{32}v + F_{33} \\end{bmatrix}"
+          },
+          {
+            "kind": "eq",
+            "tex": "p'^\\top F p = u'(F_{11}u + F_{12}v + F_{13}) + v'(F_{21}u + F_{22}v + F_{23}) + (F_{31}u + F_{32}v + F_{33}) = 0"
+          },
+          {
+            "kind": "eq",
+            "tex": "\\underbrace{\\begin{bmatrix} u'u & u'v & u' & v'u & v'v & v' & u & v & 1 \\end{bmatrix}}_{a^\\top \\text{, known}} \\; \\underbrace{\\begin{bmatrix} F_{11} \\\\ F_{12} \\\\ \\vdots \\\\ F_{33} \\end{bmatrix}}_{f \\text{, unknown}} = 0"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "In day 2, $F$ was known and the pixels were being tested. Flip the roles: the pixels are known, and $F$ is the unknown. Do the multiplication in two halves, the way day 2 read it. First $Fp$: each row of $F$ dotted with $(u, v, 1)$, giving three numbers (the epipolar line). Then dot that line with $(u', v', 1)$: the first number gets multiplied by $u'$, the second by $v'$, the third by 1. Expand the brackets and there are nine terms.",
+              "Look at any one term, say $u'u\\,F_{11}$. The $u'u$ part is a product of two pixel coordinates we measured: a known number. The $F_{11}$ part is unknown. Every term has exactly this shape, (known) × (one unknown), and nothing multiplies two unknowns together. That's what <strong>linear</strong> means, and it's the best kind of equation to have: there's no guessing, just algebra.",
+              "Unroll $F$ row by row into a column $f$ of 9 numbers. Collect the known parts, in the same order, into a row $a^\\top$. The constraint becomes $a \\cdot f = 0$: <strong>the dot product again</strong>. Geometrically, each match says \"$f$ is perpendicular to my row $a$\", in a 9-dimensional space.",
+              "<strong>With numbers.</strong> Our match $p = (570, 365)$, $p' = (445, 365)$ gives $u'u = 445 \\cdot 570 = 253650$, $u'v = 445 \\cdot 365 = 162425$, $v'u = 365 \\cdot 570 = 208050$, $v'v = 365^2 = 133225$, so",
+              "$$a = (253650,\\ 162425,\\ 445,\\ 208050,\\ 133225,\\ 365,\\ 570,\\ 365,\\ 1)$$",
+              "The true $F$ from day 2 was $0.002 \\times \\begin{bmatrix} 0 & 0 & 0 \\\\ 0 & 0 & 1 \\\\ 0 & -1 & 0 \\end{bmatrix}$. Scale doesn't matter, so take $f = (0, 0, 0,\\ 0, 0, 1,\\ 0, -1, 0)$. Then $a \\cdot f$ picks out entry 6 times 1 and entry 8 times $-1$: $365 - 365 = 0$ ✓. Entry 6 is $v'$ and entry 8 is $v$, so the equation is just $v' = v$: the match must be on the same row. That's day 2's answer, now read off the equation for $F$.",
+              "Look at the sizes in that row: from 253,650 down to 1. That will cause trouble in step 5."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "The row has a name: a Kronecker product",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "The nine entries of $a$ are every coordinate of $p'$ times every coordinate of $p$, in order: $u'$ times $(u, v, 1)$, then $v'$ times $(u, v, 1)$, then $1$ times $(u, v, 1)$. That pattern is the <strong>Kronecker product</strong>, written $a = p' \\otimes p$. In NumPy it's <code>np.kron(p2, p1)</code>."
+              },
+              {
+                "kind": "p",
+                "text": "The general identity behind it: for any matrix $F$ and vectors $x, y$, $y^\\top F x = (y \\otimes x) \\cdot \\text{vec}(F)$, where $\\text{vec}(F)$ lists $F$ row by row. It's how any \"vector, matrix, vector\" sandwich is turned into a plain dot product so the matrix can be solved for. The same move gives the equations for a homography from point matches, and for camera calibration."
+              },
+              {
+                "kind": "p",
+                "text": "The order matters only in that $a$ and $f$ must use the same one. If you list $F$ column by column instead, list the products as $p \\otimes p'$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "act": "Eight-point",
+        "title": "Stack the matches, solve with the SVD",
+        "subtitle": "Why eight, and what to do with more",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "$N$ matches → $N$ rows → a matrix $A$ that is $N \\times 9$, and $A f = 0$",
+              "$f = 0$ always works and is useless, so ask for $|f| = 1$",
+              "$F$ only counts up to scale: 9 numbers, 8 that matter → <strong>8 matches</strong>",
+              "With noise, nothing is exactly zero: find the $f$ that makes $|Af|$ <strong>as small as possible</strong>",
+              "The answer: the last column of $V$ in the SVD $A = U \\Sigma V^\\top$"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "A = \\begin{bmatrix} a_1^\\top \\\\ a_2^\\top \\\\ \\vdots \\\\ a_N^\\top \\end{bmatrix}, \\qquad \\min_{|f| = 1} |A f| \\quad\\Longrightarrow\\quad f = \\text{last column of } V"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "<strong>Counting.</strong> Each match says \"$f$ is perpendicular to my row\". In 9 dimensions, the arrows perpendicular to one given arrow form an 8-dimensional space. A second match, with a different row, cuts that down to 7. Each new match removes one more dimension. After 8 matches, 1 dimension is left: a single line of arrows, all multiples of one $f$. Its length is arbitrary, which is fine, because $F$ and $10F$ draw the same epipolar lines. So 8 matches pin $F$ down completely.",
+              "That needs the 8 rows to be genuinely different, each removing a new dimension. Matrix language: $A$ must have <strong>rank 8</strong>. Matches \"in general position\" do; special arrangements don't. If all 8 come from one flat wall, several rows are secretly combinations of the others, the rank drops, and more than one line of answers is left (step 6's tangent).",
+              "<strong>With noise.</strong> Real matches are a pixel or so off, so with 8 or more of them no $f$ makes every row exactly zero. Instead we ask for the $f$ that comes closest: the smallest $|Af|$. We have to fix the length, $|f| = 1$, or $f = 0$ would win trivially. Since $F$ has no meaningful scale anyway, this costs nothing.",
+              "<strong>The SVD, in one picture.</strong> Any matrix $A$ can be written $A = U \\Sigma V^\\top$. Read it right to left as three moves: $V^\\top$ turns the input so that 9 special perpendicular directions (the columns of $V$) line up with the axes; $\\Sigma$ stretches each axis by its <strong>singular value</strong> $\\sigma_i$ (always $\\geq 0$, sorted largest first); $U$ turns the result into place. So $A$ stretches its $i$-th special input direction $v_i$ by exactly $\\sigma_i$. Feed it $v_9$, the direction with the smallest stretch, and the output is as short as an output can be. That direction is our $f$. If the matches were perfect, $\\sigma_9$ would be exactly 0 and $Av_9 = 0$.",
+              "In code it's two lines: <code>_, _, Vt = np.linalg.svd(A)</code> and <code>F = Vt[-1].reshape(3, 3)</code>. (NumPy hands back $V^\\top$, so the last <em>row</em> of <code>Vt</code> is the last column of $V$.)",
+              "<strong>One honest caveat.</strong> $|Af|$ is an <em>algebraic</em> error: each entry is $p'^\\top F p$, a number with no physical meaning, not a distance in pixels. Minimising it is quick and has a closed-form answer, but it isn't quite \"make the matches fit best\". Steps 5 and 6 deal with the consequences: one makes the algebraic error behave, the other measures in pixels when it really counts."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Why the smallest singular direction minimises |Af|",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Write any unit arrow $f$ as a mix of $V$'s columns: $f = c_1 v_1 + \\cdots + c_9 v_9$, with $c_1^2 + \\cdots + c_9^2 = 1$ (the columns are perpendicular unit arrows, so lengths add like Pythagoras)."
+              },
+              {
+                "kind": "p",
+                "text": "$A$ sends each $v_i$ to $\\sigma_i u_i$, and the $u_i$ are perpendicular unit arrows too. So:"
+              },
+              {
+                "kind": "eq",
+                "tex": "|A f|^2 = \\sigma_1^2 c_1^2 + \\sigma_2^2 c_2^2 + \\cdots + \\sigma_9^2 c_9^2",
+                "source": "ai"
+              },
+              {
+                "kind": "p",
+                "text": "That's a weighted average of the $\\sigma_i^2$, with weights $c_i^2$ that sum to 1. The smallest a weighted average can be is its smallest value, $\\sigma_9^2$, reached by putting all the weight on $c_9$: $f = v_9$. Same answer as \"the eigenvector of $A^\\top A$ with the smallest eigenvalue\", because $A^\\top A = V \\Sigma^2 V^\\top$."
+              },
+              {
+                "kind": "p",
+                "text": "The size of $\\sigma_9$ is a useful by-product: it measures how badly the matches disagree with <em>any</em> $F$. And if $\\sigma_8$ is also near zero, two different directions fit almost equally well, which is the warning sign of the degenerate scenes in step 6's tangent."
+              }
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Seven points are enough, if you use the rank",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "$F$ has 7 degrees of freedom (day 2: 9 entries, minus scale, minus the rank-2 rule), so 7 matches should be enough. The eight-point method doesn't use the rank rule, which is why it needs one extra match."
+              },
+              {
+                "kind": "p",
+                "text": "With 7 matches, $A$ is $7 \\times 9$ and leaves a 2-dimensional family of answers: $F = \\alpha F_1 + (1-\\alpha) F_2$, where $F_1, F_2$ are the last two columns of $V$ reshaped. Now impose the rule: $\\det(\\alpha F_1 + (1-\\alpha) F_2) = 0$. A 3×3 determinant is a cubic in $\\alpha$, so there are 1 or 3 real roots, each a valid $F$. Inside RANSAC all of them are scored and the best is kept."
+              },
+              {
+                "kind": "p",
+                "text": "Day 2's table showed why this matters: at 50% good matches, a 7-point sample needs 588 tries against 1,177 for 8 points."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "act": "Eight-point",
+        "title": "Forcing rank 2",
+        "subtitle": "The answer has to be a real F",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Day 2: a real $F$ has <strong>rank 2</strong>, $\\det F = 0$ (it flattens one direction)",
+              "The least-squares $f$ never knew that, so with noise it comes out rank 3",
+              "Fix: SVD of the 3×3 $F$, set the smallest singular value to 0, multiply back"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "F = U \\begin{bmatrix} \\sigma_1 & & \\\\ & \\sigma_2 & \\\\ & & \\sigma_3 \\end{bmatrix} V^\\top \\quad\\longrightarrow\\quad F_{\\text{rank 2}} = U \\begin{bmatrix} \\sigma_1 & & \\\\ & \\sigma_2 & \\\\ & & 0 \\end{bmatrix} V^\\top"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "Step 3 treated $F$ as nine free numbers. But day 2's tangent on $[t]_\\times$ showed a real $F$ isn't free: it's built from a cross product, so it squashes one direction to zero and has $\\det F = 0$. Eight noisy equations don't know about that rule, and the $F$ they give will break it slightly.",
+              "<strong>Why it matters.</strong> The direction $F$ squashes is the epipole, the point all epipolar lines pass through. Here's the argument: every line $l' = Fp$ is a mix of $F$'s columns. If $F$ has rank 2, its columns all lie in one plane (of 3D homogeneous vectors), and there's exactly one direction $e'$ perpendicular to that plane. So $e' \\cdot l' = 0$ for every line: the point $e'$ lies on all of them. If $F$ has rank 3, its columns fill all of 3D, no such $e'$ exists, and the lines don't share a point.",
+              "<strong>With numbers.</strong> Take a slightly noisy version of our $F$ (scaled up so its entries are near 1):",
+              "$$F_{\\text{noisy}} = \\begin{bmatrix} 0.01 & -0.02 & 0.03 \\\\ 0.02 & 0.01 & 1 \\\\ -0.01 & -1 & 0.02 \\end{bmatrix}$$",
+              "Its singular values are $(1.006,\\ 0.995,\\ 0.0096)$ and $\\det F_{\\text{noisy}} = 0.0096$, not 0. Draw the lines for three points of image 1, $(0.5, 0.25)$, $(-0.3, 0.4)$ and $(0.2, -0.5)$. The first two cross at $(-13.75,\\ 0.64)$. The third line misses that point by $0.58$ units, which is 290 pixels at $f = 500$. Three \"epipolar lines\" with no common epipole.",
+              "Now set $0.0096 \\to 0$ and multiply back. The entries barely change (the largest change is $0.0096$, in the top-left corner), but the new determinant is 0, and the three lines meet at one point, $(-49.5,\\ 1.47)$, exactly. Far to the left, as it should be for a camera that moved mostly sideways.",
+              "Of all rank-2 matrices, this is the one closest to what the matches asked for (tangent below), so we lose as little as possible. Our running example is noise-free, so its $F$ is already rank 2. Nothing to fix there."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Why zeroing the smallest singular value is the closest fix",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "\"Closest\" means the smallest change measured entry by entry: the <strong>Frobenius norm</strong> $\\|F - G\\|^2 = \\sum_{ij} (F_{ij} - G_{ij})^2$, the length of the difference when the 9 entries are treated as one long arrow."
+              },
+              {
+                "kind": "p",
+                "text": "Rotations don't change lengths, and that's true for this length too: $\\|U X V^\\top\\| = \\|X\\|$ for rotations $U, V$. So we can measure everything in the frame where $F$ is the diagonal $\\Sigma = \\text{diag}(\\sigma_1, \\sigma_2, \\sigma_3)$."
+              },
+              {
+                "kind": "p",
+                "text": "In that frame, a rank-2 matrix must lose one dimension. The cheapest dimension to throw away is the one $F$ barely uses: the change costs exactly $\\sigma_3^2$, and you can't do better (this is the <strong>Eckart–Young theorem</strong>). Throwing away $\\sigma_1$ instead would cost $\\sigma_1^2$, about 10,000 times more in our example."
+              },
+              {
+                "kind": "p",
+                "text": "Same idea as PCA and image compression: keep the big singular values, drop the small ones, and the result is the best approximation with that many dimensions."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 5,
+        "act": "Eight-point",
+        "title": "Normalise first",
+        "subtitle": "Hartley's fix for numbers that are too far apart",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Our row had entries from <strong>253,650</strong> down to <strong>1</strong>",
+              "The least-squares fit then mostly listens to the big columns",
+              "Fix: shift pixels so they centre on 0, shrink them so they're about 1 in size",
+              "Solve for $\\hat F$ in those coordinates, then convert back: $F = T'^\\top \\hat F\\, T$"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "\\hat p = T p, \\qquad T = \\begin{bmatrix} s & 0 & -s\\,c_x \\\\ 0 & s & -s\\,c_y \\\\ 0 & 0 & 1 \\end{bmatrix}"
+          },
+          {
+            "kind": "eq",
+            "tex": "\\hat p'^\\top \\hat F \\hat p = 0 \\;\\Longrightarrow\\; (T'p')^\\top \\hat F\\, (Tp) = p'^\\top \\underbrace{T'^\\top \\hat F\\, T}_{F}\\, p = 0"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "<strong>What goes wrong.</strong> Minimising $|Af|$ treats every entry of $f$ alike, but the columns of $A$ are wildly different in size. Change $F_{11}$ by 0.001 and every row's residual moves by about $0.001 \\times 250{,}000 = 250$. Change $F_{33}$ by the same 0.001 and the residuals move by 0.001. So the fit works very hard on the entries next to big columns and hardly cares about the entries next to small ones; those get whatever value soaks up the noise. Yet the loosely pinned entries ($F_{13}, F_{23}, F_{31}, F_{32}, F_{33}$) matter just as much for where the epipolar lines fall in the image. The result: lines that are off by pixels even when the matches are good.",
+              "A second way to see it: the SVD has to tell apart a direction with singular value near zero from the others. When the columns differ by a factor of 250,000, the singular values spread over an enormous range, and a little noise in the big ones is larger than the whole of the small ones. In numerical-analysis words, $A$ is <strong>badly conditioned</strong>.",
+              "<strong>The fix is a change of units.</strong> Move the origin to the middle of the points and shrink so a typical point is about 1 from it. Hartley's recipe: $(c_x, c_y)$ is the centroid of the matched points in that image, and $s$ makes their average distance from it $\\sqrt 2$ (so a typical point is about $(1, 1)$). Each image gets its own $T$. To keep the numbers readable here, use the image centre $(320, 240)$ and $s = 1/320$:",
+              "$(570, 365) \\to (0.78,\\ 0.39)$ and $(445, 365) \\to (0.39,\\ 0.39)$.",
+              "Now the row is $(0.31,\\ 0.15,\\ 0.39,\\ 0.31,\\ 0.15,\\ 0.39,\\ 0.78,\\ 0.39,\\ 1)$. Largest to smallest is about 6 to 1, not 250,000 to 1, and every entry of $\\hat F$ gets a fair say.",
+              "<strong>Converting back.</strong> The equation in new units is $\\hat p'^\\top \\hat F \\hat p = 0$. Substitute $\\hat p = T p$ and $\\hat p' = T' p'$, and use $(T'p')^\\top = p'^\\top T'^\\top$: the middle becomes $T'^\\top \\hat F T$, and that is $F$ in pixel units. It's the same sandwich move as day 2's $F = K^{-\\top} E K^{-1}$. Note that $T$ is a lot like $K^{-1}$: shift by the centre, divide by a size. Normalising is a rough stand-in for knowing the camera. The rank-2 step is done on $\\hat F$, before converting back; multiplying by invertible $T$, $T'$ doesn't change the rank.",
+              "<strong>Does it really matter? An experiment.</strong> Two cameras with $f = 500$, the second one 1 unit to the side, 0.2 forward and turned 10°. Forty random 3D points 4–10 units away, projected, with 1 pixel of noise added. Estimate $F$ from 20 matches, then measure how far the other 20 true points are from their epipolar lines. Over 200 runs, the median error is <strong>1.89 px without normalising and 0.68 px with it</strong>. Same data, same algorithm, three times better, from a change of units.",
+              "Full recipe, then: <strong>normalise → build $A$ → SVD → force rank 2 → un-normalise</strong>. That's the normalised eight-point algorithm."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Why √2?",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "The goal is for every coordinate in a row of $A$ to be roughly 1, including the homogeneous 1. A point at average distance $\\sqrt 2$ from the origin is typically something like $(\\pm 1, \\pm 1)$: both coordinates about 1 in size. Then products like $u'u$ are about 1 too, and all nine columns are on the same footing."
+              },
+              {
+                "kind": "p",
+                "text": "The exact value isn't critical. Anything that makes coordinates of order 1 works about equally well; $\\sqrt 2$ is just the convention from Hartley's paper. What matters is <em>not</em> leaving them in the hundreds."
+              },
+              {
+                "kind": "p",
+                "text": "OpenCV's <code>findFundamentalMat</code> normalises internally, so you don't do it yourself when calling it. You do need to remember it if you write the eight-point algorithm by hand, which is a common first exercise and a common source of mysteriously bad results."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 6,
+        "act": "RANSAC",
+        "title": "The eight-point algorithm inside RANSAC",
+        "subtitle": "Guess from 8, score on all, refit on the winners",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Repeat: pick 8 matches at random → normalised eight-point → a candidate $F$",
+              "Score it: for every match, how many pixels it is from fitting $F$ (Sampson distance)",
+              "Under ~1–3 px → inlier. Keep the $F$ with the <strong>most inliers</strong>",
+              "Finally refit $F$ on <strong>all</strong> its inliers (eight-point again, just with more rows)"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "d_{\\text{Sampson}}^2 = \\frac{(p'^\\top F p)^2}{(Fp)_1^2 + (Fp)_2^2 + (F^\\top p')_1^2 + (F^\\top p')_2^2}"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "Day 2 sketched the loop; now each piece has a name. The guess is steps 3–5 on 8 random matches. The score needs a distance in pixels, because \"within 2 pixels\" should mean the same thing for every match, and the algebraic $p'^\\top F p$ doesn't (it changes if you rescale $F$). The usual choice is the <strong>Sampson distance</strong>: the size of the smallest nudge to <em>both</em> pixels that would make the match fit $F$ exactly, to first order. The tangent below derives the formula.",
+              "<strong>With numbers.</strong> Day 2's bad match was 75 px below its line: $p' = (445, 440)$. Then $p'^\\top F p = 0.002 \\cdot 440 - 0.73 = 0.15$. $Fp = (0, 0.002, -0.73)$ and $F^\\top p' = (0, -0.002, 0.88)$, so the bottom is $0^2 + 0.002^2 + 0^2 + 0.002^2 = 8 \\times 10^{-6}$. That gives $d^2 = 0.0225 / (8 \\times 10^{-6}) \\approx 2813$, so $d \\approx 53$ px. Far over any threshold: outlier ✓. The good match has $p'^\\top F p = 0$, so $d = 0$: inlier ✓.",
+              "Why 53 and not 75? The point-to-line distance in day 2 only moves $p'$. Sampson lets both pixels move, and the cheapest fix is to split the 75 px between them: $p'$ up 37.5, $p$ down 37.5. The total movement is $\\sqrt{37.5^2 + 37.5^2} \\approx 53$. Neither image is treated as the perfect one, which is right: SIFT's error is in both.",
+              "<strong>The refit at the end matters.</strong> The winning $F$ was built from only 8 matches, so it carries their noise. Once RANSAC has separated the good matches from the bad, run the normalised eight-point algorithm on all the inliers (hundreds of rows instead of 8). With many rows, the noise averages out. Some pipelines then iterate: refit, re-score with the new $F$, refit again, until the inlier set stops changing.",
+              "In OpenCV the whole loop is <code>cv2.findFundamentalMat(pts1, pts2, cv2.FM_RANSAC, 3.0, 0.99)</code>: 3 px threshold, 99% confidence. It returns $F$ and a mask, 1 for inliers and 0 for outliers. That mask is what colours the matches green and red."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Where the Sampson formula comes from",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Stack the four pixel coordinates of a match into one point $m = (u, v, u', v')$ in 4D. The function $e(m) = p'^\\top F p$ is zero on the matches that fit $F$ exactly: a curved surface in 4D. The true pixel error is the distance from $m$ to that surface. Computing it exactly is messy (step 14's tangent), so approximate."
+              },
+              {
+                "kind": "p",
+                "text": "Near $m$, replace the curved surface by its tangent plane: $e(m + \\delta) \\approx e(m) + \\nabla e \\cdot \\delta$. We want the smallest $\\delta$ with $e(m) + \\nabla e \\cdot \\delta = 0$. The shortest way to change a linear function by a set amount is to step straight along its gradient, and the step length is"
+              },
+              {
+                "kind": "eq",
+                "tex": "|\\delta| = \\frac{|e(m)|}{|\\nabla e|}",
+                "source": "ai"
+              },
+              {
+                "kind": "p",
+                "text": "It's the same \"divide by the length of the normal\" as day 2's point-to-line distance, one dimension up. Now the gradient. $e = p'^\\top F p = p' \\cdot (Fp)$. Moving $u$ changes $e$ at the rate $p' \\cdot (\\text{first column of } F) = (F^\\top p')_1$; moving $v$ gives $(F^\\top p')_2$. By the same argument the other way round, moving $u'$ and $v'$ gives $(Fp)_1$ and $(Fp)_2$. So $|\\nabla e|^2$ is exactly the bottom of the Sampson formula."
+              },
+              {
+                "kind": "p",
+                "text": "Because it's a first-order approximation, it's very accurate for small errors (the inliers, where accuracy matters) and only rough for large ones (outliers, which get rejected either way)."
+              }
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "How to choose the threshold",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Suppose SIFT's keypoint positions have random errors of about $\\sigma$ pixels in each coordinate (typically $\\sigma \\approx 0.5$–$1$). For a correct match, the Sampson distance then measures noise along one direction, so $d / \\sigma$ behaves like a standard normal number."
+              },
+              {
+                "kind": "p",
+                "text": "To keep 95% of correct matches, accept $d < 1.96\\,\\sigma$; for 99%, $d < 2.58\\,\\sigma$. With $\\sigma = 1$ px, that's a threshold of about 2–2.5 px. OpenCV's default of 3 px is a little generous, which suits large images; 1 px suits small or carefully detected ones."
+              },
+              {
+                "kind": "p",
+                "text": "Too tight, and good matches are thrown away, especially those far from the image centre where lens distortion adds error. Too loose, and wrong matches that happen to be near their line get in. The threshold should also scale with image size: a 4000-px photo with 1-px noise is not the same as a 640-px one."
+              }
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "When F can't be found: flat scenes and a turning camera",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Two common situations break the eight-point algorithm, and both come from the same place: the matches don't carry enough 3D information."
+              },
+              {
+                "kind": "p",
+                "text": "<strong>A flat scene.</strong> Photograph a wall, a floor or a building's façade from two places, and the two images are related by a simpler map, a <strong>homography</strong> $H$ (a 3×3 matrix sending each point straight to its match: $p' \\sim H p$). The eight-point system then has a whole family of solutions, not one: the last few singular values of $A$ (step 3) are all near zero. RANSAC still returns an $F$, but it's one arbitrary member of the family."
+              },
+              {
+                "kind": "p",
+                "text": "<strong>A camera that only turns.</strong> If the camera rotates without moving, $t = 0$, so $E = [t]_\\times R = 0$. There's no baseline, so no triangle, no epipolar plane and no depth. The images are again related by a homography, $H = K R K^{-1}$. This is how panorama stitching works, and it's why you can't get 3D from a panorama."
+              },
+              {
+                "kind": "p",
+                "text": "Real pipelines (COLMAP, ORB-SLAM) fit both $F$ and $H$ to the same matches and compare. If $H$ explains the matches about as well as $F$, the pair is set aside or treated with care, rather than trusted for 3D."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 7,
+        "act": "Essential",
+        "title": "From F back to E",
+        "subtitle": "Undo the camera, then tidy the singular values",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Day 2: $F = K'^{-\\top} E K^{-1}$. Undo it: $E = K'^\\top F K$",
+              "This needs $K$: we need to know the camera (calibration, or a good guess from the photo's metadata)",
+              "A real $E$ has singular values $(\\sigma, \\sigma, 0)$: two equal, one zero",
+              "Noise breaks that, so replace them with $(1, 1, 0)$. The \"1\" also fixes the scale: $|t| = 1$"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "F = K'^{-\\top} E K^{-1} \\;\\Longrightarrow\\; K'^\\top F K = K'^\\top K'^{-\\top}\\, E\\, K^{-1} K = E"
+          },
+          {
+            "kind": "eq",
+            "tex": "E = U \\begin{bmatrix} \\sigma_1 & & \\\\ & \\sigma_2 & \\\\ & & \\sigma_3 \\end{bmatrix} V^\\top \\;\\longrightarrow\\; U \\begin{bmatrix} 1 & & \\\\ & 1 & \\\\ & & 0 \\end{bmatrix} V^\\top"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "Going from $E$ to $F$ wrapped $E$ in $K^{-1}$ on both sides. Going back, multiply by $K'^\\top$ on the left and $K$ on the right: each cancels its inverse, and $E$ is left. This is the point where calibration starts to matter: $F$ could be found from raw pixels alone, but $R$ and $t$ live in real angles and directions, and those need the focal length and centre.",
+              "<strong>With numbers.</strong> RANSAC hands back $F$ at an arbitrary scale. Say it returned $\\begin{bmatrix} 0 & 0 & 0 \\\\ 0 & 0 & 1 \\\\ 0 & -1 & 0 \\end{bmatrix}$ (500 times day 2's $F$). Work out $FK$ first, row by row. Row 2 of $F$ is $(0, 0, 1)$, which picks out row 3 of $K$: $(0, 0, 1)$. Row 3 of $F$ is $(0, -1, 0)$, which picks out minus row 2 of $K$: $(0, -500, -240)$. Then $K^\\top(FK)$: row 2 of $K^\\top$ is $(0, 500, 0)$, giving $500 \\cdot (0, 0, 1) = (0, 0, 500)$. Row 3 of $K^\\top$ is $(320, 240, 1)$, giving $240 \\cdot (0, 0, 1) + (0, -500, -240) = (0, -500, 0)$. So",
+              "$$K^\\top F K = 500 \\times \\begin{bmatrix} 0 & 0 & 0 \\\\ 0 & 0 & 1 \\\\ 0 & -1 & 0 \\end{bmatrix} = 500\\, E$$",
+              "The image centre $(320, 240)$ appeared in the middle and cancelled out, as it should: $E$ doesn't know about pixels.",
+              "<strong>Tidying the singular values.</strong> This matrix has singular values $(500, 500, 0)$: two equal, one zero. That's day 2's $(|t|, |t|, 0)$, with the size set by RANSAC's arbitrary scale. Dividing by 500 gives $(1, 1, 0)$, which is the same as declaring $|t| = 1$. Since the true length of $t$ can never be known from photos (day 2's tangent on scale), we simply pick 1. Every distance we triangulate later will be in units of \"the distance between the two cameras\".",
+              "<strong>With noise</strong>, the singular values come out as, say, $(1.03,\\ 0.96,\\ 0.01)$. Two not quite equal, one not quite zero. No real pair of cameras can produce that (tangent below). Replacing them with $(1, 1, 0)$ gives the nearest matrix that is a genuine $E$. It's step 4's idea with one more rule: not only drop the smallest, but also make the other two equal. Averaging them, $(1.03 + 0.96)/2 \\approx 1$, is the closest way to do that, and the overall scale is ours to choose anyway."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Why two singular values have to be equal",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "$E = [t]_\\times R$. A rotation doesn't stretch anything, so $E$ stretches exactly as much as $[t]_\\times$ does. What does \"cross with $t$\" do to an arrow $v$?"
+              },
+              {
+                "kind": "p",
+                "text": "Split $v$ into a part along $t$ and a part perpendicular to it. The part along $t$ crosses to zero ($t \\times t = 0$). The perpendicular part is turned 90° around $t$ and multiplied by $|t|$ (the cross product's length is $|t||v|\\sin 90° = |t||v|$). So:"
+              },
+              {
+                "kind": "p",
+                "text": "<strong>Cross with $t$ = flatten onto the plane perpendicular to $t$, turn 90° in that plane, scale by $|t|$.</strong> In that plane every direction is stretched by the same $|t|$, so two singular values are $|t|$. Along $t$, everything is squashed, so the third is 0."
+              },
+              {
+                "kind": "p",
+                "text": "That picture of the cross product is also exactly how steps 8 and 9 take $E$ apart: the \"flatten\" is $\\text{diag}(1, 1, 0)$, and the \"turn 90°\" is a matrix called $W$."
+              }
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "No calibration? Guessing K from the photo",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Most photos carry EXIF metadata with the lens's focal length in millimetres. With the sensor's width, also in millimetres, the focal length in pixels is"
+              },
+              {
+                "kind": "eq",
+                "tex": "f_{\\text{px}} = \\frac{f_{\\text{mm}}}{\\text{sensor width}_{\\text{mm}}} \\times \\text{image width}_{\\text{px}}",
+                "source": "ai"
+              },
+              {
+                "kind": "p",
+                "text": "A full-frame sensor is 36 mm wide; a 50 mm lens on a 6000-px-wide image gives $f \\approx 8333$ px. Put the principal point at the image centre and you have a starting $K$. COLMAP does exactly this, and when there's no EXIF it guesses $f \\approx 1.2 \\times$ the larger image side. The guess is then refined in bundle adjustment."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 8,
+        "act": "Decompose",
+        "title": "Two facts about the cross-product matrix",
+        "subtitle": "The building blocks for taking E apart",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "<strong>Fact A</strong>: crossing with the z-axis = flatten onto the xy-plane, then turn 90°: $[e_z]_\\times = W\\,\\text{diag}(1, 1, 0)$",
+              "<strong>Fact B</strong>: cross products turn with the world: $[Ua]_\\times = U\\,[a]_\\times\\,U^\\top$ for any rotation $U$",
+              "Together: any $[t]_\\times$ with $|t| = 1$ is a rotated copy of $[e_z]_\\times$"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "[e_z]_\\times = \\begin{bmatrix} 0 & -1 & 0 \\\\ 1 & 0 & 0 \\\\ 0 & 0 & 0 \\end{bmatrix} = \\underbrace{\\begin{bmatrix} 0 & -1 & 0 \\\\ 1 & 0 & 0 \\\\ 0 & 0 & 1 \\end{bmatrix}}_{W,\\ \\text{turn } 90°}\\underbrace{\\begin{bmatrix} 1 & 0 & 0 \\\\ 0 & 1 & 0 \\\\ 0 & 0 & 0 \\end{bmatrix}}_{\\text{flatten}}"
+          },
+          {
+            "kind": "eq",
+            "tex": "[t]_\\times = [U e_z]_\\times = U\\,[e_z]_\\times\\,U^\\top = U\\, W\\, \\text{diag}(1,1,0)\\, U^\\top \\qquad (u_3 = t)"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "<strong>Fact A.</strong> Build $[t]_\\times$ from day 2's formula with $t = e_z = (0, 0, 1)$: only $t_z = 1$ is non-zero, so the matrix has $-1$ in row 1, column 2 and $+1$ in row 2, column 1, zeros elsewhere. Now check what it does. $(x, y, z) \\mapsto (-y, x, 0)$: the $z$ part is thrown away, and $(x, y)$ is turned 90° anticlockwise to $(-y, x)$. Flatten, then turn. Splitting it into those two matrices and multiplying them back confirms the equation above: $W$ is the 90° turn about $z$, and $\\text{diag}(1, 1, 0)$ is the flatten. (Turning and flattening can be done in either order here, because $W$ leaves $z$ alone: $W\\,\\text{diag}(1,1,0) = \\text{diag}(1,1,0)\\,W$.)",
+              "<strong>Fact B.</strong> Day 2's rotation tangent said rotations keep cross products: $(Ua) \\times (Ub) = U(a \\times b)$. Use it with $b = U^\\top v$ for any $v$: $(Ua) \\times v = U(a \\times U^\\top v)$. In matrix form that reads $[Ua]_\\times v = U [a]_\\times U^\\top v$ for every $v$, so $[Ua]_\\times = U [a]_\\times U^\\top$. In words: to cross with a turned arrow, turn the world back, cross with the original, turn forward again.",
+              "<strong>Putting them together.</strong> Take any unit $t$. Pick a rotation $U$ whose third column is $t$, so $U e_z = t$ (there are many such $U$; any will do). Then Fact B and Fact A give the second equation above. Every cross-product matrix is the z-axis one, seen from a turned viewpoint.",
+              "<strong>With numbers.</strong> For $t = (1, 0, 0)$, take $U = \\begin{bmatrix} 0 & 0 & 1 \\\\ 0 & 1 & 0 \\\\ -1 & 0 & 0 \\end{bmatrix}$, whose third column is $(1, 0, 0)$. Multiplying out $U W \\text{diag}(1,1,0) U^\\top$ gives $\\begin{bmatrix} 0 & 0 & 0 \\\\ 0 & 0 & -1 \\\\ 0 & 1 & 0 \\end{bmatrix}$, which is $[(1,0,0)]_\\times$ from day 2's formula ✓. (Day 2's $E$ was $[(-1,0,0)]_\\times$, minus this. Keep that sign in mind for step 9.)"
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Why turning the world doesn't change the geometry",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Fact B is the matrix version of something obvious: if you and your two arrows all turn together, the arrow perpendicular to both turns with you. Nothing about \"perpendicular to both\" or \"length = area\" depends on which way the axes point."
+              },
+              {
+                "kind": "p",
+                "text": "There's one subtlety: the cross product follows the right-hand rule, so a <em>mirror</em> (a matrix with determinant $-1$) flips its direction: $(Ma) \\times (Mb) = -M(a \\times b)$. That's why step 9 insists $U$ and $V$ be proper rotations with determinant $+1$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 9,
+        "act": "Decompose",
+        "title": "Taking E apart",
+        "subtitle": "The SVD hands back R and t, four ways",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "$E = U\\,\\text{diag}(1, 1, 0)\\,V^\\top$, with $U$ and $V$ rotations",
+              "$t$ is the <strong>last column of $U$</strong>, up to sign: $\\pm u_3$",
+              "$R$ is $U W V^\\top$ or $U W^\\top V^\\top$",
+              "2 signs × 2 rotations = <strong>4 candidate answers</strong>"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "E = [t]_\\times R = U\\, \\text{diag}(1,1,0)\\, \\underbrace{W\\, U^\\top R}_{V^\\top} \\quad\\Longrightarrow\\quad R = U W^\\top V^\\top"
+          },
+          {
+            "kind": "eq",
+            "tex": "R \\in \\{\\, U W V^\\top,\\; U W^\\top V^\\top \\,\\}, \\qquad t \\in \\{\\, +u_3,\\; -u_3 \\,\\}"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "<strong>Derivation.</strong> Suppose $E = [t]_\\times R$ with $|t| = 1$, and choose $U$ with third column $t$. Step 8 gives $[t]_\\times = U\\,\\text{diag}(1,1,0)\\,W\\,U^\\top$ (with the flatten and turn swapped, which step 8 showed is allowed). Multiply by $R$ on the right: $E = U\\,\\text{diag}(1,1,0)\\,(W U^\\top R)$. The bracket is a product of three rotations, so it's a rotation; call it $V^\\top$. Now $E = U\\,\\text{diag}(1,1,0)\\,V^\\top$ is a rotation, a stretch and a rotation: <strong>it's an SVD of $E$</strong>. And $V^\\top = W U^\\top R$ solves to $R = U W^\\top V^\\top$.",
+              "So if we know an SVD of $E$, we can read off $t = u_3$ and $R = U W^\\top V^\\top$. The other two versions come from sign. $E$ is only known up to sign, because $x'^\\top E x = 0$ and $x'^\\top(-E)x = 0$ say the same thing. Run the same derivation with $-t$: $[-t]_\\times = -U\\,\\text{diag}(1,1,0)\\,W\\,U^\\top$, and since $-W$ and $W^\\top$ agree on the flattened part (both send $(x, y) \\to (y, -x)$), that's $U\\,\\text{diag}(1,1,0)\\,W^\\top U^\\top$, giving $R = U W V^\\top$. Two signs of $t$, two rotations. Four candidates.",
+              "<strong>Why $t$ is $u_3$, in plain words.</strong> Everything $E$ outputs is a cross product with $t$, so it's perpendicular to $t$. In SVD terms, $E$'s outputs are mixes of $u_1$ and $u_2$ only (the third singular value is 0). So $t$ is the one direction perpendicular to all outputs: $u_3$. You could find it without any SVD as the vector with $E^\\top t = 0$, the left null vector.",
+              "<strong>With numbers.</strong> Our $E$ (after step 7) is $\\begin{bmatrix} 0 & 0 & 0 \\\\ 0 & 0 & 1 \\\\ 0 & -1 & 0 \\end{bmatrix}$. One valid SVD is",
+              "$$U = \\begin{bmatrix} 0 & 0 & 1 \\\\ 0 & 1 & 0 \\\\ -1 & 0 & 0 \\end{bmatrix}, \\qquad V = \\begin{bmatrix} 0 & 0 & 1 \\\\ 1 & 0 & 0 \\\\ 0 & 1 & 0 \\end{bmatrix}$$",
+              "Check by multiplying: $V^\\top$ sends $(x, y, z)$ to $(y, z, x)$; $\\text{diag}(1,1,0)$ keeps $(y, z, 0)$; $U$ sends that to $(0,\\ z,\\ -y)$. And $E(x, y, z) = (0, z, -y)$ ✓. Both $U$ and $V$ have determinant $+1$.",
+              "The last column of $U$ is $u_3 = (1, 0, 0)$: the baseline is along the x-axis, the sideways camera from day 2 ✓. The two rotations come out as $U W V^\\top = I$ (no turn) and $U W^\\top V^\\top = \\text{diag}(1, -1, -1)$, a 180° turn about the x-axis. So the four candidates are $(I,\\ \\pm(1,0,0))$ and $(\\text{diag}(1,-1,-1),\\ \\pm(1,0,0))$. All four satisfy $x'^\\top E x = 0$ for every match. The algebra alone can't choose."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Practical details: determinants, and an SVD that isn't unique",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "<strong>Determinants.</strong> An SVD routine may return $U$ or $V$ with determinant $-1$ (a mirror, not a rotation). Then $UWV^\\top$ would be a mirror too, which no camera can do. The fix is to flip the sign of the offending matrix: since the third singular value is 0, flipping the sign of its third column doesn't change $E$, and flipping the whole matrix changes $E$ only by sign, which we can't see anyway. Libraries do this quietly."
+              },
+              {
+                "kind": "p",
+                "text": "<strong>Not unique.</strong> When two singular values are equal, the SVD isn't unique: any turn of $u_1, u_2$ within their plane (with a matching turn of $v_1, v_2$) is also valid. Our $U$ and $V$ above were one choice among infinitely many. It doesn't matter: $u_3$ is fixed (up to sign), and the extra freedom cancels inside $UWV^\\top$ because $W$ commutes with turns about $z$. Every valid SVD gives the same four candidates."
+              },
+              {
+                "kind": "p",
+                "text": "<strong>The twisted pair.</strong> The two rotations always differ by a 180° turn about the baseline: $UW^\\top V^\\top = (UW^\\top W^\\top U^\\top)(UWV^\\top)$, and $W^\\top W^\\top$ is a half-turn about $z$, which $U$ carries to a half-turn about $u_3 = t$. In our numbers: $\\text{diag}(1, -1, -1)$ is exactly a half-turn about x. It's the same pair of photos taken with camera 2 spun half a turn around the line joining the cameras."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 10,
+        "act": "Decompose",
+        "title": "Four answers, one real",
+        "subtitle": "The scene has to be in front of the cameras",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "For each candidate, find the 3D point the match implies (triangulation, steps 11–13)",
+              "Check its depth in both cameras: $Z > 0$ and $Z' > 0$",
+              "Only one candidate puts the point <strong>in front of both</strong>",
+              "Use many matches and take a vote, in case a few are noisy"
+            ]
+          },
+          {
+            "kind": "figure",
+            "svg": "<svg viewBox=\"0 0 620 360\" role=\"img\" aria-label=\"Four top-down sketches of the two cameras. Only in the first does the triangulated point sit in front of both cameras. In the second it is behind both; in the third and fourth camera 2 faces backwards and the point is behind one of the cameras.\"><g transform=\"translate(0,0)\"><rect x=\"4\" y=\"4\" width=\"302\" height=\"172\" rx=\"6\" class=\"patch\"/><text x=\"16\" y=\"24\" class=\"fig-label accent\">R = I, t = (−1, 0, 0)</text><line x1=\"130\" y1=\"100\" x2=\"220\" y2=\"100\" class=\"zero\"/><line x1=\"130\" y1=\"100\" x2=\"180\" y2=\"34\" class=\"ray\"/><line x1=\"220\" y1=\"100\" x2=\"180\" y2=\"34\" class=\"ray\"/><line x1=\"115\" y1=\"86\" x2=\"145\" y2=\"86\" class=\"ink\"/><circle cx=\"130\" cy=\"100\" r=\"6\" class=\"centre\"/><line x1=\"205\" y1=\"86\" x2=\"235\" y2=\"86\" class=\"ink\"/><circle cx=\"220\" cy=\"100\" r=\"6\" class=\"centre\"/><text x=\"130\" y=\"126\" class=\"fig-label mid\">1</text><text x=\"220\" y=\"126\" class=\"fig-label mid\">2</text><circle cx=\"180\" cy=\"34\" r=\"5\" class=\"pt\"/><text x=\"190\" y=\"38\" class=\"fig-label\">P</text><text x=\"290\" y=\"166\" class=\"fig-label accent\" text-anchor=\"end\">in front of both ✓</text></g><g transform=\"translate(310,0)\"><rect x=\"4\" y=\"4\" width=\"302\" height=\"172\" rx=\"6\" class=\"patch\"/><text x=\"16\" y=\"24\" class=\"fig-label\">R = I, t = (1, 0, 0)</text><line x1=\"130\" y1=\"100\" x2=\"40\" y2=\"100\" class=\"zero\"/><line x1=\"130\" y1=\"100\" x2=\"95\" y2=\"152\" class=\"faint\"/><line x1=\"40\" y1=\"100\" x2=\"95\" y2=\"152\" class=\"faint\"/><line x1=\"115\" y1=\"86\" x2=\"145\" y2=\"86\" class=\"ink\"/><circle cx=\"130\" cy=\"100\" r=\"6\" class=\"centre\"/><line x1=\"25\" y1=\"86\" x2=\"55\" y2=\"86\" class=\"ink\"/><circle cx=\"40\" cy=\"100\" r=\"6\" class=\"centre\"/><text x=\"130\" y=\"126\" class=\"fig-label mid\">1</text><text x=\"40\" y=\"126\" class=\"fig-label mid\">2</text><circle cx=\"95\" cy=\"152\" r=\"5\" class=\"pt\"/><text x=\"105\" y=\"156\" class=\"fig-label\">P</text><text x=\"290\" y=\"166\" class=\"fig-label\" text-anchor=\"end\">behind both</text></g><g transform=\"translate(0,180)\"><rect x=\"4\" y=\"4\" width=\"302\" height=\"172\" rx=\"6\" class=\"patch\"/><text x=\"16\" y=\"24\" class=\"fig-label\">R twisted, t = (−1, 0, 0)</text><line x1=\"130\" y1=\"100\" x2=\"220\" y2=\"100\" class=\"zero\"/><line x1=\"130\" y1=\"100\" x2=\"165\" y2=\"48\" class=\"ray\"/><line x1=\"220\" y1=\"100\" x2=\"165\" y2=\"48\" class=\"faint\"/><line x1=\"115\" y1=\"86\" x2=\"145\" y2=\"86\" class=\"ink\"/><circle cx=\"130\" cy=\"100\" r=\"6\" class=\"centre\"/><line x1=\"205\" y1=\"114\" x2=\"235\" y2=\"114\" class=\"ink\"/><circle cx=\"220\" cy=\"100\" r=\"6\" class=\"centre\"/><text x=\"130\" y=\"126\" class=\"fig-label mid\">1</text><text x=\"220\" y=\"84\" class=\"fig-label mid\">2</text><circle cx=\"165\" cy=\"48\" r=\"5\" class=\"pt\"/><text x=\"175\" y=\"52\" class=\"fig-label\">P</text><text x=\"290\" y=\"166\" class=\"fig-label\" text-anchor=\"end\">behind camera 2</text></g><g transform=\"translate(310,180)\"><rect x=\"4\" y=\"4\" width=\"302\" height=\"172\" rx=\"6\" class=\"patch\"/><text x=\"16\" y=\"24\" class=\"fig-label\">R twisted, t = (1, 0, 0)</text><line x1=\"130\" y1=\"100\" x2=\"40\" y2=\"100\" class=\"zero\"/><line x1=\"130\" y1=\"100\" x2=\"100\" y2=\"150\" class=\"faint\"/><line x1=\"40\" y1=\"100\" x2=\"100\" y2=\"150\" class=\"ray\"/><line x1=\"115\" y1=\"86\" x2=\"145\" y2=\"86\" class=\"ink\"/><circle cx=\"130\" cy=\"100\" r=\"6\" class=\"centre\"/><line x1=\"25\" y1=\"114\" x2=\"55\" y2=\"114\" class=\"ink\"/><circle cx=\"40\" cy=\"100\" r=\"6\" class=\"centre\"/><text x=\"130\" y=\"126\" class=\"fig-label mid\">1</text><text x=\"40\" y=\"84\" class=\"fig-label mid\">2</text><circle cx=\"100\" cy=\"150\" r=\"5\" class=\"pt\"/><text x=\"110\" y=\"154\" class=\"fig-label\">P</text><text x=\"290\" y=\"166\" class=\"fig-label\" text-anchor=\"end\">behind camera 1</text></g></svg>",
+            "caption": "Seen from above. Camera 1 stays put; the sign of $t$ puts camera 2 to its right or left, and the bar marks which way each camera faces. Solid rays point the way the camera faces; dashed rays go backwards. Only the first sketch has the point in front of both cameras."
+          },
+          {
+            "kind": "table",
+            "headers": [
+              "Candidate",
+              "Depth in camera 1, $Z$",
+              "Depth in camera 2, $Z'$",
+              "Verdict"
+            ],
+            "rows": [
+              [
+                "$R = I$, $t = (-1, 0, 0)$",
+                "$4$",
+                "$4$",
+                "in front of both ✓"
+              ],
+              [
+                "$R = I$, $t = (1, 0, 0)$",
+                "$-4$",
+                "$-4$",
+                "behind both"
+              ],
+              [
+                "twisted, $t = (-1, 0, 0)$",
+                "$1.33$",
+                "$-1.33$",
+                "behind camera 2"
+              ],
+              [
+                "twisted, $t = (1, 0, 0)$",
+                "$-1.33$",
+                "$1.33$",
+                "behind camera 1"
+              ]
+            ]
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "A camera only sees what's in front of it. If a candidate $(R, t)$ says a matched point is 4 units <em>behind</em> camera 1, that candidate is wrong, however well it satisfies $x'^\\top E x = 0$. The equation can't notice, because it came from the epipolar plane, and the plane extends behind the cameras as well as in front. This check is called <strong>cheirality</strong> (from the Greek for \"hand\", as in handedness).",
+              "<strong>How the depths are computed.</strong> Triangulate the match with each candidate (step 13 shows how), giving a point $X$ in camera 1's coordinates. Its depth in camera 1 is its third coordinate, $Z = X_3$. To get the depth in camera 2, move it into camera 2's coordinates first, exactly as in day 2 step 4: $Z' = (RX + t)_3$.",
+              "<strong>Reading the table.</strong> Flipping the sign of $t$ moves camera 2 to the other side of camera 1. The two rays now point away from each other, and the only place their lines cross is behind both cameras: both depths flip sign, $4 \\to -4$. Using the twisted rotation spins camera 2 to face backwards, so a point in front of one camera is behind the other: the two depths disagree in sign. The first row is the only one with two positive numbers.",
+              "Our match picks out $R = I$ and $t = (-1, 0, 0)$, with the point at depth 4 in both cameras. That's exactly day 2's setup, recovered from nothing but pixel matches, $K$, and the matrix RANSAC found ✓. (In step 8 we noted day 2's $E$ was minus the one built from $u_3$; that sign is exactly why the answer is $t = -u_3$.)",
+              "With real matches, one noisy match near the edge of the scene can vote wrongly, so the check is run on all inliers and the candidate with the most points in front of both cameras wins. OpenCV's <code>cv2.recoverPose(E, pts1, pts2, K)</code> does the decomposition and the vote together, and returns $R$, $t$ and a mask of the points that passed."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Why exactly one candidate can pass",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Take the true $(R, t)$, and a point that really is in front of both cameras: $Z > 0$, $Z' > 0$. Now look at what each wrong candidate does to that same match."
+              },
+              {
+                "kind": "p",
+                "text": "<strong>Flip $t$ only.</strong> Both rays are unchanged in direction, but the baseline is reversed. The ray equations are $X = Z x$ and $X = $ camera 2's centre $+ Z' (\\ldots)$; reversing the baseline is the same as scaling the whole scene by $-1$, which negates both depths. So both are negative."
+              },
+              {
+                "kind": "p",
+                "text": "<strong>Twist $R$.</strong> A half-turn about the baseline reverses camera 2's viewing direction, but keeps the epipolar plane (it contains the baseline, the axis of the turn). The rays still meet, but now camera 2 is looking away from the meeting point: exactly one of the depths is negative."
+              },
+              {
+                "kind": "p",
+                "text": "So for any point that's genuinely in front of both cameras, the true candidate gives $(+, +)$ and the three others give $(-, -)$, $(+, -)$ and $(-, +)$. Exactly one passes, for every good point. The vote only matters because of noise and points very close to the baseline."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 11,
+        "act": "Triangulation",
+        "title": "Two rays that should meet",
+        "subtitle": "The idea, solved by hand",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Each pixel is a <strong>ray</strong>: every 3D point that could have made it",
+              "Camera 1's ray: $X = s\\,d_1$, from the origin along $d_1 = x$",
+              "Camera 2's ray: $X = C_2 + u\\,d_2$, from camera 2's centre along $d_2 = R^\\top x'$",
+              "With perfect data the rays cross: solve for $s$ and $u$, and the crossing is the point"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "s\\,d_1 = C_2 + u\\,d_2, \\qquad C_2 = -R^\\top t"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "Day 2 step 3 said a single photo throws depth away: the pixel $x$ only tells you the point is somewhere on the ray $X = Z x$, with $Z$ unknown. A second photo gives a second ray. Two lines in space generally don't meet, but these two must, because they both pass through the real point. Where they cross is the answer. That's all triangulation is: <strong>surveying</strong>. Measure the direction to a landmark from two known places, and the landmark is where the lines cross.",
+              "<strong>Writing camera 2's ray in camera 1's coordinates.</strong> Its starting point is camera 2's centre. Day 2 step 4 worked out where that sits: $C_2 = -R^\\top t$. Its direction is the pixel $x'$, but $x'$ is in camera 2's axes, so it must be turned back into camera 1's: $d_2 = R^\\top x'$ (a direction, so it's turned and not shifted, as in day 2 step 5).",
+              "<strong>With numbers.</strong> $R = I$, $t = (-1, 0, 0)$, so $C_2 = (1, 0, 0)$ and $d_2 = x' = (0.25, 0.25, 1)$. With $d_1 = x = (0.5, 0.25, 1)$, the equation $s\\,d_1 = C_2 + u\\,d_2$ is three equations:",
+              "$$0.5s = 1 + 0.25u, \\qquad 0.25s = 0.25u, \\qquad s = u$$",
+              "The last two both say $s = u$. Put that in the first: $0.5s = 1 + 0.25s$, so $s = 4$. The point is $s\\,d_1 = 4 \\times (0.5, 0.25, 1) = (2, 1, 4)$ ✓. And $s$ is the depth: $Z = 4$, matching day 2 step 10's disparity calculation.",
+              "Notice the count: 3 equations, 2 unknowns ($s$ and $u$). One equation too many. With perfect data the extra equation is automatically satisfied (here, the second and third agreed). That spare equation is the epipolar constraint in disguise: the rays can only meet if the match sits on its epipolar line.",
+              "<strong>With noise, the rays miss.</strong> Move the match 5 px down in image 2: $x' = (0.25,\\ 0.26)$. Now the second equation says $0.25s = 0.26u$ while the third says $s = u$. Both can't hold. The two rays pass each other in 3D without touching, and \"where they cross\" no longer has an answer. The next three steps are three ways to decide what the answer should be."
+            ]
+          },
+          {
+            "kind": "figure",
+            "svg": "<svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"Two rays from two cameras that pass close to each other without meeting. The shortest segment joining them is drawn, with its midpoint marked.\"><line x1=\"120\" y1=\"220\" x2=\"300\" y2=\"40\" class=\"ray\"/><line x1=\"420\" y1=\"220\" x2=\"270\" y2=\"30\" class=\"ray\"/><circle cx=\"120\" cy=\"220\" r=\"6\" class=\"centre\"/><text x=\"120\" y=\"244\" class=\"fig-label mid\">camera 1</text><circle cx=\"420\" cy=\"220\" r=\"6\" class=\"centre\"/><text x=\"420\" y=\"244\" class=\"fig-label mid\">camera 2</text><line x1=\"120\" y1=\"220\" x2=\"420\" y2=\"220\" class=\"zero\"/><circle cx=\"268\" cy=\"72\" r=\"5\" class=\"pt\"/><text x=\"256\" y=\"76\" class=\"fig-label\" text-anchor=\"end\">Q₁</text><circle cx=\"294\" cy=\"60\" r=\"5\" class=\"pt\"/><text x=\"306\" y=\"62\" class=\"fig-label\">Q₂</text><line x1=\"268\" y1=\"72\" x2=\"294\" y2=\"60\" class=\"ink\"/><circle cx=\"281\" cy=\"66\" r=\"4\" class=\"hollow\"/><text x=\"330\" y=\"100\" class=\"fig-label accent\">midpoint</text><line x1=\"326\" y1=\"95\" x2=\"286\" y2=\"70\" class=\"axis\"/><text x=\"590\" y=\"40\" class=\"fig-label\" text-anchor=\"end\">the rays pass each other in 3D</text><text x=\"590\" y=\"58\" class=\"fig-label\" text-anchor=\"end\">(the gap is out of the page)</text></svg>",
+            "caption": "With noisy pixels the two rays pass each other. The closest points on each ray, $Q_1$ and $Q_2$, are joined by the shortest segment between the rays."
+          }
+        ]
+      },
+      {
+        "n": 12,
+        "act": "Triangulation",
+        "title": "The midpoint method",
+        "subtitle": "Halfway along the shortest gap",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Find the point $Q_1$ on ray 1 and $Q_2$ on ray 2 that are closest to each other",
+              "The segment $Q_1 Q_2$ is <strong>perpendicular to both rays</strong>: two dot products = 0",
+              "Two linear equations in $s$ and $u$. Answer: the midpoint of $Q_1 Q_2$"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "(Q_1 - Q_2)\\cdot d_1 = 0, \\quad (Q_1 - Q_2)\\cdot d_2 = 0, \\qquad Q_1 = s\\,d_1,\\ Q_2 = C_2 + u\\,d_2"
+          },
+          {
+            "kind": "eq",
+            "tex": "\\begin{bmatrix} d_1\\cdot d_1 & -d_1\\cdot d_2 \\\\ d_1\\cdot d_2 & -d_2\\cdot d_2 \\end{bmatrix} \\begin{bmatrix} s \\\\ u \\end{bmatrix} = \\begin{bmatrix} C_2\\cdot d_1 \\\\ C_2\\cdot d_2 \\end{bmatrix}"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "<strong>Why perpendicular.</strong> Slide $Q_1$ a little along ray 1. If the segment $Q_1 Q_2$ weren't at right angles to ray 1, sliding one way would shorten it, so it wasn't the shortest. At the shortest gap, it must be at right angles to both rays. Each right angle is a dot product equal to zero (day 2 step 2). Two equations, two unknowns $s$ and $u$.",
+              "Expand $(s\\,d_1 - C_2 - u\\,d_2)\\cdot d_1 = 0$ and $(s\\,d_1 - C_2 - u\\,d_2)\\cdot d_2 = 0$, move the $C_2$ terms to the right, and you get the 2×2 system above.",
+              "<strong>With numbers.</strong> $d_1 = (0.5, 0.25, 1)$, $d_2 = (0.25, 0.26, 1)$, $C_2 = (1, 0, 0)$. The dot products are $d_1\\cdot d_1 = 1.3125$, $d_1 \\cdot d_2 = 1.19$, $d_2 \\cdot d_2 = 1.1301$, $C_2 \\cdot d_1 = 0.5$, $C_2 \\cdot d_2 = 0.25$. Solving gives $s = 3.984$, $u = 3.974$, so",
+              "$$Q_1 = (1.992,\\ 0.996,\\ 3.984), \\qquad Q_2 = (1.994,\\ 1.033,\\ 3.974)$$",
+              "The gap is 0.039 units, mostly in $y$: the 5-px error was vertical. The midpoint is $(1.993,\\ 1.015,\\ 3.979)$. Close to the truth $(2, 1, 4)$, but not perfect.",
+              "<strong>What's wrong with it.</strong> The midpoint treats distances in 3D as the thing to balance. But the errors were made in the images, in pixels. A small pixel error on a far point moves its ray a lot in 3D, on a near point very little, and the midpoint doesn't know which is which. It also needs camera centres and real distances to make sense, so it breaks if the cameras are only known up to a projective distortion (the $F$-without-$K$ case). It's simple, intuitive and decent for a first guess. Step 14 measures how good it is."
+            ]
+          }
+        ]
+      },
+      {
+        "n": 13,
+        "act": "Triangulation",
+        "title": "Linear triangulation (DLT)",
+        "subtitle": "Two rays, one point, the SVD once more",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Write each camera as a 3×4 matrix: $C_1 = [I \\mid 0]$, $C_2 = [R \\mid t]$",
+              "Unknown point in homogeneous form: $\\mathbf X = (X, Y, Z, 1)$",
+              "\"$x$ is the image of $\\mathbf X$\" gives <strong>2 linear equations per camera</strong>, 4 in all",
+              "Solve $B\\mathbf X = 0$ with the SVD, exactly like step 3"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "u = \\frac{c^1 \\cdot \\mathbf X}{c^3 \\cdot \\mathbf X} \\;\\Longrightarrow\\; u\\,(c^3 \\cdot \\mathbf X) - c^1 \\cdot \\mathbf X = 0, \\qquad v\\,(c^3 \\cdot \\mathbf X) - c^2 \\cdot \\mathbf X = 0"
+          },
+          {
+            "kind": "eq",
+            "tex": "B = \\begin{bmatrix} u\\,c_1^{3\\top} - c_1^{1\\top} \\\\ v\\,c_1^{3\\top} - c_1^{2\\top} \\\\ u'\\,c_2^{3\\top} - c_2^{1\\top} \\\\ v'\\,c_2^{3\\top} - c_2^{2\\top} \\end{bmatrix}, \\qquad B\\, \\mathbf X = 0"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "<strong>The camera as one matrix.</strong> Day 2 projected a point in two moves: into the camera's frame ($RX + t$), then divide by depth. Put $X$ in homogeneous form, $\\mathbf X = (X, Y, Z, 1)$, and the first move is one matrix multiplication: $[R \\mid t]\\,\\mathbf X = RX + t\\cdot 1$. The 3×4 matrix $[R \\mid t]$ is the <strong>camera matrix</strong> (in normalised coordinates; for pixels it's $K[R \\mid t]$). Call its rows $c^1, c^2, c^3$. Then the image point is $u = (c^1 \\cdot \\mathbf X)/(c^3 \\cdot \\mathbf X)$ and $v = (c^2\\cdot \\mathbf X)/(c^3 \\cdot \\mathbf X)$: the divide-by-depth, since $c^3\\cdot\\mathbf X$ is the depth.",
+              "<strong>Making it linear.</strong> The division is the problem; $\\mathbf X$ is on the top and the bottom. Multiply across by $c^3 \\cdot \\mathbf X$, and both equations become linear in $\\mathbf X$, exactly like step 2 made $p'^\\top F p = 0$ linear in $F$. Each camera gives two such rows; two cameras give four. Stack them into $B$ (4×4).",
+              "<strong>Solving.</strong> $\\mathbf X$ is homogeneous, so like $f$ in step 3 it's only defined up to scale, and $B\\mathbf X = 0$ is solved the same way: the last column of $V$ in the SVD of $B$. Then divide by the fourth entry to get $(X, Y, Z, 1)$. Four equations for three real unknowns: once again one equation spare, and again it's the epipolar constraint.",
+              "<strong>With numbers, perfect data.</strong> $x = (0.5, 0.25)$, $x' = (0.25, 0.25)$, $C_1 = [I \\mid 0]$, $C_2 = [I \\mid (-1, 0, 0)]$. $C_1$'s rows are $(1,0,0,0)$, $(0,1,0,0)$, $(0,0,1,0)$; $C_2$'s are $(1,0,0,-1)$, $(0,1,0,0)$, $(0,0,1,0)$. Row 1 of $B$ is $0.5 \\cdot (0,0,1,0) - (1,0,0,0) = (-1, 0, 0.5, 0)$, and so on:",
+              "$$B = \\begin{bmatrix} -1 & 0 & 0.5 & 0 \\\\ 0 & -1 & 0.25 & 0 \\\\ -1 & 0 & 0.25 & 1 \\\\ 0 & -1 & 0.25 & 0 \\end{bmatrix}$$",
+              "Try $\\mathbf X = (2, 1, 4, 1)$: row 1, $-2 + 2 = 0$; row 2, $-1 + 1 = 0$; row 3, $-2 + 1 + 1 = 0$; row 4, $-1 + 1 = 0$ ✓. The point is back at $(2, 1, 4)$.",
+              "<strong>With the 5-px error.</strong> Row 4 becomes $(0, -1, 0.26, 0)$. The SVD of $B$ gives singular values $(1.70,\\ 1.45,\\ 0.67,\\ 0.006)$; the tiny last one says \"almost consistent\". Its direction is $(0.426,\\ 0.217,\\ 0.852,\\ 0.213)$; divide by $0.213$: $\\mathbf X = (2.000,\\ 1.020,\\ 3.999)$. Compare with the midpoint's $(1.993,\\ 1.015,\\ 3.979)$: the depth is much closer to 4."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "The same rows from a cross product",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Another way to say \"$x$ is the image of $\\mathbf X$\": the arrow $C\\mathbf X$ points the same way as $x = (u, v, 1)$. Parallel arrows have zero cross product, so $x \\times (C\\mathbf X) = 0$. Writing out the three parts:"
+              },
+              {
+                "kind": "eq",
+                "tex": "x \\times (C\\mathbf X) = \\begin{bmatrix} v\\,(c^3\\cdot\\mathbf X) - c^2\\cdot\\mathbf X \\\\ c^1\\cdot\\mathbf X - u\\,(c^3\\cdot\\mathbf X) \\\\ u\\,(c^2\\cdot\\mathbf X) - v\\,(c^1\\cdot\\mathbf X) \\end{bmatrix} = 0",
+                "source": "ai"
+              },
+              {
+                "kind": "p",
+                "text": "The first two are our rows (up to sign). The third is a mix of the first two ($u$ times the first plus $v$ times the second, negated), so it adds nothing: two independent equations per camera, as counted. This form is the one in most textbooks, and it's why the method is called the <strong>Direct Linear Transform</strong>: the same cross-product trick estimates homographies and camera matrices."
+              }
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Why the fourth coordinate: points at infinity",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Why solve for four numbers $(X, Y, Z, W)$ instead of three? Because sometimes the honest answer is \"infinitely far away\"."
+              },
+              {
+                "kind": "p",
+                "text": "Give both cameras the same pixel, $x = x' = (0.5, 0.25)$. The two rays are parallel: they meet only at infinity, like railway tracks. The SVD of $B$ then returns $(0.436,\\ 0.218,\\ 0.873,\\ 0)$, which is $(0.5, 0.25, 1)$ scaled, with $W = 0$. That's a <strong>point at infinity</strong> in the direction $(0.5, 0.25, 1)$: day 2's homogeneous coordinates, one dimension up. Stars, distant mountains and the horizon all triangulate like this."
+              },
+              {
+                "kind": "p",
+                "text": "A three-number formulation would blow up, dividing by something near zero. The four-number one just returns a small $W$, and you decide what to do with it, usually: drop the point, because its depth can't be measured (step 15)."
+              }
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "What the DLT actually minimises",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Like the eight-point algorithm, the DLT minimises an algebraic error, $|B\\mathbf X|$. What is one entry of $B\\mathbf X$, physically? Row 1 is $u\\,(c^3\\cdot\\mathbf X) - c^1\\cdot\\mathbf X$. Write $\\hat u = (c^1\\cdot\\mathbf X)/(c^3\\cdot\\mathbf X)$ for where the point really projects. Then"
+              },
+              {
+                "kind": "eq",
+                "tex": "u\\,(c^3\\cdot\\mathbf X) - c^1\\cdot\\mathbf X = (c^3\\cdot\\mathbf X)\\,(u - \\hat u) = \\text{depth} \\times \\text{image error}",
+                "source": "ai"
+              },
+              {
+                "kind": "p",
+                "text": "Check with our numbers: the true point $(2, 1, 4, 1)$ in the noisy $B$ gives residuals $(0, 0, 0, 0.04)$. Row 4's image error is $0.26 - 0.25 = 0.01$, and the depth is 4: $4 \\times 0.01 = 0.04$ ✓."
+              },
+              {
+                "kind": "p",
+                "text": "So the DLT weighs each image's error by the depth in that camera. When the depths are similar (as here, 4 and 4), that's a constant factor and the answer is nearly the best possible. When one camera is much closer than the other, the far camera's errors get more weight than they deserve. It's also why the scale of $\\mathbf X$ in the SVD matters: normalise the homogeneous point so $|\\mathbf X| = 1$, as the SVD does, and the result doesn't depend on how the coordinates were scaled, but it still isn't a pixel distance."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 14,
+        "act": "Triangulation",
+        "title": "Reprojection error: the honest measure",
+        "subtitle": "Score a 3D point by the pixels it predicts",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Take a candidate 3D point, project it into both images",
+              "Compare with the pixels SIFT actually measured",
+              "<strong>Reprojection error</strong> = how far off, in pixels, summed over both images",
+              "The best point is the one with the smallest reprojection error"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "\\text{err}(X)^2 = \\big|\\,x - \\pi(C_1 \\mathbf X)\\,\\big|^2 + \\big|\\,x' - \\pi(C_2 \\mathbf X)\\,\\big|^2, \\qquad \\pi(a, b, c) = (a/c,\\ b/c)"
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "The errors happened in the images: SIFT put a keypoint a pixel or two from where it should be. So the fair way to judge a 3D point is to ask the cameras: if the point were here, where would each camera have seen it, and how far is that from where it actually saw it? That distance, in pixels, is the <strong>reprojection error</strong>. It doesn't depend on how the world coordinates were scaled, it doesn't favour near or far cameras, and if pixel noise is random and Gaussian, the point that minimises it is the most likely one (maximum likelihood).",
+              "<strong>With numbers</strong>, for the 5-px error case (all in pixels, $f = 500$):"
+            ]
+          },
+          {
+            "kind": "table",
+            "headers": [
+              "Method",
+              "Point",
+              "Error in image 1",
+              "Error in image 2",
+              "Total"
+            ],
+            "rows": [
+              [
+                "Midpoint (step 12)",
+                "$(1.993,\\ 1.015,\\ 3.979)$",
+                "$(0.41,\\ 2.50)$",
+                "$(-0.25,\\ -2.50)$",
+                "3.568 px"
+              ],
+              [
+                "DLT (step 13)",
+                "$(2.000,\\ 1.020,\\ 3.999)$",
+                "$(0.01,\\ 2.50)$",
+                "$(0.00,\\ -2.50)$",
+                "3.5356 px"
+              ],
+              [
+                "Best possible",
+                "$(2,\\ 1.02,\\ 4)$",
+                "$(0,\\ 2.5)$",
+                "$(0,\\ -2.5)$",
+                "3.5355 px"
+              ]
+            ]
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "<strong>Reading the table.</strong> The best point splits the 5-px disagreement evenly: it sits 2.5 px off in each image, in opposite directions, and $\\sqrt{2.5^2 + 2.5^2} = 3.5355$. That's exactly step 6's Sampson idea: when both measurements are equally trustworthy, blame them equally. The point itself moved only in $y$, from 1 to 1.02, halfway between what the two cameras each claimed.",
+              "The DLT is within 0.0001 px of the best, because the two depths here are equal (both 4), so its depth-weighting (step 13's tangent) treats both images alike. The midpoint is noticeably worse: it also pulls the depth to 3.979 and adds a sideways error of 0.4 px that the data never asked for.",
+              "<strong>In practice</strong>, the recipe is: DLT for a quick, good starting point, then a few steps of an iterative solver (Gauss–Newton or Levenberg–Marquardt) that nudge $X$ to reduce the reprojection error. Starting from the DLT answer, it converges in two or three steps. Doing that for <em>all</em> points and <em>all</em> cameras at once is bundle adjustment, stage 6 of the pipeline. Reprojection error is the quantity it minimises too."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Optimal triangulation: the degree-6 polynomial",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "For two views there's an exact answer, from Hartley and Sturm (1997). Change the question from \"which 3D point?\" to \"which corrected pair of pixels $(\\hat x, \\hat x')$?\": the closest pair to the measured one that satisfies the epipolar constraint exactly. Once the corrected pixels fit, their rays meet exactly, and any method gives the same point."
+              },
+              {
+                "kind": "p",
+                "text": "Corrected pixels that fit must lie on a <em>matching pair</em> of epipolar lines. The pencil of epipolar lines through the epipole can be described by one number, an angle-like parameter $\\tau$. For each $\\tau$, the best pixels are the feet of the perpendiculars from $x$ and $x'$ onto their lines, and the total squared distance is a function of $\\tau$ alone."
+              },
+              {
+                "kind": "p",
+                "text": "Setting its derivative to zero gives a polynomial of <strong>degree 6</strong> in $\\tau$. Solve it, evaluate the cost at each real root (and at $\\tau = \\infty$), keep the smallest. No iteration, no starting guess, and it's guaranteed to be the global best. OpenCV's <code>cv2.correctMatches</code> implements this correction."
+              },
+              {
+                "kind": "p",
+                "text": "In our example the epipolar lines are horizontal rows, so the answer is simple to see: both pixels must end up on one row, and the cheapest row is halfway between $v = 0.25$ and $v = 0.26$. Corrected pixels $(0.5, 0.255)$ and $(0.25, 0.255)$, and their rays meet at $(2, 1.02, 4)$, the bottom row of the table."
+              }
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "How one Gauss–Newton step works",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Stack the four reprojection residuals into $r(X)$, the four numbers in the table. Near the current guess, each residual changes roughly linearly with $X$: $r(X + \\delta) \\approx r(X) + J\\delta$, where $J$ is the 4×3 matrix of how each residual changes as each coordinate of $X$ moves (the Jacobian)."
+              },
+              {
+                "kind": "p",
+                "text": "Choose $\\delta$ to make $|r + J\\delta|$ as small as possible: an ordinary least-squares problem, whose answer is $\\delta = -(J^\\top J)^{-1} J^\\top r$. Step, recompute, repeat. Each step is the \"tangent plane\" idea from the Sampson tangent, used to walk downhill."
+              },
+              {
+                "kind": "p",
+                "text": "Levenberg–Marquardt adds a safety brake, $(J^\\top J + \\lambda I)$, that shortens the step when the linear guess turns out to be poor. With one point, $J$ is tiny. In bundle adjustment, with thousands of points and cameras, it's huge but mostly zeros, and exploiting that is the whole art of stage 6."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 15,
+        "act": "Triangulation",
+        "title": "How accurate is a triangulated point?",
+        "subtitle": "Depth error grows with the square of the distance",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Stereo case (day 2): $Z = f\\,b / d$, with $d$ the disparity in pixels",
+              "A disparity error $\\Delta d$ gives a depth error $\\Delta Z \\approx \\dfrac{Z^2}{f\\,b}\\,\\Delta d$",
+              "Twice as far → <strong>four times</strong> the depth error",
+              "In general: what matters is the <strong>angle between the rays</strong>. Small angle, poor depth"
+            ]
+          },
+          {
+            "kind": "eq",
+            "tex": "Z = \\frac{f b}{d} \\quad\\Longrightarrow\\quad \\frac{dZ}{dd} = -\\frac{f b}{d^2} = -\\frac{Z^2}{f b} \\quad\\Longrightarrow\\quad |\\Delta Z| \\approx \\frac{Z^2}{f b}\\, |\\Delta d|"
+          },
+          {
+            "kind": "figure",
+            "svg": "<svg viewBox=\"0 0 640 330\" role=\"img\" aria-label=\"Two cameras seen from above. Each pixel is really a thin wedge of directions. For a near point the two wedges overlap in a small diamond; for a far point the wedges are nearly parallel and the diamond is long in depth.\"><line x1=\"230.0\" y1=\"300.0\" x2=\"321.4\" y2=\"30.1\" class=\"faint\"/><line x1=\"230.0\" y1=\"300.0\" x2=\"340.0\" y2=\"37.1\" class=\"faint\"/><line x1=\"410.0\" y1=\"300.0\" x2=\"300.0\" y2=\"37.1\" class=\"faint\"/><line x1=\"410.0\" y1=\"300.0\" x2=\"318.6\" y2=\"30.1\" class=\"faint\"/><polygon points=\"310.5,62.3 320.0,34.3 329.5,62.3 320.0,85.0\" class=\"soft\"/><line x1=\"230.0\" y1=\"300.0\" x2=\"326.2\" y2=\"167.8\" class=\"faint\"/><line x1=\"230.0\" y1=\"300.0\" x2=\"335.2\" y2=\"174.8\" class=\"faint\"/><line x1=\"410.0\" y1=\"300.0\" x2=\"304.8\" y2=\"174.8\" class=\"faint\"/><line x1=\"410.0\" y1=\"300.0\" x2=\"313.8\" y2=\"167.8\" class=\"faint\"/><polygon points=\"313.5,185.2 320.0,176.3 326.5,185.2 320.0,192.9\" class=\"soft\"/><circle cx=\"230\" cy=\"300\" r=\"6\" class=\"centre\"/><circle cx=\"410\" cy=\"300\" r=\"6\" class=\"centre\"/><line x1=\"230\" y1=\"300\" x2=\"410\" y2=\"300\" class=\"ink\"/><text x=\"320\" y=\"320\" class=\"fig-label mid\">baseline</text><text x=\"340\" y=\"189\" class=\"fig-label accent\">near point: small region</text><text x=\"343\" y=\"66\" class=\"fig-label accent\">far point: long in depth</text></svg>",
+            "caption": "Each pixel is really a thin wedge of directions, its width set by the pixel error. Where the two wedges overlap is where the point can be. Near the cameras the rays cross at a wide angle and the region is small; far away they're nearly parallel and the region stretches out along the depth direction."
+          },
+          {
+            "kind": "table",
+            "headers": [
+              "Depth $Z$",
+              "Disparity $d$",
+              "Depth error for 1 px",
+              "As a fraction of $Z$"
+            ],
+            "rows": [
+              [
+                "4",
+                "125 px",
+                "0.032",
+                "0.8%"
+              ],
+              [
+                "10",
+                "50 px",
+                "0.2",
+                "2%"
+              ],
+              [
+                "40",
+                "12.5 px",
+                "3.2",
+                "8%"
+              ],
+              [
+                "100",
+                "5 px",
+                "20",
+                "20%"
+              ]
+            ]
+          },
+          {
+            "kind": "explain",
+            "paras": [
+              "<strong>Where the formula comes from.</strong> Day 2 step 10 found depth from disparity: $Z = f b / d$. Differentiate with respect to $d$: $dZ/dd = -fb/d^2$. Substitute $d = fb/Z$ to write it in terms of depth: $-Z^2/(fb)$. So a small error $\\Delta d$ in the disparity becomes a depth error of $Z^2 \\Delta d / (fb)$.",
+              "<strong>With numbers</strong>, our setup: $f = 500$, $b = 1$. At $Z = 4$, a 1-px disparity error moves the depth by $16/500 = 0.032$, under 1%. At $Z = 40$ the disparity has shrunk to 12.5 px and the same 1-px error moves the depth by 3.2, 8% of it. At $Z = 100$ it's 20%. The table is the whole story of why stereo is good up close and useless far away.",
+              "<strong>The $Z^2$ comes from two effects multiplying.</strong> A far point's disparity is small ($d \\propto 1/Z$), so a fixed pixel error is a bigger fraction of it. And depth is $1/d$, which is steep when $d$ is small. Each gives a factor of $Z$.",
+              "<strong>The general version: the triangulation angle.</strong> Without a neat stereo rig, the same thing shows up as the angle between the two rays at the point. For $P = (2, 1, 4)$ the rays from the two cameras meet at about 12°. The figure shows why it matters: each pixel is a thin wedge, and two wedges crossing at a wide angle overlap in a small, compact region. Crossing at a small angle, they overlap in a long sliver along the viewing direction. Sideways the point is still well located; it's the depth that goes. Roughly, depth uncertainty $\\approx$ sideways uncertainty $/ \\sin(\\text{angle})$.",
+              "<strong>The levers you have</strong>: a longer baseline $b$ (move the camera further between shots), a longer focal length $f$ (more pixels per degree), and better keypoint accuracy (smaller $\\Delta d$). The baseline can't grow forever, though: the further apart the views, the more the object's appearance changes and the harder SIFT finds it to match. Choosing image pairs is a trade between a wide angle for depth and a narrow one for matching."
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "Which triangulated points to throw away",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Not every match that survived RANSAC should become a 3D point. Real pipelines check each triangulated point and drop it if any of these fails:"
+              },
+              {
+                "kind": "table",
+                "headers": [
+                  "Check",
+                  "Why"
+                ],
+                "rows": [
+                  [
+                    "Depth positive in both cameras",
+                    "Step 10's cheirality, per point. A point behind a camera is a bad match or a bad triangulation."
+                  ],
+                  [
+                    "Reprojection error under a few px",
+                    "The point should explain the pixels it came from. A large error means the rays barely came near each other."
+                  ],
+                  [
+                    "Triangulation angle above ~1–2°",
+                    "Below that, the depth is mostly noise (the table above). COLMAP's default minimum is 1.5°."
+                  ],
+                  [
+                    "Not absurdly far",
+                    "A tiny $W$ (step 13's tangent) means effectively at infinity: direction known, depth not."
+                  ]
+                ],
+                "source": "ai"
+              },
+              {
+                "kind": "p",
+                "text": "A point dropped now isn't lost forever. In structure from motion, the same feature is often seen in a third or fourth photo from a wider angle, and it can be triangulated properly then. That's the next stage."
+              }
+            ]
+          },
+          {
+            "kind": "tangent",
+            "title": "More than two views",
+            "blocks": [
+              {
+                "kind": "p",
+                "text": "Everything here extends directly. With $n$ cameras seeing the same point, the DLT matrix $B$ just gets two rows per camera, $2n \\times 4$, and the SVD finds the best $\\mathbf X$ for all of them at once. The reprojection error becomes a sum over all $n$ images."
+              },
+              {
+                "kind": "p",
+                "text": "More views help in two ways: noise averages out, and the widest pair of views sets the triangulation angle. A point seen from cameras spread around it is located far better than one seen from many cameras standing close together."
+              },
+              {
+                "kind": "p",
+                "text": "One thing does not get fixed by more views of the same pair: the overall scale. Every distance is still measured in units of the first baseline, $|t| = 1$. Keeping that unit consistent as more cameras are added is one of structure from motion's main jobs."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": 16,
+        "act": "Summary",
+        "title": "The whole chain",
+        "blocks": [
+          {
+            "kind": "board",
+            "lines": [
+              "Each match gives <strong>one linear equation</strong> in the 9 entries of $F$",
+              "Normalise the pixels, stack the equations, take the SVD's <strong>smallest direction</strong>",
+              "Force <strong>rank 2</strong>, un-normalise: the normalised eight-point algorithm",
+              "Wrap it in <strong>RANSAC</strong> with the Sampson distance; refit on all inliers",
+              "$E = K'^\\top F K$, then set its singular values to $(1, 1, 0)$",
+              "$E$'s SVD gives $t = \\pm u_3$ and $R = UWV^\\top$ or $UW^\\top V^\\top$: <strong>four candidates</strong>",
+              "Triangulate and keep the one with points <strong>in front of both cameras</strong>",
+              "Triangulate every inlier: DLT, then refine by <strong>reprojection error</strong>",
+              "Trust depth only where the rays cross at a <strong>wide enough angle</strong>"
+            ]
+          }
+        ]
+      }
+    ],
+    "questions": [
+      "How much better is the five-point algorithm than eight-point inside RANSAC in practice, on real photos?",
+      "How do you tell automatically whether a pair is too flat, or too close to pure rotation, to trust its $F$?",
+      "How does Nistér's five-point solver reduce to a tenth-degree polynomial?",
+      "How do you add a third camera when its position isn't known yet (PnP)?",
+      "With only $|t| = 1$ known, how do three or more views get a consistent scale?",
+      "How does lens distortion change all of this, and when must it be removed first?"
+    ]
   }
 ];
